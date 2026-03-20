@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>미랩(MILAB) 교육 앱 레퍼런스</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Noto Sans KR', sans-serif; background: #F5F7FA; color: #222; }
+
+/* 헤더 */
+.hero {
+  background: linear-gradient(135deg, #1a4731 0%, #2d6a4f 50%, #3CB371 100%);
+  color: white; padding: 48px 40px 40px; text-align: center;
+}
+.hero .badge {
+  display: inline-block; background: rgba(255,255,255,0.2);
+  border: 1px solid rgba(255,255,255,0.4); border-radius: 20px;
+  padding: 4px 16px; font-size: 13px; margin-bottom: 16px;
+}
+.hero h1 { font-size: 36px; font-weight: 900; margin-bottom: 8px; }
+.hero p  { font-size: 15px; opacity: 0.85; margin-bottom: 4px; }
+.hero .sub { font-size: 13px; opacity: 0.65; }
+
+/* 통계 바 */
+.stats {
+  display: flex; justify-content: center; gap: 40px;
+  background: #fff; padding: 20px 40px;
+  border-bottom: 1px solid #e8e8e8;
+}
+.stat { text-align: center; }
+.stat .num { font-size: 28px; font-weight: 900; color: #1a4731; }
+.stat .lbl { font-size: 12px; color: #888; margin-top: 2px; }
+
+/* 필터 */
+.filter-bar {
+  padding: 20px 40px; display: flex; gap: 10px; flex-wrap: wrap;
+  background: #fff; border-bottom: 1px solid #eee;
+}
+.filter-btn {
+  border: 1.5px solid #ddd; border-radius: 20px; padding: 6px 16px;
+  font-size: 13px; cursor: pointer; background: #fff; font-family: inherit;
+  transition: all 0.15s;
+}
+.filter-btn.active, .filter-btn:hover {
+  background: #1a4731; color: #fff; border-color: #1a4731;
+}
+
+/* 앱 그리드 */
+.grid-wrap { padding: 32px 40px; }
+.grid-title {
+  font-size: 13px; color: #888; margin-bottom: 20px; font-weight: 700;
+  letter-spacing: 0.05em; text-transform: uppercase;
+}
+.app-grid {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 24px;
+}
+
+/* 앱 카드 */
+.app-card {
+  background: #fff; border-radius: 20px; overflow: hidden;
+  border: 1.5px solid #eee; transition: transform 0.2s, box-shadow 0.2s;
+  cursor: pointer;
+}
+.app-card:hover { transform: translateY(-4px); box-shadow: 0 12px 32px rgba(0,0,0,0.1); }
+
+.card-thumb {
+  height: 140px; display: flex; align-items: center; justify-content: center;
+  font-size: 64px; position: relative;
+}
+.card-badge {
+  position: absolute; top: 12px; right: 12px;
+  font-size: 11px; font-weight: 700; padding: 3px 10px;
+  border-radius: 12px;
+}
+.badge-new  { background: #D4F5D4; color: #1A5C1A; }
+.badge-hot  { background: #FFE0E0; color: #8B0000; }
+.badge-soon { background: #E8E8E8; color: #666; }
+
+.card-body { padding: 16px 18px; }
+.card-title { font-size: 17px; font-weight: 700; margin-bottom: 4px; }
+.card-desc  { font-size: 13px; color: #666; line-height: 1.6; margin-bottom: 12px; }
+.card-tags  { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 14px; }
+.tag {
+  font-size: 11px; padding: 3px 10px; border-radius: 10px;
+  background: #f0f0f0; color: #555;
+}
+.card-footer {
+  display: flex; justify-content: space-between; align-items: center;
+  padding-top: 12px; border-top: 1px solid #f0f0f0;
+}
+.card-date { font-size: 12px; color: #aaa; }
+.card-link {
+  font-size: 13px; font-weight: 700; color: #1a4731;
+  text-decoration: none; display: flex; align-items: center; gap: 4px;
+}
+.card-link:hover { text-decoration: underline; }
+
+/* 추가 예정 카드 */
+.app-card.upcoming { opacity: 0.55; cursor: default; }
+.app-card.upcoming:hover { transform: none; box-shadow: none; }
+
+/* 하단 CTA */
+.cta {
+  background: linear-gradient(135deg, #1a4731, #3CB371);
+  color: white; text-align: center; padding: 48px 40px; margin-top: 20px;
+}
+.cta h2 { font-size: 24px; font-weight: 900; margin-bottom: 8px; }
+.cta p  { font-size: 14px; opacity: 0.85; margin-bottom: 24px; }
+.cta-info {
+  display: inline-flex; gap: 32px; background: rgba(255,255,255,0.15);
+  border-radius: 16px; padding: 16px 32px; font-size: 14px;
+}
+.cta-info div { text-align: center; }
+.cta-info .ci-label { font-size: 11px; opacity: 0.7; margin-top: 2px; }
+
+/* 반응형 */
+@media (max-width: 600px) {
+  .hero { padding: 32px 20px; }
+  .hero h1 { font-size: 26px; }
+  .stats { gap: 20px; padding: 16px 20px; }
+  .filter-bar, .grid-wrap { padding: 16px 20px; }
+  .cta { padding: 32px 20px; }
+  .cta-info { flex-direction: column; gap: 12px; }
+}
+</style>
+</head>
+<body>
+
+<!-- 히어로 -->
+<div class="hero">
+  <div class="badge">📍 충청북도 충주시 · 교육부 인증 진로체험기관</div>
+  <h1>미랩(MILAB) 교육 앱 레퍼런스</h1>
+  <p>초·중·고 대상 4차 산업 진로체험 교육 콘텐츠</p>
+  <p class="sub">IoT · 드론 · 로봇 · 3D프린팅 · VR · 메타버스 · AI코딩</p>
+</div>
+
+<!-- 통계 -->
+<div class="stats">
+  <div class="stat"><div class="num" id="total-count">1</div><div class="lbl">개발 완료</div></div>
+  <div class="stat"><div class="num">초·중·고</div><div class="lbl">대상 학년</div></div>
+  <div class="stat"><div class="num">2025</div><div class="lbl">시작 연도</div></div>
+  <div class="stat"><div class="num" id="days-count">1</div><div class="lbl">개발 일수</div></div>
+</div>
+
+<!-- 필터 -->
+<div class="filter-bar">
+  <button class="filter-btn active" onclick="filterCards('all')">전체</button>
+  <button class="filter-btn" onclick="filterCards('초등')">초등</button>
+  <button class="filter-btn" onclick="filterCards('중등')">중등</button>
+  <button class="filter-btn" onclick="filterCards('고등')">고등</button>
+  <button class="filter-btn" onclick="filterCards('통합교과')">통합교과</button>
+  <button class="filter-btn" onclick="filterCards('AI')">AI·코딩</button>
+  <button class="filter-btn" onclick="filterCards('드론')">드론·로봇</button>
+</div>
+
+<!-- 앱 그리드 -->
+<div class="grid-wrap">
+  <div class="grid-title">📱 개발 완료 앱</div>
+  <div class="app-grid" id="app-grid">
+
+    <!-- #001 계절 친구들 -->
+    <div class="app-card" data-tags="초등 통합교과 게임">
+      <div class="card-thumb" style="background:linear-gradient(135deg,#87CEEB,#A8E090)">
+        🌸
+        <span class="card-badge badge-new">NEW</span>
+      </div>
+      <div class="card-body">
+        <div class="card-title">🌸 계절 친구들 게임</div>
+        <div class="card-desc">초등 1~2학년 통합교과 사계절 체험. 봄·여름·가을·겨울 퀴즈, 짝찾기, 분류 게임 4종 구성.</div>
+        <div class="card-tags">
+          <span class="tag">초등 1~2학년</span>
+          <span class="tag">통합교과</span>
+          <span class="tag">사계절</span>
+          <span class="tag">터치 최적화</span>
+        </div>
+        <div class="card-footer">
+          <span class="card-date">2025.03 개발</span>
+          <a class="card-link" href="https://milab2019.github.io/-1-2-/seasonfr.html" target="_blank">
+            체험하기 →
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- 예정 카드들 -->
+    <div class="app-card upcoming" data-tags="중등 AI">
+      <div class="card-thumb" style="background:linear-gradient(135deg,#e8d5f5,#c9b8ff)">
+        🤖
+        <span class="card-badge badge-soon">준비중</span>
+      </div>
+      <div class="card-body">
+        <div class="card-title">🤖 AI 직업 탐험대</div>
+        <div class="card-desc">AI와 함께 미래 직업을 탐험하는 인터랙티브 진로체험 앱.</div>
+        <div class="card-tags">
+          <span class="tag">중학생</span><span class="tag">AI·진로</span>
+        </div>
+        <div class="card-footer">
+          <span class="card-date">개발 예정</span>
+          <span style="font-size:13px;color:#bbb;">준비중</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="app-card upcoming" data-tags="초등 드론">
+      <div class="card-thumb" style="background:linear-gradient(135deg,#d5eaff,#a8d0ff)">
+        🚁
+        <span class="card-badge badge-soon">준비중</span>
+      </div>
+      <div class="card-body">
+        <div class="card-title">🚁 드론 조종사 체험</div>
+        <div class="card-desc">드론 원리와 비행 기초를 배우는 시뮬레이션 체험 앱.</div>
+        <div class="card-tags">
+          <span class="tag">초·중등</span><span class="tag">드론</span>
+        </div>
+        <div class="card-footer">
+          <span class="card-date">개발 예정</span>
+          <span style="font-size:13px;color:#bbb;">준비중</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="app-card upcoming" data-tags="고등 AI">
+      <div class="card-thumb" style="background:linear-gradient(135deg,#ffe8cc,#ffd0a0)">
+        🧠
+        <span class="card-badge badge-soon">준비중</span>
+      </div>
+      <div class="card-body">
+        <div class="card-title">🧠 AI 코딩 퀘스트</div>
+        <div class="card-desc">블록코딩부터 AI 원리까지, 단계별 코딩 학습 체험 앱.</div>
+        <div class="card-tags">
+          <span class="tag">중·고등</span><span class="tag">AI코딩</span>
+        </div>
+        <div class="card-footer">
+          <span class="card-date">개발 예정</span>
+          <span style="font-size:13px;color:#bbb;">준비중</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- CTA 하단 -->
+<div class="cta">
+  <h2>교육 프로그램 도입 문의</h2>
+  <p>학교·기관 맞춤형 4차 산업 진로체험 교육을 제안드립니다</p>
+  <div class="cta-info">
+    <div>📍 충청북도 충주시<div class="ci-label">위치</div></div>
+    <div>🏫 초·중·고 전학년<div class="ci-label">대상</div></div>
+    <div>✅ 교육부 인증기관<div class="ci-label">자격</div></div>
+    <div>📱 태블릿 체험 가능<div class="ci-label">방식</div></div>
+  </div>
+</div>
+
+<script>
+function filterCards(tag) {
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  event.target.classList.add('active');
+  document.querySelectorAll('.app-card').forEach(card => {
+    const tags = card.dataset.tags || '';
+    card.style.display = (tag === 'all' || tags.includes(tag)) ? '' : 'none';
+  });
+}
+
+// 개발 일수 카운터
+const start = new Date('2025-03-20');
+const today = new Date();
+const days = Math.max(1, Math.floor((today - start) / 86400000) + 1);
+document.getElementById('days-count').textContent = days;
+document.getElementById('total-count').textContent =
+  document.querySelectorAll('.app-card:not(.upcoming)').length;
+</script>
+</body>
+</html>
