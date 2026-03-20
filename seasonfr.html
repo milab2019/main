@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>🌸 계절 친구들 - 미랩 교육 게임</title>
+<link href="https://fonts.googleapis.com/css2?family=Jua&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  html, body { width: 100%; height: 100%; overflow-x: hidden; }
+  body { font-family: 'Jua', 'Apple SD Gothic Neo', sans-serif; background: #FFF9F0; }
+
+  .screen { display: none; min-height: 100vh; padding: 20px; }
+  .screen.active { display: flex; flex-direction: column; }
+
+  /* HOME */
+  #home { background: linear-gradient(180deg, #87CEEB 0%, #B8E4F9 40%, #C8F0C0 40%, #A8E090 100%); align-items: center; justify-content: center; gap: 16px; }
+  .title-box { text-align: center; }
+  .title-box h1 { font-size: 32px; color: #2D6A2D; text-shadow: 2px 2px 0 #fff; }
+  .title-box p { font-size: 15px; color: #3A5A3A; margin-top: 4px; }
+  .title-box .milab { font-size: 12px; color: #5A7A5A; margin-top: 2px; }
+  .animal-row { display: flex; gap: 12px; font-size: 52px; animation: bounce 1.5s infinite; }
+  @keyframes bounce { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-10px)} }
+  .game-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; width: 100%; max-width: 380px; }
+  .game-btn { background: #fff; border: 3px solid; border-radius: 20px; padding: 16px 10px; cursor: pointer; text-align: center; transition: transform 0.15s, box-shadow 0.15s; }
+  .game-btn:active { transform: translateY(3px); }
+  .game-btn .emoji { font-size: 40px; display: block; margin-bottom: 6px; }
+  .game-btn .label { font-size: 15px; font-weight: 700; }
+  .game-btn .sub { font-size: 12px; color: #888; margin-top: 2px; }
+  .btn-spring { border-color: #FF9DC0; box-shadow: 0 4px 0 #FF9DC0; color: #D1004A; }
+  .btn-summer { border-color: #FFD740; box-shadow: 0 4px 0 #FFD740; color: #7A5500; }
+  .btn-fall   { border-color: #FF8C42; box-shadow: 0 4px 0 #FF8C42; color: #7A2E00; }
+  .btn-winter { border-color: #6EC6F5; box-shadow: 0 4px 0 #6EC6F5; color: #004A7A; }
+
+  /* COMMON */
+  .game-header { display: flex; align-items: center; gap: 10px; margin-bottom: 16px; }
+  .back-btn { font-size: 24px; cursor: pointer; background: #fff; border: 2.5px solid #ddd; border-radius: 50%; width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .game-title { font-size: 20px; font-weight: 700; flex: 1; }
+  .score-box { background: #fff; border: 2.5px solid #FFD740; border-radius: 14px; padding: 4px 14px; font-size: 18px; font-weight: 700; color: #7A5500; flex-shrink: 0; }
+  .progress-bar { height: 12px; background: #e8e8e8; border-radius: 10px; margin-bottom: 16px; overflow: hidden; }
+  .progress-fill { height: 100%; border-radius: 10px; transition: width 0.4s; }
+  .question-card { background: #fff; border-radius: 24px; padding: 20px 16px; box-shadow: 0 4px 16px rgba(0,0,0,0.08); margin-bottom: 16px; text-align: center; }
+  .q-emoji { font-size: 68px; margin-bottom: 8px; }
+  .q-text { font-size: 19px; color: #333; line-height: 1.4; }
+  .options-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .opt-btn { background: #fff; border: 3px solid #ddd; border-radius: 18px; padding: 14px 8px; cursor: pointer; font-size: 20px; font-weight: 700; color: #333; transition: all 0.15s; display: flex; flex-direction: column; align-items: center; gap: 4px; }
+  .opt-btn span.opt-emoji { font-size: 36px; }
+  .opt-btn span.opt-label { font-size: 14px; }
+  .opt-btn:active { transform: scale(0.96); }
+  .opt-btn.correct { background: #D4F5D4; border-color: #3CB371; color: #1A5C1A; }
+  .opt-btn.wrong   { background: #FFE0E0; border-color: #E05050; color: #8B0000; animation: shake 0.3s; }
+  @keyframes shake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-6px)} 75%{transform:translateX(6px)} }
+  .feedback { text-align: center; font-size: 24px; font-weight: 700; padding: 10px; min-height: 48px; }
+  .next-btn { width: 100%; background: #FFD740; border: 3px solid #C9A800; border-radius: 18px; padding: 16px; font-size: 20px; font-weight: 700; color: #4A3500; cursor: pointer; margin-top: 6px; }
+  .next-btn:active { transform: scale(0.97); }
+
+  /* MATCH */
+  .match-area { display: flex; gap: 10px; margin-bottom: 16px; }
+  .match-col { flex: 1; display: flex; flex-direction: column; gap: 10px; }
+  .match-item { background: #fff; border: 3px solid #ddd; border-radius: 16px; padding: 12px 6px; text-align: center; cursor: pointer; font-size: 26px; transition: all 0.15s; }
+  .match-item.selected { border-color: #6EC6F5; background: #EAF7FF; transform: scale(1.05); }
+  .match-item.matched  { border-color: #3CB371; background: #D4F5D4; }
+  .match-item.wrong-flash { animation: shake 0.3s; border-color: #E05050; background: #FFE0E0; }
+  .match-label { font-size: 12px; color: #666; margin-top: 3px; }
+
+  /* SORT */
+  .sort-bins { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 14px; }
+  .sort-bin { background: #fff; border: 3px dashed; border-radius: 20px; min-height: 100px; padding: 10px; display: flex; flex-direction: column; align-items: center; gap: 6px; cursor: pointer; }
+  .sort-bin:active { opacity: 0.8; }
+  .bin-title { font-size: 15px; font-weight: 700; margin-bottom: 2px; }
+  .bin-items { display: flex; flex-wrap: wrap; gap: 5px; justify-content: center; }
+  .sort-card-slot { width: 44px; height: 44px; border-radius: 10px; background: #f0f0f0; display: flex; align-items: center; justify-content: center; font-size: 26px; }
+  .hand-area { display: flex; justify-content: center; gap: 10px; flex-wrap: wrap; margin-bottom: 10px; }
+  .hand-card { width: 62px; height: 62px; background: #fff; border: 3px solid #ddd; border-radius: 16px; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; font-size: 30px; transition: all 0.15s; }
+  .hand-card.selected { border-color: #6EC6F5; background: #EAF7FF; transform: scale(1.1); }
+  .hand-label { font-size: 10px; color: #888; margin-top: 2px; }
+
+  /* RESULT */
+  #result-screen { background: linear-gradient(135deg, #FFF9F0 0%, #FFF0D0 100%); align-items: center; justify-content: center; gap: 16px; text-align: center; }
+  .result-animal { font-size: 80px; animation: pop 0.5s; }
+  @keyframes pop { from{transform:scale(0.6)} to{transform:scale(1)} }
+  .result-title { font-size: 28px; font-weight: 700; color: #333; }
+  .stars { font-size: 44px; letter-spacing: 4px; }
+  .result-score { font-size: 20px; color: #777; }
+  .play-again-btn { background: #FF9DC0; border: 3px solid #D1004A; border-radius: 20px; padding: 16px 40px; font-size: 20px; font-weight: 700; color: #fff; cursor: pointer; margin-top: 8px; }
+  .home-btn-r { background: #fff; border: 3px solid #ddd; border-radius: 20px; padding: 14px 40px; font-size: 18px; font-weight: 700; color: #555; cursor: pointer; }
+</style>
+</head>
+<body>
+
+<!-- HOME -->
+<div id="home" class="screen active">
+  <div class="animal-row">🐣🐰🦊🐻</div>
+  <div class="title-box">
+    <h1>🌸 계절 친구들 🌸</h1>
+    <p>통합교과 사계절 체험 게임</p>
+    <p class="milab">미랩(MILAB) 충주 진로체험 교육</p>
+  </div>
+  <div class="game-grid">
+    <div class="game-btn btn-spring" onclick="startGame('quiz','spring')">
+      <span class="emoji">🌸</span>
+      <span class="label">봄 퀴즈</span>
+      <span class="sub">봄 날씨·동식물</span>
+    </div>
+    <div class="game-btn btn-summer" onclick="startGame('quiz','summer')">
+      <span class="emoji">☀️</span>
+      <span class="label">여름 퀴즈</span>
+      <span class="sub">여름 날씨·놀이</span>
+    </div>
+    <div class="game-btn btn-fall" onclick="startGame('match','fall')">
+      <span class="emoji">🍂</span>
+      <span class="label">가을 짝찾기</span>
+      <span class="sub">가을 것들 연결!</span>
+    </div>
+    <div class="game-btn btn-winter" onclick="startGame('sort','winter')">
+      <span class="emoji">❄️</span>
+      <span class="label">겨울 분류</span>
+      <span class="sub">뜨거운가? 차가운가?</span>
+    </div>
+  </div>
+</div>
+
+<!-- QUIZ -->
+<div id="quiz-screen" class="screen">
+  <div class="game-header">
+    <div class="back-btn" onclick="goHome()">←</div>
+    <div class="game-title" id="quiz-title">봄 퀴즈</div>
+    <div class="score-box">⭐<span id="quiz-score">0</span></div>
+  </div>
+  <div class="progress-bar"><div class="progress-fill" id="quiz-prog" style="width:0%"></div></div>
+  <div class="question-card">
+    <div class="q-emoji" id="q-emoji">🌸</div>
+    <div class="q-text" id="q-text"></div>
+  </div>
+  <div class="options-grid" id="options-grid"></div>
+  <div class="feedback" id="quiz-feedback"></div>
+  <button class="next-btn" id="next-btn" onclick="nextQuestion()" style="display:none">다음 문제 →</button>
+</div>
+
+<!-- MATCH -->
+<div id="match-screen" class="screen">
+  <div class="game-header">
+    <div class="back-btn" onclick="goHome()">←</div>
+    <div class="game-title">🍂 가을 짝 찾기</div>
+    <div class="score-box">⭐<span id="match-score">0</span></div>
+  </div>
+  <div class="progress-bar"><div class="progress-fill" id="match-prog" style="width:0%;background:#FF8C42"></div></div>
+  <div class="question-card" style="padding:14px">
+    <div class="q-text" style="font-size:16px">왼쪽과 오른쪽에서 짝을 찾아 눌러요!</div>
+    <div class="q-text" style="font-size:13px;color:#aaa;margin-top:4px">왼쪽 먼저 → 오른쪽 순서로!</div>
+  </div>
+  <div class="match-area">
+    <div class="match-col" id="match-left"></div>
+    <div class="match-col" id="match-right"></div>
+  </div>
+  <div class="feedback" id="match-feedback"></div>
+</div>
+
+<!-- SORT -->
+<div id="sort-screen" class="screen">
+  <div class="game-header">
+    <div class="back-btn" onclick="goHome()">←</div>
+    <div class="game-title">❄️ 겨울 분류</div>
+    <div class="score-box">⭐<span id="sort-score">0</span></div>
+  </div>
+  <div class="progress-bar"><div class="progress-fill" id="sort-prog" style="width:0%;background:#6EC6F5"></div></div>
+  <div class="question-card" style="padding:14px">
+    <div class="q-text" style="font-size:16px">카드를 골라 맞는 통에 넣어요!</div>
+    <div class="q-text" style="font-size:13px;color:#aaa;margin-top:4px">카드 선택 → 통 누르기</div>
+  </div>
+  <div class="sort-bins">
+    <div class="sort-bin" style="border-color:#6EC6F5" onclick="sortDrop('cold')">
+      <div class="bin-title">❄️ 차가워요</div>
+      <div class="bin-items" id="bin-cold"></div>
+    </div>
+    <div class="sort-bin" style="border-color:#FF8C42" onclick="sortDrop('warm')">
+      <div class="bin-title">🔥 따뜻해요</div>
+      <div class="bin-items" id="bin-warm"></div>
+    </div>
+  </div>
+  <div class="hand-area" id="sort-hand"></div>
+  <div class="feedback" id="sort-feedback"></div>
+</div>
+
+<!-- RESULT -->
+<div id="result-screen" class="screen">
+  <div class="result-animal" id="res-animal">🎉</div>
+  <div class="result-title" id="res-title">잘했어요!</div>
+  <div class="stars" id="res-stars">⭐⭐⭐</div>
+  <div class="result-score" id="res-score">10점 만점!</div>
+  <button class="play-again-btn" id="play-again-btn">다시 하기</button>
+  <button class="home-btn-r" onclick="goHome()">🏠 처음으로</button>
+</div>
+
+<script>
+const QUIZ_DATA = {
+  spring: [
+    { emoji:'🌸', text:'봄에 피는 꽃은?', opts:[{e:'🌸',l:'벚꽃'},{e:'🌻',l:'해바라기'},{e:'🍁',l:'단풍'},{e:'⛄',l:'눈사람'}], ans:0 },
+    { emoji:'🐣', text:'봄에 알에서 깨어나는 동물은?', opts:[{e:'🐣',l:'병아리'},{e:'🦁',l:'사자'},{e:'🐬',l:'돌고래'},{e:'🐧',l:'펭귄'}], ans:0 },
+    { emoji:'🌱', text:'봄에 새싹은 무슨 색일까요?', opts:[{e:'🟢',l:'초록'},{e:'🟠',l:'주황'},{e:'⚫',l:'검정'},{e:'🔵',l:'파랑'}], ans:0 },
+    { emoji:'🌦️', text:'봄 날씨는 어떤가요?', opts:[{e:'❄️',l:'매우 춥다'},{e:'🌸',l:'따뜻하다'},{e:'🌊',l:'장마다'},{e:'🌬️',l:'매우 덥다'}], ans:1 },
+    { emoji:'🦋', text:'봄에 꽃에서 꿀을 모으는 곤충은?', opts:[{e:'🐛',l:'애벌레'},{e:'🦋',l:'나비'},{e:'🐢',l:'거북이'},{e:'🦅',l:'독수리'}], ans:1 },
+  ],
+  summer: [
+    { emoji:'☀️', text:'여름 날씨는 어떤가요?', opts:[{e:'🥶',l:'매우 춥다'},{e:'🥵',l:'매우 덥다'},{e:'🌸',l:'포근하다'},{e:'🍂',l:'쌀쌀하다'}], ans:1 },
+    { emoji:'🌊', text:'여름에 시원하게 놀 수 있는 곳은?', opts:[{e:'🏔️',l:'눈산'},{e:'🌊',l:'바다'},{e:'🍁',l:'낙엽밭'},{e:'🌸',l:'꽃밭'}], ans:1 },
+    { emoji:'🍉', text:'여름에 먹으면 시원한 과일은?', opts:[{e:'🍎',l:'사과'},{e:'🍊',l:'귤'},{e:'🍉',l:'수박'},{e:'🍇',l:'포도'}], ans:2 },
+    { emoji:'🌧️', text:'여름에 비가 많이 오는 때를 뭐라 할까요?', opts:[{e:'🌸',l:'봄'},{e:'❄️',l:'겨울'},{e:'🌧️',l:'장마'},{e:'🍂',l:'가을'}], ans:2 },
+    { emoji:'🦟', text:'여름 밤에 왱~ 하고 나타나는 곤충은?', opts:[{e:'🦋',l:'나비'},{e:'🐝',l:'꿀벌'},{e:'🦟',l:'모기'},{e:'🐞',l:'무당벌레'}], ans:2 },
+  ]
+};
+
+const MATCH_DATA = [
+  { emoji:'🍁', label:'단풍잎', pair:'🍂', pairLabel:'낙엽' },
+  { emoji:'🌰', label:'밤',     pair:'🍇', pairLabel:'포도' },
+  { emoji:'🐿️', label:'다람쥐', pair:'🦔', pairLabel:'고슴도치' },
+  { emoji:'🎃', label:'호박',   pair:'🌾', pairLabel:'들판' },
+];
+
+const SORT_DATA = [
+  { emoji:'⛄', label:'눈사람', cat:'cold' },
+  { emoji:'🧤', label:'장갑',   cat:'warm' },
+  { emoji:'🌨️', label:'눈',    cat:'cold' },
+  { emoji:'☕', label:'따뜻한음료', cat:'warm' },
+  { emoji:'🧣', label:'목도리', cat:'warm' },
+  { emoji:'🏔️', label:'눈산',  cat:'cold' },
+];
+
+let currentGame=null, qIndex=0, score=0;
+let matchLeft=[], matchRight=[], matchedCount=0, selectedLeft=null, selectedRight=null;
+let sortItems=[], sortScore=0, sortSelected=null, sortTotal=0;
+
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo(0,0);
+}
+function goHome(){ showScreen('home'); }
+
+function startGame(type, season) {
+  currentGame={type,season}; score=0;
+  if(type==='quiz'){
+    qIndex=0;
+    document.getElementById('quiz-title').textContent = season==='spring'?'🌸 봄 퀴즈':'☀️ 여름 퀴즈';
+    document.getElementById('quiz-score').textContent=0;
+    document.getElementById('quiz-prog').style.background = season==='spring'?'#FF9DC0':'#FFD740';
+    showScreen('quiz-screen');
+    renderQuestion();
+  } else if(type==='match'){
+    initMatch(); showScreen('match-screen');
+  } else if(type==='sort'){
+    initSort(); showScreen('sort-screen');
+  }
+}
+
+function renderQuestion(){
+  const data=QUIZ_DATA[currentGame.season], q=data[qIndex];
+  document.getElementById('q-emoji').textContent=q.emoji;
+  document.getElementById('q-text').textContent=q.text;
+  document.getElementById('quiz-feedback').textContent='';
+  document.getElementById('next-btn').style.display='none';
+  document.getElementById('quiz-prog').style.width=((qIndex)/data.length*100)+'%';
+  const grid=document.getElementById('options-grid');
+  grid.innerHTML='';
+  q.opts.forEach((opt,i)=>{
+    const btn=document.createElement('div');
+    btn.className='opt-btn';
+    btn.innerHTML=`<span class="opt-emoji">${opt.e}</span><span class="opt-label">${opt.l}</span>`;
+    btn.onclick=()=>checkQuiz(i,btn);
+    grid.appendChild(btn);
+  });
+}
+
+function checkQuiz(idx,btn){
+  const data=QUIZ_DATA[currentGame.season], q=data[qIndex];
+  document.querySelectorAll('.opt-btn').forEach(b=>b.onclick=null);
+  if(idx===q.ans){
+    btn.classList.add('correct'); score+=2;
+    document.getElementById('quiz-score').textContent=score;
+    document.getElementById('quiz-feedback').textContent='🎉 맞았어요!';
+  } else {
+    btn.classList.add('wrong');
+    document.querySelectorAll('.opt-btn')[q.ans].classList.add('correct');
+    document.getElementById('quiz-feedback').textContent='😅 아쉬워요!';
+  }
+  document.getElementById('quiz-prog').style.width=((qIndex+1)/data.length*100)+'%';
+  document.getElementById('next-btn').style.display='block';
+}
+
+function nextQuestion(){
+  const data=QUIZ_DATA[currentGame.season];
+  qIndex++;
+  if(qIndex>=data.length) showResult(score,data.length*2,currentGame.season==='spring'?'🐣':'🌻');
+  else renderQuestion();
+}
+
+function initMatch(){
+  matchedCount=0; selectedLeft=null; selectedRight=null; score=0;
+  document.getElementById('match-score').textContent=0;
+  document.getElementById('match-prog').style.width='0%';
+  document.getElementById('match-feedback').textContent='';
+  const pairs=[...MATCH_DATA].sort(()=>Math.random()-0.5).slice(0,3);
+  matchLeft=pairs.map((p,i)=>({id:i,emoji:p.emoji,label:p.label}));
+  matchRight=pairs.map((p,i)=>({id:i,emoji:p.pair,label:p.pairLabel})).sort(()=>Math.random()-0.5);
+  const lCol=document.getElementById('match-left'), rCol=document.getElementById('match-right');
+  lCol.innerHTML=''; rCol.innerHTML='';
+  matchLeft.forEach(item=>{
+    const el=document.createElement('div');
+    el.className='match-item'; el.id='ml-'+item.id;
+    el.innerHTML=`${item.emoji}<div class="match-label">${item.label}</div>`;
+    el.onclick=()=>selectLeft(item.id);
+    lCol.appendChild(el);
+  });
+  matchRight.forEach(item=>{
+    const el=document.createElement('div');
+    el.className='match-item'; el.id='mr-'+item.id;
+    el.innerHTML=`${item.emoji}<div class="match-label">${item.label}</div>`;
+    el.onclick=()=>selectRight(item.id);
+    rCol.appendChild(el);
+  });
+}
+
+function selectLeft(id){
+  if(document.getElementById('ml-'+id).classList.contains('matched')) return;
+  document.querySelectorAll('#match-left .match-item').forEach(e=>e.classList.remove('selected'));
+  document.getElementById('ml-'+id).classList.add('selected');
+  selectedLeft=id;
+  if(selectedRight!==null) checkMatch();
+}
+function selectRight(id){
+  if(document.getElementById('mr-'+id).classList.contains('matched')) return;
+  document.querySelectorAll('#match-right .match-item').forEach(e=>e.classList.remove('selected'));
+  document.getElementById('mr-'+id).classList.add('selected');
+  selectedRight=id;
+  if(selectedLeft!==null) checkMatch();
+}
+function checkMatch(){
+  const lEl=document.getElementById('ml-'+selectedLeft), rEl=document.getElementById('mr-'+selectedRight);
+  if(selectedLeft===selectedRight){
+    lEl.classList.remove('selected'); lEl.classList.add('matched');
+    rEl.classList.remove('selected'); rEl.classList.add('matched');
+    score+=2; document.getElementById('match-score').textContent=score;
+    document.getElementById('match-feedback').textContent='🎉 맞았어요!';
+    matchedCount++;
+    document.getElementById('match-prog').style.width=(matchedCount/matchLeft.length*100)+'%';
+    selectedLeft=null; selectedRight=null;
+    if(matchedCount>=matchLeft.length) setTimeout(()=>showResult(score,matchLeft.length*2,'🍂'),700);
+  } else {
+    lEl.classList.add('wrong-flash'); rEl.classList.add('wrong-flash');
+    document.getElementById('match-feedback').textContent='😅 다시 해봐요!';
+    setTimeout(()=>{
+      lEl.classList.remove('wrong-flash','selected');
+      rEl.classList.remove('wrong-flash','selected');
+      selectedLeft=null; selectedRight=null;
+      document.getElementById('match-feedback').textContent='';
+    },700);
+  }
+}
+
+function initSort(){
+  sortScore=0; sortSelected=null; sortTotal=SORT_DATA.length;
+  sortItems=SORT_DATA.map(d=>({...d,placed:false})).sort(()=>Math.random()-0.5);
+  document.getElementById('sort-score').textContent=0;
+  document.getElementById('sort-prog').style.width='0%';
+  document.getElementById('sort-feedback').textContent='';
+  document.getElementById('bin-cold').innerHTML='';
+  document.getElementById('bin-warm').innerHTML='';
+  renderHand();
+}
+function renderHand(){
+  const area=document.getElementById('sort-hand');
+  area.innerHTML='';
+  sortItems.filter(i=>!i.placed).forEach(item=>{
+    const el=document.createElement('div');
+    el.className='hand-card'+(sortSelected===item.emoji?' selected':'');
+    el.innerHTML=`${item.emoji}<div class="hand-label">${item.label}</div>`;
+    el.onclick=()=>{ sortSelected=(sortSelected===item.emoji)?null:item.emoji; renderHand(); };
+    area.appendChild(el);
+  });
+}
+function sortDrop(cat){
+  if(!sortSelected){ document.getElementById('sort-feedback').textContent='먼저 카드를 골라요!'; return; }
+  const item=sortItems.find(i=>i.emoji===sortSelected);
+  if(!item) return;
+  item.placed=true;
+  const bin=document.getElementById(cat==='cold'?'bin-cold':'bin-warm');
+  const slot=document.createElement('div');
+  slot.className='sort-card-slot'; slot.textContent=item.emoji;
+  if(item.cat===cat){
+    slot.style.background='#D4F5D4'; sortScore+=2;
+    document.getElementById('sort-score').textContent=sortScore;
+    document.getElementById('sort-feedback').textContent='🎉 맞았어요!';
+  } else {
+    slot.style.background='#FFE0E0';
+    document.getElementById('sort-feedback').textContent='😅 아쉬워요!';
+  }
+  bin.appendChild(slot);
+  const placed=sortItems.filter(i=>i.placed).length;
+  document.getElementById('sort-prog').style.width=(placed/sortTotal*100)+'%';
+  sortSelected=null; renderHand();
+  if(placed>=sortTotal) setTimeout(()=>showResult(sortScore,sortTotal*2,'❄️'),700);
+}
+
+function showResult(pts,max,animal){
+  const pct=pts/max;
+  let title,stars;
+  if(pct>=0.8){title='훌륭해요! 최고예요! 🏆';stars='⭐⭐⭐';}
+  else if(pct>=0.5){title='잘했어요! 멋져요! 👏';stars='⭐⭐';}
+  else {title='연습하면 더 잘할 수 있어요! 💪';stars='⭐';}
+  document.getElementById('res-animal').textContent=animal;
+  document.getElementById('res-title').textContent=title;
+  document.getElementById('res-stars').textContent=stars;
+  document.getElementById('res-score').textContent=pts+'점 / '+max+'점';
+  document.getElementById('play-again-btn').onclick=()=>startGame(currentGame.type,currentGame.season);
+  showScreen('result-screen');
+}
+</script>
+</body>
+</html>
