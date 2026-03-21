@@ -1,0 +1,1216 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🌲 환경 탐정단 - 미랩 교육 게임</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Jua&family=Nanum+Gothic:wght@400;700;800&display=swap');
+
+  :root {
+    --forest-dark: #1a3a2a;
+    --forest-mid: #2d5a3d;
+    --forest-light: #4a8c5c;
+    --forest-bright: #6db87a;
+    --leaf-green: #8fce6e;
+    --sun-yellow: #f0c040;
+    --earth-brown: #8b5e3c;
+    --sky-blue: #87ceeb;
+    --danger-red: #e05252;
+    --warning-orange: #e08c3a;
+    --white: #f8fdf5;
+    --card-bg: rgba(255,255,255,0.93);
+    --shadow: 0 8px 32px rgba(26,58,42,0.25);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Nanum Gothic', sans-serif;
+    background: var(--forest-dark);
+    min-height: 100vh;
+    overflow-x: hidden;
+    position: relative;
+  }
+
+  /* 배경 숲 애니메이션 */
+  .bg-forest {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: linear-gradient(180deg, #0d2b1a 0%, #1a3a2a 40%, #2d5a3d 100%);
+    z-index: 0;
+    overflow: hidden;
+  }
+  .bg-tree {
+    position: absolute; bottom: 0;
+    font-size: 3rem; opacity: 0.3;
+    animation: treeSway 4s ease-in-out infinite alternate;
+  }
+  @keyframes treeSway { from { transform: rotate(-3deg); } to { transform: rotate(3deg); } }
+  .firefly {
+    position: absolute; width: 6px; height: 6px;
+    background: #f0f080; border-radius: 50%;
+    animation: fireflyFloat 6s ease-in-out infinite;
+    opacity: 0;
+  }
+  @keyframes fireflyFloat {
+    0% { opacity: 0; transform: translate(0,0); }
+    30% { opacity: 0.8; }
+    60% { opacity: 0.4; }
+    100% { opacity: 0; transform: translate(var(--fx), var(--fy)); }
+  }
+
+  /* 메인 컨테이너 */
+  #app {
+    position: relative; z-index: 10;
+    max-width: 800px; margin: 0 auto;
+    padding: 16px;
+    min-height: 100vh;
+  }
+
+  /* 화면 전환 */
+  .screen { display: none; animation: fadeIn 0.5s ease; }
+  .screen.active { display: block; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+  /* 헤더 공통 */
+  .game-header {
+    display: flex; align-items: center; justify-content: space-between;
+    background: rgba(26,58,42,0.9);
+    border: 2px solid var(--forest-bright);
+    border-radius: 16px; padding: 12px 16px; margin-bottom: 16px;
+    color: var(--white);
+  }
+  .game-header .title { font-family: 'Jua', sans-serif; font-size: 1.1rem; color: var(--leaf-green); }
+  .score-badge {
+    background: var(--sun-yellow); color: var(--forest-dark);
+    font-weight: 800; padding: 4px 12px; border-radius: 20px;
+    font-size: 0.9rem;
+  }
+
+  /* 진행바 */
+  .progress-wrap { margin-bottom: 14px; }
+  .progress-label { color: var(--leaf-green); font-size: 0.8rem; margin-bottom: 4px; display: flex; justify-content: space-between; }
+  .progress-bar { height: 10px; background: rgba(255,255,255,0.15); border-radius: 10px; overflow: hidden; }
+  .progress-fill { height: 100%; background: linear-gradient(90deg, var(--forest-bright), var(--sun-yellow)); border-radius: 10px; transition: width 0.5s ease; }
+
+  /* 카드 스타일 */
+  .card {
+    background: var(--card-bg);
+    border-radius: 20px;
+    padding: 24px;
+    box-shadow: var(--shadow);
+    border: 2px solid rgba(111,184,122,0.3);
+    margin-bottom: 16px;
+  }
+
+  /* ===== 인트로 화면 ===== */
+  #screen-intro { text-align: center; }
+  .intro-logo {
+    font-size: 5rem; margin: 20px 0 10px;
+    animation: logoBounce 2s ease-in-out infinite;
+  }
+  @keyframes logoBounce { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-12px); } }
+  .intro-title {
+    font-family: 'Jua', sans-serif;
+    font-size: 2.4rem; color: var(--leaf-green);
+    text-shadow: 0 2px 12px rgba(0,0,0,0.5);
+    margin-bottom: 8px;
+  }
+  .intro-sub { color: rgba(255,255,255,0.7); font-size: 0.95rem; margin-bottom: 6px; }
+  .intro-story {
+    background: rgba(26,58,42,0.85);
+    border: 2px solid var(--forest-bright);
+    border-radius: 16px; padding: 20px; margin: 20px 0;
+    color: var(--white); text-align: left; line-height: 1.8;
+    font-size: 0.95rem;
+  }
+  .intro-story .story-title {
+    font-family: 'Jua', sans-serif; color: var(--sun-yellow);
+    font-size: 1.1rem; margin-bottom: 10px; text-align: center;
+  }
+  .mission-list {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 10px; margin: 16px 0;
+  }
+  .mission-item {
+    background: rgba(26,58,42,0.85);
+    border: 2px solid var(--forest-bright);
+    border-radius: 12px; padding: 14px; text-align: center;
+    color: var(--white); cursor: pointer;
+    transition: all 0.3s;
+  }
+  .mission-item.locked {
+    opacity: 0.45; cursor: not-allowed;
+    border-color: rgba(111,184,122,0.3);
+  }
+  .mission-item.done { border-color: var(--sun-yellow); }
+  .mission-item:not(.locked):not(.done):hover {
+    transform: translateY(-4px);
+    border-color: var(--sun-yellow);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+  }
+  .mission-icon { font-size: 2rem; margin-bottom: 6px; }
+  .mission-name { font-family: 'Jua', sans-serif; font-size: 0.95rem; color: var(--leaf-green); }
+  .mission-desc { font-size: 0.75rem; color: rgba(255,255,255,0.6); margin-top: 4px; }
+  .mission-stars { color: var(--sun-yellow); font-size: 0.9rem; margin-top: 4px; }
+  .lock-icon { font-size: 1.2rem; margin-top: 4px; }
+
+  /* 버튼 */
+  .btn {
+    display: inline-block; padding: 14px 32px;
+    border: none; border-radius: 50px; cursor: pointer;
+    font-family: 'Jua', sans-serif; font-size: 1.1rem;
+    transition: all 0.2s; text-decoration: none;
+  }
+  .btn-primary {
+    background: linear-gradient(135deg, var(--forest-light), var(--forest-bright));
+    color: var(--white);
+    box-shadow: 0 4px 15px rgba(74,140,92,0.5);
+  }
+  .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(74,140,92,0.6); }
+  .btn-secondary {
+    background: rgba(255,255,255,0.15); color: var(--white);
+    border: 2px solid rgba(255,255,255,0.3);
+  }
+  .btn-secondary:hover { background: rgba(255,255,255,0.25); }
+  .btn-danger { background: linear-gradient(135deg, #e05252, #c03a3a); color: white; }
+  .btn-sm { padding: 8px 20px; font-size: 0.9rem; }
+  .btn-block { width: 100%; text-align: center; }
+
+  /* 캐릭터 말풍선 */
+  .char-bubble {
+    display: flex; align-items: flex-start; gap: 12px; margin-bottom: 16px;
+  }
+  .char-emoji { font-size: 2.5rem; flex-shrink: 0; }
+  .bubble-text {
+    background: rgba(26,58,42,0.9);
+    border: 2px solid var(--forest-bright);
+    border-radius: 16px 16px 16px 4px;
+    padding: 12px 16px; color: var(--white);
+    font-size: 0.95rem; line-height: 1.6;
+    flex: 1;
+  }
+  .bubble-name { font-size: 0.75rem; color: var(--leaf-green); font-weight: 800; margin-bottom: 4px; }
+
+  /* ===== 미션1: 지도 ===== */
+  .map-grid {
+    display: grid; grid-template-columns: repeat(4, 1fr);
+    gap: 8px; margin: 16px 0;
+  }
+  .map-cell {
+    aspect-ratio: 1; border-radius: 10px;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    font-size: 1.8rem; cursor: pointer;
+    border: 2px solid transparent;
+    transition: all 0.2s;
+    background: rgba(255,255,255,0.85);
+    position: relative;
+  }
+  .map-cell:hover:not(.revealed) { transform: scale(1.05); border-color: var(--forest-light); }
+  .map-cell.healthy { background: linear-gradient(135deg, #c8f0c0, #a0d890); }
+  .map-cell.polluted { background: linear-gradient(135deg, #f0e0a0, #e0c070); }
+  .map-cell.critical { background: linear-gradient(135deg, #f0b0a0, #e08070); }
+  .map-cell.revealed { cursor: default; animation: revealCell 0.4s ease; }
+  @keyframes revealCell { from { transform: scale(0.8) rotate(-5deg); } to { transform: scale(1) rotate(0); } }
+  .map-cell .cell-label { font-size: 0.6rem; color: #555; margin-top: 2px; font-weight: 700; }
+  .map-cell.selected-correct { border: 3px solid #2a8a2a; box-shadow: 0 0 12px rgba(42,138,42,0.6); }
+  .map-cell.selected-wrong { border: 3px solid var(--danger-red); animation: shake 0.4s ease; }
+  @keyframes shake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-6px)} 75%{transform:translateX(6px)} }
+  .map-legend {
+    display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 12px;
+  }
+  .legend-item {
+    display: flex; align-items: center; gap: 6px;
+    font-size: 0.8rem; color: var(--forest-dark);
+  }
+  .legend-dot { width: 14px; height: 14px; border-radius: 4px; }
+
+  /* ===== 미션2: 퀴즈 ===== */
+  .quiz-question {
+    font-family: 'Jua', sans-serif;
+    font-size: 1.2rem; color: var(--forest-dark);
+    text-align: center; margin-bottom: 20px;
+    line-height: 1.6;
+  }
+  .quiz-options { display: grid; gap: 10px; }
+  .quiz-option {
+    padding: 14px 18px; border-radius: 12px;
+    border: 2px solid #dde8d8; background: white;
+    cursor: pointer; font-size: 0.95rem; font-weight: 700;
+    color: var(--forest-dark); transition: all 0.2s; text-align: left;
+  }
+  .quiz-option:hover:not(:disabled) { border-color: var(--forest-light); background: #f0faf0; transform: translateX(4px); }
+  .quiz-option.correct { border-color: #2a8a2a; background: #e0f5e0; color: #1a5a1a; }
+  .quiz-option.wrong { border-color: var(--danger-red); background: #fde8e8; color: #8a1a1a; }
+  .quiz-option:disabled { cursor: not-allowed; }
+  .feedback-box {
+    margin-top: 14px; padding: 14px; border-radius: 12px;
+    font-size: 0.9rem; line-height: 1.6; display: none;
+  }
+  .feedback-box.show { display: block; animation: fadeIn 0.3s ease; }
+  .feedback-box.correct-fb { background: #e8f8e8; border: 2px solid #4a9a4a; color: #1a5a1a; }
+  .feedback-box.wrong-fb { background: #fde8e8; border: 2px solid #d05050; color: #6a1a1a; }
+  .difficulty-row {
+    display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap;
+  }
+  .diff-btn {
+    padding: 6px 16px; border-radius: 20px; border: 2px solid;
+    font-size: 0.8rem; font-weight: 700; cursor: pointer; transition: all 0.2s;
+  }
+  .diff-btn.easy { border-color: #4a9a4a; color: #4a9a4a; background: white; }
+  .diff-btn.easy.active { background: #4a9a4a; color: white; }
+  .diff-btn.medium { border-color: var(--warning-orange); color: var(--warning-orange); background: white; }
+  .diff-btn.medium.active { background: var(--warning-orange); color: white; }
+  .diff-btn.hard { border-color: var(--danger-red); color: var(--danger-red); background: white; }
+  .diff-btn.hard.active { background: var(--danger-red); color: white; }
+  .quiz-counter { font-size: 0.85rem; color: #666; text-align: right; margin-bottom: 8px; }
+
+  /* ===== 미션3: 실험 ===== */
+  .exp-steps { display: flex; flex-direction: column; gap: 8px; margin: 16px 0; }
+  .exp-step {
+    display: flex; align-items: center; gap: 12px;
+    padding: 12px 16px; border-radius: 12px;
+    background: white; border: 2px solid #dde8d8;
+    cursor: grab; transition: all 0.2s; user-select: none;
+  }
+  .exp-step:active { cursor: grabbing; opacity: 0.8; transform: scale(1.02); }
+  .exp-step.dragging { opacity: 0.4; border-style: dashed; }
+  .exp-step.drag-over { border-color: var(--forest-light); background: #f0faf0; transform: scale(1.01); }
+  .step-num {
+    width: 32px; height: 32px; border-radius: 50%;
+    background: var(--forest-light); color: white;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 800; font-size: 0.9rem; flex-shrink: 0;
+  }
+  .step-text { font-size: 0.9rem; color: var(--forest-dark); font-weight: 700; flex: 1; }
+  .step-icon { font-size: 1.5rem; }
+  .exp-step.correct-step { border-color: #4a9a4a; background: #f0f8f0; }
+  .exp-step.wrong-step { border-color: var(--danger-red); background: #fdf0f0; }
+  .check-btn-wrap { text-align: center; margin-top: 16px; }
+
+  /* ===== 미션4: 데이터 퍼즐 ===== */
+  .data-chart {
+    background: white; border-radius: 16px; padding: 16px;
+    border: 2px solid #dde8d8; margin-bottom: 16px;
+  }
+  .data-chart-title { font-family: 'Jua', sans-serif; font-size: 1rem; color: var(--forest-dark); margin-bottom: 12px; text-align: center; }
+  .bar-chart { display: flex; align-items: flex-end; gap: 10px; height: 120px; padding: 0 8px; }
+  .bar-item { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; }
+  .bar-fill {
+    width: 100%; border-radius: 6px 6px 0 0;
+    transition: height 0.8s ease;
+  }
+  .bar-label { font-size: 0.7rem; color: #555; font-weight: 700; text-align: center; }
+  .bar-value { font-size: 0.7rem; font-weight: 800; color: var(--forest-dark); }
+  .data-questions { display: flex; flex-direction: column; gap: 14px; }
+  .data-q { background: #f5faf5; border-radius: 12px; padding: 14px; border: 2px solid #dde8d8; }
+  .data-q-text { font-weight: 800; color: var(--forest-dark); margin-bottom: 10px; font-size: 0.9rem; }
+  .data-options { display: flex; gap: 8px; flex-wrap: wrap; }
+  .data-opt {
+    padding: 8px 16px; border-radius: 20px;
+    border: 2px solid #aac8aa; background: white;
+    cursor: pointer; font-weight: 700; font-size: 0.9rem;
+    color: var(--forest-dark); transition: all 0.2s;
+  }
+  .data-opt:hover:not(:disabled) { border-color: var(--forest-light); background: #f0faf0; }
+  .data-opt.correct { background: #e0f5e0; border-color: #4a9a4a; color: #1a5a1a; }
+  .data-opt.wrong { background: #fde8e8; border-color: #d05050; color: #6a1a1a; }
+
+  /* ===== 결과 화면 ===== */
+  #screen-result { text-align: center; }
+  .badge-container {
+    background: linear-gradient(135deg, #1a3a2a, #2d5a3d);
+    border: 3px solid var(--sun-yellow);
+    border-radius: 20px; padding: 30px; margin: 20px 0;
+    box-shadow: 0 0 40px rgba(240,192,64,0.3);
+  }
+  .badge-emoji { font-size: 5rem; animation: badgePop 0.5s cubic-bezier(0.175,0.885,0.32,1.275); }
+  @keyframes badgePop { from { transform: scale(0); } to { transform: scale(1); } }
+  .badge-title { font-family: 'Jua', sans-serif; font-size: 1.8rem; color: var(--sun-yellow); margin: 10px 0 6px; }
+  .badge-sub { color: rgba(255,255,255,0.8); font-size: 0.95rem; }
+  .result-scores { display: grid; grid-template-columns: repeat(2,1fr); gap: 10px; margin: 16px 0; }
+  .result-score-item {
+    background: rgba(26,58,42,0.85);
+    border: 2px solid var(--forest-bright);
+    border-radius: 14px; padding: 14px; text-align: center; color: var(--white);
+  }
+  .result-score-item .rs-icon { font-size: 1.8rem; }
+  .result-score-item .rs-name { font-size: 0.8rem; color: var(--leaf-green); margin: 4px 0; }
+  .result-score-item .rs-stars { color: var(--sun-yellow); font-size: 1rem; }
+  .total-score-box {
+    background: var(--sun-yellow); border-radius: 16px; padding: 16px;
+    margin: 10px 0; font-family: 'Jua', sans-serif;
+  }
+  .total-score-box .ts-label { font-size: 1rem; color: var(--forest-dark); }
+  .total-score-box .ts-num { font-size: 3rem; color: var(--forest-dark); line-height: 1; }
+
+  /* 음악 버튼 */
+  .music-btn {
+    position: fixed; top: 16px; right: 16px; z-index: 100;
+    background: rgba(26,58,42,0.9); border: 2px solid var(--forest-bright);
+    color: var(--white); padding: 8px 14px; border-radius: 20px;
+    font-size: 0.85rem; cursor: pointer; font-family: 'Nanum Gothic', sans-serif;
+  }
+
+  /* 반응형 */
+  @media (max-width: 500px) {
+    .mission-list { grid-template-columns: 1fr 1fr; }
+    .intro-title { font-size: 1.8rem; }
+    .map-grid { grid-template-columns: repeat(4,1fr); gap: 5px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- 배경 -->
+<div class="bg-forest" id="bgForest"></div>
+
+<!-- 배경음악 버튼 -->
+<button class="music-btn" id="musicBtn" onclick="toggleMusic()">🎵 음악 켜기</button>
+
+<div id="app">
+
+  <!-- ===== 인트로 화면 ===== -->
+  <div id="screen-intro" class="screen active">
+    <div class="intro-logo">🌲</div>
+    <div class="intro-title">환경 탐정단</div>
+    <div class="intro-sub">초등 5~6학년 과학·사회·수학 교과 연계</div>
+    <div class="intro-sub" style="color:var(--leaf-green); font-size:0.8rem; margin-top:4px;">미랩(MILAB) 충주 진로체험 교육</div>
+
+    <div class="intro-story">
+      <div class="story-title">🚨 긴급 상황 발생!</div>
+      <p>우리 마을 뒷산 <strong style="color:var(--sun-yellow)">초록 숲</strong>이 점점 사라지고 있어요.<br>
+      공장 연기, 쓰레기 투기, 무분별한 벌목으로 동물들이 집을 잃고 있습니다.<br><br>
+      여러분은 오늘 <strong style="color:var(--leaf-green)">환경 탐정단</strong>에 임명되었습니다!<br>
+      4가지 미션을 완수하고 숲을 구해주세요! 🌿</p>
+    </div>
+
+    <div style="color:var(--white); font-family:'Jua',sans-serif; font-size:1rem; margin-bottom:12px; text-align:left;">📋 미션 목록</div>
+    <div class="mission-list" id="missionList">
+      <div class="mission-item" onclick="startMission(1)" id="m1">
+        <div class="mission-icon">🗺️</div>
+        <div class="mission-name">미션 1</div>
+        <div class="mission-desc">오염 지역 찾기</div>
+        <div class="mission-stars" id="m1stars">☆☆☆</div>
+      </div>
+      <div class="mission-item locked" id="m2">
+        <div class="mission-icon">🧩</div>
+        <div class="mission-name">미션 2</div>
+        <div class="mission-desc">환경 퀴즈</div>
+        <div class="lock-icon">🔒</div>
+      </div>
+      <div class="mission-item locked" id="m3">
+        <div class="mission-icon">⚗️</div>
+        <div class="mission-name">미션 3</div>
+        <div class="mission-desc">실험 순서 맞추기</div>
+        <div class="lock-icon">🔒</div>
+      </div>
+      <div class="mission-item locked" id="m4">
+        <div class="mission-icon">🔢</div>
+        <div class="mission-name">미션 4</div>
+        <div class="mission-desc">환경 데이터 분석</div>
+        <div class="lock-icon">🔒</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== 미션1: 지도 ===== -->
+  <div id="screen-m1" class="screen">
+    <div class="game-header">
+      <div>
+        <div class="title">🗺️ 미션 1 — 오염 지역 찾기</div>
+        <div style="font-size:0.75rem; color:rgba(255,255,255,0.6)">과학·사회 연계</div>
+      </div>
+      <div class="score-badge">⭐ <span id="m1Score">0</span></div>
+    </div>
+    <div class="progress-wrap">
+      <div class="progress-label"><span>진행</span><span id="m1Prog">0/5</span></div>
+      <div class="progress-bar"><div class="progress-fill" id="m1ProgBar" style="width:0%"></div></div>
+    </div>
+    <div class="char-bubble">
+      <div class="char-emoji">🦉</div>
+      <div class="bubble-text">
+        <div class="bubble-name">탐정단 안내 올빼미</div>
+        <span id="m1Msg">지도에서 <strong>오염된 지역</strong>을 찾아 눌러보세요! 빨간색으로 표시된 곳이 심각한 오염 지역이에요.</span>
+      </div>
+    </div>
+    <div class="card">
+      <div style="font-family:'Jua',sans-serif; font-size:1rem; color:var(--forest-dark); margin-bottom:12px;" id="m1Question">
+        질문을 불러오는 중...
+      </div>
+      <div class="map-legend">
+        <div class="legend-item"><div class="legend-dot" style="background:#a0d890"></div>건강한 숲</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#e0c070"></div>주의 지역</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#e08070"></div>위험 지역</div>
+      </div>
+      <div class="map-grid" id="mapGrid"></div>
+    </div>
+    <button class="btn btn-secondary btn-sm" onclick="goHome()">← 미션 목록으로</button>
+  </div>
+
+  <!-- ===== 미션2: 퀴즈 ===== -->
+  <div id="screen-m2" class="screen">
+    <div class="game-header">
+      <div>
+        <div class="title">🧩 미션 2 — 환경 퀴즈</div>
+        <div style="font-size:0.75rem; color:rgba(255,255,255,0.6)">과학·사회 연계</div>
+      </div>
+      <div class="score-badge">⭐ <span id="m2Score">0</span></div>
+    </div>
+    <div class="progress-wrap">
+      <div class="progress-label"><span>진행</span><span id="m2Prog">0/8</span></div>
+      <div class="progress-bar"><div class="progress-fill" id="m2ProgBar" style="width:0%"></div></div>
+    </div>
+    <div class="char-bubble">
+      <div class="char-emoji" id="m2Char">🦉</div>
+      <div class="bubble-text">
+        <div class="bubble-name">탐정단 안내 올빼미</div>
+        <span id="m2Msg">난이도를 선택하고 환경 퀴즈에 도전해보세요!</span>
+      </div>
+    </div>
+    <div class="card">
+      <div class="difficulty-row">
+        <button class="diff-btn easy active" onclick="setDiff('easy')">🌱 쉬움</button>
+        <button class="diff-btn medium" onclick="setDiff('medium')">🌿 보통</button>
+        <button class="diff-btn hard" onclick="setDiff('hard')">🌲 어려움</button>
+      </div>
+      <div class="quiz-counter" id="quizCounter">1 / 8 문제</div>
+      <div class="quiz-question" id="quizQ">문제 준비 중...</div>
+      <div class="quiz-options" id="quizOpts"></div>
+      <div class="feedback-box" id="quizFeedback"></div>
+      <div id="quizNextWrap" style="text-align:center; margin-top:16px; display:none;">
+        <button class="btn btn-primary" onclick="nextQuiz()">다음 문제 →</button>
+      </div>
+    </div>
+    <button class="btn btn-secondary btn-sm" onclick="goHome()">← 미션 목록으로</button>
+  </div>
+
+  <!-- ===== 미션3: 실험 ===== -->
+  <div id="screen-m3" class="screen">
+    <div class="game-header">
+      <div>
+        <div class="title">⚗️ 미션 3 — 실험 순서 맞추기</div>
+        <div style="font-size:0.75rem; color:rgba(255,255,255,0.6)">과학 연계</div>
+      </div>
+      <div class="score-badge">⭐ <span id="m3Score">0</span></div>
+    </div>
+    <div class="char-bubble">
+      <div class="char-emoji" id="m3Char">🦉</div>
+      <div class="bubble-text">
+        <div class="bubble-name">탐정단 안내 올빼미</div>
+        <span id="m3Msg">숲 복원 실험 순서를 드래그해서 맞춰보세요!</span>
+      </div>
+    </div>
+    <div class="card">
+      <div style="font-family:'Jua',sans-serif; font-size:1rem; color:var(--forest-dark); margin-bottom:6px;" id="m3Title">
+        🌱 나무 심기 실험 순서
+      </div>
+      <div style="font-size:0.8rem; color:#888; margin-bottom:12px;">드래그하여 순서를 맞춰보세요</div>
+      <div class="exp-steps" id="expSteps"></div>
+      <div style="text-align:right; font-size:0.8rem; color:#888; margin-top:8px;">실험 라운드: <span id="m3Round">1</span>/3</div>
+      <div class="check-btn-wrap">
+        <button class="btn btn-primary" onclick="checkExperiment()">✅ 순서 확인하기</button>
+      </div>
+      <div class="feedback-box" id="expFeedback"></div>
+    </div>
+    <button class="btn btn-secondary btn-sm" onclick="goHome()">← 미션 목록으로</button>
+  </div>
+
+  <!-- ===== 미션4: 데이터 ===== -->
+  <div id="screen-m4" class="screen">
+    <div class="game-header">
+      <div>
+        <div class="title">🔢 미션 4 — 환경 데이터 분석</div>
+        <div style="font-size:0.75rem; color:rgba(255,255,255,0.6)">수학·과학 연계</div>
+      </div>
+      <div class="score-badge">⭐ <span id="m4Score">0</span></div>
+    </div>
+    <div class="char-bubble">
+      <div class="char-emoji">🦉</div>
+      <div class="bubble-text">
+        <div class="bubble-name">탐정단 안내 올빼미</div>
+        <span id="m4Msg">그래프를 보고 질문에 답해보세요! 데이터를 잘 읽는 것도 환경 탐정의 능력이에요.</span>
+      </div>
+    </div>
+    <div class="card">
+      <div class="data-chart">
+        <div class="data-chart-title" id="chartTitle">연도별 숲 면적 변화 (단위: km²)</div>
+        <div class="bar-chart" id="barChart"></div>
+      </div>
+      <div class="data-questions" id="dataQuestions"></div>
+      <div id="dataNextWrap" style="text-align:center; margin-top:16px; display:none;">
+        <button class="btn btn-primary" onclick="nextDataSet()">다음 데이터 →</button>
+      </div>
+    </div>
+    <button class="btn btn-secondary btn-sm" onclick="goHome()">← 미션 목록으로</button>
+  </div>
+
+  <!-- ===== 결과 화면 ===== -->
+  <div id="screen-result" class="screen">
+    <div style="text-align:center; padding-top:10px;">
+      <div class="badge-container">
+        <div class="badge-emoji">🏅</div>
+        <div class="badge-title">환경 탐정 수료!</div>
+        <div class="badge-sub">미랩(MILAB) 환경 탐정단 인증</div>
+        <div class="badge-sub" id="detectiveName" style="margin-top:8px; font-size:1rem; color:var(--sun-yellow);"></div>
+      </div>
+
+      <div class="result-scores" id="resultScores"></div>
+
+      <div class="total-score-box">
+        <div class="ts-label">🌟 총 획득 점수</div>
+        <div class="ts-num" id="totalScoreNum">0</div>
+        <div style="font-size:0.85rem; color:var(--forest-dark); margin-top:4px;">/ 100점</div>
+      </div>
+
+      <div style="margin:16px 0; padding:14px; background:rgba(26,58,42,0.85); border-radius:14px; color:var(--white); font-size:0.9rem; line-height:1.7; border:2px solid var(--forest-bright);" id="resultMsg">
+      </div>
+
+      <button class="btn btn-primary btn-block" style="margin-top:8px;" onclick="resetGame()">🔄 처음부터 다시하기</button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// ===== 게임 상태 =====
+const state = {
+  missionDone: [false, false, false, false],
+  scores: [0, 0, 0, 0],
+  stars: [0, 0, 0, 0]
+};
+
+// ===== 배경 꾸미기 =====
+function initBg() {
+  const bg = document.getElementById('bgForest');
+  const trees = ['🌲','🌳','🌴','🎋'];
+  for(let i=0; i<12; i++) {
+    const t = document.createElement('div');
+    t.className = 'bg-tree';
+    t.textContent = trees[i%4];
+    t.style.left = (i*9+Math.random()*5) + '%';
+    t.style.animationDelay = (Math.random()*2) + 's';
+    t.style.fontSize = (2+Math.random()*2) + 'rem';
+    bg.appendChild(t);
+  }
+  for(let i=0; i<20; i++) {
+    const f = document.createElement('div');
+    f.className = 'firefly';
+    f.style.left = (Math.random()*100) + '%';
+    f.style.top = (Math.random()*80) + '%';
+    f.style.setProperty('--fx', (Math.random()*100-50)+'px');
+    f.style.setProperty('--fy', (Math.random()*100-50)+'px');
+    f.style.animationDelay = (Math.random()*6) + 's';
+    f.style.animationDuration = (4+Math.random()*4) + 's';
+    bg.appendChild(f);
+  }
+}
+
+// ===== 음악 =====
+let audioCtx = null, musicOn = false, musicNodes = [];
+function toggleMusic() {
+  musicOn = !musicOn;
+  document.getElementById('musicBtn').textContent = musicOn ? '🎵 음악 끄기' : '🎵 음악 켜기';
+  if(musicOn) playBgMusic(); else stopBgMusic();
+}
+function playBgMusic() {
+  audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  const notes = [261.63,293.66,329.63,349.23,392,440,493.88];
+  function scheduleNote(time, freq, dur) {
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.connect(gain); gain.connect(audioCtx.destination);
+    osc.type = 'sine'; osc.frequency.value = freq;
+    gain.gain.setValueAtTime(0,time);
+    gain.gain.linearRampToValueAtTime(0.04, time+0.05);
+    gain.gain.linearRampToValueAtTime(0, time+dur);
+    osc.start(time); osc.stop(time+dur+0.1);
+    musicNodes.push(osc);
+  }
+  let t = audioCtx.currentTime;
+  const melody = [0,2,4,5,4,2,0,2,4,7,5,4,2,4,5,4];
+  melody.forEach((n,i)=>{ scheduleNote(t+i*0.5, notes[n%7]*0.5, 0.4); });
+}
+function stopBgMusic() {
+  if(audioCtx) { audioCtx.close(); audioCtx=null; }
+}
+function playSound(type) {
+  try {
+    const ctx = new (window.AudioContext||window.webkitAudioContext)();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.connect(gain); gain.connect(ctx.destination);
+    if(type==='correct') { osc.frequency.value=523; gain.gain.setValueAtTime(0.15,ctx.currentTime); gain.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+0.5); }
+    else if(type==='wrong') { osc.type='sawtooth'; osc.frequency.value=160; gain.gain.setValueAtTime(0.1,ctx.currentTime); gain.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+0.3); }
+    else if(type==='clear') { osc.frequency.value=659; gain.gain.setValueAtTime(0.15,ctx.currentTime); gain.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+0.8); }
+    osc.start(); osc.stop(ctx.currentTime+0.8);
+  } catch(e){}
+}
+
+// ===== 화면 전환 =====
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo(0,0);
+}
+function goHome() { showScreen('screen-intro'); }
+
+// ===== 미션 잠금 해제 =====
+function unlockMission(n) {
+  const el = document.getElementById('m'+n);
+  if(el) {
+    el.classList.remove('locked');
+    el.querySelector('.lock-icon') && el.querySelector('.lock-icon').remove();
+    const starsEl = document.createElement('div');
+    starsEl.className = 'mission-stars';
+    starsEl.id = 'm'+n+'stars';
+    starsEl.textContent = '☆☆☆';
+    el.appendChild(starsEl);
+    el.onclick = ()=>startMission(n);
+  }
+}
+function updateMissionStars(n, stars) {
+  const el = document.getElementById('m'+n+'stars');
+  if(el) el.textContent = '★'.repeat(stars) + '☆'.repeat(3-stars);
+  const mEl = document.getElementById('m'+n);
+  if(mEl) mEl.classList.add('done');
+}
+
+// ===== 별점 계산 =====
+function calcStars(score, max) {
+  const pct = score/max;
+  if(pct>=0.9) return 3;
+  if(pct>=0.6) return 2;
+  if(pct>0) return 1;
+  return 0;
+}
+
+// ===== 미션 시작 =====
+function startMission(n) {
+  if(n===1) initMap();
+  else if(n===2) initQuiz();
+  else if(n===3) initExp();
+  else if(n===4) initData();
+  showScreen('screen-m'+n);
+}
+
+// ============================================================
+// ===== 미션1: 지도 =====
+// ============================================================
+const mapData = [
+  {
+    q: "🏭 공장 연기로 인해 오염된 숲은 어느 구역일까요?",
+    grid: [
+      {type:'healthy',icon:'🌲',label:'A구역'},{type:'healthy',icon:'🌳',label:'B구역'},
+      {type:'critical',icon:'🏭',label:'C구역',answer:true},{type:'healthy',icon:'🌲',label:'D구역'},
+      {type:'healthy',icon:'🌿',label:'E구역'},{type:'polluted',icon:'🟡',label:'F구역'},
+      {type:'healthy',icon:'🌲',label:'G구역'},{type:'healthy',icon:'🌳',label:'H구역'},
+    ]
+  },
+  {
+    q: "🗑️ 쓰레기 무단 투기로 토양이 오염된 구역을 찾으세요!",
+    grid: [
+      {type:'healthy',icon:'🌲',label:'A'},{type:'critical',icon:'🗑️',label:'B',answer:true},
+      {type:'healthy',icon:'🌿',label:'C'},{type:'healthy',icon:'🌳',label:'D'},
+      {type:'polluted',icon:'⚠️',label:'E'},{type:'healthy',icon:'🌲',label:'F'},
+      {type:'healthy',icon:'🦋',label:'G'},{type:'healthy',icon:'🌿',label:'H'},
+    ]
+  },
+  {
+    q: "🔥 산불 피해로 나무가 모두 사라진 위험 구역은?",
+    grid: [
+      {type:'healthy',icon:'🌲',label:'A'},{type:'healthy',icon:'🌳',label:'B'},
+      {type:'healthy',icon:'🌿',label:'C'},{type:'critical',icon:'🔥',label:'D',answer:true},
+      {type:'healthy',icon:'🦋',label:'E'},{type:'healthy',icon:'🌲',label:'F'},
+      {type:'polluted',icon:'🟡',label:'G'},{type:'healthy',icon:'🌳',label:'H'},
+    ]
+  },
+  {
+    q: "💧 오폐수 방류로 강이 오염되어 생태계가 파괴된 구역은?",
+    grid: [
+      {type:'polluted',icon:'⚠️',label:'A'},{type:'healthy',icon:'🌲',label:'B'},
+      {type:'healthy',icon:'🌿',label:'C'},{type:'healthy',icon:'🌳',label:'D'},
+      {type:'healthy',icon:'🦋',label:'E'},{type:'critical',icon:'💧',label:'F',answer:true},
+      {type:'healthy',icon:'🌲',label:'G'},{type:'healthy',icon:'🌿',label:'H'},
+    ]
+  },
+  {
+    q: "🚜 무분별한 개발로 나무가 모두 베어진 구역을 찾으세요!",
+    grid: [
+      {type:'healthy',icon:'🌲',label:'A'},{type:'healthy',icon:'🌳',label:'B'},
+      {type:'critical',icon:'🚜',label:'C',answer:true},{type:'healthy',icon:'🌿',label:'D'},
+      {type:'healthy',icon:'🦊',label:'E'},{type:'polluted',icon:'⚠️',label:'F'},
+      {type:'healthy',icon:'🌲',label:'G'},{type:'healthy',icon:'🌳',label:'H'},
+    ]
+  }
+];
+let mapIdx=0, mapScore=0;
+function initMap() {
+  mapIdx=0; mapScore=0;
+  document.getElementById('m1Score').textContent='0';
+  renderMap();
+}
+function renderMap() {
+  if(mapIdx>=mapData.length){ finishMission1(); return; }
+  const d=mapData[mapIdx];
+  document.getElementById('m1Question').textContent=d.q;
+  document.getElementById('m1Prog').textContent=(mapIdx)+'/'+mapData.length;
+  document.getElementById('m1ProgBar').style.width=(mapIdx/mapData.length*100)+'%';
+  document.getElementById('m1Msg').textContent='지도에서 오염된 지역을 찾아 눌러보세요!';
+  const grid=document.getElementById('mapGrid');
+  grid.innerHTML='';
+  d.grid.forEach((cell,i)=>{
+    const el=document.createElement('div');
+    el.className='map-cell '+cell.type;
+    el.innerHTML=`<span>${cell.icon}</span><span class="cell-label">${cell.label}</span>`;
+    el.onclick=()=>selectCell(el, cell.answer||false, i);
+    grid.appendChild(el);
+  });
+}
+function selectCell(el, isAnswer, idx) {
+  const allCells=document.querySelectorAll('.map-cell');
+  allCells.forEach(c=>c.onclick=null);
+  el.classList.add('revealed');
+  if(isAnswer){
+    el.classList.add('selected-correct');
+    mapScore+=20; document.getElementById('m1Score').textContent=mapScore;
+    document.getElementById('m1Msg').innerHTML='✅ 정답이에요! 오염 지역을 찾았어요!';
+    playSound('correct');
+  } else {
+    el.classList.add('selected-wrong');
+    // 정답 표시
+    mapData[mapIdx].grid.forEach((cell,i)=>{
+      if(cell.answer) allCells[i].classList.add('selected-correct','revealed');
+    });
+    document.getElementById('m1Msg').innerHTML='❌ 아쉽네요! 정답은 빨간 테두리 구역이에요.';
+    playSound('wrong');
+  }
+  setTimeout(()=>{
+    mapIdx++;
+    document.getElementById('m1Prog').textContent=(mapIdx)+'/'+mapData.length;
+    document.getElementById('m1ProgBar').style.width=(mapIdx/mapData.length*100)+'%';
+    renderMap();
+  },1800);
+}
+function finishMission1() {
+  state.scores[0]=mapScore;
+  const stars=calcStars(mapScore,100);
+  state.stars[0]=stars;
+  state.missionDone[0]=true;
+  updateMissionStars(1,stars);
+  unlockMission(2);
+  document.getElementById('m1Msg').innerHTML='🎉 미션 1 완료! '+mapScore+'점 획득!';
+  document.getElementById('mapGrid').innerHTML=`<div style="grid-column:1/-1;text-align:center;padding:20px;font-family:'Jua';font-size:1.2rem;color:var(--forest-dark)">🎉 미션 완료!<br>${mapScore}점 / 100점</div>`;
+  playSound('clear');
+  setTimeout(()=>goHome(), 2000);
+}
+
+// ============================================================
+// ===== 미션2: 퀴즈 =====
+// ============================================================
+const quizBank = {
+  easy: [
+    {q:"나무가 숲을 이루어 생물이 살아가는 곳을 무엇이라고 할까요?",opts:["사막","생태계","도시","바다"],ans:1,exp:"생태계는 생물과 환경이 서로 영향을 주고받는 하나의 시스템이에요!"},
+    {q:"공기 중 이산화탄소를 흡수해 산소를 만드는 것은?",opts:["동물","자동차","식물","공장"],ans:2,exp:"식물은 광합성을 통해 이산화탄소를 흡수하고 산소를 내보내요!"},
+    {q:"숲에 사는 동물들이 먹이사슬을 이루는 관계를 뭐라고 할까요?",opts:["먹이 그물","날씨","토양","강수량"],ans:0,exp:"먹이 그물은 여러 생물이 복잡하게 연결된 먹이 관계예요!"},
+    {q:"환경 오염의 원인이 아닌 것은?",opts:["공장 매연","쓰레기 투기","나무 심기","자동차 배기가스"],ans:2,exp:"나무 심기는 오히려 환경을 보호하는 행동이에요!"},
+  ],
+  medium: [
+    {q:"산림이 파괴되면 나타나는 결과가 아닌 것은?",opts:["홍수 증가","생물 다양성 감소","공기 정화 증가","토양 침식"],ans:2,exp:"산림이 파괴되면 공기 정화 기능이 줄어들어요! 나무가 공기를 정화하니까요."},
+    {q:"숲이 줄어들면 지구 온도가 올라가는 이유는?",opts:["비가 많이 오니까","이산화탄소 흡수가 줄어서","바람이 강해져서","동물이 늘어나서"],ans:1,exp:"나무가 줄면 이산화탄소 흡수량이 줄고 온실효과가 강해져요!"},
+    {q:"생물이 살기 위해 필요한 환경 요소가 아닌 것은?",opts:["물","햇빛","스마트폰","공기"],ans:2,exp:"생물이 살기 위해서는 물, 햇빛, 공기, 온도 등이 필요해요!"},
+    {q:"토양 오염을 막기 위한 올바른 행동은?",opts:["쓰레기 매립","화학비료 과다 사용","음식물 퇴비화","폐수 방류"],ans:2,exp:"음식물 쓰레기를 퇴비로 만들면 토양을 건강하게 유지할 수 있어요!"},
+  ],
+  hard: [
+    {q:"먹이사슬에서 생산자-1차소비자-2차소비자의 순서로 올바른 것은?",opts:["풀→메뚜기→개구리","개구리→뱀→독수리","메뚜기→풀→개구리","뱀→개구리→풀"],ans:0,exp:"생산자(풀) → 1차소비자(메뚜기) → 2차소비자(개구리) 순서예요!"},
+    {q:"생물다양성이 중요한 이유로 가장 적절한 것은?",opts:["보기에 예뻐서","생태계 균형 유지","동물원 관람 가능","식물 키우기 쉬움"],ans:1,exp:"다양한 생물이 있어야 생태계가 균형을 이루고 안정적으로 유지돼요!"},
+    {q:"다음 중 탄소발자국을 줄이는 방법이 아닌 것은?",opts:["대중교통 이용","채식 위주 식단","일회용품 자주 사용","에너지 절약"],ans:2,exp:"일회용품 생산에는 많은 에너지가 들어가서 탄소발자국이 늘어나요!"},
+    {q:"환경부에서 정한 멸종위기 야생동물 중 우리나라 산림에 사는 것은?",opts:["펭귄","반달가슴곰","기린","캥거루"],ans:1,exp:"반달가슴곰은 우리나라 지리산에 살며 멸종위기 1급 동물이에요!"},
+  ]
+};
+let currentDiff='easy', quizList=[], quizIdx=0, quizScore=0;
+function initQuiz() {
+  quizScore=0; quizIdx=0;
+  document.getElementById('m2Score').textContent='0';
+  setDiff('easy');
+}
+function setDiff(d) {
+  currentDiff=d;
+  document.querySelectorAll('.diff-btn').forEach(b=>b.classList.remove('active'));
+  document.querySelector('.diff-btn.'+d).classList.add('active');
+  quizList=[...quizBank[d]].sort(()=>Math.random()-0.5);
+  quizIdx=0; quizScore=0;
+  document.getElementById('m2Score').textContent='0';
+  renderQuiz();
+}
+function renderQuiz() {
+  if(quizIdx>=quizList.length){ finishMission2(); return; }
+  const q=quizList[quizIdx];
+  document.getElementById('quizCounter').textContent=(quizIdx+1)+' / '+quizList.length+' 문제';
+  document.getElementById('m2Prog').textContent=(quizIdx)+'/'+quizList.length;
+  document.getElementById('m2ProgBar').style.width=(quizIdx/quizList.length*100)+'%';
+  document.getElementById('quizQ').textContent=q.q;
+  const optsEl=document.getElementById('quizOpts');
+  optsEl.innerHTML='';
+  q.opts.forEach((opt,i)=>{
+    const btn=document.createElement('button');
+    btn.className='quiz-option'; btn.textContent=(i===0?'①':i===1?'②':i===2?'③':'④')+' '+opt;
+    btn.onclick=()=>selectQuizOpt(i, q.ans, q.exp, btn);
+    optsEl.appendChild(btn);
+  });
+  document.getElementById('quizFeedback').classList.remove('show');
+  document.getElementById('quizNextWrap').style.display='none';
+  document.getElementById('m2Char').textContent='🦉';
+  document.getElementById('m2Msg').textContent='문제를 잘 읽고 정답을 골라보세요!';
+}
+function selectQuizOpt(idx, ans, exp, btn) {
+  document.querySelectorAll('.quiz-option').forEach(b=>b.disabled=true);
+  const opts=document.querySelectorAll('.quiz-option');
+  opts[ans].classList.add('correct');
+  const fb=document.getElementById('quizFeedback');
+  if(idx===ans){
+    btn.classList.add('correct');
+    const pts=currentDiff==='easy'?10:currentDiff==='medium'?15:20;
+    quizScore+=pts; document.getElementById('m2Score').textContent=quizScore;
+    fb.className='feedback-box show correct-fb';
+    fb.innerHTML='✅ 정답! +'+pts+'점<br><strong>해설:</strong> '+exp;
+    document.getElementById('m2Char').textContent='😄';
+    playSound('correct');
+  } else {
+    btn.classList.add('wrong');
+    fb.className='feedback-box show wrong-fb';
+    fb.innerHTML='❌ 틀렸어요!<br><strong>해설:</strong> '+exp;
+    document.getElementById('m2Char').textContent='😢';
+    playSound('wrong');
+  }
+  fb.classList.add('show');
+  document.getElementById('quizNextWrap').style.display='block';
+}
+function nextQuiz() {
+  quizIdx++;
+  renderQuiz();
+}
+function finishMission2() {
+  const max=currentDiff==='easy'?40:currentDiff==='medium'?60:80;
+  state.scores[1]=quizScore;
+  const stars=calcStars(quizScore,max);
+  state.stars[1]=stars;
+  state.missionDone[1]=true;
+  updateMissionStars(2,stars);
+  unlockMission(3);
+  playSound('clear');
+  document.getElementById('m2Msg').innerHTML='🎉 미션 2 완료! '+quizScore+'점 획득!';
+  document.getElementById('quizOpts').innerHTML=`<div style="text-align:center;padding:20px;font-family:'Jua';font-size:1.2rem;color:var(--forest-dark)">🎉 미션 완료!<br>${quizScore}점 획득</div>`;
+  document.getElementById('quizNextWrap').style.display='none';
+  setTimeout(()=>goHome(), 2000);
+}
+
+// ============================================================
+// ===== 미션3: 실험 =====
+// ============================================================
+const experiments = [
+  {
+    title:'🌱 나무 심기 절차',
+    steps:[
+      {icon:'🪣',text:'심을 구덩이를 판다 (30cm 깊이)'},
+      {icon:'🌱',text:'모종의 뿌리를 펼쳐 구덩이에 넣는다'},
+      {icon:'🪨',text:'흙을 채우고 뿌리 주변을 눌러 고정한다'},
+      {icon:'💧',text:'충분히 물을 준다'},
+      {icon:'☀️',text:'햇빛이 잘 드는 곳에 표지판을 세운다'},
+    ]
+  },
+  {
+    title:'💧 물 정화 실험 순서',
+    steps:[
+      {icon:'🪣',text:'더러운 물을 준비한다'},
+      {icon:'🪨',text:'자갈, 모래, 숯을 층층이 쌓은 필터를 만든다'},
+      {icon:'💧',text:'더러운 물을 필터에 천천히 붓는다'},
+      {icon:'🔍',text:'걸러진 물의 색과 냄새를 관찰한다'},
+      {icon:'📝',text:'실험 결과를 기록한다'},
+    ]
+  },
+  {
+    title:'🌡️ 온실효과 관찰 실험',
+    steps:[
+      {icon:'📦',text:'투명한 플라스틱 통 2개를 준비한다'},
+      {icon:'🌡️',text:'각 통에 온도계를 설치한다'},
+      {icon:'🪴',text:'한 통에는 식물, 다른 통은 빈 상태로 둔다'},
+      {icon:'☀️',text:'두 통 모두 햇빛 아래 20분 놓는다'},
+      {icon:'📝',text:'두 통의 온도 변화를 측정하고 비교한다'},
+    ]
+  }
+];
+let expRound=0, expScore=0, dragSrc=null;
+function initExp() {
+  expRound=0; expScore=0;
+  document.getElementById('m3Score').textContent='0';
+  renderExp();
+}
+function renderExp() {
+  if(expRound>=experiments.length){ finishMission3(); return; }
+  const ex=experiments[expRound];
+  document.getElementById('m3Title').textContent=ex.title;
+  document.getElementById('m3Round').textContent=(expRound+1);
+  document.getElementById('m3Msg').textContent='카드를 드래그해서 올바른 순서로 정렬해보세요!';
+  document.getElementById('expFeedback').classList.remove('show');
+  const shuffled=[...ex.steps].sort(()=>Math.random()-0.5);
+  const container=document.getElementById('expSteps');
+  container.innerHTML='';
+  shuffled.forEach((step,i)=>{
+    const el=document.createElement('div');
+    el.className='exp-step'; el.draggable=true;
+    el.dataset.originalIdx=ex.steps.indexOf(step);
+    el.innerHTML=`<span class="step-num">${i+1}</span><span class="step-icon">${step.icon}</span><span class="step-text">${step.text}</span>`;
+    el.addEventListener('dragstart',e=>{ dragSrc=el; el.classList.add('dragging'); });
+    el.addEventListener('dragend',()=>{ el.classList.remove('dragging'); document.querySelectorAll('.exp-step').forEach(s=>s.classList.remove('drag-over')); updateStepNums(); });
+    el.addEventListener('dragover',e=>{ e.preventDefault(); el.classList.add('drag-over'); });
+    el.addEventListener('dragleave',()=>el.classList.remove('drag-over'));
+    el.addEventListener('drop',e=>{ e.preventDefault(); if(dragSrc!==el){ container.insertBefore(dragSrc, el); } el.classList.remove('drag-over'); });
+    container.appendChild(el);
+  });
+}
+function updateStepNums() {
+  document.querySelectorAll('.exp-step .step-num').forEach((n,i)=>n.textContent=i+1);
+}
+function checkExperiment() {
+  const steps=document.querySelectorAll('.exp-step');
+  const ex=experiments[expRound];
+  let correct=true;
+  steps.forEach((step,i)=>{
+    if(parseInt(step.dataset.originalIdx)!==i) correct=false;
+  });
+  const fb=document.getElementById('expFeedback');
+  if(correct){
+    expScore+=30; document.getElementById('m3Score').textContent=expScore;
+    steps.forEach(s=>s.classList.add('correct-step'));
+    fb.className='feedback-box show correct-fb';
+    fb.innerHTML='✅ 완벽한 순서예요! +30점<br>실험 절차를 정확히 이해하고 있네요!';
+    document.getElementById('m3Char').textContent='😄';
+    playSound('correct');
+  } else {
+    steps.forEach(s=>s.classList.add('wrong-step'));
+    fb.className='feedback-box show wrong-fb';
+    fb.innerHTML='❌ 순서가 틀렸어요! 다시 정렬해볼까요?<br>정답을 확인하며 순서를 생각해보세요.';
+    document.getElementById('m3Char').textContent='😢';
+    playSound('wrong');
+    // 정답 표시
+    const ex=experiments[expRound];
+    const container=document.getElementById('expSteps');
+    container.innerHTML='';
+    ex.steps.forEach((step,i)=>{
+      const el=document.createElement('div');
+      el.className='exp-step correct-step';
+      el.innerHTML=`<span class="step-num">${i+1}</span><span class="step-icon">${step.icon}</span><span class="step-text">${step.text}</span>`;
+      container.appendChild(el);
+    });
+  }
+  setTimeout(()=>{
+    expRound++;
+    renderExp();
+  },2500);
+}
+function finishMission3() {
+  state.scores[2]=expScore;
+  const stars=calcStars(expScore,90);
+  state.stars[2]=stars;
+  state.missionDone[2]=true;
+  updateMissionStars(3,stars);
+  unlockMission(4);
+  playSound('clear');
+  document.getElementById('m3Msg').innerHTML='🎉 미션 3 완료! '+expScore+'점 획득!';
+  document.getElementById('expSteps').innerHTML=`<div style="text-align:center;padding:20px;font-family:'Jua';font-size:1.2rem;color:var(--forest-dark)">🎉 미션 완료!<br>${expScore}점</div>`;
+  setTimeout(()=>goHome(), 2000);
+}
+
+// ============================================================
+// ===== 미션4: 데이터 =====
+// ============================================================
+const dataSets = [
+  {
+    title:'연도별 숲 면적 변화 (km²)',
+    bars:[
+      {label:'2019',value:120,color:'#6db87a'},
+      {label:'2020',value:105,color:'#8bc48a'},
+      {label:'2021',value:88,color:'#e0c070'},
+      {label:'2022',value:72,color:'#e08c3a'},
+      {label:'2023',value:55,color:'#e05252'},
+    ],
+    questions:[
+      {q:'숲 면적이 가장 넓었던 해는?',opts:['2019년','2020년','2021년','2022년'],ans:0,exp:'2019년에 120km²로 가장 넓었어요!'},
+      {q:'2019년에서 2023년 사이 숲 면적은 몇 km² 줄었나요?',opts:['45km²','55km²','65km²','75km²'],ans:2,exp:'120-55=65km² 줄었어요! 뺄셈으로 계산해보세요.'},
+      {q:'숲이 줄어드는 추세에서 가장 많이 줄어든 2년 구간은?',opts:['2019→2020','2020→2021','2021→2022','2022→2023'],ans:1,exp:'2020→2021에 17km² 감소로 가장 많이 줄었어요!'},
+    ]
+  },
+  {
+    title:'숲속 동물 개체수 변화 (마리)',
+    bars:[
+      {label:'다람쥐',value:200,color:'#8fce6e'},
+      {label:'고라니',value:85,color:'#6db87a'},
+      {label:'멧돼지',value:150,color:'#4a8c5c'},
+      {label:'여우',value:30,color:'#e08c3a'},
+      {label:'반달곰',value:8,color:'#e05252'},
+    ],
+    questions:[
+      {q:'가장 개체수가 많은 동물은?',opts:['다람쥐','고라니','멧돼지','여우'],ans:0,exp:'다람쥐가 200마리로 가장 많아요!'},
+      {q:'멸종위기에 가장 가까운 동물은?',opts:['다람쥐','멧돼지','여우','반달곰'],ans:3,exp:'반달곰이 8마리로 가장 적어 멸종위기가 높아요!'},
+      {q:'다람쥐와 반달곰 개체수의 차이는?',opts:['182마리','192마리','172마리','202마리'],ans:1,exp:'200-8=192마리 차이예요!'},
+    ]
+  }
+];
+let dataSetIdx=0, dataScore=0, dataAnswered=0;
+function initData() {
+  dataSetIdx=0; dataScore=0;
+  document.getElementById('m4Score').textContent='0';
+  renderDataSet();
+}
+function renderDataSet() {
+  if(dataSetIdx>=dataSets.length){ finishMission4(); return; }
+  const ds=dataSets[dataSetIdx];
+  document.getElementById('chartTitle').textContent=ds.title;
+  const maxVal=Math.max(...ds.bars.map(b=>b.value));
+  const chart=document.getElementById('barChart');
+  chart.innerHTML='';
+  ds.bars.forEach(bar=>{
+    const item=document.createElement('div');
+    item.className='bar-item';
+    const fill=document.createElement('div');
+    fill.className='bar-fill';
+    fill.style.height='0px';
+    fill.style.background=bar.color;
+    const val=document.createElement('div');
+    val.className='bar-value';
+    val.textContent=bar.value;
+    const label=document.createElement('div');
+    label.className='bar-label';
+    label.textContent=bar.label;
+    item.appendChild(val);
+    item.appendChild(fill);
+    item.appendChild(label);
+    chart.appendChild(item);
+    setTimeout(()=>{ fill.style.height=(bar.value/maxVal*100)+'px'; },100);
+  });
+  dataAnswered=0;
+  const qEl=document.getElementById('dataQuestions');
+  qEl.innerHTML='';
+  ds.questions.forEach((q,qi)=>{
+    const div=document.createElement('div');
+    div.className='data-q'; div.id='dq'+qi;
+    div.innerHTML=`<div class="data-q-text">Q${qi+1}. ${q.q}</div><div class="data-options" id="do${qi}"></div><div class="feedback-box" id="df${qi}"></div>`;
+    qEl.appendChild(div);
+    q.opts.forEach((opt,oi)=>{
+      const btn=document.createElement('button');
+      btn.className='data-opt'; btn.textContent=opt;
+      btn.onclick=()=>selectDataOpt(qi,oi,q.ans,q.exp,btn);
+      document.getElementById('do'+qi) && document.getElementById('do'+qi).appendChild(btn);
+    });
+  });
+  document.getElementById('dataNextWrap').style.display='none';
+}
+function selectDataOpt(qi, oi, ans, exp, btn) {
+  const optBtns=document.querySelectorAll('#do'+qi+' .data-opt');
+  optBtns.forEach(b=>b.disabled=true);
+  optBtns[ans].classList.add('correct');
+  const fb=document.getElementById('df'+qi);
+  if(oi===ans){
+    btn.classList.add('correct');
+    dataScore+=10; document.getElementById('m4Score').textContent=dataScore;
+    fb.className='feedback-box show correct-fb';
+    fb.innerHTML='✅ 정답! +10점  '+exp;
+    playSound('correct');
+  } else {
+    btn.classList.add('wrong');
+    fb.className='feedback-box show wrong-fb';
+    fb.innerHTML='❌ 틀렸어요! '+exp;
+    playSound('wrong');
+  }
+  dataAnswered++;
+  if(dataAnswered>=dataSets[dataSetIdx].questions.length){
+    document.getElementById('dataNextWrap').style.display='block';
+  }
+}
+function nextDataSet() {
+  dataSetIdx++;
+  renderDataSet();
+}
+function finishMission4() {
+  state.scores[3]=dataScore;
+  const stars=calcStars(dataScore,60);
+  state.stars[3]=stars;
+  state.missionDone[3]=true;
+  updateMissionStars(4,stars);
+  playSound('clear');
+  showResult();
+}
+
+// ============================================================
+// ===== 결과 화면 =====
+// ============================================================
+function showResult() {
+  const total=state.scores.reduce((a,b)=>a+b,0);
+  const totalStars=state.stars.reduce((a,b)=>a+b,0);
+
+  let title='견습 탐정', badge='🔍';
+  if(totalStars>=10){ title='전설의 환경 탐정단장'; badge='🏆'; }
+  else if(totalStars>=7){ title='환경 탐정 박사'; badge='🌟'; }
+  else if(totalStars>=5){ title='환경 탐정'; badge='🏅'; }
+  else if(totalStars>=3){ title='환경 탐정 견습생'; badge='🌿'; }
+
+  document.getElementById('detectiveName').textContent='칭호: '+title;
+  document.querySelector('.badge-emoji').textContent=badge;
+
+  const names=['🗺️ 지도 미션','🧩 환경 퀴즈','⚗️ 실험 순서','🔢 데이터 퍼즐'];
+  const rsEl=document.getElementById('resultScores');
+  rsEl.innerHTML='';
+  state.scores.forEach((sc,i)=>{
+    const div=document.createElement('div');
+    div.className='result-score-item';
+    div.innerHTML=`<div class="rs-icon">${['🗺️','🧩','⚗️','🔢'][i]}</div><div class="rs-name">${['지도 미션','환경 퀴즈','실험 순서','데이터 퍼즐'][i]}</div><div style="font-size:1.1rem;font-weight:800;color:var(--sun-yellow)">${sc}점</div><div class="rs-stars">${'★'.repeat(state.stars[i])}${'☆'.repeat(3-state.stars[i])}</div>`;
+    rsEl.appendChild(div);
+  });
+
+  document.getElementById('totalScoreNum').textContent=total;
+
+  const msgs=[
+    '처음엔 어려웠겠지만 도전한 것 자체가 대단해요! 다시 한번 해볼까요? 💪',
+    '잘 했어요! 환경에 대해 조금 더 알아가고 있어요. 복습해보세요! 🌿',
+    '훌륭해요! 환경 탐정의 기본 자질을 갖추었어요! 🌲',
+    '우와! 정말 뛰어난 환경 탐정이에요! 지구를 지킬 수 있겠어요! 🌍',
+    '완벽한 수행! 진정한 환경 탐정단장이에요! 🏆'
+  ];
+  const msgIdx=Math.min(Math.floor(totalStars/3), 4);
+  document.getElementById('resultMsg').innerHTML='<strong style="color:var(--forest-mid)">💬 탐정단 평가:</strong><br>'+msgs[msgIdx];
+
+  showScreen('screen-result');
+}
+
+function resetGame() {
+  state.missionDone=[false,false,false,false];
+  state.scores=[0,0,0,0];
+  state.stars=[0,0,0,0];
+  // 미션 목록 초기화
+  ['m2','m3','m4'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el){
+      el.className='mission-item locked';
+      el.onclick=null;
+      const starsEl=el.querySelector('.mission-stars');
+      if(starsEl) starsEl.remove();
+      if(!el.querySelector('.lock-icon')){
+        const lock=document.createElement('div');
+        lock.className='lock-icon'; lock.textContent='🔒';
+        el.appendChild(lock);
+      }
+    }
+  });
+  document.getElementById('m1').className='mission-item';
+  document.getElementById('m1').onclick=()=>startMission(1);
+  document.getElementById('m1stars').textContent='☆☆☆';
+  showScreen('screen-intro');
+}
+
+// ===== 초기화 =====
+initBg();
+</script>
+</body>
+</html>
