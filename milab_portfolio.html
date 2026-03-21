@@ -3,350 +3,606 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>MILAB 포트폴리오</title>
-<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+<title>미랩(MILAB) 교육 포트폴리오</title>
 <style>
+@import url('https://fonts.googleapis.com/css2?family=Jua&family=Nanum+Gothic:wght@400;700;800&display=swap');
+
 :root {
-  --green-dark: #0D3B2E;
-  --green-mid: #1a5c44;
-  --green-bright: #2ECC8A;
-  --green-light: #E8F7F0;
-  --text-primary: #111;
-  --text-secondary: #555;
-  --text-muted: #999;
-  --border: #E5E5E5;
-  --bg: #FAFAFA;
-  --white: #fff;
-  --radius: 16px;
+  --primary: #2d5a3d;
+  --primary-light: #4a8c5c;
+  --accent: #6db87a;
+  --accent-bright: #8fce6e;
+  --yellow: #f0c040;
+  --dark: #1a3a2a;
+  --white: #f8fdf5;
+  --gray: #f4f7f4;
+  --text: #1e2e1e;
+  --text-muted: #6b8c6b;
+  --card-shadow: 0 4px 24px rgba(26,58,42,0.10);
+  --radius: 20px;
 }
+
 * { box-sizing: border-box; margin: 0; padding: 0; }
-html { scroll-behavior: smooth; }
-body { font-family: 'Noto Sans KR', sans-serif; background: var(--bg); color: var(--text-primary); line-height: 1.6; }
 
-header {
-  background: var(--green-dark); color: white;
-  padding: 0 40px; position: sticky; top: 0; z-index: 100;
-  display: flex; align-items: center; justify-content: space-between; height: 60px;
-  border-bottom: 2px solid var(--green-bright);
+body {
+  font-family: 'Nanum Gothic', sans-serif;
+  background: var(--white);
+  color: var(--text);
+  min-height: 100vh;
 }
-.logo { font-size: 18px; font-weight: 900; letter-spacing: -0.5px; }
-.logo span { color: var(--green-bright); }
-nav a { color: rgba(255,255,255,0.7); text-decoration: none; font-size: 14px; font-weight: 500; margin-left: 24px; transition: color 0.2s; }
-nav a:hover { color: white; }
 
+/* ===== 네비게이션 ===== */
+nav {
+  position: sticky; top: 0; z-index: 100;
+  background: rgba(248,253,245,0.95);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(111,184,122,0.2);
+  padding: 0 24px;
+  display: flex; align-items: center; justify-content: space-between;
+  height: 60px;
+}
+.nav-logo {
+  font-family: 'Jua', sans-serif;
+  font-size: 1.4rem; color: var(--primary);
+  letter-spacing: -0.5px;
+}
+.nav-logo span { color: var(--accent); }
+.nav-links { display: flex; gap: 24px; }
+.nav-links a {
+  font-size: 0.9rem; font-weight: 700;
+  color: var(--text-muted); text-decoration: none;
+  transition: color 0.2s;
+}
+.nav-links a:hover { color: var(--primary); }
+
+/* ===== 히어로 ===== */
 .hero {
-  background: var(--green-dark); color: white;
-  padding: 72px 40px 64px; position: relative; overflow: hidden;
+  background: linear-gradient(135deg, var(--dark) 0%, var(--primary) 50%, #3a7a52 100%);
+  padding: 80px 24px 60px;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
 }
 .hero::before {
-  content: ''; position: absolute; top: -80px; right: -80px;
-  width: 360px; height: 360px; border-radius: 50%;
-  background: radial-gradient(circle, rgba(46,204,138,0.12) 0%, transparent 70%);
+  content: '';
+  position: absolute; inset: 0;
+  background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%236db87a' fill-opacity='0.06'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
 }
 .hero-badge {
   display: inline-flex; align-items: center; gap: 6px;
-  background: rgba(46,204,138,0.15); border: 1px solid rgba(46,204,138,0.4);
-  border-radius: 20px; padding: 5px 14px; font-size: 12px; font-weight: 500;
-  color: var(--green-bright); margin-bottom: 20px;
+  background: rgba(111,184,122,0.2);
+  border: 1px solid rgba(111,184,122,0.4);
+  color: var(--accent-bright);
+  font-size: 0.8rem; font-weight: 700;
+  padding: 6px 14px; border-radius: 20px;
+  margin-bottom: 20px;
 }
 .hero h1 {
-  font-size: 40px; font-weight: 900; line-height: 1.2;
-  margin-bottom: 14px; letter-spacing: -1px;
+  font-family: 'Jua', sans-serif;
+  font-size: clamp(2rem, 6vw, 3.2rem);
+  color: var(--white);
+  line-height: 1.2; margin-bottom: 12px;
 }
-.hero h1 em { color: var(--green-bright); font-style: normal; }
-.hero p { font-size: 15px; color: rgba(255,255,255,0.6); line-height: 1.8; max-width: 500px; }
+.hero h1 em { color: var(--yellow); font-style: normal; }
+.hero p {
+  color: rgba(255,255,255,0.75);
+  font-size: 1rem; line-height: 1.7;
+  max-width: 520px; margin: 0 auto 32px;
+}
+.hero-tags {
+  display: flex; flex-wrap: wrap; justify-content: center; gap: 8px;
+  max-width: 520px; margin: 0 auto;
+}
+.hero-tag {
+  background: rgba(255,255,255,0.1);
+  border: 1px solid rgba(255,255,255,0.2);
+  color: rgba(255,255,255,0.85);
+  font-size: 0.8rem; font-weight: 700;
+  padding: 5px 12px; border-radius: 12px;
+}
 
+/* ===== 통계 ===== */
 .stats-bar {
-  background: white; border-bottom: 1px solid var(--border);
-  padding: 0 40px; display: flex;
+  background: var(--white);
+  border-bottom: 1px solid rgba(111,184,122,0.15);
+  padding: 24px;
+  display: flex; justify-content: center; gap: 0;
+  flex-wrap: wrap;
 }
 .stat-item {
-  padding: 22px 40px 22px 0; margin-right: 40px;
-  border-right: 1px solid var(--border);
+  text-align: center; padding: 8px 32px;
+  border-right: 1px solid rgba(111,184,122,0.2);
 }
 .stat-item:last-child { border-right: none; }
-.stat-num { font-size: 24px; font-weight: 900; color: var(--green-dark); }
-.stat-lbl { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+.stat-num {
+  font-family: 'Jua', sans-serif;
+  font-size: 2rem; color: var(--primary);
+  line-height: 1;
+}
+.stat-label { font-size: 0.78rem; color: var(--text-muted); margin-top: 4px; font-weight: 700; }
 
-.filter-wrap {
-  background: white; border-bottom: 1px solid var(--border);
-  padding: 0 40px; display: flex; align-items: center;
-  position: sticky; top: 60px; z-index: 90;
-}
-.tab-btn {
-  padding: 16px 20px; font-size: 14px; font-weight: 500;
-  color: var(--text-muted); background: none; border: none;
-  border-bottom: 2.5px solid transparent; cursor: pointer;
-  font-family: inherit; transition: all 0.2s; white-space: nowrap;
-}
-.tab-btn:hover { color: var(--text-primary); }
-.tab-btn.active { color: var(--green-dark); border-bottom-color: var(--green-bright); font-weight: 700; }
+/* ===== 메인 콘텐츠 ===== */
+.container { max-width: 960px; margin: 0 auto; padding: 0 20px; }
 
-.main { padding: 36px 40px; max-width: 1200px; margin: 0 auto; }
-.section-label {
-  font-size: 11px; font-weight: 700; color: var(--text-muted);
-  letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 20px;
+/* ===== 필터 ===== */
+.filter-section {
+  padding: 32px 0 20px;
+  display: flex; align-items: center; justify-content: space-between;
+  flex-wrap: wrap; gap: 12px;
 }
-.app-grid {
-  display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: 20px; margin-bottom: 48px;
+.filter-title {
+  font-family: 'Jua', sans-serif;
+  font-size: 1.4rem; color: var(--text);
+}
+.filter-title span { color: var(--primary); }
+.filter-tabs { display: flex; gap: 6px; flex-wrap: wrap; }
+.filter-tab {
+  padding: 7px 16px; border-radius: 20px;
+  border: 2px solid #dde8d8; background: white;
+  font-size: 0.85rem; font-weight: 700;
+  color: var(--text-muted); cursor: pointer;
+  transition: all 0.2s;
+}
+.filter-tab:hover { border-color: var(--accent); color: var(--primary); }
+.filter-tab.active {
+  background: var(--primary); border-color: var(--primary);
+  color: white;
 }
 
+/* ===== 카드 그리드 ===== */
+.card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 20px; padding-bottom: 60px;
+}
+
+/* ===== 앱 카드 ===== */
 .app-card {
-  background: white; border-radius: var(--radius);
-  border: 1.5px solid var(--border); overflow: hidden;
-  transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
-  animation: fadeUp 0.35s ease both;
+  background: white;
+  border-radius: var(--radius);
+  border: 2px solid rgba(111,184,122,0.2);
+  overflow: hidden;
+  box-shadow: var(--card-shadow);
+  transition: all 0.3s;
+  display: flex; flex-direction: column;
 }
-.app-card:hover { transform: translateY(-4px); box-shadow: 0 8px 40px rgba(0,0,0,0.12); border-color: var(--green-bright); }
-.app-card:nth-child(2) { animation-delay: 0.05s; }
-.app-card:nth-child(3) { animation-delay: 0.10s; }
-.app-card:nth-child(4) { animation-delay: 0.15s; }
+.app-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 16px 40px rgba(26,58,42,0.15);
+  border-color: var(--accent);
+}
+.app-card.coming-soon {
+  opacity: 0.65;
+}
+.app-card.coming-soon:hover { transform: none; }
 
 .card-thumb {
-  height: 148px; display: flex; align-items: center;
-  justify-content: center; font-size: 56px; position: relative;
+  height: 120px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 3.5rem;
+  position: relative;
 }
-.card-status {
-  position: absolute; top: 12px; right: 12px;
-  font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 20px;
-}
-.status-live { background: #D4F5D4; color: #1A5C1A; }
-.status-soon { background: #F0F0F0; color: #888; }
+.card-thumb.theme-spring { background: linear-gradient(135deg, #fff0f5, #ffe0ec); }
+.card-thumb.theme-forest { background: linear-gradient(135deg, #e8f5e8, #c8ecd0); }
+.card-thumb.theme-env    { background: linear-gradient(135deg, #e0f0e8, #b8e0c8); }
+.card-thumb.theme-ai     { background: linear-gradient(135deg, #e8eef8, #d0dcf0); }
+.card-thumb.theme-code   { background: linear-gradient(135deg, #f0e8f8, #e0d0f0); }
+.card-thumb.theme-info   { background: linear-gradient(135deg, #f5f5e8, #eeecd0); }
 
-.card-body { padding: 18px 20px 20px; }
-.card-meta { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
-.card-grade {
-  font-size: 11px; font-weight: 700; padding: 3px 8px; border-radius: 6px;
-  background: var(--green-light); color: var(--green-mid);
-}
-.card-num { font-size: 11px; color: var(--text-muted); font-weight: 500; }
-.card-title { font-size: 17px; font-weight: 700; margin-bottom: 6px; }
-.card-desc { font-size: 13px; color: var(--text-secondary); line-height: 1.65; margin-bottom: 16px; }
-.card-footer {
-  display: flex; justify-content: space-between; align-items: center;
-  padding-top: 14px; border-top: 1px solid var(--border);
-}
-.card-date { font-size: 12px; color: var(--text-muted); }
-.card-link {
-  display: inline-flex; align-items: center; gap: 4px;
-  font-size: 13px; font-weight: 700; color: var(--green-mid);
-  text-decoration: none; padding: 6px 14px;
-  border: 1.5px solid var(--green-bright); border-radius: 20px; transition: all 0.15s;
-}
-.card-link:hover { background: var(--green-bright); color: white; }
-.card-link-soon { font-size: 13px; color: var(--text-muted); }
-
-.empty-state {
-  grid-column: 1/-1; text-align: center; padding: 60px 20px;
-  color: var(--text-muted); font-size: 15px; display: none;
+.card-number {
+  position: absolute; top: 10px; left: 12px;
+  font-size: 0.72rem; font-weight: 800;
+  color: rgba(0,0,0,0.3);
+  font-family: 'Jua', sans-serif;
 }
 
-.cta-footer {
-  background: var(--green-dark); color: white;
-  padding: 56px 40px; text-align: center;
+.status-dot {
+  position: absolute; top: 10px; right: 12px;
+  display: flex; align-items: center; gap: 4px;
+  font-size: 0.72rem; font-weight: 800;
+  padding: 3px 8px; border-radius: 10px;
 }
-.cta-footer h2 { font-size: 24px; font-weight: 900; margin-bottom: 8px; }
-.cta-footer p { font-size: 14px; color: rgba(255,255,255,0.55); margin-bottom: 28px; }
-.cta-chips { display: flex; justify-content: center; gap: 10px; flex-wrap: wrap; }
-.cta-chip {
-  background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.18);
-  border-radius: 24px; padding: 10px 20px; font-size: 13px; color: rgba(255,255,255,0.8);
+.status-dot.live {
+  background: #e8f8e8; color: #2a8a2a;
+}
+.status-dot.coming {
+  background: #f0f0f0; color: #888;
+}
+.status-dot.live::before {
+  content: ''; width: 6px; height: 6px;
+  background: #4a9a4a; border-radius: 50%;
+  animation: pulse 1.5s infinite;
+}
+@keyframes pulse {
+  0%,100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.5; transform: scale(1.3); }
+}
+
+.card-body { padding: 18px 20px; flex: 1; display: flex; flex-direction: column; }
+
+.card-meta {
+  display: flex; align-items: center; gap: 8px;
+  margin-bottom: 8px;
+}
+.grade-badge {
+  font-size: 0.72rem; font-weight: 800;
+  padding: 2px 8px; border-radius: 8px;
+  background: var(--gray); color: var(--primary);
+}
+.date-text { font-size: 0.72rem; color: var(--text-muted); }
+
+.card-title {
+  font-family: 'Jua', sans-serif;
+  font-size: 1.05rem; color: var(--text);
+  margin-bottom: 6px; line-height: 1.3;
+}
+.card-desc {
+  font-size: 0.82rem; color: var(--text-muted);
+  line-height: 1.6; flex: 1;
+}
+
+.card-tags { display: flex; gap: 6px; flex-wrap: wrap; margin: 12px 0 14px; }
+.card-tag {
+  font-size: 0.72rem; font-weight: 700;
+  padding: 3px 8px; border-radius: 8px;
+  background: #eef7ee; color: var(--primary-light);
+}
+
+.card-footer { padding: 0 20px 18px; }
+.btn-play {
+  display: block; width: 100%;
+  padding: 11px;
+  background: linear-gradient(135deg, var(--primary-light), var(--accent));
+  color: white; border: none; border-radius: 12px;
+  font-family: 'Jua', sans-serif; font-size: 0.95rem;
+  cursor: pointer; text-decoration: none; text-align: center;
+  transition: all 0.2s;
+  box-shadow: 0 4px 12px rgba(74,140,92,0.3);
+}
+.btn-play:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(74,140,92,0.4); }
+.btn-coming {
+  display: block; width: 100%;
+  padding: 11px;
+  background: #f0f0f0; color: #aaa;
+  border: none; border-radius: 12px;
+  font-family: 'Jua', sans-serif; font-size: 0.95rem;
+  cursor: not-allowed; text-align: center;
+}
+
+/* ===== NEW 배지 ===== */
+.new-badge {
+  position: absolute; top: -2px; right: -2px;
+  background: var(--yellow);
+  color: var(--dark); font-size: 0.65rem; font-weight: 800;
+  padding: 2px 7px; border-radius: 0 var(--radius) 0 8px;
+  font-family: 'Jua', sans-serif;
+}
+
+/* ===== 문의 섹션 ===== */
+.contact-section {
+  background: linear-gradient(135deg, var(--dark), var(--primary));
+  padding: 60px 24px;
   text-align: center;
 }
-.cta-chip strong { color: var(--green-bright); display: block; font-size: 11px; margin-bottom: 2px; font-weight: 700; }
+.contact-section h2 {
+  font-family: 'Jua', sans-serif;
+  font-size: 1.6rem; color: var(--white); margin-bottom: 10px;
+}
+.contact-section p { color: rgba(255,255,255,0.7); margin-bottom: 32px; font-size: 0.95rem; }
+.contact-grid {
+  display: flex; flex-wrap: wrap; justify-content: center; gap: 16px;
+  max-width: 600px; margin: 0 auto;
+}
+.contact-item {
+  background: rgba(255,255,255,0.1);
+  border: 1px solid rgba(255,255,255,0.2);
+  border-radius: 14px; padding: 16px 24px;
+  color: white; min-width: 140px;
+}
+.contact-item .ci-label { font-size: 0.75rem; color: var(--accent-bright); font-weight: 800; margin-bottom: 4px; }
+.contact-item .ci-value { font-size: 0.9rem; font-weight: 700; }
 
-@keyframes fadeUp {
-  from { opacity: 0; transform: translateY(14px); }
-  to   { opacity: 1; transform: translateY(0); }
+/* ===== 푸터 ===== */
+footer {
+  background: var(--dark);
+  padding: 20px 24px;
+  text-align: center;
+  color: rgba(255,255,255,0.4);
+  font-size: 0.8rem;
 }
 
-@media (max-width: 680px) {
-  header { padding: 0 20px; }
-  nav { display: none; }
-  .hero { padding: 48px 20px; }
-  .hero h1 { font-size: 28px; }
-  .stats-bar { padding: 0 20px; overflow-x: auto; }
-  .stat-item { padding: 16px 24px 16px 0; margin-right: 24px; white-space: nowrap; }
-  .filter-wrap { padding: 0 16px; overflow-x: auto; }
-  .main { padding: 24px 16px; }
-  .app-grid { grid-template-columns: 1fr; }
-  .cta-footer { padding: 40px 20px; }
+/* ===== 반응형 ===== */
+@media (max-width: 600px) {
+  .stats-bar { gap: 0; }
+  .stat-item { padding: 8px 16px; border-right: none; border-bottom: 1px solid rgba(111,184,122,0.15); }
+  .stat-item:last-child { border-bottom: none; }
+  .filter-section { flex-direction: column; align-items: flex-start; }
+  .hero { padding: 60px 20px 40px; }
 }
 </style>
 </head>
 <body>
 
-<header>
-  <div class="logo">MI<span>LAB</span></div>
-  <nav>
+<!-- 네비게이션 -->
+<nav>
+  <div class="nav-logo">MI<span>LAB</span></div>
+  <div class="nav-links">
     <a href="#portfolio">포트폴리오</a>
     <a href="#contact">문의</a>
-  </nav>
-</header>
+  </div>
+</nav>
 
+<!-- 히어로 -->
 <section class="hero">
-  <div style="position:relative;z-index:1;">
-    <div class="hero-badge">📍 충청북도 충주시 · 교육부 인증 진로체험기관</div>
-    <h1>미랩(MILAB)<br><em>교육 포트폴리오</em></h1>
-    <p>초·중·고 대상 4차 산업 진로체험 교육 웹앱 모음입니다.<br>IoT · 드론 · 로봇 · 3D프린팅 · VR · 메타버스 · AI코딩</p>
+  <div class="hero-badge">📍 충청북도 충주시 · 교육부 인증 진로체험기관</div>
+  <h1>미랩(MILAB)<br><em>교육 포트폴리오</em></h1>
+  <p>초·중·고 대상 4차 산업 진로체험 교육 웹앱 모음입니다.</p>
+  <div class="hero-tags">
+    <span class="hero-tag">IoT</span>
+    <span class="hero-tag">드론</span>
+    <span class="hero-tag">로봇</span>
+    <span class="hero-tag">3D프린팅</span>
+    <span class="hero-tag">VR</span>
+    <span class="hero-tag">메타버스</span>
+    <span class="hero-tag">AI코딩</span>
   </div>
 </section>
 
+<!-- 통계 -->
 <div class="stats-bar">
-  <div class="stat-item"><div class="stat-num" id="stat-total">1</div><div class="stat-lbl">개발 완료</div></div>
-  <div class="stat-item"><div class="stat-num">초·중·고</div><div class="stat-lbl">대상 학년</div></div>
-  <div class="stat-item"><div class="stat-num">2025</div><div class="stat-lbl">시작 연도</div></div>
-  <div class="stat-item"><div class="stat-num" id="stat-days">1</div><div class="stat-lbl">누적 개발일</div></div>
+  <div class="stat-item">
+    <div class="stat-num">3</div>
+    <div class="stat-label">개발 완료</div>
+  </div>
+  <div class="stat-item">
+    <div class="stat-num">초·중·고</div>
+    <div class="stat-label">대상 학년</div>
+  </div>
+  <div class="stat-item">
+    <div class="stat-num">2025</div>
+    <div class="stat-label">시작 연도</div>
+  </div>
+  <div class="stat-item">
+    <div class="stat-num">4가지</div>
+    <div class="stat-label">교과 연계</div>
+  </div>
 </div>
 
-<div class="filter-wrap" id="portfolio">
-  <button class="tab-btn active" onclick="filter('all',this)">전체</button>
-  <button class="tab-btn" onclick="filter('초등',this)">초등</button>
-  <button class="tab-btn" onclick="filter('중등',this)">중등</button>
-  <button class="tab-btn" onclick="filter('고등',this)">고등</button>
-  <button class="tab-btn" onclick="filter('일반',this)">일반</button>
-</div>
+<!-- 포트폴리오 -->
+<div class="container" id="portfolio">
+  <div class="filter-section">
+    <div class="filter-title">전체 <span>웹앱</span> 목록</div>
+    <div class="filter-tabs">
+      <button class="filter-tab active" onclick="filterCards('all', this)">전체</button>
+      <button class="filter-tab" onclick="filterCards('초등', this)">초등</button>
+      <button class="filter-tab" onclick="filterCards('중등', this)">중등</button>
+      <button class="filter-tab" onclick="filterCards('고등', this)">고등</button>
+      <button class="filter-tab" onclick="filterCards('일반', this)">일반</button>
+    </div>
+  </div>
 
-<div class="main">
-  <div class="section-label" id="grid-label">전체 · <span id="grid-count">4</span>개</div>
-  <div class="app-grid" id="app-grid">
+  <div class="card-grid" id="cardGrid">
 
-    <!-- #001 -->
+    <!-- #001 계절 친구들 -->
     <div class="app-card" data-grade="초등">
-      <div class="card-thumb" style="background:linear-gradient(135deg,#87CEEB,#A8E090);">
+      <div class="card-thumb theme-spring">
         🌸
-        <span class="card-status status-live">운영 중</span>
+        <div class="card-number">#001</div>
+        <div class="status-dot live">운영 중</div>
       </div>
       <div class="card-body">
         <div class="card-meta">
-          <span class="card-grade">초등</span>
-          <span class="card-num">#001</span>
+          <span class="grade-badge">초등 1~2학년</span>
+          <span class="date-text">2025.03 개발</span>
         </div>
         <div class="card-title">계절 친구들 게임</div>
-        <div class="card-desc">초등 1~2학년 통합교과 사계절 체험 웹앱. 봄·여름 퀴즈, 가을 짝찾기, 겨울 분류 게임 4종. 태블릿 터치 최적화.</div>
-        <div class="card-footer">
-          <span class="card-date">2025.03 개발</span>
-          <a class="card-link" href="https://milab2019.github.io/main/seasonfr.html" target="_blank">체험하기 →</a>
+        <div class="card-desc">통합교과 사계절 체험 웹앱. 봄·여름 퀴즈, 가을 짝찾기, 겨울 분류 게임 4종. 태블릿 터치 최적화.</div>
+        <div class="card-tags">
+          <span class="card-tag">통합교과</span>
+          <span class="card-tag">사계절</span>
+          <span class="card-tag">퀴즈</span>
+          <span class="card-tag">분류게임</span>
         </div>
+      </div>
+      <div class="card-footer">
+        <a href="https://milab2019.github.io/main/seasonfr.html" class="btn-play" target="_blank">🌸 체험하기 →</a>
       </div>
     </div>
 
-    <!-- #002 숲 속 탐험대 -->
+    <!-- #002 숲속 탐험대 -->
     <div class="app-card" data-grade="초등">
-      <div class="card-thumb" style="background:linear-gradient(135deg,#0d2b0d,#5aaa5a);">
+      <div class="card-thumb theme-forest">
         🌲
-        <span class="card-status status-live">운영 중</span>
+        <div class="card-number">#002</div>
+        <div class="status-dot live">운영 중</div>
       </div>
       <div class="card-body">
         <div class="card-meta">
-          <span class="card-grade">초등</span>
-          <span class="card-num">#002</span>
+          <span class="grade-badge">초등 3~4학년</span>
+          <span class="date-text">2025.03 개발</span>
         </div>
         <div class="card-title">숲 속 탐험대 게임</div>
-        <div class="card-desc">초등 3~4학년 과학·수학·사회 교과 연계. 퀴즈(랜덤 10문제)·기억력·생물분류 게임 3종. 배경음악 포함.</div>
-        <div class="card-footer">
-          <span class="card-date">2025.03 개발</span>
-          <a class="card-link" href="https://milab2019.github.io/main/forest_game.html" target="_blank">체험하기 →</a>
+        <div class="card-desc">과학·수학·사회 교과 연계. 퀴즈(랜덤 10문제)·기억력·생물분류 게임 3종. 배경음악 포함.</div>
+        <div class="card-tags">
+          <span class="card-tag">과학</span>
+          <span class="card-tag">수학</span>
+          <span class="card-tag">사회</span>
+          <span class="card-tag">기억력게임</span>
         </div>
+      </div>
+      <div class="card-footer">
+        <a href="https://milab2019.github.io/main/forest_game.html" class="btn-play" target="_blank">🌲 체험하기 →</a>
       </div>
     </div>
 
-    <!-- #003 예정 -->
-    <div class="app-card" data-grade="중등">
-      <div class="card-thumb" style="background:linear-gradient(135deg,#E8E0FF,#C8B8FF);">
-        🤖
-        <span class="card-status status-soon">준비 중</span>
+    <!-- #003 환경 탐정단 ★NEW★ -->
+    <div class="app-card" data-grade="초등" style="position:relative;">
+      <div class="new-badge">✨ NEW</div>
+      <div class="card-thumb theme-env">
+        🌍
+        <div class="card-number">#003</div>
+        <div class="status-dot live">운영 중</div>
       </div>
       <div class="card-body">
         <div class="card-meta">
-          <span class="card-grade" style="background:#F0EEFF;color:#5533BB;">중등</span>
-          <span class="card-num">#003</span>
+          <span class="grade-badge">초등 5~6학년</span>
+          <span class="date-text">2025.03 개발</span>
+        </div>
+        <div class="card-title">환경 탐정단 게임</div>
+        <div class="card-desc">과학·사회·수학 교과 연계. 오염지역 찾기·환경퀴즈·실험순서·데이터분석 미션 4종. 스토리 기반 순차 잠금 해제.</div>
+        <div class="card-tags">
+          <span class="card-tag">과학</span>
+          <span class="card-tag">사회</span>
+          <span class="card-tag">수학</span>
+          <span class="card-tag">스토리미션</span>
+          <span class="card-tag">생태계</span>
+        </div>
+      </div>
+      <div class="card-footer">
+        <a href="https://milab2019.github.io/main/env_detective.html" class="btn-play" target="_blank">🌿 체험하기 →</a>
+      </div>
+    </div>
+
+    <!-- #004 AI 직업 탐험대 -->
+    <div class="app-card coming-soon" data-grade="중등">
+      <div class="card-thumb theme-ai">
+        🤖
+        <div class="card-number">#004</div>
+        <div class="status-dot coming">준비 중</div>
+      </div>
+      <div class="card-body">
+        <div class="card-meta">
+          <span class="grade-badge">중등</span>
+          <span class="date-text">개발 예정</span>
         </div>
         <div class="card-title">AI 직업 탐험대</div>
         <div class="card-desc">AI와 함께 미래 직업을 탐험하는 인터랙티브 진로체험 웹앱. 중학생 대상.</div>
-        <div class="card-footer">
-          <span class="card-date">개발 예정</span>
-          <span class="card-link-soon">준비 중</span>
+        <div class="card-tags">
+          <span class="card-tag">AI</span>
+          <span class="card-tag">미래직업</span>
+          <span class="card-tag">진로탐색</span>
         </div>
+      </div>
+      <div class="card-footer">
+        <button class="btn-coming">🔒 준비 중</button>
       </div>
     </div>
 
-    <!-- #003 예정 -->
-    <div class="app-card" data-grade="고등">
-      <div class="card-thumb" style="background:linear-gradient(135deg,#FFE8CC,#FFD0A0);">
+    <!-- #005 AI 코딩 퀘스트 -->
+    <div class="app-card coming-soon" data-grade="고등">
+      <div class="card-thumb theme-code">
         🧠
-        <span class="card-status status-soon">준비 중</span>
+        <div class="card-number">#005</div>
+        <div class="status-dot coming">준비 중</div>
       </div>
       <div class="card-body">
         <div class="card-meta">
-          <span class="card-grade" style="background:#FFF3E0;color:#CC6600;">고등</span>
-          <span class="card-num">#004</span>
+          <span class="grade-badge">고등</span>
+          <span class="date-text">개발 예정</span>
         </div>
         <div class="card-title">AI 코딩 퀘스트</div>
         <div class="card-desc">블록코딩부터 AI 원리까지, 단계별 코딩 학습 체험 웹앱. 고등학생 대상.</div>
-        <div class="card-footer">
-          <span class="card-date">개발 예정</span>
-          <span class="card-link-soon">준비 중</span>
+        <div class="card-tags">
+          <span class="card-tag">블록코딩</span>
+          <span class="card-tag">AI원리</span>
+          <span class="card-tag">단계별학습</span>
         </div>
+      </div>
+      <div class="card-footer">
+        <button class="btn-coming">🔒 준비 중</button>
       </div>
     </div>
 
-    <!-- #004 예정 -->
-    <div class="app-card" data-grade="일반">
-      <div class="card-thumb" style="background:linear-gradient(135deg,#E0F4FF,#B8DEFF);">
+    <!-- #006 미랩 진로체험 안내 -->
+    <div class="app-card coming-soon" data-grade="일반">
+      <div class="card-thumb theme-info">
         🏫
-        <span class="card-status status-soon">준비 중</span>
+        <div class="card-number">#006</div>
+        <div class="status-dot coming">준비 중</div>
       </div>
       <div class="card-body">
         <div class="card-meta">
-          <span class="card-grade" style="background:#E8F4FF;color:#0066CC;">일반</span>
-          <span class="card-num">#005</span>
+          <span class="grade-badge">일반</span>
+          <span class="date-text">개발 예정</span>
         </div>
         <div class="card-title">미랩 진로체험 안내</div>
         <div class="card-desc">미랩 교육 프로그램 전체 안내 및 신청 웹앱. 학교·기관 담당자용.</div>
-        <div class="card-footer">
-          <span class="card-date">개발 예정</span>
-          <span class="card-link-soon">준비 중</span>
+        <div class="card-tags">
+          <span class="card-tag">기관안내</span>
+          <span class="card-tag">프로그램신청</span>
         </div>
+      </div>
+      <div class="card-footer">
+        <button class="btn-coming">🔒 준비 중</button>
       </div>
     </div>
 
-    <div class="empty-state" id="empty">해당 학년 앱이 준비 중이에요 🚀</div>
   </div>
 </div>
 
-<footer class="cta-footer" id="contact">
+<!-- 문의 -->
+<section class="contact-section" id="contact">
   <h2>교육 프로그램 도입 문의</h2>
   <p>학교·기관 맞춤형 4차 산업 진로체험 교육을 제안드립니다</p>
-  <div class="cta-chips">
-    <div class="cta-chip"><strong>📍 위치</strong>충청북도 충주시</div>
-    <div class="cta-chip"><strong>🎓 대상</strong>초·중·고 전학년</div>
-    <div class="cta-chip"><strong>✅ 인증</strong>교육부 진로체험기관</div>
-    <div class="cta-chip"><strong>📱 방식</strong>태블릿·PC 웹앱 체험</div>
+  <div class="contact-grid">
+    <div class="contact-item">
+      <div class="ci-label">📍 위치</div>
+      <div class="ci-value">충청북도 충주시</div>
+    </div>
+    <div class="contact-item">
+      <div class="ci-label">🎓 대상</div>
+      <div class="ci-value">초·중·고 전학년</div>
+    </div>
+    <div class="contact-item">
+      <div class="ci-label">✅ 인증</div>
+      <div class="ci-value">교육부 진로체험기관</div>
+    </div>
+    <div class="contact-item">
+      <div class="ci-label">📱 방식</div>
+      <div class="ci-value">태블릿·PC 웹앱 체험</div>
+    </div>
   </div>
+</section>
+
+<!-- 푸터 -->
+<footer>
+  <p>© 2025 미랩(MILAB) · 충청북도 충주시 · 교육부 인증 진로체험기관</p>
 </footer>
 
 <script>
-function filter(grade, btn) {
-  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+// ===== 필터 기능 =====
+function filterCards(grade, btn) {
+  document.querySelectorAll('.filter-tab').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
-  const cards = document.querySelectorAll('.app-card');
-  let visible = 0;
-  cards.forEach(card => {
-    const match = grade === 'all' || card.dataset.grade === grade;
-    card.style.display = match ? '' : 'none';
-    if (match) visible++;
+  document.querySelectorAll('.app-card').forEach(card => {
+    if (grade === 'all' || card.dataset.grade === grade) {
+      card.style.display = 'flex';
+    } else {
+      card.style.display = 'none';
+    }
   });
-  const label = grade === 'all' ? '전체' : grade;
-  document.getElementById('grid-label').innerHTML = label + ' · <span id="grid-count">' + visible + '</span>개';
-  document.getElementById('empty').style.display = visible === 0 ? 'block' : 'none';
 }
 
-const days = Math.max(1, Math.floor((new Date() - new Date('2025-03-20')) / 86400000) + 1);
-document.getElementById('stat-days').textContent = days;
-document.getElementById('stat-total').textContent = document.querySelectorAll('.status-live').length;
-document.getElementById('grid-count').textContent = document.querySelectorAll('.app-card').length;
+// ===== 카드 등장 애니메이션 =====
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach((entry, i) => {
+    if (entry.isIntersecting) {
+      setTimeout(() => {
+        entry.target.style.opacity = '1';
+        entry.target.style.transform = 'translateY(0)';
+      }, i * 80);
+      observer.unobserve(entry.target);
+    }
+  });
+}, { threshold: 0.1 });
+
+document.querySelectorAll('.app-card').forEach(card => {
+  card.style.opacity = '0';
+  card.style.transform = 'translateY(20px)';
+  card.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+  observer.observe(card);
+});
 </script>
+
 </body>
 </html>
