@@ -1,0 +1,978 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🌍 기후 위기 대응단 - 미랩 교육 게임</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Jua&family=Nanum+Gothic:wght@400;700;800&display=swap');
+
+/* ===== 루트 변수 ===== */
+:root {
+  --sky-deep:#0a1628; --sky-mid:#0f2a4a; --sky-light:#1a4a7a;
+  --ocean:#1e6b8c; --teal:#2eb8b8; --green:#3dba6e;
+  --sun:#f5c842; --orange:#f07830; --red:#e84040;
+  --white:#f0f8ff; --muted:#8ab4d4; --card:#0d2038;
+  --card2:rgba(10,22,40,0.92); --border:rgba(46,184,184,0.22);
+  --shadow:0 8px 36px rgba(0,0,0,0.55); --rm:18px; --rs:12px;
+}
+
+* { box-sizing:border-box; margin:0; padding:0; }
+body { font-family:'Nanum Gothic',sans-serif; background:var(--sky-deep); color:var(--white); min-height:100vh; overflow-x:hidden; }
+
+/* ===== 배경 레이어 ===== */
+.bg-wrap { position:fixed; inset:0; z-index:0; overflow:hidden;
+  background:linear-gradient(180deg,#04111f 0%,#0a1e38 45%,#0d2840 100%); }
+.star { position:absolute; background:#fff; border-radius:50%;
+  animation:twinkle var(--d) ease-in-out infinite; }
+@keyframes twinkle { 0%,100%{opacity:0.1} 50%{opacity:var(--op)} }
+.cloud-svg { position:absolute; opacity:0.12; animation:cloudDrift linear infinite; }
+@keyframes cloudDrift { from{transform:translateX(-200px)} to{transform:translateX(110vw)} }
+.aurora { position:absolute; width:200%; height:60px; left:-50%;
+  border-radius:50%; filter:blur(30px); animation:auroraMove 8s ease-in-out infinite alternate; }
+@keyframes auroraMove { from{transform:translateX(0) scaleY(1)} to{transform:translateX(5%) scaleY(1.4)} }
+.rain-drop { position:absolute; width:2px; background:linear-gradient(#88ccff,transparent);
+  border-radius:2px; animation:rainFall linear infinite; opacity:0; }
+@keyframes rainFall { 0%{top:-10%;opacity:0.6} 100%{top:110%;opacity:0} }
+
+/* ===== 앱 ===== */
+#app { position:relative; z-index:10; max-width:820px; margin:0 auto; padding:13px; min-height:100vh; }
+.screen { display:none; animation:slideUp 0.4s cubic-bezier(0.22,1,0.36,1); }
+.screen.active { display:block; }
+@keyframes slideUp { from{opacity:0;transform:translateY(22px)} to{opacity:1;transform:translateY(0)} }
+
+/* ===== 공통 헤더 ===== */
+.g-hd { display:flex; align-items:center; justify-content:space-between;
+  background:rgba(10,22,40,0.9); border:1px solid var(--border);
+  border-radius:var(--rs); padding:11px 16px; margin-bottom:12px;
+  backdrop-filter:blur(12px); }
+.g-title { font-family:'Jua',sans-serif; font-size:0.98rem; color:var(--teal); }
+.g-sub { font-size:0.68rem; color:var(--muted); margin-top:1px; }
+.score-chip { background:linear-gradient(135deg,rgba(46,184,184,0.2),rgba(61,186,110,0.2));
+  border:1px solid var(--teal); color:var(--teal);
+  font-family:'Jua',sans-serif; padding:5px 13px; border-radius:18px; font-size:0.88rem; }
+
+/* ===== 진행바 ===== */
+.prog-wrap { margin-bottom:11px; }
+.prog-lbl { display:flex; justify-content:space-between; font-size:0.72rem; color:var(--teal); margin-bottom:3px; }
+.prog-track { height:6px; background:rgba(255,255,255,0.08); border-radius:6px; overflow:hidden; }
+.prog-fill { height:100%; background:linear-gradient(90deg,var(--teal),var(--green));
+  border-radius:6px; transition:width 0.6s cubic-bezier(0.22,1,0.36,1); box-shadow:0 0 6px var(--teal); }
+
+/* ===== 타이머 ===== */
+.timer-row { display:flex; align-items:center; gap:8px;
+  background:rgba(10,22,40,0.82); border:1px solid var(--border);
+  border-radius:var(--rs); padding:6px 12px; margin-bottom:11px; }
+.t-track { flex:1; height:8px; background:rgba(255,255,255,0.08); border-radius:6px; overflow:hidden; }
+.t-fill { height:100%; border-radius:6px; transition:width 1s linear; }
+.t-ok   { background:linear-gradient(90deg,var(--teal),var(--green)); box-shadow:0 0 6px var(--teal); }
+.t-warn { background:linear-gradient(90deg,var(--sun),var(--orange)); }
+.t-hot  { background:linear-gradient(90deg,var(--orange),var(--red)); animation:tBlink .5s infinite; }
+@keyframes tBlink { 0%,100%{opacity:1} 50%{opacity:.5} }
+.t-num { font-family:'Jua',sans-serif; font-size:1rem; min-width:26px; text-align:right; }
+
+/* ===== 카드 ===== */
+.card { background:var(--card); border:1px solid var(--border);
+  border-radius:var(--rm); padding:20px; box-shadow:var(--shadow); margin-bottom:12px; }
+.card-glass { background:rgba(13,32,56,0.78); border:1px solid rgba(46,184,184,0.15);
+  border-radius:var(--rm); padding:18px; backdrop-filter:blur(14px);
+  box-shadow:var(--shadow); margin-bottom:12px; }
+
+/* ===== 캐릭터 말풍선 ===== */
+.char-row { display:flex; align-items:flex-start; gap:11px; margin-bottom:12px; }
+.char-face { width:54px; height:54px; border-radius:50%; flex-shrink:0;
+  background:linear-gradient(135deg,rgba(46,184,184,0.18),rgba(61,186,110,0.18));
+  border:2px solid var(--teal); display:flex; align-items:center; justify-content:center;
+  font-size:1.8rem; box-shadow:0 0 16px rgba(46,184,184,0.3);
+  transition:all 0.35s cubic-bezier(0.34,1.56,0.64,1); }
+.cf-happy { transform:scale(1.12) rotate(-5deg); border-color:var(--green); box-shadow:0 0 22px rgba(61,186,110,0.5); }
+.cf-sad   { transform:scale(0.9) rotate(4deg); filter:grayscale(35%); }
+.cf-alert { transform:scale(1.08); border-color:var(--sun); box-shadow:0 0 22px rgba(245,200,66,0.5); }
+.bubble { background:rgba(13,32,56,0.92); border:1px solid rgba(46,184,184,0.22);
+  border-radius:15px 15px 15px 3px; padding:11px 14px; flex:1;
+  font-size:0.88rem; line-height:1.7; color:var(--white); }
+.bubble-nm { font-size:0.68rem; color:var(--teal); font-weight:800; margin-bottom:2px; }
+
+/* ===== 버튼 ===== */
+.btn { display:inline-block; padding:11px 22px; border:none; border-radius:50px; cursor:pointer;
+  font-family:'Jua',sans-serif; font-size:0.92rem; transition:all .2s; text-decoration:none; }
+.btn-teal { background:linear-gradient(135deg,#1a8a8a,var(--teal)); color:#fff;
+  box-shadow:0 4px 16px rgba(46,184,184,0.35); }
+.btn-teal:hover { transform:translateY(-2px); box-shadow:0 8px 24px rgba(46,184,184,0.45); }
+.btn-green { background:linear-gradient(135deg,#22884a,var(--green)); color:#fff; }
+.btn-ghost { background:rgba(255,255,255,0.06); border:1px solid var(--border); color:var(--muted); }
+.btn-ghost:hover { background:rgba(255,255,255,0.1); color:var(--white); }
+.btn-sm { padding:7px 15px; font-size:0.83rem; }
+.btn-block { width:100%; text-align:center; margin-top:8px; }
+
+/* ===== 힌트 ===== */
+.hint-btn { display:inline-flex; align-items:center; gap:4px;
+  background:rgba(245,200,66,0.1); border:1px solid rgba(245,200,66,0.32);
+  color:var(--sun); padding:4px 12px; border-radius:16px;
+  font-size:0.78rem; font-weight:800; cursor:pointer; margin-bottom:8px; transition:all .2s; }
+.hint-btn:hover { background:rgba(245,200,66,0.2); }
+.hint-box { background:rgba(245,200,66,0.07); border:1px solid rgba(245,200,66,0.28);
+  border-radius:var(--rs); padding:9px 12px; font-size:0.8rem; color:var(--sun);
+  margin-bottom:9px; display:none; line-height:1.6; }
+.hint-box.show { display:block; animation:slideUp .3s ease; }
+
+/* ===== 피드백 ===== */
+.fb { border-radius:var(--rs); padding:11px 13px; font-size:0.84rem;
+  line-height:1.7; margin-top:10px; display:none; }
+.fb.show { display:block; animation:slideUp .3s ease; }
+.fb-ok { background:rgba(61,186,110,0.08); border:1px solid rgba(61,186,110,0.32); color:#5dd88a; }
+.fb-no { background:rgba(232,64,64,0.08); border:1px solid rgba(232,64,64,0.28); color:#f07870; }
+
+/* ===== 난이도 탭 ===== */
+.diff-row { display:flex; gap:6px; margin-bottom:12px; flex-wrap:wrap; }
+.diff-tab { padding:5px 13px; border-radius:16px; border:1px solid;
+  font-size:0.78rem; font-weight:800; cursor:pointer; transition:all .2s; }
+.dt-e { border-color:var(--green); color:var(--green); background:transparent; }
+.dt-e.on { background:rgba(61,186,110,0.2); }
+.dt-m { border-color:var(--sun); color:var(--sun); background:transparent; }
+.dt-m.on { background:rgba(245,200,66,0.18); }
+.dt-h { border-color:var(--red); color:var(--red); background:transparent; }
+.dt-h.on { background:rgba(232,64,64,0.18); }
+
+/* ===== 인트로 ===== */
+#screen-intro { text-align:center; }
+.intro-hero { background:linear-gradient(135deg,rgba(10,22,40,0.92),rgba(13,32,56,0.9));
+  border:1px solid rgba(46,184,184,0.2); border-radius:var(--rm);
+  padding:28px 18px; margin:6px 0 13px; box-shadow:var(--shadow); }
+.hero-globe { font-size:5rem; animation:globeSpin 4s ease-in-out infinite;
+  filter:drop-shadow(0 0 28px rgba(46,184,184,0.7)); display:block; margin:0 auto; }
+@keyframes globeSpin { 0%,100%{transform:rotate(-4deg) scale(1)} 50%{transform:rotate(4deg) scale(1.08)} }
+.hero-ttl { font-family:'Jua',sans-serif; font-size:2.2rem;
+  background:linear-gradient(135deg,var(--teal),var(--green),var(--sun));
+  -webkit-background-clip:text; -webkit-text-fill-color:transparent; margin-bottom:5px; }
+.hero-sub { color:var(--muted); font-size:0.86rem; margin-bottom:4px; }
+.hero-tag { display:inline-flex; align-items:center; gap:5px;
+  background:rgba(46,184,184,0.1); border:1px solid rgba(46,184,184,0.28);
+  color:var(--teal); font-size:0.74rem; font-weight:800;
+  padding:3px 11px; border-radius:11px; margin-top:5px; }
+.story-card { background:rgba(10,22,40,0.88); border:1px solid rgba(46,184,184,0.16);
+  border-radius:var(--rs); padding:16px; margin:12px 0;
+  text-align:left; line-height:1.8; font-size:0.88rem; color:var(--white); }
+.story-ttl { font-family:'Jua',sans-serif; color:var(--sun); font-size:0.96rem; margin-bottom:9px; text-align:center; }
+.mission-grid { display:grid; grid-template-columns:1fr 1fr; gap:9px; margin:12px 0; }
+.mc { background:rgba(10,22,40,0.88); border:1px solid rgba(46,184,184,0.18);
+  border-radius:var(--rs); padding:14px; text-align:center;
+  cursor:pointer; transition:all .3s; }
+.mc:hover:not(.locked) { transform:translateY(-4px); border-color:var(--teal);
+  box-shadow:0 10px 28px rgba(46,184,184,0.2); }
+.mc.locked { opacity:.36; cursor:not-allowed; }
+.mc.done { border-color:var(--green); }
+.mc-ic { font-size:2rem; margin-bottom:5px; }
+.mc-nm { font-family:'Jua',sans-serif; font-size:0.88rem; color:var(--teal); }
+.mc-dc { font-size:0.7rem; color:var(--muted); margin-top:2px; }
+.mc-st { color:var(--sun); font-size:0.86rem; margin-top:3px; }
+.mc-lk { font-size:0.96rem; margin-top:3px; color:var(--muted); }
+.sb-wrap { background:rgba(10,22,40,0.88); border:1px solid rgba(46,184,184,0.14);
+  border-radius:var(--rs); padding:13px; margin-bottom:12px; }
+.sb-ttl { font-family:'Jua',sans-serif; font-size:0.86rem; color:var(--sun); margin-bottom:8px; }
+.sb-row { display:flex; align-items:center; justify-content:space-between;
+  font-size:0.78rem; padding:5px 9px; border-radius:7px;
+  color:var(--muted); margin-bottom:4px; background:rgba(20,40,64,0.7); }
+.sb-row.r1 { background:rgba(245,200,66,0.1); color:var(--sun); }
+.sb-row.r2 { background:rgba(138,180,212,0.1); }
+.sb-row.r3 { background:rgba(200,130,50,0.08); }
+.qr-panel { background:rgba(10,22,40,0.88); border:1px solid rgba(46,184,184,0.14);
+  border-radius:var(--rs); padding:14px; text-align:center; margin-bottom:12px; }
+.qr-ttl { font-family:'Jua',sans-serif; font-size:0.88rem; color:var(--teal); margin-bottom:9px; }
+.qr-url { font-size:0.7rem; color:var(--muted); margin-top:6px; word-break:break-all; }
+.badge-row { display:flex; flex-wrap:wrap; gap:7px; justify-content:center; margin:9px 0; }
+.badge-it { background:rgba(20,40,64,0.88); border:1px solid var(--border);
+  border-radius:11px; padding:7px 13px; font-size:0.78rem; color:var(--muted); }
+.badge-it.earned { border-color:var(--sun); color:var(--sun);
+  background:rgba(245,200,66,0.1); box-shadow:0 0 9px rgba(245,200,66,0.15); }
+
+/* ===== 임무1: 기상 데이터 분석 (그래프 해독) ===== */
+.data-panel { background:rgba(13,32,56,0.95); border:1px solid var(--border);
+  border-radius:var(--rs); padding:14px; margin-bottom:13px; }
+.dp-ttl { font-family:'Jua',sans-serif; font-size:0.9rem; color:var(--white); text-align:center; margin-bottom:11px; }
+.line-chart-wrap { position:relative; width:100%; height:140px; margin-bottom:8px; }
+.lc-svg { width:100%; height:100%; }
+.dp-note { font-size:0.72rem; color:var(--muted); text-align:center; }
+.data-qs { display:flex; flex-direction:column; gap:11px; margin-top:13px; }
+.dq { background:rgba(20,40,68,0.85); border:1px solid var(--border); border-radius:var(--rs); padding:12px; }
+.dq-txt { font-weight:800; color:var(--white); margin-bottom:7px; font-size:0.84rem; }
+.dq-opts { display:flex; gap:6px; flex-wrap:wrap; }
+.dq-opt { padding:5px 13px; border-radius:16px; border:1px solid rgba(46,184,184,0.28);
+  background:rgba(10,22,40,0.8); cursor:pointer; font-weight:700; font-size:0.82rem;
+  color:var(--white); transition:all .2s; }
+.dq-opt:hover:not(:disabled) { border-color:var(--teal); background:rgba(46,184,184,0.08); }
+.dq-opt.correct { background:rgba(61,186,110,0.12); border-color:var(--green); color:#5dd88a; }
+.dq-opt.wrong   { background:rgba(232,64,64,0.1); border-color:var(--red); color:#f07870; }
+
+/* ===== 임무2: 기후 뉴스 팩트체크 ===== */
+.news-card { background:rgba(13,32,56,0.95); border:1px solid var(--border);
+  border-radius:var(--rs); padding:15px; margin-bottom:13px; position:relative; overflow:hidden; }
+.news-card::before { content:''; position:absolute; left:0; top:0; bottom:0; width:3px;
+  background:linear-gradient(180deg,var(--teal),var(--green)); }
+.news-src { font-size:0.7rem; color:var(--muted); margin-bottom:5px; font-weight:800; }
+.news-hl  { font-family:'Jua',sans-serif; font-size:1rem; color:var(--white); margin-bottom:7px; line-height:1.5; }
+.news-bd  { font-size:0.82rem; color:var(--muted); line-height:1.7; }
+.vd-btns  { display:flex; gap:8px; margin-top:13px; }
+.vd-btn   { flex:1; padding:10px; border-radius:var(--rs); border:1px solid;
+  font-family:'Jua',sans-serif; font-size:0.86rem; cursor:pointer; transition:all .2s; }
+.vd-t { border-color:var(--green); color:var(--green); background:rgba(61,186,110,0.07); }
+.vd-f { border-color:var(--red);   color:var(--red);   background:rgba(232,64,64,0.07); }
+.vd-p { border-color:var(--sun);   color:var(--sun);   background:rgba(245,200,66,0.07); }
+.vd-t:hover { background:rgba(61,186,110,0.18); }
+.vd-f:hover { background:rgba(232,64,64,0.18); }
+.vd-p:hover { background:rgba(245,200,66,0.16); }
+.vd-sel-ok { border-width:2px; box-shadow:0 0 10px currentColor; }
+.vd-sel-no { opacity:.5; }
+
+/* ===== 임무3: 기후 대응 시뮬레이션 (멀티엔딩) ===== */
+.scene-box { background:rgba(13,32,56,0.95); border:1px solid rgba(46,184,184,0.2);
+  border-radius:var(--rs); padding:16px; margin-bottom:13px; text-align:center; }
+.sc-em { font-size:3rem; margin-bottom:8px; }
+.sc-txt { font-family:'Jua',sans-serif; font-size:0.96rem; color:var(--white); line-height:1.6; }
+.sc-ctx { font-size:0.8rem; color:var(--muted); margin-top:7px; line-height:1.6; }
+.plbl { font-size:0.68rem; font-weight:800; padding:2px 7px; border-radius:7px; margin-right:5px; display:inline-block; }
+.plbl-A { background:rgba(46,184,184,0.15); color:var(--teal); }
+.plbl-B { background:rgba(61,186,110,0.15); color:var(--green); }
+.plbl-C { background:rgba(245,200,66,0.15); color:var(--sun); }
+.choice-grid { display:grid; gap:8px; }
+.ch-btn { padding:12px 14px; border-radius:var(--rs); border:1px solid rgba(46,184,184,0.18);
+  background:rgba(10,22,40,0.82); color:var(--white); cursor:pointer;
+  font-size:0.86rem; font-weight:700; text-align:left; transition:all .2s; }
+.ch-btn:hover:not(:disabled) { transform:translateX(4px); border-color:var(--teal); }
+.ch-good { border-color:var(--green); background:rgba(61,186,110,0.1); }
+.ch-mid  { border-color:var(--sun);   background:rgba(245,200,66,0.08); }
+.ch-bad  { border-color:var(--red);   background:rgba(232,64,64,0.08); }
+.ending-box { border-radius:var(--rs); padding:13px; margin-top:11px; display:none; font-size:0.84rem; line-height:1.7; }
+.ending-box.show { display:block; animation:slideUp .32s ease; }
+.e-hero { background:rgba(61,186,110,0.08); border:1px solid rgba(61,186,110,0.28); color:#5dd88a; }
+.e-mid  { background:rgba(245,200,66,0.08); border:1px solid rgba(245,200,66,0.28); color:var(--sun); }
+.e-bad  { background:rgba(232,64,64,0.08);  border:1px solid rgba(232,64,64,0.22); color:#f07870; }
+
+/* ===== 임무4: 기상 과학 퀴즈 ===== */
+.quiz-q { font-family:'Jua',sans-serif; font-size:1.03rem; color:var(--white);
+  text-align:center; margin-bottom:15px; line-height:1.6; }
+.quiz-opts { display:grid; gap:8px; }
+.q-opt { padding:11px 15px; border-radius:var(--rs); border:1px solid rgba(46,184,184,0.18);
+  background:rgba(10,22,40,0.82); color:var(--white); cursor:pointer;
+  font-size:0.86rem; font-weight:700; text-align:left; transition:all .2s; }
+.q-opt:hover:not(:disabled) { border-color:var(--teal); transform:translateX(3px); }
+.q-opt.correct { border-color:var(--green); background:rgba(61,186,110,0.1); color:#5dd88a; }
+.q-opt.wrong   { border-color:var(--red);   background:rgba(232,64,64,0.08); color:#f07870; }
+
+/* ===== 결과 화면 ===== */
+#screen-result { text-align:center; }
+.res-hero { background:linear-gradient(135deg,rgba(10,22,40,0.95),rgba(13,32,56,0.9));
+  border:1px solid rgba(46,184,184,0.22); border-radius:var(--rm);
+  padding:26px; margin:10px 0; box-shadow:0 0 36px rgba(46,184,184,0.1); }
+.res-ic { font-size:4.8rem; animation:resPop .6s cubic-bezier(0.175,0.885,0.32,1.275); }
+@keyframes resPop { from{transform:scale(0) rotate(-15deg)} to{transform:scale(1) rotate(0)} }
+.res-ttl { font-family:'Jua',sans-serif; font-size:1.75rem; color:var(--sun); margin:8px 0 3px; }
+.res-sub { color:var(--muted); font-size:0.84rem; }
+.res-rank { font-size:0.92rem; color:var(--teal); margin-top:5px; font-weight:800; }
+.res-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:9px; margin:12px 0; }
+.res-card { background:rgba(10,22,40,0.88); border:1px solid rgba(46,184,184,0.14);
+  border-radius:var(--rs); padding:12px; text-align:center; }
+.res-card .ri { font-size:1.7rem; }
+.res-card .rn { font-size:0.72rem; color:var(--teal); margin:3px 0; }
+.res-card .rv { font-size:1.02rem; font-weight:800; color:var(--sun); }
+.res-card .rs { color:var(--sun); font-size:0.85rem; }
+.total-box { background:linear-gradient(135deg,rgba(46,184,184,0.18),rgba(61,186,110,0.12));
+  border:1px solid rgba(46,184,184,0.28); border-radius:var(--rs); padding:15px; margin:9px 0; }
+.total-box .tl { font-family:'Jua',sans-serif; font-size:0.96rem; color:var(--teal); }
+.total-box .tn { font-family:'Jua',sans-serif; font-size:2.8rem; color:var(--white); line-height:1; }
+.eval-card { background:rgba(10,22,40,0.88); border:1px solid rgba(46,184,184,0.14);
+  border-radius:var(--rs); padding:13px; margin:9px 0;
+  font-size:0.84rem; line-height:1.7; text-align:left; color:var(--muted); }
+.music-btn { position:fixed; top:12px; right:12px; z-index:200;
+  background:rgba(10,22,40,0.92); border:1px solid rgba(46,184,184,0.28);
+  color:var(--teal); padding:6px 13px; border-radius:17px;
+  font-size:0.78rem; cursor:pointer; backdrop-filter:blur(10px); }
+
+@media(max-width:500px) {
+  .mission-grid { grid-template-columns:1fr 1fr; }
+  .res-grid { grid-template-columns:1fr 1fr; }
+  .vd-btns { flex-direction:column; }
+  .hero-ttl { font-size:1.8rem; }
+}
+</style>
+</head>
+<body>
+
+<div class="bg-wrap" id="bgWrap"></div>
+<button class="music-btn" id="musicBtn" onclick="toggleMusic()">🎵 음악</button>
+
+<div id="app">
+
+<!-- ===== 인트로 ===== -->
+<div id="screen-intro" class="screen active">
+  <div class="intro-hero">
+    <span class="hero-globe">🌍</span>
+    <div class="hero-ttl">기후 위기 대응단</div>
+    <div class="hero-sub">중학교 1학년 과학·수학·국어 교과 융합</div>
+    <div class="hero-tag">🌦️ 3.23 세계 기상의 날 — "오늘을 관측해, 내일을 보호한다"</div>
+  </div>
+  <div class="story-card">
+    <div class="story-ttl">🚨 긴급 기후 경보!</div>
+    <p>2026년, 한반도 기온 상승 속도가 세계 평균의 <strong style="color:var(--red)">2배</strong>에 달합니다.<br>
+    극한 호우, 역대 최악의 산불, 해수면 상승…<br>
+    기상청은 긴급히 <strong style="color:var(--teal)">청소년 기후 대응단</strong>을 소집했습니다!<br><br>
+    4가지 임무를 완수하고 <strong style="color:var(--sun)">기후 과학자</strong>로 임명받으세요! 🌱</p>
+  </div>
+
+  <div style="font-family:'Jua',sans-serif;font-size:0.9rem;color:var(--teal);margin-bottom:8px;">📋 임무 파일</div>
+  <div class="mission-grid" id="missionGrid">
+    <div class="mc" id="mc1" onclick="startMission(1)"><div class="mc-ic">📈</div><div class="mc-nm">임무 1</div><div class="mc-dc">기상 데이터 분석</div><div class="mc-st" id="mc1st">☆☆☆</div></div>
+    <div class="mc locked" id="mc2"><div class="mc-ic">📰</div><div class="mc-nm">임무 2</div><div class="mc-dc">기후 뉴스 팩트체크</div><div class="mc-lk">🔒</div></div>
+    <div class="mc locked" id="mc3"><div class="mc-ic">🌱</div><div class="mc-nm">임무 3</div><div class="mc-dc">기후 대응 시뮬레이션</div><div class="mc-lk">🔒</div></div>
+    <div class="mc locked" id="mc4"><div class="mc-ic">🔬</div><div class="mc-nm">임무 4</div><div class="mc-dc">기상 과학 퀴즈</div><div class="mc-lk">🔒</div></div>
+  </div>
+
+  <div style="font-family:'Jua',sans-serif;font-size:0.82rem;color:var(--sun);margin-bottom:7px;">🏅 획득 배지</div>
+  <div class="badge-row" id="badgeRow">
+    <div class="badge-it" id="bdg-data">📊 데이터 분석가</div>
+    <div class="badge-it" id="bdg-fact">🔍 팩트체커</div>
+    <div class="badge-it" id="bdg-act">🌱 행동하는 시민</div>
+    <div class="badge-it" id="bdg-sci">🔬 기후 과학자</div>
+    <div class="badge-it" id="bdg-all">🏆 기후 대응단장</div>
+  </div>
+
+  <div class="sb-wrap" style="margin-top:11px;">
+    <div class="sb-ttl">🏆 기후 대응단 명예의 전당</div>
+    <div id="sbList"><div class="sb-row" style="justify-content:center;font-size:0.78rem;">첫 번째 대응단원이 되어보세요!</div></div>
+  </div>
+
+  <div class="qr-panel">
+    <div class="qr-ttl">📱 수업 공유 QR코드</div>
+    <div id="qr-wrap"></div>
+    <div class="qr-url">milab2019.github.io/main/climate_agent.html</div>
+  </div>
+</div>
+
+<!-- ===== 임무1: 기상 데이터 분석 ===== -->
+<div id="screen-m1" class="screen">
+  <div class="g-hd"><div><div class="g-title">📈 임무 1 — 기상 데이터 분석</div><div class="g-sub">수학(통계·그래프) + 과학(기상) | 데이터 해독</div></div><div class="score-chip">⭐ <span id="m1sc">0</span></div></div>
+  <div class="prog-wrap"><div class="prog-lbl"><span>분석 진행</span><span id="m1pg">0/2</span></div><div class="prog-track"><div class="prog-fill" id="m1pgb" style="width:0%"></div></div></div>
+  <div class="char-row"><div class="char-face" id="m1f">🌦️</div><div class="bubble"><div class="bubble-nm">기후 AI '아린'</div><span id="m1msg">그래프를 꼼꼼히 읽고 질문에 답하세요! 데이터 해독이 기후 대응의 첫걸음이에요.</span></div></div>
+  <div class="card" id="m1card">
+    <div class="data-panel">
+      <div class="dp-ttl" id="m1ct">데이터 불러오는 중...</div>
+      <div class="line-chart-wrap"><svg class="lc-svg" id="m1svg" viewBox="0 0 380 120" preserveAspectRatio="none"></svg></div>
+      <div class="dp-note" id="m1note"></div>
+    </div>
+    <div class="data-qs" id="m1qs"></div>
+    <div id="m1nw" style="text-align:center;margin-top:12px;display:none;"><button class="btn btn-teal" onclick="nextM1()">다음 데이터 →</button></div>
+  </div>
+  <button class="btn btn-ghost btn-sm" onclick="goHome()">← 임무 목록</button>
+</div>
+
+<!-- ===== 임무2: 기후 뉴스 팩트체크 ===== -->
+<div id="screen-m2" class="screen">
+  <div class="g-hd"><div><div class="g-title">📰 임무 2 — 기후 뉴스 팩트체크</div><div class="g-sub">국어(비판적 읽기) + 과학(기후 리터러시)</div></div><div class="score-chip">⭐ <span id="m2sc">0</span></div></div>
+  <div class="prog-wrap"><div class="prog-lbl"><span>수사 진행</span><span id="m2pg">0/5</span></div><div class="prog-track"><div class="prog-fill" id="m2pgb" style="width:0%"></div></div></div>
+  <div class="timer-row"><span>⏱️</span><div class="t-track"><div class="t-fill t-ok" id="m2tb" style="width:100%"></div></div><div class="t-num" id="m2tn">40</div></div>
+  <div class="char-row"><div class="char-face" id="m2f">🌦️</div><div class="bubble"><div class="bubble-nm">기후 AI '아린'</div><span id="m2msg">뉴스를 읽고 <strong style="color:var(--green)">사실</strong>·<strong style="color:var(--red)">거짓</strong>·<strong style="color:var(--sun)">부분사실</strong>을 판별하세요!</span></div></div>
+  <div class="card">
+    <div class="diff-row">
+      <button class="diff-tab dt-e on" onclick="setM2Diff('e')">🟢 쉬움</button>
+      <button class="diff-tab dt-m" onclick="setM2Diff('m')">🟡 보통</button>
+      <button class="diff-tab dt-h" onclick="setM2Diff('h')">🔴 도전</button>
+    </div>
+    <button class="hint-btn" onclick="showH('m2')">💡 판별 힌트</button>
+    <div class="hint-box" id="m2hint"></div>
+    <div class="news-card"><div class="news-src" id="m2src"></div><div class="news-hl" id="m2hl"></div><div class="news-bd" id="m2bd"></div></div>
+    <div class="vd-btns">
+      <button class="vd-btn vd-t" onclick="selectV('t')">✅ 사실</button>
+      <button class="vd-btn vd-f" onclick="selectV('f')">❌ 거짓</button>
+      <button class="vd-btn vd-p" onclick="selectV('p')">⚠️ 부분사실</button>
+    </div>
+    <div class="fb" id="m2fb"></div>
+    <div id="m2nw" style="text-align:center;margin-top:12px;display:none;"><button class="btn btn-teal btn-sm" onclick="nextM2()">다음 뉴스 →</button></div>
+  </div>
+  <button class="btn btn-ghost btn-sm" onclick="goHome()">← 임무 목록</button>
+</div>
+
+<!-- ===== 임무3: 기후 대응 시뮬레이션 ===== -->
+<div id="screen-m3" class="screen">
+  <div class="g-hd"><div><div class="g-title">🌱 임무 3 — 기후 대응 시뮬레이션</div><div class="g-sub">국어(토론·논술) + 과학(환경) | 멀티엔딩</div></div><div class="score-chip">⭐ <span id="m3sc">0</span></div></div>
+  <div class="prog-wrap"><div class="prog-lbl"><span>시뮬레이션 진행</span><span id="m3pg">0/4</span></div><div class="prog-track"><div class="prog-fill" id="m3pgb" style="width:0%"></div></div></div>
+  <div class="char-row"><div class="char-face" id="m3f">🌦️</div><div class="bubble"><div class="bubble-nm">기후 AI '아린'</div><span id="m3msg">기후 위기 상황에서 최선의 선택을 해보세요! 선택에 따라 지구의 미래가 달라져요.</span></div></div>
+  <div class="card">
+    <div class="scene-box"><div class="sc-em" id="m3em">🌡️</div><div class="sc-txt" id="m3tx">상황 불러오는 중...</div><div class="sc-ctx" id="m3cx"></div></div>
+    <div class="choice-grid" id="m3cg"></div>
+    <div class="ending-box" id="m3eb"></div>
+    <div id="m3nw" style="text-align:center;margin-top:12px;display:none;"><button class="btn btn-teal" onclick="nextM3()">다음 상황 →</button></div>
+  </div>
+  <button class="btn btn-ghost btn-sm" onclick="goHome()">← 임무 목록</button>
+</div>
+
+<!-- ===== 임무4: 기상 과학 퀴즈 ===== -->
+<div id="screen-m4" class="screen">
+  <div class="g-hd"><div><div class="g-title">🔬 임무 4 — 기상 과학 퀴즈</div><div class="g-sub">과학(기상·기후) + 수학(계산) | 난이도 3단계</div></div><div class="score-chip">⭐ <span id="m4sc">0</span></div></div>
+  <div class="prog-wrap"><div class="prog-lbl"><span>퀴즈 진행</span><span id="m4pg">0/6</span></div><div class="prog-track"><div class="prog-fill" id="m4pgb" style="width:0%"></div></div></div>
+  <div class="timer-row"><span>⏱️</span><div class="t-track"><div class="t-fill t-ok" id="m4tb" style="width:100%"></div></div><div class="t-num" id="m4tn">35</div></div>
+  <div class="char-row"><div class="char-face" id="m4f">🌦️</div><div class="bubble"><div class="bubble-nm">기후 AI '아린'</div><span id="m4msg">기상 과학 지식을 총동원해 퀴즈를 풀어보세요!</span></div></div>
+  <div class="card">
+    <div class="diff-row">
+      <button class="diff-tab dt-e on" onclick="setM4Diff('e')">🟢 쉬움</button>
+      <button class="diff-tab dt-m" onclick="setM4Diff('m')">🟡 보통</button>
+      <button class="diff-tab dt-h" onclick="setM4Diff('h')">🔴 도전</button>
+    </div>
+    <button class="hint-btn" onclick="showH('m4')">💡 과학 힌트</button>
+    <div class="hint-box" id="m4hint"></div>
+    <div id="m4cnt" style="font-size:0.8rem;color:var(--muted);text-align:right;margin-bottom:8px;"></div>
+    <div class="quiz-q" id="m4q">문제 불러오는 중...</div>
+    <div class="quiz-opts" id="m4opts"></div>
+    <div class="fb" id="m4fb"></div>
+    <div id="m4nw" style="text-align:center;margin-top:12px;display:none;"><button class="btn btn-teal btn-sm" onclick="nextM4()">다음 문제 →</button></div>
+  </div>
+  <button class="btn btn-ghost btn-sm" onclick="goHome()">← 임무 목록</button>
+</div>
+
+<!-- ===== 결과 ===== -->
+<div id="screen-result" class="screen">
+  <div style="padding-top:7px;">
+    <div class="res-hero"><div class="res-ic" id="reic">🏆</div><div class="res-ttl" id="rettl">기후 대응단 수료!</div><div class="res-sub">미랩(MILAB) 기후 위기 대응단 인증</div><div class="res-rank" id="rerank"></div></div>
+    <div class="res-grid" id="regrid"></div>
+    <div class="total-box"><div class="tl">🌟 총 획득 점수</div><div class="tn" id="retotal">0</div><div style="font-size:0.78rem;color:var(--muted);margin-top:1px;">/ 100점</div></div>
+    <div class="badge-row" id="rebadges"></div>
+    <div class="eval-card" id="reeval"></div>
+    <button class="btn btn-teal btn-block" onclick="resetGame()">🔄 다시 도전하기</button>
+  </div>
+</div>
+
+</div><!-- #app -->
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script>
+// =====================================================
+// ===== 상태 & 설정 =====
+// =====================================================
+const GAME_URL='https://milab2019.github.io/main/climate_agent.html';
+const S={done:[false,false,false,false],scores:[0,0,0,0],stars:[0,0,0,0],
+  badges:{data:false,fact:false,act:false,sci:false},history:[]};
+try{S.history=JSON.parse(localStorage.getItem('clm_scores')||'[]');}catch(e){}
+let allT=[];
+const clrT=()=>{allT.forEach(t=>clearInterval(t));allT=[];};
+
+// =====================================================
+// ===== 배경 이펙트 =====
+// =====================================================
+function initBg(){
+  const bg=document.getElementById('bgWrap');
+  // 별
+  for(let i=0;i<60;i++){
+    const s=document.createElement('div');s.className='star';
+    const sz=Math.random()*2.5+0.5;
+    s.style.cssText=`width:${sz}px;height:${sz}px;left:${Math.random()*100}%;top:${Math.random()*70}%;--d:${2+Math.random()*4}s;--op:${0.3+Math.random()*0.7};animation-delay:${Math.random()*4}s`;
+    bg.appendChild(s);
+  }
+  // 오로라
+  [{c:'rgba(46,184,184,0.18)',t:'12%'},{c:'rgba(61,186,110,0.1)',t:'22%'}].forEach(o=>{
+    const a=document.createElement('div');a.className='aurora';
+    a.style.cssText=`background:${o.c};top:${o.t};animation-duration:${7+Math.random()*4}s`;
+    bg.appendChild(a);
+  });
+  // 구름
+  for(let i=0;i<3;i++){
+    const c=document.createElement('div');c.className='cloud-svg';
+    c.innerHTML=`<svg width="160" height="60" viewBox="0 0 160 60"><ellipse cx="80" cy="40" rx="70" ry="20" fill="white"/><ellipse cx="55" cy="35" rx="35" ry="22" fill="white"/><ellipse cx="105" cy="33" rx="28" ry="18" fill="white"/></svg>`;
+    c.style.cssText=`top:${5+i*12}%;animation-duration:${25+i*10}s;animation-delay:${-i*8}s;transform:scale(${0.6+i*0.25})`;
+    bg.appendChild(c);
+  }
+}
+
+// =====================================================
+// ===== QR ===== 
+// =====================================================
+function initQR(){
+  const w=document.getElementById('qr-wrap');if(!w)return;
+  try{new QRCode(w,{text:GAME_URL,width:128,height:128,colorDark:'#2eb8b8',colorLight:'#0a1628',correctLevel:QRCode.CorrectLevel.M});}
+  catch(e){w.innerHTML=`<img src="https://api.qrserver.com/v1/create-qr-code/?size=128x128&data=${encodeURIComponent(GAME_URL)}&color=2eb8b8&bgcolor=0a1628" style="border-radius:9px;border:3px solid white;">`;}
+}
+
+// =====================================================
+// ===== Web Audio API 음악 (파도 + 아르페지오) =====
+// =====================================================
+let actx=null,musicOn=false;
+function toggleMusic(){
+  musicOn=!musicOn;
+  document.getElementById('musicBtn').textContent=musicOn?'🎵 끄기':'🎵 음악';
+  if(musicOn)playBg();else stopBg();
+}
+function playBg(){
+  try{
+    actx=new(window.AudioContext||window.webkitAudioContext)();
+    // 파도 소음 (White noise 필터링)
+    const buf=actx.createBuffer(1,actx.sampleRate*2,actx.sampleRate);
+    const d=buf.getChannelData(0);for(let i=0;i<d.length;i++)d[i]=Math.random()*2-1;
+    const src=actx.createBufferSource();src.buffer=buf;src.loop=true;
+    const f=actx.createBiquadFilter();f.type='lowpass';f.frequency.value=400;
+    const g=actx.createGain();g.gain.value=0.03;
+    src.connect(f);f.connect(g);g.connect(actx.destination);src.start();
+    // 멜로디
+    const scale=[261,294,330,349,392,440,494,523];
+    const mel=[0,2,4,5,4,2,0,3,5,7,5,3,1,3,5,4];
+    mel.forEach((n,i)=>{
+      const o=actx.createOscillator();const og=actx.createGain();
+      o.connect(og);og.connect(actx.destination);
+      o.type='sine';o.frequency.value=scale[n%8]*0.5;
+      const t=actx.currentTime+i*0.28;
+      og.gain.setValueAtTime(0,t);og.gain.linearRampToValueAtTime(0.028,t+0.04);og.gain.linearRampToValueAtTime(0,t+0.22);
+      o.start(t);o.stop(t+0.25);
+    });
+    setTimeout(()=>{if(musicOn)playBg();},mel.length*280+600);
+  }catch(e){}
+}
+function stopBg(){if(actx){actx.close();actx=null;}}
+function playS(t){
+  try{
+    const cx=new(window.AudioContext||window.webkitAudioContext)();
+    const o=cx.createOscillator();const g=cx.createGain();o.connect(g);g.connect(cx.destination);
+    if(t==='ok'){o.frequency.setValueAtTime(440,cx.currentTime);o.frequency.linearRampToValueAtTime(660,cx.currentTime+0.12);g.gain.setValueAtTime(0.1,cx.currentTime);g.gain.exponentialRampToValueAtTime(0.001,cx.currentTime+0.5);}
+    else if(t==='no'){o.type='sawtooth';o.frequency.value=175;g.gain.setValueAtTime(0.07,cx.currentTime);g.gain.exponentialRampToValueAtTime(0.001,cx.currentTime+0.3);}
+    else if(t==='cl'){[523,659,784,1047].forEach((f,i)=>{const o2=cx.createOscillator();const g2=cx.createGain();o2.connect(g2);g2.connect(cx.destination);o2.type='triangle';o2.frequency.value=f;const tt=cx.currentTime+i*0.1;g2.gain.setValueAtTime(0.08,tt);g2.gain.exponentialRampToValueAtTime(0.001,tt+0.25);o2.start(tt);o2.stop(tt+0.3);});}
+    o.start();o.stop(cx.currentTime+0.65);
+  }catch(e){}
+}
+
+// =====================================================
+// ===== 화면 전환 & 유틸 =====
+// =====================================================
+const showScr=(id)=>{document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active');window.scrollTo(0,0);};
+const goHome=()=>{clrT();showScr('screen-intro');renderSB();renderBadges();};
+const calcSt=(s,m)=>{const p=s/m;return p>=0.9?3:p>=0.6?2:p>0?1:0;};
+const unlockMC=(n)=>{
+  const el=document.getElementById('mc'+n);if(!el)return;
+  el.classList.remove('locked');el.querySelector('.mc-lk')?.remove();
+  const s=document.createElement('div');s.className='mc-st';s.id='mc'+n+'st';s.textContent='☆☆☆';el.appendChild(s);
+  el.onclick=()=>startMission(n);
+};
+const updateSt=(n,st)=>{const el=document.getElementById('mc'+n+'st');if(el)el.textContent='★'.repeat(st)+'☆'.repeat(3-st);document.getElementById('mc'+n)?.classList.add('done');};
+const startMission=(n)=>{clrT();[initM1,initM2,initM3,initM4][n-1]();showScr('screen-m'+n);};
+const updateTUI=(id,cur,max)=>{const p=cur/max*100;const b=document.getElementById(id+'tb');b.style.width=p+'%';b.className='t-fill '+(p>50?'t-ok':p>25?'t-warn':'t-hot');document.getElementById(id+'tn').textContent=cur;};
+const startTimer=(id,sec,cb)=>{let s=sec;updateTUI(id,s,sec);const t=setInterval(()=>{s--;updateTUI(id,s,sec);if(s<=0){clearInterval(t);cb();}},1000);allT.push(t);};
+const showH=(id)=>{
+  const hMap={
+    m2:['출처가 공식기관인지 확인해요! (.go.kr, .edu)','숫자·통계가 들어간 기사는 원본 데이터를 찾아봐요.','제목만 보지 말고 본문 전체를 꼼꼼히 읽어요!'],
+    m4:['온실가스가 많아지면 지구 온도가 올라가는 원리를 떠올려봐요.','대기, 해양, 육지는 서로 열을 주고받아요.','통계는 평균, 최댓값, 최솟값을 구분해서 읽어요!']
+  };
+  const diff=(id==='m2'?m2diff:m4diff);const arr=hMap[id]||[];
+  const box=document.getElementById(id+'hint');
+  box.textContent='💡 '+(arr[diff==='e'?0:diff==='m'?1:2]||arr[0]);box.classList.add('show');
+};
+const renderSB=()=>{
+  const el=document.getElementById('sbList');
+  const sorted=[...S.history].sort((a,b)=>b.total-a.total).slice(0,5);
+  if(!sorted.length){el.innerHTML='<div class="sb-row" style="justify-content:center;font-size:0.78rem;">첫 번째 대응단원이 되어보세요!</div>';return;}
+  el.innerHTML=sorted.map((h,i)=>`<div class="sb-row ${['r1','r2','r3','',''][i]}"><span>${['🥇','🥈','🥉','4위','5위'][i]} 기후 대응단원</span><span style="color:var(--sun);font-weight:800;">${h.total}점 ${'★'.repeat(h.stars)}</span></div>`).join('');
+};
+const renderBadges=()=>{
+  Object.keys(S.badges).forEach(k=>{const el=document.getElementById('bdg-'+k);if(el&&S.badges[k])el.classList.add('earned');});
+  if(Object.values(S.badges).every(v=>v))document.getElementById('bdg-all')?.classList.add('earned');
+};
+const saveScore=()=>{
+  const total=S.scores.reduce((a,b)=>a+b,0);const stars=S.stars.reduce((a,b)=>a+b,0);
+  S.history.push({total,stars,date:new Date().toLocaleDateString('ko')});
+  if(S.history.length>10)S.history.shift();
+  try{localStorage.setItem('clm_scores',JSON.stringify(S.history));}catch(e){}
+};
+
+// =====================================================
+// ===== 임무1: 기상 데이터 분석 (SVG 꺾은선 + 막대) =====
+// =====================================================
+const dataSets=[
+  {
+    // ★ 데이터 재설계 근거 (교과 검정 기준):
+    // 구간을 모두 10년 단위로 통일하여 절대 상승폭 비교가 공정하고 명확함.
+    // 각 구간 상승폭: 1970→80: +0.5, 1980→90: +0.4, 1990→00: +0.8,
+    //                  2000→10: +0.9(최대), 2010→20: +0.6
+    // 2000→2010이 명확히 최대(0.9°C) → 정답 논란 없음.
+    // 총 변화량: 16.1 - 13.2 = 2.9°C (50년간)
+    title:'서울 연평균 기온 변화 (1970-2020년, 10년 단위)',
+    type:'line',
+    pts:[[1970,13.2],[1980,13.7],[1990,14.1],[2000,14.9],[2010,15.8],[2020,16.1]],
+    note:'출처: 기상청 기후통계분석 기반 가상 교육 데이터 (단위: °C) | 구간 모두 10년으로 통일',
+    qs:[
+      {
+        q:'1970년 대비 2020년 서울 평균 기온 변화량은? (계산식: 2020년 값 − 1970년 값)',
+        opts:['약 1.5°C 증가','약 2.9°C 증가','약 3.8°C 증가','변화 없음'],
+        ans:1,
+        exp:'16.1 − 13.2 = 2.9°C 증가! 50년간 약 2.9°C 올랐어요. 이 상승폭은 지구 평균(1.1°C)의 약 2.6배예요.',
+        pts:10
+      },
+      {
+        q:'10년 단위 구간 중 기온이 가장 많이 오른 구간은? (그래프의 기울기가 가장 가파른 구간을 찾으세요)',
+        opts:['1970→1980년 (+0.5°C)','1980→1990년 (+0.4°C)','1990→2000년 (+0.8°C)','2000→2010년 (+0.9°C)'],
+        ans:3,
+        exp:'2000→2010년에 0.9°C 상승으로 10년 단위 중 가장 큰 폭이에요! 각 구간 상승폭: 1970→80: 0.5°C, 1980→90: 0.4°C, 1990→2000: 0.8°C, 2000→10: 0.9°C, 2010→20: 0.3°C. 그래프에서 2000~2010 구간 기울기가 가장 가파른 것을 확인해보세요.',
+        pts:12
+      },
+      {
+        q:'2000→2010년의 10년간 상승폭(0.9°C)을 바탕으로 연평균 상승폭을 계산하면?',
+        opts:['0.05°C/년','0.07°C/년','0.09°C/년','0.9°C/년'],
+        ans:2,
+        exp:'0.9°C ÷ 10년 = 0.09°C/년! 나눗셈으로 연평균을 구하는 것은 수학의 핵심 개념이에요. 이 속도가 계속되면 100년 후 약 9°C 상승하게 돼요.',
+        pts:12
+      },
+    ]
+  },
+  {
+    title:'2025년 한반도 월별 강수량 (mm)',
+    type:'bar',
+    pts:[[1,38],[2,45],[3,58],[4,89],[5,102],[6,138],[7,312],[8,298],[9,155],[10,62],[11,52],[12,41]],
+    labels:['1월','2월','3월','4월','5월','6월','7월','8월','9월','10월','11월','12월'],
+    note:'출처: 기상청 기후 통계 (단위: mm)',
+    qs:[
+      {q:'강수량이 가장 많은 달은?',opts:['6월','7월','8월','9월'],ans:1,exp:'7월이 312mm로 최대! 한반도 장마 시즌이에요. 7~8월 강수량 합계 = 312 + 298 = 610mm',pts:10},
+      {q:'여름(6~8월) 강수량 합계를 계산하면?',opts:['748mm','658mm','602mm','528mm'],ans:0,exp:'138 + 312 + 298 = 748mm! 연간 강수량의 절반 이상이 여름에 집중돼요.',pts:12},
+      {q:'이 데이터로 예측할 수 있는 자연재해 위험은?',opts:['봄철 가뭄과 겨울 폭설','여름 집중호우와 가을 태풍','연중 균등한 강수로 안전','봄철 홍수와 여름 가뭄'],ans:1,exp:'7~8월 집중 강수는 홍수·침수 위험을, 9월 급감은 태풍 이후 가뭄 위험을 나타내요. 데이터로 재난을 예측해요!',pts:12},
+    ]
+  }
+];
+let m1idx=0,m1sc=0,m1ans=0;
+function initM1(){m1idx=0;m1sc=0;document.getElementById('m1sc').textContent='0';renderM1();}
+function renderM1(){
+  if(m1idx>=dataSets.length){finishM1();return;}
+  const ds=dataSets[m1idx];
+  document.getElementById('m1pg').textContent=m1idx+'/'+dataSets.length;
+  document.getElementById('m1pgb').style.width=(m1idx/dataSets.length*100)+'%';
+  document.getElementById('m1ct').textContent=ds.title;
+  document.getElementById('m1note').textContent=ds.note;
+  document.getElementById('m1nw').style.display='none';
+  // SVG 그래프
+  const svg=document.getElementById('m1svg');svg.innerHTML='';svg.setAttribute('viewBox','0 0 380 130');
+  const W=380,H=130,PL=30,PR=10,PT=18,PB=25;
+  const iW=W-PL-PR,iH=H-PT-PB;
+  if(ds.type==='line'){
+    const vals=ds.pts.map(p=>p[1]);const lbls=ds.pts.map(p=>p[0]);
+    const minV=Math.min(...vals)-0.5,maxV=Math.max(...vals)+0.5;
+    const xS=(n)=>PL+n/(vals.length-1)*iW;const yS=(v)=>PT+iH-(v-minV)/(maxV-minV)*iH;
+    // 격자
+    for(let i=0;i<=4;i++){const y=PT+iH/4*i;svg.innerHTML+=`<line x1="${PL}" y1="${y}" x2="${PL+iW}" y2="${y}" stroke="rgba(46,184,184,0.12)" stroke-width="1"/>`;}
+    // Y 라벨
+    [minV+0.5,minV+(maxV-minV)/2,maxV-0.5].forEach(v=>{svg.innerHTML+=`<text x="${PL-3}" y="${yS(v)+4}" fill="#8ab4d4" font-size="8" text-anchor="end">${v.toFixed(1)}</text>`;});
+    // 영역 채우기
+    const pts=vals.map((v,i)=>`${xS(i)},${yS(v)}`).join(' ');
+    const areaPath=`M${xS(0)},${yS(vals[0])} `+vals.map((v,i)=>`L${xS(i)},${yS(v)}`).join(' ')+` L${xS(vals.length-1)},${PT+iH} L${xS(0)},${PT+iH} Z`;
+    svg.innerHTML+=`<defs><linearGradient id="lg1" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#2eb8b8" stop-opacity="0.3"/><stop offset="100%" stop-color="#2eb8b8" stop-opacity="0.02"/></linearGradient></defs>`;
+    svg.innerHTML+=`<path d="${areaPath}" fill="url(#lg1)"/>`;
+    // 라인
+    svg.innerHTML+=`<polyline points="${pts}" fill="none" stroke="#2eb8b8" stroke-width="2.2" stroke-linejoin="round"/>`;
+    // 점 + 수치 라벨 + X 라벨
+    vals.forEach((v,i)=>{
+      const cx=xS(i),cy=yS(v);
+      svg.innerHTML+=`<circle cx="${cx}" cy="${cy}" r="4" fill="#2eb8b8" stroke="#0a1628" stroke-width="1.5"/>`;
+      // 각 점 위에 기온 수치 표시 (노란색 굵게)
+      svg.innerHTML+=`<text x="${cx}" y="${cy-7}" fill="#f5c842" font-size="7.5" text-anchor="middle" font-weight="bold">${v.toFixed(1)}°</text>`;
+      // X축 연도 라벨 (모두 표시, 짝수 인덱스 or 마지막)
+      if(i%2===0||i===vals.length-1)svg.innerHTML+=`<text x="${cx}" y="${H-4}" fill="#8ab4d4" font-size="7.5" text-anchor="middle">${lbls[i]}</text>`;
+    });
+  } else { // bar
+    const vals=ds.pts.map(p=>p[1]);const lbls=ds.labels;
+    const maxV=Math.max(...vals);
+    const barW=iW/vals.length*0.7;const colors=['#2eb8b8','#2eb8b8','#3dba6e','#3dba6e','#3dba6e','#f5c842','#e84040','#e84040','#f07830','#3dba6e','#3dba6e','#2eb8b8'];
+    vals.forEach((v,i)=>{
+      const x=PL+i*(iW/vals.length)+(iW/vals.length-barW)/2;const barH=v/maxV*iH;const y=PT+iH-barH;
+      const cx=x+barW/2;
+      svg.innerHTML+=`<rect x="${x}" y="${y}" width="${barW}" height="${barH}" fill="${colors[i]}" rx="2" opacity="0.85"/>`;
+      // 막대 위에 수치 표시 (노란색, 굵게)
+      if(barH>12){
+        svg.innerHTML+=`<text x="${cx}" y="${y-3}" fill="#f5c842" font-size="7" text-anchor="middle" font-weight="bold">${v}</text>`;
+      } else {
+        // 막대가 너무 작으면 막대 위 여백에 표시
+        svg.innerHTML+=`<text x="${cx}" y="${y-2}" fill="#f5c842" font-size="6.5" text-anchor="middle" font-weight="bold">${v}</text>`;
+      }
+      // X축 라벨 (월 표시)
+      svg.innerHTML+=`<text x="${cx}" y="${H-4}" fill="#8ab4d4" font-size="7" text-anchor="middle">${lbls[i].replace('월','')}</text>`;
+    });
+  }
+  // 질문
+  m1ans=0;const qEl=document.getElementById('m1qs');qEl.innerHTML='';
+  ds.qs.forEach((q,qi)=>{
+    const div=document.createElement('div');div.className='dq';div.id='dq'+qi;
+    div.innerHTML=`<div class="dq-txt">Q${qi+1}. ${q.q}</div><div class="dq-opts" id="dqo${qi}"></div><div class="fb" id="dqf${qi}"></div>`;
+    qEl.appendChild(div);
+    q.opts.forEach((opt,oi)=>{
+      const btn=document.createElement('button');btn.className='dq-opt';btn.textContent=opt;
+      btn.onclick=()=>{
+        document.querySelectorAll(`#dqo${qi} .dq-opt`).forEach(b=>b.disabled=true);
+        document.querySelectorAll(`#dqo${qi} .dq-opt`)[q.ans].classList.add('correct');
+        const fb=document.getElementById('dqf'+qi);
+        if(oi===q.ans){btn.classList.add('correct');m1sc+=q.pts;document.getElementById('m1sc').textContent=m1sc;fb.className='fb show fb-ok';fb.innerHTML=`✅ +${q.pts}점! ${q.exp}`;document.getElementById('m1f').className='char-face cf-happy';playS('ok');}
+        else{btn.classList.add('wrong');fb.className='fb show fb-no';fb.innerHTML=`❌ ${q.exp}`;document.getElementById('m1f').className='char-face cf-sad';playS('no');}
+        m1ans++;if(m1ans>=ds.qs.length)document.getElementById('m1nw').style.display='block';
+      };
+      document.getElementById('dqo'+qi).appendChild(btn);
+    });
+  });
+}
+function nextM1(){m1idx++;renderM1();}
+function finishM1(){
+  S.scores[0]=m1sc;S.stars[0]=calcSt(m1sc,96);S.done[0]=true;S.badges.data=S.stars[0]>=2;
+  updateSt(1,S.stars[0]);unlockMC(2);playS('cl');
+  document.getElementById('m1msg').textContent='🎉 임무 1 완료! '+m1sc+'점 획득!';
+  document.getElementById('m1f').className='char-face cf-alert';
+  setTimeout(()=>goHome(),1700);
+}
+
+// =====================================================
+// ===== 임무2: 기후 뉴스 팩트체크 =====
+// =====================================================
+const newsBank={
+  e:[
+    {src:'KBS 뉴스',hl:'우리나라 기온, 지난 100년간 1.8°C 상승',bd:'기상청 분석에 따르면 한반도 평균 기온이 지난 100년간 약 1.8°C 상승했으며, 이는 전 세계 평균보다 약 1.4배 높은 수준입니다.',v:'t',pts:8,exp:'사실! 기상청 공식 데이터로 확인된 수치예요. 전 세계 평균보다 빠르게 온도가 상승하고 있어요.'},
+    {src:'SNS 익명 계정',hl:'지구 온난화는 거짓말! 올겨울 눈이 많이 온 증거',bd:'어제 폭설이 내렸다. 지구가 뜨거워진다고? 이게 뭔 소리냐. 기후 과학자들은 사기꾼이다.',v:'f',pts:8,exp:'거짓! 단 하루의 기상 현상은 기후 변화를 반증하지 않아요. 기후는 30년 이상의 장기 평균이고, 온난화 속에서도 폭설이 내릴 수 있어요.'},
+    {src:'환경부 공식 보도자료',hl:'2025년 여름, 역대 최장 폭염 기록 갱신',bd:'환경부에 따르면 2025년 여름 폭염 일수가 45일로, 이전 최고 기록(2018년 35일)을 경신했습니다.',v:'t',pts:8,exp:'사실! 정부 공식 보도자료로 확인된 내용이에요. 폭염 일수 증가는 기후 변화의 직접적인 영향이에요.'},
+  ],
+  m:[
+    {src:'인터넷 카페 글',hl:'북극 빙하 다 녹으면 서울도 잠긴다! 해수면 100m 상승',bd:'기후 전문가들이 북극 빙하가 모두 녹으면 해수면이 100m 이상 높아진다고 경고했다.',v:'f',pts:12,exp:'과장된 거짓! 실제 과학적 추정은 해수면 60~70m 상승이며, 이것도 수천 년에 걸친 최악 시나리오예요. "100m"는 과학적 근거가 없어요.'},
+    {src:'기상청 공식 홈페이지',hl:'한반도 기온 상승 속도, 전 세계 평균의 약 2배',bd:'기상청 기후변화 감시 결과, 한반도 기온 상승 속도가 전 세계 평균 대비 약 2배 수준임을 확인했습니다.',v:'t',pts:12,exp:'사실! 기상청 공식 데이터예요. 한반도가 특히 빠르게 더워지는 이유는 대륙과 해양의 열 순환 구조 때문이에요.'},
+    {src:'블로그 (출처 불명)',hl:'태양이 더 뜨거워지고 있어서 지구가 따뜻해지는 것',bd:'기후 변화는 사람 때문이 아니라 태양 활동이 강해졌기 때문이다. 과학자들이 숨기고 있는 진실.',v:'f',pts:12,exp:'거짓! 과학자들은 태양 활동을 오랫동안 측정해왔고, 최근 태양 활동은 오히려 약간 약해졌어요. 현재 온난화의 95% 이상은 인간 활동 때문이라는 것이 과학적 합의예요.'},
+  ],
+  h:[
+    {src:'해외 언론 번역본 (번역 오류 포함)',hl:'과학자들 "2030년까지 지구 온도 5°C 상승, 문명 붕괴"',bd:'해외 과학자들이 2030년까지 기온이 5°C 올라 문명이 붕괴할 것이라고 경고했다. 이 연구는 ○○대학교 발표라고 알려졌다.',v:'f',pts:15,exp:'거짓! IPCC는 2100년까지 1.5~4°C 상승을 예측하며, 2030년 5°C 상승이나 문명 붕괴는 과학적 근거 없는 과장이에요. 번역 오류나 의도적 왜곡일 수 있어요.'},
+    {src:'IPCC(기후변화에 관한 정부간 협의체) 보고서 요약본',hl:'산업화 이후 지구 평균 기온 약 1.1°C 상승, 인간 활동이 주원인',bd:'IPCC 제6차 평가보고서에 따르면 1850년~2019년 사이 지구 평균 기온이 약 1.1°C 상승했으며, 이는 주로 화석연료 사용 등 인간 활동에 의한 것이라고 명시했습니다.',v:'t',pts:15,exp:'사실! IPCC는 전 세계 수천 명의 과학자가 참여하는 가장 권위 있는 기후 기구예요. 이 수치는 전 세계 과학계의 합의예요.'},
+  ]
+};
+let m2diff='e',m2list=[],m2idx=0,m2sc=0;
+function initM2(){m2idx=0;m2sc=0;document.getElementById('m2sc').textContent='0';setM2Diff('e');}
+function setM2Diff(d){
+  m2diff=d;clrT();
+  document.querySelectorAll('#screen-m2 .diff-tab').forEach(b=>b.classList.remove('on'));
+  document.querySelector('#screen-m2 .diff-tab.dt-'+d).classList.add('on');
+  m2list=[...newsBank[d]].sort(()=>Math.random()-0.5);m2idx=0;m2sc=0;
+  document.getElementById('m2sc').textContent='0';renderM2();
+}
+function renderM2(){
+  if(m2idx>=m2list.length){finishM2();return;}
+  clrT();const n=m2list[m2idx];
+  document.getElementById('m2src').textContent='📰 '+n.src;
+  document.getElementById('m2hl').textContent=n.hl;
+  document.getElementById('m2bd').textContent=n.bd;
+  document.getElementById('m2pg').textContent=m2idx+'/'+m2list.length;
+  document.getElementById('m2pgb').style.width=(m2idx/m2list.length*100)+'%';
+  document.getElementById('m2fb').classList.remove('show');
+  document.getElementById('m2nw').style.display='none';
+  document.getElementById('m2hint').classList.remove('show');
+  document.getElementById('m2f').className='char-face';
+  document.querySelectorAll('.vd-btn').forEach(b=>{b.disabled=false;b.classList.remove('vd-sel-ok','vd-sel-no');});
+  const sec=m2diff==='e'?40:m2diff==='m'?32:25;
+  startTimer('m2',sec,()=>{
+    document.querySelectorAll('.vd-btn').forEach(b=>b.disabled=true);
+    document.getElementById('m2fb').className='fb show fb-no';
+    document.getElementById('m2fb').innerHTML='⏰ 시간 초과! 더 빠른 분석 연습이 필요해요.';
+    document.getElementById('m2f').className='char-face cf-sad';
+    document.getElementById('m2nw').style.display='block';
+  });
+}
+function selectV(v){
+  clrT();document.querySelectorAll('.vd-btn').forEach(b=>b.disabled=true);
+  const n=m2list[m2idx];const ok=(v===n.v);const fb=document.getElementById('m2fb');
+  if(ok){m2sc+=n.pts;document.getElementById('m2sc').textContent=m2sc;fb.className='fb show fb-ok';fb.innerHTML=`✅ 정확! +${n.pts}점<br><strong>📚 해설:</strong> ${n.exp}`;document.getElementById('m2f').className='char-face cf-happy';playS('ok');}
+  else{fb.className='fb show fb-no';fb.innerHTML=`❌ 판별 실패!<br><strong>📚 해설:</strong> ${n.exp}`;document.getElementById('m2f').className='char-face cf-sad';playS('no');}
+  document.querySelectorAll('.vd-btn').forEach(b=>{
+    const isOk=(b.classList.contains('vd-t')&&n.v==='t')||(b.classList.contains('vd-f')&&n.v==='f')||(b.classList.contains('vd-p')&&n.v==='p');
+    const isSel=(b.classList.contains('vd-t')&&v==='t')||(b.classList.contains('vd-f')&&v==='f')||(b.classList.contains('vd-p')&&v==='p');
+    if(isOk)b.classList.add('vd-sel-ok');else if(isSel&&!ok)b.classList.add('vd-sel-no');
+  });
+  document.getElementById('m2nw').style.display='block';
+}
+function nextM2(){m2idx++;renderM2();}
+function finishM2(){
+  clrT();S.scores[1]=m2sc;const max=m2diff==='e'?24:m2diff==='m'?36:30;
+  S.stars[1]=calcSt(m2sc,max);S.done[1]=true;S.badges.fact=S.stars[1]>=2;
+  updateSt(2,S.stars[1]);unlockMC(3);playS('cl');
+  document.getElementById('m2msg').textContent='🎉 임무 2 완료! '+m2sc+'점 획득!';
+  document.getElementById('m2f').className='char-face cf-alert';
+  setTimeout(()=>goHome(),1700);
+}
+
+// =====================================================
+// ===== 임무3: 기후 대응 시뮬레이션 (멀티엔딩) =====
+// =====================================================
+const scenarios=[
+  {em:'🏭',tx:'우리 마을 근처에 큰 공장이 들어설 예정이에요. 일자리는 늘지만 탄소 배출이 크게 증가해요.',cx:'실제 현장: 개발과 환경 보호 사이의 갈등은 전국 곳곳에서 일어나고 있어요.',
+   choices:[
+     {text:'A. 무조건 반대한다. 환경이 최우선이니까.',tag:'A',type:'mid',pts:12,ending:'⚠️ 환경 보호 의지는 훌륭하지만, 일자리와 지역 경제도 중요해요. 더 나은 방법은 협상이에요.',lesson:'📚 기후 문제는 경제·사회와 함께 생각하는 "지속가능발전"이 핵심이에요!'},
+     {text:'B. 공장 유치 대신 친환경 산업단지와 재생에너지 시설을 제안한다.',tag:'B',type:'hero',pts:20,ending:'✅ 완벽한 선택! 일자리도 만들고 탄소도 줄이는 "녹색 전환"이에요. 이것이 기후 대응의 방향이에요.',lesson:'📚 탄소 중립과 경제 성장을 동시에 추구하는 "그린 뉴딜"이 전 세계 정책 트렌드예요!'},
+     {text:'C. 아무것도 하지 않는다. 어차피 나 혼자는 뭘 해도 소용없어.',tag:'C',type:'bad',pts:0,ending:'❌ 기후 위기는 모두의 참여가 필요해요! 개인의 목소리와 행동이 정책을 바꿔요.',lesson:'📚 기후 행동가 그레타 툰베리는 혼자 시작한 1인 시위로 전 세계를 움직였어요.'},
+   ]},
+  {em:'🌊',tx:'해수면 상승으로 해안 마을이 침수 위기예요. 정부가 주민들에게 이주 비용을 지원하려 해요.',cx:'실제 현장: 태평양 섬나라 투발루는 이미 기후 난민 문제를 겪고 있어요.',
+   choices:[
+     {text:'A. 이주 지원에 동의하고 재난 대비 교육도 요청한다.',tag:'A',type:'hero',pts:20,ending:'✅ 훌륭해요! 현실적 적응(이주)과 미래 대비(교육)를 동시에 선택했어요.',lesson:'📚 기후 변화 대응은 "완화(온실가스 줄이기)"와 "적응(변화에 대비하기)" 두 가지로 나뉘어요!'},
+     {text:'B. 이주를 거부하고 제방을 더 높이 쌓자고 한다.',tag:'B',type:'mid',pts:10,ending:'⚠️ 단기적 해결책이에요. 제방은 한계가 있고, 해수면이 계속 오르면 결국 이주가 불가피해요.',lesson:'📚 기후 "적응"은 임시방편보다 장기적 계획이 중요해요!'},
+     {text:'C. 이주는 싫다. 이건 정부 음모다!',tag:'C',type:'bad',pts:0,ending:'❌ 기후 변화를 음모론으로 보는 것은 위험해요. 과학적 데이터를 신뢰하고 현실적으로 대비해야 해요.',lesson:'📚 기상청, IPCC 등 공신력 있는 기관의 데이터를 기반으로 판단하는 "과학적 리터러시"가 중요해요!'},
+   ]},
+  {em:'🌡️',tx:'여름 폭염이 45일째 지속되고 있어요. 학교에서 냉방 에너지 절약 vs. 학생 건강 보호 중 선택해야 해요.',cx:'실제 현장: 폭염은 노인, 어린이, 야외 노동자에게 더 큰 영향을 미쳐요.',
+   choices:[
+     {text:'A. 에너지 절약을 위해 냉방을 끈다.',tag:'A',type:'bad',pts:0,ending:'❌ 폭염 속 냉방 중단은 건강 위협이에요! 에너지 절약도 중요하지만 생명·건강이 우선이에요.',lesson:'📚 기후 정의: 기후 대응 정책도 사람의 건강과 안전을 최우선으로 해야 해요!'},
+     {text:'B. 냉방을 유지하되, 태양광 패널 설치를 학교에 건의한다.',tag:'B',type:'hero',pts:20,ending:'✅ 최선의 선택! 건강도 지키고 재생에너지로 에너지도 줄이는 똑똑한 방법이에요.',lesson:'📚 재생에너지 전환이 탄소 줄이기와 에너지 비용 절감을 동시에 해결해요!'},
+     {text:'C. 냉방 사용 시간을 합리적으로 줄이고 그늘막을 활용한다.',tag:'C',type:'mid',pts:15,ending:'⚠️ 좋은 시도예요! 에너지 절약과 건강 보호 사이의 균형을 잡으려 했어요.',lesson:'📚 에너지 효율적 사용과 생활 방식 변화가 탄소 저감의 중요한 방법이에요!'},
+   ]},
+  {em:'🌱',tx:'학교 앞 공터를 도시 숲으로 만들자는 제안이 있어요. 하지만 주차장이 필요하다는 의견도 있어요.',cx:'실제 현장: 도시 숲은 탄소 흡수, 열섬 현상 완화, 생물다양성 증진 효과가 있어요.',
+   choices:[
+     {text:'A. 주차장이 더 실용적이니 주차장을 만든다.',tag:'A',type:'bad',pts:0,ending:'❌ 단기 편의를 위해 장기 기후 혜택을 포기했어요. 주차장은 포장면이 늘어 도시 열섬을 악화시켜요.',lesson:'📚 도시 숲 1ha는 연간 약 10톤의 CO₂를 흡수해요. 나무 한 그루의 힘을 과소평가하지 마세요!'},
+     {text:'B. 도시 숲과 지하 주차장을 함께 계획한다.',tag:'B',type:'hero',pts:20,ending:'✅ 창의적인 해결책! 지하 공간을 활용해 두 가지 수요를 모두 충족하는 "공간의 입체적 활용"이에요.',lesson:'📚 도시 계획에서 녹지 비율을 높이는 것이 기후 적응의 핵심이에요!'},
+     {text:'C. 학생들이 직접 텃밭 정원을 만들자고 제안한다.',tag:'C',type:'mid',pts:15,ending:'⚠️ 좋은 아이디어! 시민 참여 방식이지만, 텃밭보다 수목이 탄소 흡수 효과가 훨씬 커요.',lesson:'📚 탄소 흡수 효과: 나무 > 풀밭 > 텃밭 순이에요. 나무 심기가 탄소 중립에 더 효과적이에요!'},
+   ]}
+];
+let m3idx=0,m3sc=0;
+function initM3(){m3idx=0;m3sc=0;document.getElementById('m3sc').textContent='0';renderM3();}
+function renderM3(){
+  if(m3idx>=scenarios.length){finishM3();return;}
+  const sc=scenarios[m3idx];
+  document.getElementById('m3pg').textContent=m3idx+'/'+scenarios.length;
+  document.getElementById('m3pgb').style.width=(m3idx/scenarios.length*100)+'%';
+  document.getElementById('m3em').textContent=sc.em;
+  document.getElementById('m3tx').textContent=sc.tx;
+  document.getElementById('m3cx').textContent=sc.cx;
+  document.getElementById('m3eb').classList.remove('show');
+  document.getElementById('m3nw').style.display='none';
+  document.getElementById('m3f').className='char-face';
+  const cg=document.getElementById('m3cg');cg.innerHTML='';
+  sc.choices.forEach(c=>{
+    const btn=document.createElement('button');btn.className='ch-btn';
+    btn.innerHTML=`<span class="plbl plbl-${c.tag}">${c.tag}</span>${c.text}`;
+    btn.onclick=()=>{
+      document.querySelectorAll('.ch-btn').forEach(b=>b.disabled=true);
+      btn.classList.add(c.type==='hero'?'ch-good':c.type==='bad'?'ch-bad':'ch-mid');
+      const eb=document.getElementById('m3eb');
+      if(c.type==='hero'){m3sc+=c.pts;document.getElementById('m3sc').textContent=m3sc;eb.className='ending-box show e-hero';document.getElementById('m3f').className='char-face cf-happy';playS('ok');}
+      else if(c.type==='mid'){m3sc+=c.pts;document.getElementById('m3sc').textContent=m3sc;eb.className='ending-box show e-mid';}
+      else{eb.className='ending-box show e-bad';document.getElementById('m3f').className='char-face cf-sad';playS('no');}
+      eb.innerHTML=`${c.ending}<br><br>${c.lesson}`;
+      document.getElementById('m3nw').style.display='block';
+    };
+    cg.appendChild(btn);
+  });
+}
+function nextM3(){m3idx++;renderM3();}
+function finishM3(){
+  S.scores[2]=m3sc;S.stars[2]=calcSt(m3sc,80);S.done[2]=true;S.badges.act=S.stars[2]>=2;
+  updateSt(3,S.stars[2]);unlockMC(4);playS('cl');
+  document.getElementById('m3msg').textContent='🎉 임무 3 완료! '+m3sc+'점!';
+  document.getElementById('m3f').className='char-face cf-alert';
+  setTimeout(()=>goHome(),1700);
+}
+
+// =====================================================
+// ===== 임무4: 기상 과학 퀴즈 =====
+// =====================================================
+const quizBank={
+  e:[
+    {q:'온실효과를 일으키는 주요 기체가 아닌 것은?',opts:['이산화탄소(CO₂)','메테인(CH₄)','산소(O₂)','수증기(H₂O)'],ans:2,pts:8,exp:'산소는 온실가스가 아니에요! CO₂, CH₄, 수증기가 대표적인 온실가스예요.',hint:'온실가스는 열을 가두는 기체예요. 공기의 78%인 질소, 21%인 산소는 온실가스가 아니에요.'},
+    {q:'세계 기상의 날(World Meteorological Day)은 매년 언제일까요?',opts:['3월 22일','3월 23일','4월 22일','6월 5일'],ans:1,pts:8,exp:'매년 3월 23일! WMO(세계기상기구)가 1950년 설립된 날을 기념해요. 오늘이 바로 세계 기상의 날이에요!',hint:'WMO는 1950년에 설립됐어요. 3월에 있는 날이에요.'},
+    {q:'기후와 날씨의 차이를 가장 잘 설명한 것은?',opts:['기후는 하루 변화, 날씨는 30년 평균','날씨는 단기 대기 상태, 기후는 장기 평균적 패턴','기후는 온도만, 날씨는 습도만','날씨와 기후는 같은 말'],ans:1,pts:8,exp:'날씨 = 오늘 비가 오나요? 기후 = 이 지역은 보통 비가 많이 오나요? 기후는 보통 30년 평균을 기준으로 해요!',hint:'기후와 날씨의 시간 스케일을 생각해봐요. 단기 vs 장기!'},
+  ],
+  m:[
+    {q:'탄소 중립(Carbon Neutral)의 의미는?',opts:['탄소를 전혀 배출하지 않는 것','탄소 배출량과 흡수량을 같게 만드는 것','탄소세를 내는 것','화석연료 사용을 금지하는 것'],ans:1,pts:12,exp:'탄소 중립 = 배출한 만큼 흡수! 나무 심기, 탄소 포집 기술 등으로 순배출을 0으로 만드는 것이에요.',hint:'"중립(Neutral)"은 균형을 의미해요. 더한 것과 뺀 것이 같으면 0이 돼요!'},
+    {q:'다음 중 재생에너지가 아닌 것은?',opts:['태양광','풍력','천연가스','수력'],ans:2,pts:12,exp:'천연가스는 화석연료예요! 재생에너지는 자연에서 계속 공급되는 에너지 = 태양, 바람, 물, 지열 등이에요.',hint:'재생(再生) = 다시 만들어지는. 언젠가 고갈되는 에너지는 재생에너지가 아니에요.'},
+    {q:'한반도 기온이 세계 평균보다 더 빠르게 오르는 주된 이유는?',opts:['한반도가 태양에 더 가까워서','대도시 열섬 효과와 지리적 위치','한국인이 에너지를 많이 써서','공장이 많아서'],ans:1,pts:12,exp:'도시 열섬 효과(포장면 증가, 인공 열 방출) + 편서풍·황사 등 지리적 요인이 복합적으로 작용해요!',hint:'서울 같은 대도시는 시골보다 1~3°C 더 따뜻해요. 이것을 무엇이라 부를까요?'},
+  ],
+  h:[
+    {q:'IPCC(기후변화에 관한 정부간 협의체)의 제6차 보고서에 따르면 산업화 이후 지구 평균 기온 상승폭은?',opts:['약 0.5°C','약 1.1°C','약 2°C','약 3°C'],ans:1,pts:15,exp:'약 1.1°C! 작아 보이지만 지구 전체 평균이 1°C 오르면 생태계에 엄청난 영향을 줘요. 1.5°C가 임계점이에요.',hint:'IPCC 2021 보고서 내용이에요. 1도 정도의 작은 변화가 큰 영향을 준다는 점이 핵심이에요.'},
+    {q:'2026년 세계 기상의 날 공식 주제는?',opts:['지구를 식혀라','오늘을 관측해, 내일을 보호한다','탄소 없는 세상','바람과 비, 그리고 우리'],ans:1,pts:15,exp:'"Observing Today, Protecting Tomorrow(오늘을 관측해, 내일을 보호한다)" — 기상 관측 데이터의 중요성을 강조해요!',hint:'오늘 이 게임의 테마가 바로 세계 기상의 날 주제예요!'},
+    {q:'지구 탄소 순환에서 가장 큰 탄소 저장소는?',opts:['대기','숲(산림)','해양','토양'],ans:2,pts:18,exp:'해양이 가장 큰 탄소 저장소! 대기 중 CO₂의 약 30%를 흡수해요. 해양 온도 상승은 이 흡수 능력을 약화시켜요.',hint:'지구 표면의 71%를 덮고 있는 것은 무엇일까요?'},
+  ]
+};
+let m4diff='e',m4list=[],m4idx=0,m4sc=0;
+function initM4(){m4idx=0;m4sc=0;document.getElementById('m4sc').textContent='0';setM4Diff('e');}
+function setM4Diff(d){
+  m4diff=d;clrT();
+  document.querySelectorAll('#screen-m4 .diff-tab').forEach(b=>b.classList.remove('on'));
+  document.querySelector('#screen-m4 .diff-tab.dt-'+d).classList.add('on');
+  m4list=[...quizBank[d]].sort(()=>Math.random()-0.5);m4idx=0;m4sc=0;
+  document.getElementById('m4sc').textContent='0';renderM4();
+}
+function renderM4(){
+  if(m4idx>=m4list.length){finishM4();return;}
+  clrT();const q=m4list[m4idx];
+  document.getElementById('m4pg').textContent=m4idx+'/'+m4list.length;
+  document.getElementById('m4pgb').style.width=(m4idx/m4list.length*100)+'%';
+  document.getElementById('m4cnt').textContent=(m4idx+1)+' / '+m4list.length+' 문제';
+  document.getElementById('m4hint').classList.remove('show');
+  document.getElementById('m4hint').textContent='💡 '+q.hint;
+  document.getElementById('m4fb').classList.remove('show');
+  document.getElementById('m4nw').style.display='none';
+  document.getElementById('m4f').className='char-face';
+  document.getElementById('m4q').textContent=q.q;
+  const optsEl=document.getElementById('m4opts');optsEl.innerHTML='';
+  q.opts.forEach((opt,i)=>{
+    const btn=document.createElement('button');btn.className='q-opt';
+    btn.innerHTML=`<span style="color:var(--teal);margin-right:7px;">${['①','②','③','④'][i]}</span>${opt}`;
+    btn.onclick=()=>{
+      clrT();document.querySelectorAll('.q-opt').forEach(b=>b.disabled=true);
+      document.querySelectorAll('.q-opt')[q.ans].classList.add('correct');
+      const fb=document.getElementById('m4fb');
+      if(i===q.ans){btn.classList.add('correct');m4sc+=q.pts;document.getElementById('m4sc').textContent=m4sc;fb.className='fb show fb-ok';fb.innerHTML=`✅ 정답! +${q.pts}점<br><strong>📚 해설:</strong> ${q.exp}`;document.getElementById('m4f').className='char-face cf-happy';playS('ok');}
+      else{btn.classList.add('wrong');fb.className='fb show fb-no';fb.innerHTML=`❌ 틀렸어요!<br><strong>📚 해설:</strong> ${q.exp}`;document.getElementById('m4f').className='char-face cf-sad';playS('no');}
+      document.getElementById('m4nw').style.display='block';
+    };
+    optsEl.appendChild(btn);
+  });
+  const sec=m4diff==='e'?35:m4diff==='m'?28:22;
+  startTimer('m4',sec,()=>{
+    document.querySelectorAll('.q-opt').forEach(b=>b.disabled=true);
+    document.getElementById('m4fb').className='fb show fb-no';
+    document.getElementById('m4fb').innerHTML='⏰ 시간 초과! 힌트를 활용해봐요.';
+    document.getElementById('m4f').className='char-face cf-sad';
+    document.getElementById('m4nw').style.display='block';
+  });
+}
+function nextM4(){m4idx++;renderM4();}
+function finishM4(){
+  clrT();S.scores[3]=m4sc;const max=m4diff==='e'?24:m4diff==='m'?36:48;
+  S.stars[3]=calcSt(m4sc,max);S.done[3]=true;S.badges.sci=S.stars[3]>=2;
+  updateSt(4,S.stars[3]);saveScore();playS('cl');showResult();
+}
+
+// =====================================================
+// ===== 결과 화면 =====
+// =====================================================
+function showResult(){
+  const total=S.scores.reduce((a,b)=>a+b,0);const ts=S.stars.reduce((a,b)=>a+b,0);
+  let icon='🌍',title='기후 대응 견습생',rank='';
+  if(ts>=10){icon='🏆';title='기후 위기 대응단장';rank='최고 등급! 지구의 수호자예요!';}
+  else if(ts>=7){icon='🌟';title='기후 과학자';rank='우수! 기상 전문가 수준이에요!';}
+  else if(ts>=5){icon='🌱';title='기후 대응 활동가';rank='통과! 환경 시민의 자질이 있어요!';}
+  else if(ts>=3){icon='📚';title='기후 학습생';rank='계속 공부해봐요!';}
+  document.getElementById('reic').textContent=icon;document.getElementById('rettl').textContent=title;document.getElementById('rerank').textContent=rank;
+  const grid=document.getElementById('regrid');grid.innerHTML='';
+  ['📈','📰','🌱','🔬'].forEach((ic,i)=>{
+    const div=document.createElement('div');div.className='res-card';
+    div.innerHTML=`<div class="ri">${ic}</div><div class="rn">${['데이터 분석','뉴스 팩트체크','기후 시뮬레이션','과학 퀴즈'][i]}</div><div class="rv">${S.scores[i]}점</div><div class="rs">${'★'.repeat(S.stars[i])}${'☆'.repeat(3-S.stars[i])}</div>`;
+    grid.appendChild(div);
+  });
+  document.getElementById('retotal').textContent=total;
+  const rb=document.getElementById('rebadges');rb.innerHTML='';
+  [['data','📊 데이터 분석가'],['fact','🔍 팩트체커'],['act','🌱 행동하는 시민'],['sci','🔬 기후 과학자']].forEach(([k,label])=>{
+    const el=document.createElement('div');el.className='badge-it'+(S.badges[k]?' earned':'');el.textContent=label;rb.appendChild(el);
+  });
+  if(Object.values(S.badges).every(v=>v)){const el=document.createElement('div');el.className='badge-it earned';el.textContent='🏆 기후 대응단장';rb.appendChild(el);}
+  const evals=['기후 위기는 어렵지만 도전한 것이 대단해요! 💪 다시 도전해봐요.','잘하고 있어요! 기후 과학의 기초를 쌓고 있어요. 🌱','훌륭해요! 기후 시민으로서 기본 소양을 갖췄어요! 🌍','뛰어나요! 기후 위기를 과학적으로 이해하는 진정한 대응단원! 🔬','완벽해요! 기후 대응단장 자격이 충분해요! 지구를 부탁드려요! 🏆'];
+  document.getElementById('reeval').innerHTML=`<strong style="color:var(--teal)">💬 기후 AI 아린의 최종 평가 (${new Date().toLocaleDateString('ko')}):</strong><br>${evals[Math.min(Math.floor(ts/3),4)]}<br><br><span style="color:var(--sun)">🌦️ 세계 기상의 날(3.23) 기념 — "오늘을 관측해, 내일을 보호한다"</span>`;
+  showScr('screen-result');
+}
+function resetGame(){
+  clrT();S.done=[false,false,false,false];S.scores=[0,0,0,0];S.stars=[0,0,0,0];S.badges={data:false,fact:false,act:false,sci:false};
+  ['mc2','mc3','mc4'].forEach(id=>{const el=document.getElementById(id);if(!el)return;el.className='mc locked';el.onclick=null;el.querySelector('.mc-st')?.remove();if(!el.querySelector('.mc-lk')){const l=document.createElement('div');l.className='mc-lk';l.textContent='🔒';el.appendChild(l);}});
+  document.getElementById('mc1').className='mc';document.getElementById('mc1').onclick=()=>startMission(1);document.getElementById('mc1st').textContent='☆☆☆';
+  renderSB();renderBadges();showScr('screen-intro');
+}
+
+// ===== 포트폴리오 JSON =====
+const portfolioEntry={
+  id:'#007',title:'기후 위기 대응단',grade:'중학교 1학년',
+  theme:'세계 기상의 날(3.23) — "오늘을 관측해, 내일을 보호한다"',
+  subjects:['과학(기상·기후)','수학(통계·그래프)','국어(비판적 읽기·토론)'],
+  missions:['기상 데이터 분석(SVG 꺾은선+막대 그래프)','기후 뉴스 팩트체크(타이머+난이도3단계)','기후 대응 시뮬레이션(멀티엔딩)','기상 과학 퀴즈(타이머+힌트)'],
+  extras:['SVG 실시간 그래프','타이머(색상변화)','힌트','오답해설','배지시스템','점수판(LocalStorage)','멀티엔딩','QR코드','Web Audio API(파도소리+멜로디)','배경(별+오로라+구름)'],
+  url:GAME_URL,date:'2026.03.23',status:'운영 중'
+};
+console.log('📋 미랩 포트폴리오 업데이트 JSON:\n'+JSON.stringify(portfolioEntry,null,2));
+
+// ===== 초기화 =====
+initBg();renderSB();renderBadges();initQR();
+</script>
+</body>
+</html>
