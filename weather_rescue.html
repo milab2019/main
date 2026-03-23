@@ -1,0 +1,1362 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>⛅ 날씨 구조대 - 미랩 교육 게임</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Jua&family=Nanum+Gothic:wght@400;700;800&display=swap');
+/* ===== CSS 변수 ===== */
+:root {
+  --sky-dawn:   #ffecd2;
+  --sky-day:    #b8e4ff;
+  --sky-cloud:  #e8f4fd;
+  --sky-rain:   #c8d8e8;
+  --sun:        #ffcc02;
+  --sun-glow:   #ff9f1c;
+  --cloud-w:    #ffffff;
+  --rain-blue:  #5ba4cf;
+  --leaf:       #78c758;
+  --earth:      #c8a46e;
+  --pink-soft:  #ffb3c6;
+  --mint:       #b5ead7;
+  --lavender:   #c3b1e1;
+  --peach:      #ffd6a5;
+  --text-dark:  #2c3e50;
+  --text-mid:   #5d6d7e;
+  --white:      #ffffff;
+  --shadow:     0 6px 24px rgba(44,62,80,0.13);
+  --radius-lg:  24px;
+  --radius-md:  16px;
+  --radius-sm:  12px;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'Nanum Gothic', sans-serif;
+  background: var(--sky-day);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* ===== 하늘 배경 ===== */
+.sky-bg {
+  position: fixed; inset: 0; z-index: 0;
+  background: linear-gradient(180deg, #87ceeb 0%, #b8e4ff 50%, #e0f4ff 100%);
+  overflow: hidden;
+}
+.cloud-anim {
+  position: absolute;
+  border-radius: 50px;
+  background: rgba(255,255,255,0.85);
+  animation: cloudDrift linear infinite;
+}
+@keyframes cloudDrift { from{transform:translateX(-200px)} to{transform:translateX(110vw)} }
+.sun-anim {
+  position: absolute; top: 30px; right: 60px;
+  width: 70px; height: 70px;
+  background: radial-gradient(circle, #ffe066 60%, #ffcc02 80%, transparent 100%);
+  border-radius: 50%;
+  box-shadow: 0 0 40px 15px rgba(255,204,2,0.35);
+  animation: sunPulse 3s ease-in-out infinite;
+}
+@keyframes sunPulse { 0%,100%{box-shadow:0 0 40px 15px rgba(255,204,2,0.35)} 50%{box-shadow:0 0 60px 25px rgba(255,204,2,0.5)} }
+.raindrop {
+  position: absolute;
+  width: 3px; height: 14px;
+  background: linear-gradient(180deg, transparent, #7ec8e3);
+  border-radius: 2px;
+  animation: rainFall linear infinite;
+  opacity: 0;
+}
+@keyframes rainFall { from{transform:translateY(-20px);opacity:0.7} to{transform:translateY(100vh);opacity:0} }
+.snowflake {
+  position: absolute;
+  font-size: 1.2rem;
+  animation: snowFall linear infinite;
+  opacity: 0;
+}
+@keyframes snowFall { from{transform:translateY(-20px) rotate(0deg);opacity:0.8} to{transform:translateY(100vh) rotate(360deg);opacity:0} }
+
+/* ===== 앱 컨테이너 ===== */
+#app {
+  position: relative; z-index: 10;
+  max-width: 760px; margin: 0 auto;
+  padding: 14px;
+  min-height: 100vh;
+}
+
+/* ===== 화면 전환 ===== */
+.screen { display: none; animation: popIn 0.45s cubic-bezier(0.22,1,0.36,1); }
+.screen.active { display: block; }
+@keyframes popIn { from{opacity:0;transform:scale(0.95) translateY(16px)} to{opacity:1;transform:scale(1) translateY(0)} }
+
+/* ===== 공통 헤더 ===== */
+.g-header {
+  display: flex; align-items: center; justify-content: space-between;
+  background: rgba(255,255,255,0.88);
+  border-radius: var(--radius-md);
+  padding: 11px 16px; margin-bottom: 12px;
+  box-shadow: var(--shadow);
+  backdrop-filter: blur(8px);
+}
+.g-title { font-family: 'Jua', sans-serif; font-size: 1rem; color: #3a7bd5; }
+.g-sub { font-size: 0.7rem; color: var(--text-mid); margin-top: 1px; }
+.score-chip {
+  background: linear-gradient(135deg, #ffcc02, #ff9f1c);
+  color: #5a3000; font-family: 'Jua', sans-serif;
+  padding: 5px 14px; border-radius: 20px;
+  font-size: 0.92rem; font-weight: 800;
+  box-shadow: 0 3px 10px rgba(255,159,28,0.35);
+}
+
+/* ===== 진행바 ===== */
+.prog-wrap { margin-bottom: 12px; }
+.prog-label { display: flex; justify-content: space-between; font-size: 0.76rem; color: #3a7bd5; margin-bottom: 4px; font-weight: 700; }
+.prog-track { height: 10px; background: rgba(255,255,255,0.6); border-radius: 10px; overflow: hidden; box-shadow: inset 0 2px 4px rgba(0,0,0,0.08); }
+.prog-fill { height: 100%; background: linear-gradient(90deg, #56c8e8, #78c758, #ffcc02); border-radius: 10px; transition: width 0.6s cubic-bezier(0.22,1,0.36,1); }
+
+/* ===== 타이머 ===== */
+.timer-bar-wrap {
+  display: flex; align-items: center; gap: 8px;
+  background: rgba(255,255,255,0.75); border-radius: var(--radius-sm);
+  padding: 7px 12px; margin-bottom: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+.timer-track { flex: 1; height: 10px; background: rgba(0,0,0,0.08); border-radius: 8px; overflow: hidden; }
+.timer-fill { height: 100%; border-radius: 8px; transition: width 1s linear; }
+.timer-fill.ok { background: linear-gradient(90deg, #56c8e8, #78c758); }
+.timer-fill.warn { background: linear-gradient(90deg, #ffcc02, #ff9f1c); }
+.timer-fill.danger { background: linear-gradient(90deg, #ff6b6b, #ee0979); animation: timerDanger 0.5s infinite; }
+@keyframes timerDanger { 0%,100%{opacity:1} 50%{opacity:0.6} }
+.timer-num { font-family:'Jua',sans-serif; font-size: 1.1rem; color: var(--text-dark); min-width: 28px; text-align: right; }
+
+/* ===== 카드 ===== */
+.card {
+  background: rgba(255,255,255,0.92);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+  box-shadow: var(--shadow);
+  margin-bottom: 12px;
+  border: 2px solid rgba(255,255,255,0.7);
+}
+
+/* ===== 캐릭터 말풍선 ===== */
+.char-row { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 12px; }
+.char-face {
+  width: 58px; height: 58px; border-radius: 50%; flex-shrink: 0;
+  background: linear-gradient(135deg, #b8e4ff, #56c8e8);
+  border: 3px solid white;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 2rem;
+  box-shadow: 0 4px 14px rgba(86,200,232,0.35);
+  transition: all 0.4s cubic-bezier(0.34,1.56,0.64,1);
+}
+.char-face.happy { transform: scale(1.12) rotate(-5deg); filter: drop-shadow(0 0 8px #ffcc0280); }
+.char-face.sad { transform: scale(0.92) rotate(5deg); filter: grayscale(30%); }
+.char-face.surprise { transform: scale(1.15); filter: drop-shadow(0 0 10px #ff9f1c80); }
+.bubble {
+  background: rgba(255,255,255,0.95);
+  border: 2px solid #b8e4ff;
+  border-radius: 16px 16px 16px 4px;
+  padding: 11px 14px; flex: 1;
+  font-size: 0.92rem; line-height: 1.7; color: var(--text-dark);
+  box-shadow: 0 3px 10px rgba(0,0,0,0.06);
+}
+.bubble-name { font-size: 0.7rem; color: #3a7bd5; font-weight: 800; margin-bottom: 3px; }
+
+/* ===== 버튼 ===== */
+.btn {
+  display: inline-block; padding: 13px 26px; border: none;
+  border-radius: 50px; cursor: pointer;
+  font-family: 'Jua', sans-serif; font-size: 1rem;
+  transition: all 0.2s; text-decoration: none;
+}
+.btn-sky {
+  background: linear-gradient(135deg, #56c8e8, #3a7bd5);
+  color: white; box-shadow: 0 5px 16px rgba(58,123,213,0.35);
+}
+.btn-sky:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(58,123,213,0.45); }
+.btn-sun {
+  background: linear-gradient(135deg, #ffcc02, #ff9f1c);
+  color: #5a3000; box-shadow: 0 5px 16px rgba(255,159,28,0.35);
+}
+.btn-sun:hover { transform: translateY(-2px); }
+.btn-mint {
+  background: linear-gradient(135deg, #78c758, #56c8e8);
+  color: white; box-shadow: 0 5px 16px rgba(120,199,88,0.35);
+}
+.btn-ghost {
+  background: rgba(255,255,255,0.7); border: 2px solid #b8e4ff;
+  color: #3a7bd5;
+}
+.btn-ghost:hover { background: rgba(255,255,255,0.9); }
+.btn-sm { padding: 8px 18px; font-size: 0.88rem; }
+.btn-block { width: 100%; text-align: center; margin-top: 6px; }
+
+/* ===== 힌트 ===== */
+.hint-btn {
+  display: inline-flex; align-items: center; gap: 5px;
+  background: rgba(255,204,2,0.15); border: 1.5px solid rgba(255,204,2,0.5);
+  color: #a07800; padding: 5px 13px; border-radius: 18px;
+  font-size: 0.82rem; font-weight: 800; cursor: pointer; margin-bottom: 9px;
+  transition: all 0.2s;
+}
+.hint-btn:hover { background: rgba(255,204,2,0.28); }
+.hint-box {
+  background: #fffde0; border: 1.5px solid #ffe066;
+  border-radius: var(--radius-sm); padding: 10px 13px;
+  font-size: 0.84rem; color: #7a5c00; margin-bottom: 10px;
+  display: none; line-height: 1.6;
+}
+.hint-box.show { display: block; animation: popIn 0.3s ease; }
+
+/* ===== 피드백 ===== */
+.fb-box {
+  border-radius: var(--radius-sm); padding: 12px 14px;
+  font-size: 0.88rem; line-height: 1.7; margin-top: 11px;
+  display: none;
+}
+.fb-box.show { display: block; animation: popIn 0.3s ease; }
+.fb-ok { background: #eafaf1; border: 1.5px solid #78c758; color: #1e6e3e; }
+.fb-no { background: #fde8e8; border: 1.5px solid #ff9090; color: #8b1a1a; }
+
+/* ===== 난이도 탭 ===== */
+.diff-row { display: flex; gap: 7px; margin-bottom: 13px; flex-wrap: wrap; }
+.diff-tab {
+  padding: 6px 15px; border-radius: 18px;
+  border: 2px solid; font-size: 0.82rem; font-weight: 800;
+  cursor: pointer; transition: all 0.2s; font-family: 'Nanum Gothic', sans-serif;
+}
+.diff-tab.easy { border-color: #78c758; color: #78c758; background: white; }
+.diff-tab.easy.on { background: #78c758; color: white; }
+.diff-tab.mid { border-color: #ff9f1c; color: #ff9f1c; background: white; }
+.diff-tab.mid.on { background: #ff9f1c; color: white; }
+.diff-tab.hard { border-color: #e05252; color: #e05252; background: white; }
+.diff-tab.hard.on { background: #e05252; color: white; }
+
+/* ===== 인트로 ===== */
+#screen-intro { text-align: center; }
+.intro-hero {
+  background: rgba(255,255,255,0.7); border-radius: var(--radius-lg);
+  padding: 28px 20px; margin: 8px 0 14px;
+  box-shadow: var(--shadow);
+}
+.hero-icon { font-size: 5.5rem; animation: heroBounce 2.2s ease-in-out infinite; }
+@keyframes heroBounce { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-14px)} }
+.hero-title {
+  font-family: 'Jua', sans-serif; font-size: 2.4rem;
+  background: linear-gradient(135deg, #3a7bd5, #56c8e8, #78c758);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  margin-bottom: 5px;
+}
+.hero-sub { color: var(--text-mid); font-size: 0.9rem; margin-bottom: 4px; }
+.hero-tag {
+  display: inline-block; background: rgba(86,200,232,0.15);
+  border: 1.5px solid #56c8e8; color: #3a7bd5;
+  font-size: 0.76rem; font-weight: 800; padding: 3px 11px; border-radius: 12px; margin-top: 5px;
+}
+.story-card {
+  background: rgba(255,255,255,0.88); border-radius: var(--radius-md);
+  border: 2px solid #b8e4ff; padding: 18px; margin: 14px 0;
+  text-align: left; line-height: 1.8; font-size: 0.92rem; color: var(--text-dark);
+}
+.story-ttl {
+  font-family: 'Jua', sans-serif; color: #ff9f1c;
+  font-size: 1rem; margin-bottom: 9px; text-align: center;
+}
+.mission-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 14px 0; }
+.mc {
+  background: rgba(255,255,255,0.85); border: 2.5px solid #b8e4ff;
+  border-radius: var(--radius-md); padding: 14px; text-align: center;
+  cursor: pointer; transition: all 0.3s; box-shadow: 0 3px 12px rgba(0,0,0,0.07);
+}
+.mc:hover:not(.locked) { transform: translateY(-5px); border-color: #56c8e8; box-shadow: 0 10px 28px rgba(58,123,213,0.18); }
+.mc.locked { opacity: 0.42; cursor: not-allowed; border-color: rgba(184,228,255,0.4); }
+.mc.done { border-color: #78c758; }
+.mc-icon { font-size: 2.2rem; margin-bottom: 6px; }
+.mc-name { font-family: 'Jua', sans-serif; font-size: 0.9rem; color: #3a7bd5; }
+.mc-desc { font-size: 0.72rem; color: var(--text-mid); margin-top: 3px; }
+.mc-stars { color: #ffcc02; font-size: 0.9rem; margin-top: 4px; }
+.mc-lock { font-size: 1.1rem; margin-top: 4px; }
+
+/* ===== 점수판 ===== */
+.scoreboard {
+  background: rgba(255,255,255,0.8); border-radius: var(--radius-md);
+  border: 2px solid #b8e4ff; padding: 13px; margin-bottom: 12px;
+}
+.sb-title { font-family: 'Jua', sans-serif; font-size: 0.88rem; color: #ff9f1c; margin-bottom: 9px; }
+.sb-row {
+  display: flex; align-items: center; justify-content: space-between;
+  font-size: 0.82rem; padding: 5px 9px; border-radius: 8px;
+  background: rgba(184,228,255,0.15); margin-bottom: 5px;
+}
+.sb-row:last-child { margin-bottom: 0; }
+.sb-row.rank1 { background: rgba(255,204,2,0.15); }
+.sb-row.rank2 { background: rgba(200,200,200,0.15); }
+.sb-row.rank3 { background: rgba(200,130,50,0.12); }
+
+/* ===== 임무1: 날씨 카드 맞추기 ===== */
+.weather-q {
+  font-family: 'Jua', sans-serif; font-size: 1.15rem; color: var(--text-dark);
+  text-align: center; margin-bottom: 16px; line-height: 1.6;
+}
+.weather-opts { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.w-opt {
+  padding: 16px 10px; border-radius: var(--radius-md);
+  border: 2.5px solid #b8e4ff; background: white;
+  cursor: pointer; text-align: center;
+  transition: all 0.22s; font-size: 0.9rem; font-weight: 700; color: var(--text-dark);
+}
+.w-opt:hover:not(:disabled) { transform: scale(1.04); border-color: #56c8e8; background: #f0faff; box-shadow: 0 5px 14px rgba(58,123,213,0.15); }
+.w-opt .opt-icon { font-size: 2.2rem; display: block; margin-bottom: 6px; }
+.w-opt.correct { border-color: #78c758; background: #eafaf1; box-shadow: 0 0 14px rgba(120,199,88,0.25); }
+.w-opt.wrong { border-color: #ff8888; background: #fde8e8; }
+.w-opt:disabled { cursor: not-allowed; }
+
+/* ===== 임무2: 날씨 분류 드래그 ===== */
+.sort-source {
+  background: rgba(255,255,255,0.7); border: 2px dashed #b8e4ff;
+  border-radius: var(--radius-md); padding: 12px; margin-bottom: 12px;
+}
+.sort-source-title { font-size: 0.8rem; color: var(--text-mid); margin-bottom: 8px; font-weight: 700; }
+.sort-items-row { display: flex; flex-wrap: wrap; gap: 8px; min-height: 48px; }
+.sort-bins { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.sort-bin {
+  min-height: 100px; border-radius: var(--radius-md);
+  border: 2.5px dashed #b8e4ff; padding: 10px; transition: all 0.2s;
+}
+.sort-bin.drag-over { border-color: #56c8e8; background: rgba(86,200,232,0.07); transform: scale(1.02); }
+.sort-bin-title {
+  font-family: 'Jua', sans-serif; font-size: 0.85rem; text-align: center;
+  padding: 5px; border-radius: 8px; margin-bottom: 8px;
+}
+.sort-items-col { display: flex; flex-wrap: wrap; gap: 6px; min-height: 40px; }
+.s-item {
+  padding: 8px 13px; border-radius: 20px;
+  background: white; border: 2px solid #b8e4ff;
+  cursor: grab; font-size: 0.85rem; font-weight: 700; color: var(--text-dark);
+  transition: all 0.2s; user-select: none; display: flex; align-items: center; gap: 5px;
+}
+.s-item:active { cursor: grabbing; opacity: 0.75; transform: scale(1.05); }
+.s-item.dragging { opacity: 0.35; border-style: dashed; }
+.s-item.correct-item { border-color: #78c758; background: #eafaf1; }
+.s-item.wrong-item { border-color: #ff8888; background: #fde8e8; }
+
+/* ===== 임무3: 스토리 선택 ===== */
+.scene-box {
+  background: linear-gradient(135deg, #f0faff, #e8f4fd);
+  border: 2px solid #b8e4ff; border-radius: var(--radius-md);
+  padding: 18px; text-align: center; margin-bottom: 14px;
+  min-height: 90px; display: flex; align-items: center; justify-content: center; flex-direction: column;
+}
+.scene-emoji { font-size: 3rem; margin-bottom: 8px; }
+.scene-text { font-family: 'Jua', sans-serif; font-size: 1rem; color: var(--text-dark); line-height: 1.6; }
+.choice-grid { display: grid; gap: 9px; }
+.c-btn {
+  padding: 13px 15px; border-radius: var(--radius-sm);
+  border: 2.5px solid #b8e4ff; background: white;
+  cursor: pointer; font-size: 0.9rem; font-weight: 700;
+  color: var(--text-dark); text-align: left; transition: all 0.2s;
+}
+.c-btn:hover:not(:disabled) { transform: translateX(5px); border-color: #56c8e8; background: #f0faff; }
+.c-btn.pick-good { border-color: #78c758; background: #eafaf1; }
+.c-btn.pick-bad { border-color: #ff8888; background: #fde8e8; }
+.outcome-box {
+  border-radius: var(--radius-sm); padding: 12px; margin-top: 11px; display: none; font-size: 0.88rem; line-height: 1.7;
+}
+.outcome-box.show { display: block; animation: popIn 0.3s ease; }
+.outcome-good { background: #eafaf1; border: 1.5px solid #78c758; color: #1e6e3e; }
+.outcome-bad  { background: #fde8e8; border: 1.5px solid #ff8888; color: #8b1a1a; }
+
+/* ===== 임무4: 수 세기 + 차트 ===== */
+.count-chart {
+  background: white; border-radius: var(--radius-md);
+  border: 2px solid #b8e4ff; padding: 14px; margin-bottom: 14px;
+}
+.chart-title { font-family: 'Jua', sans-serif; font-size: 0.92rem; color: var(--text-dark); text-align: center; margin-bottom: 12px; }
+.bar-row { display: flex; align-items: flex-end; gap: 8px; height: 100px; }
+.b-item { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.b-fill { width: 100%; border-radius: 6px 6px 0 0; transition: height 0.8s cubic-bezier(0.22,1,0.36,1); }
+.b-label { font-size: 0.68rem; font-weight: 800; color: var(--text-mid); text-align: center; word-break: keep-all; }
+.b-val { font-size: 0.72rem; font-weight: 800; color: var(--text-dark); }
+.count-qs { display: flex; flex-direction: column; gap: 11px; }
+.cq { background: #f0faff; border-radius: var(--radius-sm); padding: 12px; border: 1.5px solid #b8e4ff; }
+.cq-text { font-weight: 800; color: var(--text-dark); margin-bottom: 8px; font-size: 0.88rem; }
+.cq-opts { display: flex; gap: 7px; flex-wrap: wrap; }
+.cq-opt {
+  padding: 7px 15px; border-radius: 18px;
+  border: 2px solid #b8e4ff; background: white;
+  cursor: pointer; font-weight: 700; font-size: 0.88rem; color: var(--text-dark); transition: all 0.2s;
+}
+.cq-opt:hover:not(:disabled) { border-color: #56c8e8; background: #f0faff; }
+.cq-opt.correct { background: #eafaf1; border-color: #78c758; color: #1e6e3e; }
+.cq-opt.wrong { background: #fde8e8; border-color: #ff8888; color: #8b1a1a; }
+
+/* ===== QR코드 패널 ===== */
+.qr-panel {
+  background: rgba(255,255,255,0.88); border-radius: var(--radius-md);
+  border: 2px solid #b8e4ff; padding: 16px; text-align: center;
+  margin-bottom: 12px;
+}
+.qr-title { font-family: 'Jua', sans-serif; font-size: 0.92rem; color: #3a7bd5; margin-bottom: 10px; }
+#qrcode-wrap canvas, #qrcode-wrap img { margin: 0 auto; border-radius: 10px; display: block; }
+.qr-link { font-size: 0.75rem; color: var(--text-mid); margin-top: 7px; word-break: break-all; }
+
+/* ===== 결과 ===== */
+#screen-result { text-align: center; }
+.result-badge {
+  background: linear-gradient(135deg, #fff9e0, #ffecd2);
+  border: 3px solid #ffcc02; border-radius: var(--radius-lg);
+  padding: 26px; margin: 12px 0;
+  box-shadow: 0 0 40px rgba(255,204,2,0.2);
+}
+.res-icon { font-size: 5rem; animation: badgePop 0.55s cubic-bezier(0.175,0.885,0.32,1.275); }
+@keyframes badgePop { from{transform:scale(0) rotate(-20deg)} to{transform:scale(1) rotate(0)} }
+.res-title { font-family:'Jua',sans-serif; font-size:1.8rem; color:#d4860a; margin:8px 0 4px; }
+.res-sub { color: var(--text-mid); font-size: 0.9rem; }
+.res-rank { font-size: 1rem; color: #3a7bd5; margin-top: 6px; font-weight: 800; }
+.res-grid { display: grid; grid-template-columns: repeat(2,1fr); gap: 10px; margin: 12px 0; }
+.res-card {
+  background: rgba(255,255,255,0.88); border: 2px solid #b8e4ff;
+  border-radius: var(--radius-md); padding: 13px; text-align: center;
+}
+.res-card .ri { font-size: 1.8rem; }
+.res-card .rn { font-size: 0.76rem; color: #3a7bd5; margin: 3px 0; }
+.res-card .rs { color: #ffcc02; font-size: 0.9rem; }
+.res-card .rv { font-size: 1.1rem; font-weight: 800; color: #ff9f1c; }
+.total-chip {
+  background: linear-gradient(135deg, #56c8e8, #3a7bd5);
+  border-radius: var(--radius-md); padding: 15px; margin: 10px 0;
+}
+.total-chip .tc-l { font-family:'Jua',sans-serif; font-size:1rem; color:white; }
+.total-chip .tc-n { font-family:'Jua',sans-serif; font-size:3rem; color:white; line-height:1; }
+.eval-card {
+  background: rgba(255,255,255,0.88); border-radius: var(--radius-md);
+  border: 2px solid #b8e4ff; padding: 13px; margin: 10px 0;
+  font-size: 0.88rem; line-height: 1.7; text-align: left; color: var(--text-dark);
+}
+
+/* ===== 음악 버튼 ===== */
+.music-btn {
+  position: fixed; top: 13px; right: 13px; z-index: 200;
+  background: rgba(255,255,255,0.88); border: 1.5px solid #b8e4ff;
+  color: #3a7bd5; padding: 7px 13px; border-radius: 18px;
+  font-size: 0.8rem; cursor: pointer;
+  backdrop-filter: blur(8px); font-family: 'Nanum Gothic', sans-serif;
+}
+
+/* ===== 반응형 ===== */
+@media(max-width:500px) {
+  .mission-grid { grid-template-columns: 1fr 1fr; }
+  .hero-title { font-size: 1.9rem; }
+  .sort-bins { grid-template-columns: 1fr; }
+  .res-grid { grid-template-columns: 1fr 1fr; }
+}
+</style>
+</head>
+<body>
+
+<!-- 하늘 배경 -->
+<div class="sky-bg" id="skyBg">
+  <div class="sun-anim"></div>
+</div>
+<button class="music-btn" id="musicBtn" onclick="toggleMusic()">🎵 음악 켜기</button>
+
+<div id="app">
+
+  <!-- ===== 인트로 ===== -->
+  <div id="screen-intro" class="screen active">
+    <div class="intro-hero">
+      <div class="hero-icon">⛅</div>
+      <div class="hero-title">날씨 구조대</div>
+      <div class="hero-sub">초등 1~2학년 국어·수학·슬기로운 생활 교과 연계</div>
+      <div class="hero-tag">📅 오늘은 세계 기상의 날(3월 23일)! 🌍</div>
+    </div>
+
+    <div class="story-card">
+      <div class="story-ttl">🌦️ 긴급 스토리!</div>
+      <p>날씨 마을에 큰일이 생겼어요!<br>
+      구름 요정들이 모두 잠들어서 <strong style="color:#3a7bd5">날씨가 뒤죽박죽</strong>이 되었어요. ☁️<br><br>
+      여름인데 눈이 오고, 봄인데 태풍이 불고 있어요!<br>
+      <strong style="color:#ff9f1c">날씨 구조대</strong>로 선발된 여러분이 날씨를 바로잡아 주세요! 🌈</p>
+    </div>
+
+    <div style="font-family:'Jua',sans-serif;font-size:0.95rem;color:#3a7bd5;margin-bottom:9px;">📋 구조 임무 목록</div>
+    <div class="mission-grid" id="missionGrid">
+      <div class="mc" id="mc1" onclick="startMission(1)">
+        <div class="mc-icon">🌤️</div>
+        <div class="mc-name">임무 1</div>
+        <div class="mc-desc">날씨 이름 맞추기</div>
+        <div class="mc-stars" id="mc1stars">☆☆☆</div>
+      </div>
+      <div class="mc locked" id="mc2">
+        <div class="mc-icon">🗂️</div>
+        <div class="mc-name">임무 2</div>
+        <div class="mc-desc">날씨 분류하기</div>
+        <div class="mc-lock">🔒</div>
+      </div>
+      <div class="mc locked" id="mc3">
+        <div class="mc-icon">🌈</div>
+        <div class="mc-name">임무 3</div>
+        <div class="mc-desc">날씨 선택 이야기</div>
+        <div class="mc-lock">🔒</div>
+      </div>
+      <div class="mc locked" id="mc4">
+        <div class="mc-icon">🔢</div>
+        <div class="mc-name">임무 4</div>
+        <div class="mc-desc">날씨 수 세기</div>
+        <div class="mc-lock">🔒</div>
+      </div>
+    </div>
+
+    <!-- 점수판 -->
+    <div class="scoreboard">
+      <div class="sb-title">🏆 날씨 구조대 명예의 전당</div>
+      <div id="sbList"><div class="sb-row" style="justify-content:center;color:var(--text-mid);font-size:0.8rem;">첫 번째 구조대원이 되어보세요!</div></div>
+    </div>
+
+    <!-- QR코드 -->
+    <div class="qr-panel">
+      <div class="qr-title">📱 친구에게 공유하기</div>
+      <div id="qrcode-wrap"></div>
+      <div class="qr-link" id="qrLinkText">milab2019.github.io/main/weather_rescue.html</div>
+    </div>
+  </div>
+
+  <!-- ===== 임무1: 날씨 이름 맞추기 ===== -->
+  <div id="screen-m1" class="screen">
+    <div class="g-header">
+      <div><div class="g-title">🌤️ 임무 1 — 날씨 이름 맞추기</div><div class="g-sub">국어·슬기로운 생활 연계 | 개념 확인→추론→심화</div></div>
+      <div class="score-chip">⭐ <span id="m1Sc">0</span></div>
+    </div>
+    <div class="prog-wrap">
+      <div class="prog-label"><span>진행</span><span id="m1Pg">0/6</span></div>
+      <div class="prog-track"><div class="prog-fill" id="m1PgBar" style="width:0%"></div></div>
+    </div>
+    <div class="char-row">
+      <div class="char-face" id="m1Char">☀️</div>
+      <div class="bubble"><div class="bubble-name">날씨 요정 '구름이'</div><span id="m1Msg">설명을 읽고 어떤 날씨인지 골라보세요!</span></div>
+    </div>
+    <div class="card">
+      <div class="diff-row">
+        <button class="diff-tab easy on" onclick="setM1Diff('easy')">🌱 쉬움</button>
+        <button class="diff-tab mid" onclick="setM1Diff('mid')">🌿 보통</button>
+        <button class="diff-tab hard" onclick="setM1Diff('hard')">🌲 도전!</button>
+      </div>
+      <button class="hint-btn" onclick="showHint('m1')">💡 힌트 보기</button>
+      <div class="hint-box" id="m1Hint"></div>
+      <div class="weather-q" id="m1Q">문제를 불러오는 중...</div>
+      <div class="weather-opts" id="m1Opts"></div>
+      <div class="fb-box" id="m1Fb"></div>
+      <div id="m1NextWrap" style="text-align:center;margin-top:13px;display:none;">
+        <button class="btn btn-sky btn-sm" onclick="nextM1()">다음 문제 →</button>
+      </div>
+    </div>
+    <button class="btn btn-ghost btn-sm" onclick="goHome()">← 임무 목록</button>
+  </div>
+
+  <!-- ===== 임무2: 날씨 분류 ===== -->
+  <div id="screen-m2" class="screen">
+    <div class="g-header">
+      <div><div class="g-title">🗂️ 임무 2 — 날씨 분류하기</div><div class="g-sub">슬기로운 생활·국어 연계 | 드래그 분류</div></div>
+      <div class="score-chip">⭐ <span id="m2Sc">0</span></div>
+    </div>
+    <div class="prog-wrap">
+      <div class="prog-label"><span>진행</span><span id="m2Pg">0/3</span></div>
+      <div class="prog-track"><div class="prog-fill" id="m2PgBar" style="width:0%"></div></div>
+    </div>
+    <div class="char-row">
+      <div class="char-face" id="m2Char">☁️</div>
+      <div class="bubble"><div class="bubble-name">날씨 요정 '구름이'</div><span id="m2Msg">카드를 드래그해서 알맞은 곳에 넣어보세요!</span></div>
+    </div>
+    <div class="card">
+      <div id="m2RoundLbl" style="font-family:'Jua',sans-serif;font-size:0.9rem;color:#ff9f1c;margin-bottom:10px;">라운드 1/3</div>
+      <div class="sort-source">
+        <div class="sort-source-title">📦 분류할 카드들</div>
+        <div class="sort-items-row" id="m2Source" ondragover="event.preventDefault();this.classList.add('drag-over')" ondragleave="this.classList.remove('drag-over')" ondrop="dropSortItem(event,'source')"></div>
+      </div>
+      <div class="sort-bins" id="m2Bins"></div>
+      <div style="text-align:center;margin-top:12px;">
+        <button class="btn btn-sky btn-sm" onclick="checkSort()">✅ 확인하기</button>
+      </div>
+      <div class="fb-box" id="m2Fb"></div>
+    </div>
+    <button class="btn btn-ghost btn-sm" onclick="goHome()">← 임무 목록</button>
+  </div>
+
+  <!-- ===== 임무3: 스토리 선택 ===== -->
+  <div id="screen-m3" class="screen">
+    <div class="g-header">
+      <div><div class="g-title">🌈 임무 3 — 날씨 이야기 선택</div><div class="g-sub">국어·도덕 연계 | 멀티 엔딩 스토리</div></div>
+      <div class="score-chip">⭐ <span id="m3Sc">0</span></div>
+    </div>
+    <div class="prog-wrap">
+      <div class="prog-label"><span>이야기 진행</span><span id="m3Pg">0/4</span></div>
+      <div class="prog-track"><div class="prog-fill" id="m3PgBar" style="width:0%"></div></div>
+    </div>
+    <div class="char-row">
+      <div class="char-face" id="m3Char">🌈</div>
+      <div class="bubble"><div class="bubble-name">날씨 요정 '구름이'</div><span id="m3Msg">이야기를 읽고 어떻게 할지 선택해보세요!</span></div>
+    </div>
+    <div class="card">
+      <div class="scene-box">
+        <div class="scene-emoji" id="m3SceneEmoji">⛅</div>
+        <div class="scene-text" id="m3SceneTxt">이야기 불러오는 중...</div>
+      </div>
+      <div class="choice-grid" id="m3ChoiceGrid"></div>
+      <div class="outcome-box" id="m3OutcomeBox"></div>
+      <div id="m3NextWrap" style="text-align:center;margin-top:13px;display:none;">
+        <button class="btn btn-sky" onclick="nextStory()">다음 이야기 →</button>
+      </div>
+    </div>
+    <button class="btn btn-ghost btn-sm" onclick="goHome()">← 임무 목록</button>
+  </div>
+
+  <!-- ===== 임무4: 수 세기 ===== -->
+  <div id="screen-m4" class="screen">
+    <div class="g-header">
+      <div><div class="g-title">🔢 임무 4 — 날씨 수 세기</div><div class="g-sub">수학·슬기로운 생활 연계 | 그래프 읽기</div></div>
+      <div class="score-chip">⭐ <span id="m4Sc">0</span></div>
+    </div>
+    <div class="timer-bar-wrap">
+      <span style="font-size:1rem;">⏱️</span>
+      <div class="timer-track"><div class="timer-fill ok" id="m4TimerBar" style="width:100%"></div></div>
+      <div class="timer-num" id="m4TimerNum">30</div>
+    </div>
+    <div class="char-row">
+      <div class="char-face" id="m4Char">🌈</div>
+      <div class="bubble"><div class="bubble-name">날씨 요정 '구름이'</div><span id="m4Msg">그래프를 보고 질문에 답해보세요!</span></div>
+    </div>
+    <div class="card">
+      <div class="diff-row">
+        <button class="diff-tab easy on" onclick="setM4Diff('easy')">🌱 쉬움</button>
+        <button class="diff-tab mid" onclick="setM4Diff('mid')">🌿 보통</button>
+        <button class="diff-tab hard" onclick="setM4Diff('hard')">🌲 도전!</button>
+      </div>
+      <div class="count-chart">
+        <div class="chart-title" id="m4ChartTitle">이번 주 날씨 일수</div>
+        <div class="bar-row" id="m4BarRow"></div>
+      </div>
+      <div class="count-qs" id="m4Qs"></div>
+      <div id="m4NextWrap" style="text-align:center;margin-top:13px;display:none;">
+        <button class="btn btn-sky" onclick="nextM4()">다음 데이터 →</button>
+      </div>
+    </div>
+    <button class="btn btn-ghost btn-sm" onclick="goHome()">← 임무 목록</button>
+  </div>
+
+  <!-- ===== 결과 ===== -->
+  <div id="screen-result" class="screen">
+    <div style="padding-top:8px;">
+      <div class="result-badge">
+        <div class="res-icon" id="resIcon">🏆</div>
+        <div class="res-title" id="resTitle">날씨 구조 완료!</div>
+        <div class="res-sub">미랩(MILAB) 날씨 구조대 인증</div>
+        <div class="res-rank" id="resRank"></div>
+      </div>
+      <div class="res-grid" id="resGrid"></div>
+      <div class="total-chip">
+        <div class="tc-l">🌟 총 획득 점수</div>
+        <div class="tc-n" id="tcNum">0</div>
+        <div style="font-size:0.82rem;color:rgba(255,255,255,0.85);margin-top:2px;">/ 100점</div>
+      </div>
+      <div class="eval-card" id="evalCard"></div>
+      <button class="btn btn-sky btn-block" onclick="resetGame()">🔄 다시 도전하기!</button>
+    </div>
+  </div>
+
+</div><!-- #app -->
+
+<!-- QR코드 라이브러리 -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
+<script>
+// =============================================
+// ===== 게임 상태 =====
+// =============================================
+const GAME_URL = 'https://milab2019.github.io/main/weather_rescue.html';
+const state = {
+  done:   [false, false, false, false],
+  scores: [0, 0, 0, 0],
+  stars:  [0, 0, 0, 0],
+  history: []
+};
+try { state.history = JSON.parse(localStorage.getItem('wr_scores') || '[]'); } catch(e) {}
+
+// =============================================
+// ===== QR코드 생성 =====
+// =============================================
+function initQR() {
+  const wrap = document.getElementById('qrcode-wrap');
+  if (!wrap) return;
+  try {
+    new QRCode(wrap, {
+      text: GAME_URL,
+      width: 130, height: 130,
+      colorDark: '#3a7bd5', colorLight: '#ffffff',
+      correctLevel: QRCode.CorrectLevel.M
+    });
+  } catch(e) {
+    wrap.innerHTML = `<img src="https://api.qrserver.com/v1/create-qr-code/?size=130x130&data=${encodeURIComponent(GAME_URL)}" alt="QR코드" style="border-radius:10px;">`;
+  }
+}
+
+// =============================================
+// ===== 배경 생성 =====
+// =============================================
+function initBg() {
+  const bg = document.getElementById('skyBg');
+  // 구름
+  const cloudData = [
+    {w:120,h:40,top:'15%',dur:'18s',delay:'0s'},
+    {w:90,h:30,top:'25%',dur:'24s',delay:'5s'},
+    {w:150,h:50,top:'8%',dur:'20s',delay:'10s'},
+    {w:80,h:28,top:'40%',dur:'30s',delay:'3s'},
+  ];
+  cloudData.forEach(c => {
+    const el = document.createElement('div');
+    el.className = 'cloud-anim';
+    el.style.cssText = `width:${c.w}px;height:${c.h}px;top:${c.top};animation-duration:${c.dur};animation-delay:${c.delay};`;
+    bg.appendChild(el);
+  });
+}
+
+// =============================================
+// ===== 음악 (봄비 느낌 Web Audio API) =====
+// =============================================
+let audioCtx = null, musicOn = false;
+function toggleMusic() {
+  musicOn = !musicOn;
+  document.getElementById('musicBtn').textContent = musicOn ? '🎵 끄기' : '🎵 음악';
+  if (musicOn) playBgMusic(); else stopBgMusic();
+}
+function playBgMusic() {
+  try {
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    // 맑고 밝은 실로폰 느낌 멜로디
+    const notes = [523, 659, 784, 880, 784, 659, 523, 587, 659, 523, 440, 523];
+    notes.forEach((freq, i) => {
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.connect(gain); gain.connect(audioCtx.destination);
+      osc.type = 'sine';
+      osc.frequency.value = freq;
+      const t = audioCtx.currentTime + i * 0.45;
+      gain.gain.setValueAtTime(0, t);
+      gain.gain.linearRampToValueAtTime(0.05, t + 0.05);
+      gain.gain.linearRampToValueAtTime(0, t + 0.4);
+      osc.start(t); osc.stop(t + 0.5);
+    });
+    setTimeout(() => { if (musicOn) playBgMusic(); }, notes.length * 450 + 600);
+  } catch(e) {}
+}
+function stopBgMusic() {
+  if (audioCtx) { audioCtx.close(); audioCtx = null; }
+}
+function playSound(type) {
+  try {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.connect(gain); gain.connect(ctx.destination);
+    if (type === 'correct') {
+      osc.frequency.setValueAtTime(523, ctx.currentTime);
+      osc.frequency.linearRampToValueAtTime(784, ctx.currentTime + 0.12);
+      gain.gain.setValueAtTime(0.12, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.5);
+    } else if (type === 'wrong') {
+      osc.type = 'sawtooth'; osc.frequency.value = 180;
+      gain.gain.setValueAtTime(0.08, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.3);
+    } else if (type === 'clear') {
+      [523, 659, 784, 1047].forEach((f, i) => {
+        const o2 = ctx.createOscillator(); const g2 = ctx.createGain();
+        o2.connect(g2); g2.connect(ctx.destination);
+        o2.frequency.value = f;
+        const t = ctx.currentTime + i * 0.1;
+        g2.gain.setValueAtTime(0.1, t); g2.gain.exponentialRampToValueAtTime(0.001, t + 0.3);
+        o2.start(t); o2.stop(t + 0.4);
+      });
+    }
+    osc.start(); osc.stop(ctx.currentTime + 0.6);
+  } catch(e) {}
+}
+
+// =============================================
+// ===== 화면 전환 =====
+// =============================================
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo(0, 0);
+}
+function goHome() { showScreen('screen-intro'); renderSB(); }
+
+// =============================================
+// ===== 공통 유틸 =====
+// =============================================
+function unlockMC(n) {
+  const el = document.getElementById('mc' + n);
+  if (!el) return;
+  el.classList.remove('locked');
+  el.querySelector('.mc-lock')?.remove();
+  const s = document.createElement('div');
+  s.className = 'mc-stars'; s.id = 'mc' + n + 'stars'; s.textContent = '☆☆☆';
+  el.appendChild(s);
+  el.onclick = () => startMission(n);
+}
+function updateStars(n, stars) {
+  const el = document.getElementById('mc' + n + 'stars');
+  if (el) el.textContent = '★'.repeat(stars) + '☆'.repeat(3 - stars);
+  document.getElementById('mc' + n)?.classList.add('done');
+}
+function calcStars(score, max) {
+  const p = score / max;
+  return p >= 0.9 ? 3 : p >= 0.6 ? 2 : p > 0 ? 1 : 0;
+}
+function startMission(n) {
+  if (n === 1) initM1();
+  else if (n === 2) initM2();
+  else if (n === 3) initM3();
+  else if (n === 4) initM4();
+  showScreen('screen-m' + n);
+}
+function showHint(id) {
+  const hints = {
+    m1: ['날씨 이름을 잘 생각해보세요! 하늘을 보면 알 수 있어요.', '맑음, 흐림, 비, 눈, 태풍... 날씨의 종류를 떠올려봐요!', '날씨와 옷차림, 활동의 관계를 생각해보세요!']
+  };
+  const hArr = hints[id] || ['힌트: 잘 생각해보세요!'];
+  const box = document.getElementById(id + 'Hint');
+  box.textContent = '💡 ' + hArr[m1Diff === 'easy' ? 0 : m1Diff === 'mid' ? 1 : 2];
+  box.classList.add('show');
+}
+
+// =============================================
+// ===== 점수판 =====
+// =============================================
+function renderSB() {
+  const list = document.getElementById('sbList');
+  const sorted = [...state.history].sort((a, b) => b.total - a.total).slice(0, 5);
+  if (sorted.length === 0) {
+    list.innerHTML = '<div class="sb-row" style="justify-content:center;color:var(--text-mid);font-size:0.8rem;">첫 번째 구조대원이 되어보세요!</div>';
+    return;
+  }
+  list.innerHTML = sorted.map((h, i) =>
+    `<div class="sb-row ${i===0?'rank1':i===1?'rank2':i===2?'rank3':''}">
+      <span>${['🥇','🥈','🥉','4위','5위'][i]} 날씨 구조대원</span>
+      <span style="color:#ff9f1c;font-weight:800;">${h.total}점 ${'★'.repeat(h.stars)}${'☆'.repeat(12-h.stars)}</span>
+    </div>`
+  ).join('');
+}
+function saveScore() {
+  const total = state.scores.reduce((a, b) => a + b, 0);
+  const stars = state.stars.reduce((a, b) => a + b, 0);
+  state.history.push({ total, stars, date: new Date().toLocaleDateString('ko') });
+  if (state.history.length > 10) state.history.shift();
+  try { localStorage.setItem('wr_scores', JSON.stringify(state.history)); } catch(e) {}
+}
+
+// =============================================
+// ===== 임무1: 날씨 이름 맞추기 =====
+// =============================================
+const m1Bank = {
+  easy: [
+    { q: '☀️ 하늘이 맑고 해가 쨍쨍 떠요. 이런 날씨를 뭐라고 할까요?', opts: [['☀️','맑음','맑음'], ['🌧️','비','비'], ['❄️','눈','눈'], ['💨','바람','바람']], ans: 0, exp: '하늘이 맑고 해가 잘 보이는 날씨가 "맑음"이에요!' },
+    { q: '🌧️ 하늘에서 물방울이 뚝뚝 떨어지고 있어요. 이런 날씨는?', opts: [['☀️','맑음','맑음'], ['🌧️','비','비'], ['⛅','흐림','흐림'], ['🌈','무지개','무지개']], ans: 1, exp: '하늘에서 물방울이 떨어지는 날씨가 "비"예요!' },
+    { q: '❄️ 하얀 솜사탕처럼 생긴 것이 하늘에서 떨어져요. 이런 날씨는?', opts: [['🌧️','비','비'], ['❄️','눈','눈'], ['🌤️','구름','구름'], ['🌈','맑음','맑음']], ans: 1, exp: '하얀 눈이 내리는 날씨가 "눈"이에요!' },
+    { q: '⛅ 하늘에 구름이 가득해서 해가 보이지 않아요. 이런 날씨는?', opts: [['☀️','맑음','맑음'], ['🌧️','비','비'], ['⛅','흐림','흐림'], ['❄️','눈','눈']], ans: 2, exp: '구름이 많아 해가 보이지 않는 날씨가 "흐림"이에요!' },
+  ],
+  mid: [
+    { q: '🌂 우산이 뒤집혀질 만큼 바람이 강하고 비가 많이 와요. 이런 날씨는?', opts: [['🌧️','비','비'], ['🌪️','태풍','태풍'], ['❄️','눈','눈'], ['⛅','흐림','흐림']], ans: 1, exp: '강한 바람과 많은 비가 함께 오는 날씨가 "태풍"이에요! 태풍이 오면 밖에 나가지 않는 게 안전해요.' },
+    { q: '🌫️ 멀리 있는 산이 보이지 않고 앞이 뿌옇게 보여요. 이런 날씨는?', opts: [['☀️','맑음','맑음'], ['🌫️','안개','안개'], ['❄️','눈','눈'], ['🌧️','비','비']], ans: 1, exp: '작은 물방울이 공기 중에 떠서 앞이 뿌옇게 보이는 날씨가 "안개"예요!' },
+    { q: '🌩️ 번쩍번쩍 빛이 나고 쾅쾅 소리가 나면서 비가 내려요. 이런 날씨는?', opts: [['☀️','맑음','맑음'], ['🌩️','천둥번개','천둥번개'], ['❄️','눈보라','눈보라'], ['💨','황사','황사']], ans: 1, exp: '번개(빛)와 천둥(소리)이 함께 오는 날씨예요! 이럴 땐 나무 아래는 위험해요.' },
+    { q: '💨 바람이 몹시 강하게 불어서 나뭇가지가 흔들려요. 이런 날씨는?', opts: [['💨','강풍','강풍'], ['🌧️','비','비'], ['☀️','맑음','맑음'], ['⛅','흐림','흐림']], ans: 0, exp: '바람이 매우 강하게 부는 날씨를 "강풍"이라고 해요!' },
+  ],
+  hard: [
+    { q: '이번 주에 월요일은 맑음, 화요일은 비, 수요일은 맑음이에요. 비가 온 날은 무슨 요일일까요?', opts: [['📅','월요일','월요일'], ['📅','화요일','화요일'], ['📅','수요일','수요일'], ['📅','목요일','목요일']], ans: 1, exp: '월요일 맑음, 화요일 비, 수요일 맑음! 비가 온 날은 화요일이에요!' },
+    { q: '☀️ 맑은 날에는 우산이 필요할까요? 그 이유는?', opts: [['☂️','필요해요, 갑자기 비가 올 수 있어요','옳지 않아요'], ['☀️','필요 없어요, 맑은 날은 비가 안 와요','정답'], ['🌂','항상 들고 다녀야 해요','틀림'], ['💧','우산은 눈 올 때만 써요','틀림']], ans: 1, exp: '맑은 날은 비가 오지 않아서 우산이 필요 없어요! 날씨와 준비물을 연결해 생각해봐요.' },
+    { q: '겨울에 눈이 많이 왔어요. 눈이 녹으면 무엇이 될까요?', opts: [['💨','바람','바람'], ['💧','물','물'], ['❄️','더 많은 눈','더 많은 눈'], ['☁️','구름','구름']], ans: 1, exp: '눈은 얼어있는 물이에요. 따뜻해지면 녹아서 물이 돼요! (물→수증기→구름→비/눈)' },
+    { q: '🌈 무지개는 어떤 날씨 뒤에 볼 수 있을까요?', opts: [['❄️','눈 온 뒤','눈'], ['🌧️','비 온 뒤 맑아질 때','비'], ['💨','바람 부는 날','바람'], ['🌫️','안개 낀 날','안개']], ans: 1, exp: '무지개는 비가 온 뒤 햇빛이 물방울에 반사되어 생겨요! 비가 그치고 해가 날 때 잘 보여요.' },
+  ]
+};
+let m1Diff = 'easy', m1List = [], m1Idx = 0, m1Score = 0;
+
+function initM1() {
+  m1Idx = 0; m1Score = 0;
+  document.getElementById('m1Sc').textContent = '0';
+  setM1Diff('easy');
+}
+function setM1Diff(d) {
+  m1Diff = d;
+  document.querySelectorAll('.diff-tab').forEach(b => b.classList.remove('on'));
+  document.querySelector('.diff-tab.' + d).classList.add('on');
+  m1List = [...m1Bank[d]].sort(() => Math.random() - 0.5);
+  m1Idx = 0; m1Score = 0;
+  document.getElementById('m1Sc').textContent = '0';
+  document.getElementById('m1Hint').classList.remove('show');
+  renderM1();
+}
+function renderM1() {
+  if (m1Idx >= m1List.length) { finishM1(); return; }
+  const q = m1List[m1Idx];
+  document.getElementById('m1Pg').textContent = m1Idx + '/' + m1List.length;
+  document.getElementById('m1PgBar').style.width = (m1Idx / m1List.length * 100) + '%';
+  document.getElementById('m1Q').textContent = q.q;
+  document.getElementById('m1Char').textContent = '☀️';
+  document.getElementById('m1Char').className = 'char-face';
+  document.getElementById('m1Msg').textContent = '설명을 읽고 어떤 날씨인지 골라보세요!';
+  document.getElementById('m1Hint').classList.remove('show');
+  document.getElementById('m1Fb').classList.remove('show');
+  document.getElementById('m1NextWrap').style.display = 'none';
+  const optsEl = document.getElementById('m1Opts');
+  optsEl.innerHTML = '';
+  q.opts.forEach((opt, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'w-opt';
+    btn.innerHTML = `<span class="opt-icon">${opt[0]}</span>${opt[1]}`;
+    btn.onclick = () => selectM1(i, q.ans, q.exp, btn);
+    optsEl.appendChild(btn);
+  });
+}
+function selectM1(idx, ans, exp, btn) {
+  document.querySelectorAll('.w-opt').forEach(b => b.disabled = true);
+  document.querySelectorAll('.w-opt')[ans].classList.add('correct');
+  const fb = document.getElementById('m1Fb');
+  const charEl = document.getElementById('m1Char');
+  if (idx === ans) {
+    btn.classList.add('correct');
+    const pts = m1Diff === 'easy' ? 5 : m1Diff === 'mid' ? 8 : 12;
+    m1Score += pts; document.getElementById('m1Sc').textContent = m1Score;
+    fb.className = 'fb-box show fb-ok';
+    fb.innerHTML = `✅ 정답이에요! +${pts}점<br><strong>📚 설명:</strong> ${exp}`;
+    charEl.textContent = '😄'; charEl.className = 'char-face happy';
+    playSound('correct');
+  } else {
+    btn.classList.add('wrong');
+    fb.className = 'fb-box show fb-no';
+    fb.innerHTML = `❌ 다시 생각해봐요!<br><strong>📚 설명:</strong> ${exp}`;
+    charEl.textContent = '😢'; charEl.className = 'char-face sad';
+    playSound('wrong');
+  }
+  document.getElementById('m1NextWrap').style.display = 'block';
+}
+function nextM1() { m1Idx++; renderM1(); }
+function finishM1() {
+  state.scores[0] = m1Score;
+  const max = m1Diff === 'easy' ? 20 : m1Diff === 'mid' ? 32 : 48;
+  state.stars[0] = calcStars(m1Score, max);
+  state.done[0] = true;
+  updateStars(1, state.stars[0]); unlockMC(2); playSound('clear');
+  document.getElementById('m1Msg').textContent = '🎉 임무 1 완료! ' + m1Score + '점 획득!';
+  document.getElementById('m1Char').textContent = '🌟'; document.getElementById('m1Char').className = 'char-face surprise';
+  setTimeout(() => goHome(), 1800);
+}
+
+// =============================================
+// ===== 임무2: 날씨 분류 드래그 =====
+// =============================================
+const sortRounds = [
+  {
+    title: '☀️ 맑은 날 vs 🌧️ 비 오는 날',
+    bins: [{ key: 'sunny', label: '☀️ 맑은 날', color: '#fff9e0', bcolor: '#ffcc02' }, { key: 'rainy', label: '🌧️ 비 오는 날', color: '#e8f4fd', bcolor: '#56c8e8' }],
+    items: [
+      { text: '☀️ 선크림 바르기', cat: 'sunny' }, { text: '🌂 우산 쓰기', cat: 'rainy' },
+      { text: '🕶️ 선글라스 쓰기', cat: 'sunny' }, { text: '👢 장화 신기', cat: 'rainy' },
+      { text: '🏃 운동장에서 달리기', cat: 'sunny' }, { text: '🏠 집에서 놀기', cat: 'rainy' },
+    ]
+  },
+  {
+    title: '❄️ 추운 날 vs 🌡️ 더운 날',
+    bins: [{ key: 'cold', label: '❄️ 추운 날', color: '#e8f4fd', bcolor: '#56c8e8' }, { key: 'hot', label: '🌡️ 더운 날', color: '#fff9e0', bcolor: '#ff9f1c' }],
+    items: [
+      { text: '🧥 두꺼운 외투 입기', cat: 'cold' }, { text: '🍦 아이스크림 먹기', cat: 'hot' },
+      { text: '⛄ 눈사람 만들기', cat: 'cold' }, { text: '🏊 수영장 가기', cat: 'hot' },
+      { text: '🧣 목도리 두르기', cat: 'cold' }, { text: '🩳 반바지 입기', cat: 'hot' },
+    ]
+  },
+  {
+    title: '🌱 봄/여름 날씨 vs 🍂 가을/겨울 날씨',
+    bins: [{ key: 'warm', label: '🌱 봄·여름', color: '#eafaf1', bcolor: '#78c758' }, { key: 'cool', label: '🍂 가을·겨울', color: '#fff5e0', bcolor: '#ff9f1c' }],
+    items: [
+      { text: '🌸 벚꽃 구경', cat: 'warm' }, { text: '🍁 단풍 구경', cat: 'cool' },
+      { text: '🎆 불꽃놀이', cat: 'warm' }, { text: '⛷️ 스키 타기', cat: 'cool' },
+      { text: '🌻 해바라기 피기', cat: 'warm' }, { text: '🦃 추수하기', cat: 'cool' },
+    ]
+  }
+];
+let sortRound = 0, m2Score = 0, sortDragSrc = null;
+
+function initM2() { sortRound = 0; m2Score = 0; document.getElementById('m2Sc').textContent = '0'; renderSort(); }
+function renderSort() {
+  if (sortRound >= sortRounds.length) { finishM2(); return; }
+  const rd = sortRounds[sortRound];
+  document.getElementById('m2RoundLbl').textContent = `라운드 ${sortRound + 1}/3 — ${rd.title}`;
+  document.getElementById('m2Pg').textContent = sortRound + '/3';
+  document.getElementById('m2PgBar').style.width = (sortRound / 3 * 100) + '%';
+  document.getElementById('m2Fb').classList.remove('show');
+  document.getElementById('m2Char').textContent = '☁️'; document.getElementById('m2Char').className = 'char-face';
+  document.getElementById('m2Msg').textContent = '카드를 드래그해서 알맞은 곳에 넣어보세요!';
+
+  // 소스 영역
+  const src = document.getElementById('m2Source');
+  src.innerHTML = '';
+  [...rd.items].sort(() => Math.random() - 0.5).forEach(item => src.appendChild(makeItem(item)));
+
+  // 분류 통
+  const binsEl = document.getElementById('m2Bins');
+  binsEl.innerHTML = '';
+  rd.bins.forEach(bin => {
+    const div = document.createElement('div');
+    div.className = 'sort-bin'; div.id = 'bin-' + bin.key;
+    div.style.cssText = `background:${bin.color};border-color:${bin.bcolor};`;
+    div.innerHTML = `<div class="sort-bin-title" style="background:${bin.bcolor}20;color:#444;">${bin.label}</div><div class="sort-items-col" id="items-${bin.key}"></div>`;
+    div.addEventListener('dragover', e => { e.preventDefault(); div.classList.add('drag-over'); });
+    div.addEventListener('dragleave', () => div.classList.remove('drag-over'));
+    div.addEventListener('drop', e => dropSortItem(e, bin.key));
+    binsEl.appendChild(div);
+  });
+}
+function makeItem(item) {
+  const el = document.createElement('div');
+  el.className = 's-item'; el.draggable = true; el.dataset.cat = item.cat;
+  el.textContent = item.text;
+  el.addEventListener('dragstart', () => { sortDragSrc = el; el.classList.add('dragging'); });
+  el.addEventListener('dragend', () => el.classList.remove('dragging'));
+  return el;
+}
+function dropSortItem(e, binKey) {
+  e.preventDefault();
+  document.querySelectorAll('.sort-bin, .sort-items-row').forEach(b => b.classList.remove('drag-over'));
+  if (!sortDragSrc) return;
+  const targetEl = document.getElementById('items-' + binKey) || document.getElementById('m2Source');
+  if (targetEl) targetEl.appendChild(sortDragSrc);
+  sortDragSrc = null;
+}
+function checkSort() {
+  const rd = sortRounds[sortRound];
+  let correct = 0, total = rd.items.length;
+  rd.bins.forEach(bin => {
+    document.querySelectorAll(`#items-${bin.key} .s-item`).forEach(el => {
+      if (el.dataset.cat === bin.key) { el.classList.add('correct-item'); correct++; }
+      else el.classList.add('wrong-item');
+    });
+  });
+  document.querySelectorAll('#m2Source .s-item').forEach(el => el.classList.add('wrong-item'));
+  const fb = document.getElementById('m2Fb');
+  const pts = Math.round(correct / total * 25);
+  m2Score += pts; document.getElementById('m2Sc').textContent = m2Score;
+  if (correct === total) {
+    fb.className = 'fb-box show fb-ok';
+    fb.innerHTML = `✅ 완벽해요! 모두 맞췄어요! +${pts}점<br>날씨에 따라 우리 행동이 달라져요!`;
+    document.getElementById('m2Char').textContent = '😄'; document.getElementById('m2Char').className = 'char-face happy';
+    playSound('correct');
+  } else {
+    fb.className = 'fb-box show fb-no';
+    fb.innerHTML = `${correct}/${total}개 맞았어요! +${pts}점<br>날씨와 어울리는 활동·준비물을 연결해봐요!`;
+    document.getElementById('m2Char').textContent = '😢'; document.getElementById('m2Char').className = 'char-face sad';
+    playSound('wrong');
+  }
+  setTimeout(() => { sortRound++; renderSort(); }, 2400);
+}
+function finishM2() {
+  state.scores[1] = m2Score;
+  state.stars[1] = calcStars(m2Score, 75); state.done[1] = true;
+  updateStars(2, state.stars[1]); unlockMC(3); playSound('clear');
+  document.getElementById('m2Msg').textContent = '🎉 임무 2 완료! ' + m2Score + '점 획득!';
+  document.getElementById('m2Char').textContent = '🌟'; document.getElementById('m2Char').className = 'char-face surprise';
+  setTimeout(() => goHome(), 1800);
+}
+
+// =============================================
+// ===== 임무3: 스토리 선택 =====
+// =============================================
+const stories = [
+  {
+    emoji: '🌧️', text: '학교 가는 날 비가 왔어요. 우산을 가져가는 걸 깜빡했어요. 어떻게 할까요?',
+    choices: [
+      { text: '🏠 학교를 빠지고 집에 있는다', good: false, outcome: '❌ 학교는 중요해요! 비가 와도 학교는 가야 해요. 편의점에서 우산을 사거나 친구와 함께 쓸 수도 있어요.', lesson: '비 오는 날 대비법을 미리 알아두어요!' },
+      { text: '☂️ 비를 맞으며 빨리 뛰어서 간다', good: false, outcome: '❌ 비를 맞으면 감기에 걸릴 수 있어요. 건강을 먼저 생각해요!', lesson: '날씨에 맞게 준비를 잘 해야 해요!' },
+      { text: '📞 엄마께 연락해서 우산을 가져다달라고 한다', good: true, outcome: '✅ 훌륭한 선택이에요! 도움을 요청하는 것도 좋은 방법이에요.', lesson: '비 오는 날 대비법: 우산, 비옷, 장화를 준비해요!' },
+    ], pts: 15
+  },
+  {
+    emoji: '☀️', text: '매우 더운 여름날이에요. 운동장에서 오래 뛰어 놀았더니 땀이 많이 났어요. 어떻게 해야 할까요?',
+    choices: [
+      { text: '💧 물을 충분히 마신다', good: true, outcome: '✅ 맞아요! 더운 날에는 물을 자주 마셔야 해요. 땀으로 빠져나간 수분을 채워줘요.', lesson: '더운 날씨에는 수분 보충이 중요해요!' },
+      { text: '🍦 아이스크림만 잔뜩 먹는다', good: false, outcome: '❌ 아이스크림만 먹으면 배가 아플 수 있어요. 물을 먼저 마시고 조금 쉬어요!', lesson: '더운 날에는 물 마시기 + 그늘에서 쉬기!' },
+      { text: '🌞 더 오래 뛰어 논다', good: false, outcome: '❌ 더운 날 무리하면 열사병이 생길 수 있어요! 그늘에서 쉬는 게 중요해요.', lesson: '폭염(매우 더운 날)에는 야외 활동을 줄여요!' },
+    ], pts: 15
+  },
+  {
+    emoji: '🌪️', text: '태풍이 온다는 뉴스가 나왔어요. 오늘 친구 집에 놀러 가기로 했는데 어떻게 할까요?',
+    choices: [
+      { text: '🚶 그냥 놀러 간다', good: false, outcome: '❌ 태풍 때는 강한 바람과 비가 와서 밖에 나가면 위험해요!', lesson: '기상재해(태풍, 홍수 등)가 올 때는 집에 있어요!' },
+      { text: '📞 친구에게 연락해서 다음에 만나자고 한다', good: true, outcome: '✅ 훌륭한 판단이에요! 날씨 재난 때는 안전이 가장 중요해요.', lesson: '태풍 때는 창문 닫기, 집 안에 있기, 뉴스 듣기!' },
+      { text: '😢 약속을 어겼다고 슬퍼한다', good: false, outcome: '❌ 태풍은 자연재해예요. 어쩔 수 없는 상황이에요. 친구도 이해할 거예요!', lesson: '자연재해는 우리 힘으로 막을 수 없어요. 안전을 우선해요!' },
+    ], pts: 15
+  },
+  {
+    emoji: '❄️', text: '추운 겨울 아침, 눈이 많이 쌓여 있어요. 학교 앞 길이 미끄러워요. 어떻게 할까요?',
+    choices: [
+      { text: '🏃 빨리 뛰어서 간다', good: false, outcome: '❌ 눈 위에서 뛰면 미끄러질 수 있어요! 천천히 조심해서 걸어요.', lesson: '눈/빙판 위에서는 천천히, 조심조심 걷기!' },
+      { text: '🐢 천천히 조심해서 걷는다', good: true, outcome: '✅ 완벽해요! 눈이 쌓인 길은 미끄러우니 조심해서 걷는 것이 안전해요.', lesson: '겨울 안전: 장갑, 미끄럼 방지 신발, 천천히 걷기!' },
+      { text: '🎿 스키를 타고 학교에 간다', good: false, outcome: '❌ 재미있는 생각이지만 위험해요! 학교 가는 길엔 스키를 탈 수 없어요.', lesson: '스키는 스키장에서! 학교 가는 길은 천천히 걸어요!' },
+    ], pts: 15
+  }
+];
+let storyIdx = 0, m3Score = 0;
+function initM3() { storyIdx = 0; m3Score = 0; document.getElementById('m3Sc').textContent = '0'; renderStory(); }
+function renderStory() {
+  if (storyIdx >= stories.length) { finishM3(); return; }
+  const s = stories[storyIdx];
+  document.getElementById('m3Pg').textContent = storyIdx + '/' + stories.length;
+  document.getElementById('m3PgBar').style.width = (storyIdx / stories.length * 100) + '%';
+  document.getElementById('m3SceneEmoji').textContent = s.emoji;
+  document.getElementById('m3SceneTxt').textContent = s.text;
+  document.getElementById('m3Char').textContent = '🌈'; document.getElementById('m3Char').className = 'char-face';
+  document.getElementById('m3Msg').textContent = '이야기를 읽고 선택해보세요!';
+  document.getElementById('m3OutcomeBox').classList.remove('show');
+  document.getElementById('m3NextWrap').style.display = 'none';
+  const grid = document.getElementById('m3ChoiceGrid');
+  grid.innerHTML = '';
+  s.choices.forEach(c => {
+    const btn = document.createElement('button');
+    btn.className = 'c-btn'; btn.textContent = c.text;
+    btn.onclick = () => selectChoice(c, btn);
+    grid.appendChild(btn);
+  });
+}
+function selectChoice(choice, btn) {
+  document.querySelectorAll('.c-btn').forEach(b => b.disabled = true);
+  const ob = document.getElementById('m3OutcomeBox');
+  const charEl = document.getElementById('m3Char');
+  if (choice.good) {
+    btn.classList.add('pick-good');
+    m3Score += stories[storyIdx].pts; document.getElementById('m3Sc').textContent = m3Score;
+    ob.className = 'outcome-box show outcome-good';
+    ob.innerHTML = `${choice.outcome}<br><br><strong>📚 배운 점:</strong> ${choice.lesson}`;
+    charEl.textContent = '😄'; charEl.className = 'char-face happy';
+    playSound('correct');
+  } else {
+    btn.classList.add('pick-bad');
+    ob.className = 'outcome-box show outcome-bad';
+    ob.innerHTML = `${choice.outcome}<br><br><strong>📚 배운 점:</strong> ${choice.lesson}`;
+    charEl.textContent = '😢'; charEl.className = 'char-face sad';
+    playSound('wrong');
+  }
+  document.getElementById('m3NextWrap').style.display = 'block';
+}
+function nextStory() { storyIdx++; renderStory(); }
+function finishM3() {
+  state.scores[2] = m3Score;
+  state.stars[2] = calcStars(m3Score, 60); state.done[2] = true;
+  updateStars(3, state.stars[2]); unlockMC(4); playSound('clear');
+  document.getElementById('m3Msg').textContent = '🎉 임무 3 완료! ' + m3Score + '점 획득!';
+  document.getElementById('m3Char').textContent = '🌟'; document.getElementById('m3Char').className = 'char-face surprise';
+  setTimeout(() => goHome(), 1800);
+}
+
+// =============================================
+// ===== 임무4: 날씨 수 세기 (그래프) =====
+// =============================================
+const m4DataSets = {
+  easy: [{
+    title: '이번 주 날씨 일수',
+    bars: [{l:'☀️맑음',v:3,c:'#ffcc02'},{l:'🌧️비',v:2,c:'#56c8e8'},{l:'⛅흐림',v:2,c:'#adc8e0'}],
+    qs: [
+      { q: '가장 날수가 많은 날씨는?', opts: ['☀️ 맑음', '🌧️ 비', '⛅ 흐림'], ans: 0, exp: '맑음이 3일로 가장 많아요!' },
+      { q: '비 오는 날은 몇 일일까요?', opts: ['1일', '2일', '3일'], ans: 1, exp: '그래프에서 비는 2일이에요!' },
+    ]
+  }],
+  mid: [{
+    title: '한 달 날씨 일수 (봄)',
+    bars: [{l:'☀️맑음',v:12,c:'#ffcc02'},{l:'🌧️비',v:8,c:'#56c8e8'},{l:'⛅흐림',v:6,c:'#adc8e0'},{l:'💨바람',v:4,c:'#78c758'}],
+    qs: [
+      { q: '맑음과 비를 합치면 모두 며칠?', opts: ['18일', '20일', '22일'], ans: 1, exp: '12+8=20일이에요!' },
+      { q: '맑음은 흐림보다 며칠 더 많을까요?', opts: ['4일', '6일', '8일'], ans: 1, exp: '12-6=6일 더 많아요!' },
+      { q: '가장 날수가 적은 날씨는?', opts: ['☀️맑음', '🌧️비', '💨바람'], ans: 2, exp: '바람이 4일로 가장 적어요!' },
+    ]
+  }],
+  hard: [{
+    title: '1년 계절별 비 오는 날 수',
+    bars: [{l:'🌸봄',v:10,c:'#ffb3c6'},{l:'☀️여름',v:18,c:'#ffcc02'},{l:'🍂가을',v:6,c:'#ff9f1c'},{l:'❄️겨울',v:4,c:'#56c8e8'}],
+    qs: [
+      { q: '1년 중 비가 가장 많이 오는 계절은?', opts: ['봄', '여름', '가을', '겨울'], ans: 1, exp: '여름에 18일로 가장 많아요! (장마 때문이에요)' },
+      { q: '봄과 가을의 비 오는 날 차이는?', opts: ['2일', '4일', '6일'], ans: 1, exp: '10-6=4일 차이예요!' },
+      { q: '4계절 비 오는 날을 모두 더하면?', opts: ['36일', '38일', '40일'], ans: 1, exp: '10+18+6+4=38일이에요!' },
+    ]
+  }]
+};
+let m4Diff = 'easy', m4DataIdx = 0, m4Score = 0, m4Answered = 0, m4Timer = null, m4Sec = 30;
+
+function initM4() { m4DataIdx = 0; m4Score = 0; document.getElementById('m4Sc').textContent = '0'; setM4Diff('easy'); }
+function setM4Diff(d) {
+  m4Diff = d;
+  document.querySelectorAll('#screen-m4 .diff-tab').forEach(b => b.classList.remove('on'));
+  document.querySelector('#screen-m4 .diff-tab.' + d).classList.add('on');
+  m4DataIdx = 0; m4Score = 0; document.getElementById('m4Sc').textContent = '0';
+  renderM4();
+}
+function renderM4() {
+  clearInterval(m4Timer);
+  const data = m4DataSets[m4Diff];
+  if (m4DataIdx >= data.length) { finishM4(); return; }
+  const ds = data[m4DataIdx];
+  document.getElementById('m4ChartTitle').textContent = ds.title;
+  const maxV = Math.max(...ds.bars.map(b => b.v));
+  const barRow = document.getElementById('m4BarRow');
+  barRow.innerHTML = '';
+  ds.bars.forEach(bar => {
+    const item = document.createElement('div'); item.className = 'b-item';
+    const val = document.createElement('div'); val.className = 'b-val'; val.textContent = bar.v + '일';
+    const fill = document.createElement('div'); fill.className = 'b-fill';
+    fill.style.cssText = `height:0;background:${bar.c};box-shadow:0 0 8px ${bar.c}60;`;
+    const label = document.createElement('div'); label.className = 'b-label'; label.textContent = bar.l;
+    item.appendChild(val); item.appendChild(fill); item.appendChild(label);
+    barRow.appendChild(item);
+    setTimeout(() => { fill.style.height = (bar.v / maxV * 90) + 'px'; }, 100);
+  });
+  m4Answered = 0;
+  const qEl = document.getElementById('m4Qs'); qEl.innerHTML = '';
+  document.getElementById('m4NextWrap').style.display = 'none';
+  ds.qs.forEach((q, qi) => {
+    const div = document.createElement('div'); div.className = 'cq'; div.id = 'cq' + qi;
+    div.innerHTML = `<div class="cq-text">Q${qi + 1}. ${q.q}</div><div class="cq-opts" id="cqo${qi}"></div><div class="fb-box" id="cqf${qi}"></div>`;
+    qEl.appendChild(div);
+    q.opts.forEach((opt, oi) => {
+      const btn = document.createElement('button'); btn.className = 'cq-opt'; btn.textContent = opt;
+      btn.onclick = () => selectM4(qi, oi, q.ans, q.exp, btn);
+      document.getElementById('cqo' + qi).appendChild(btn);
+    });
+  });
+  startM4Timer(m4Diff === 'easy' ? 40 : m4Diff === 'mid' ? 30 : 25);
+}
+function startM4Timer(sec) {
+  m4Sec = sec; updateTimer(sec, sec);
+  m4Timer = setInterval(() => {
+    m4Sec--;
+    updateTimer(m4Sec, sec);
+    if (m4Sec <= 0) {
+      clearInterval(m4Timer);
+      document.querySelectorAll('.cq-opt').forEach(b => b.disabled = true);
+      document.getElementById('m4NextWrap').style.display = 'block';
+      document.getElementById('m4Char').textContent = '😢'; document.getElementById('m4Char').className = 'char-face sad';
+      document.getElementById('m4Msg').textContent = '⏰ 시간이 다 됐어요! 다음으로 넘어가요.';
+    }
+  }, 1000);
+}
+function updateTimer(cur, max) {
+  const pct = cur / max * 100;
+  const bar = document.getElementById('m4TimerBar');
+  bar.style.width = pct + '%';
+  bar.className = 'timer-fill ' + (pct > 50 ? 'ok' : pct > 25 ? 'warn' : 'danger');
+  document.getElementById('m4TimerNum').textContent = cur;
+}
+function selectM4(qi, oi, ans, exp, btn) {
+  document.querySelectorAll(`#cqo${qi} .cq-opt`).forEach(b => b.disabled = true);
+  document.querySelectorAll(`#cqo${qi} .cq-opt`)[ans].classList.add('correct');
+  const fb = document.getElementById('cqf' + qi);
+  const pts = m4Diff === 'easy' ? 5 : m4Diff === 'mid' ? 7 : 10;
+  if (oi === ans) {
+    btn.classList.add('correct');
+    m4Score += pts; document.getElementById('m4Sc').textContent = m4Score;
+    fb.className = 'fb-box show fb-ok';
+    fb.innerHTML = `✅ 정답! +${pts}점 ${exp}`;
+    playSound('correct');
+  } else {
+    btn.classList.add('wrong');
+    fb.className = 'fb-box show fb-no';
+    fb.innerHTML = `❌ 아쉬워요! ${exp}`;
+    playSound('wrong');
+  }
+  m4Answered++;
+  if (m4Answered >= m4DataSets[m4Diff][m4DataIdx].qs.length) {
+    clearInterval(m4Timer); document.getElementById('m4NextWrap').style.display = 'block';
+  }
+}
+function nextM4() { m4DataIdx++; renderM4(); }
+function finishM4() {
+  clearInterval(m4Timer);
+  state.scores[3] = m4Score;
+  const max = m4Diff === 'easy' ? 10 : m4Diff === 'mid' ? 21 : 30;
+  state.stars[3] = calcStars(m4Score, max); state.done[3] = true;
+  updateStars(4, state.stars[3]);
+  saveScore(); playSound('clear');
+  showResult();
+}
+
+// =============================================
+// ===== 결과 화면 =====
+// =============================================
+function showResult() {
+  const total = state.scores.reduce((a, b) => a + b, 0);
+  const totalStars = state.stars.reduce((a, b) => a + b, 0);
+  let icon = '🌤️', title = '날씨 견습 대원', rank = '';
+  if (totalStars >= 10) { icon = '🌈'; title = '날씨 구조대 대장!'; rank = '최고 등급! 모든 날씨를 알아요!'; }
+  else if (totalStars >= 7) { icon = '⭐'; title = '날씨 구조 전문가'; rank = '우수! 날씨 박사에 가까워요!'; }
+  else if (totalStars >= 5) { icon = '☀️'; title = '날씨 구조대원'; rank = '통과! 날씨를 잘 알고 있어요!'; }
+  else if (totalStars >= 3) { icon = '⛅'; title = '날씨 구조 견습생'; rank = '도전! 다시 해볼까요?'; }
+  document.getElementById('resIcon').textContent = icon;
+  document.getElementById('resTitle').textContent = title;
+  document.getElementById('resRank').textContent = rank;
+  const grid = document.getElementById('resGrid'); grid.innerHTML = '';
+  ['🌤️','🗂️','🌈','🔢'].forEach((ic, i) => {
+    const div = document.createElement('div'); div.className = 'res-card';
+    div.innerHTML = `<div class="ri">${ic}</div><div class="rn">${['날씨 맞추기','날씨 분류','이야기 선택','수 세기'][i]}</div><div class="rv">${state.scores[i]}점</div><div class="rs">${'★'.repeat(state.stars[i])}${'☆'.repeat(3-state.stars[i])}</div>`;
+    grid.appendChild(div);
+  });
+  document.getElementById('tcNum').textContent = total;
+  const evals = [
+    '처음이라 어려웠지만 도전한 게 최고예요! 날씨 공부를 더 해봐요! 💪',
+    '잘하고 있어요! 날씨에 대해 조금씩 알아가고 있어요! 🌱',
+    '훌륭해요! 날씨와 우리 생활의 관계를 잘 이해해요! ☀️',
+    '정말 잘했어요! 날씨 구조대 임무 완료! 친구들에게도 알려주세요! 🌟',
+    '완벽해요! 진정한 날씨 구조대 대장이에요! 미래의 기상 과학자! 🌈'
+  ];
+  document.getElementById('evalCard').innerHTML = `<strong style="color:#3a7bd5">💬 구조대 평가 (${new Date().toLocaleDateString('ko')}):</strong><br>${evals[Math.min(Math.floor(totalStars/3), 4)]}`;
+  showScreen('screen-result');
+}
+
+function resetGame() {
+  clearInterval(m4Timer);
+  state.done = [false,false,false,false]; state.scores = [0,0,0,0]; state.stars = [0,0,0,0];
+  ['mc2','mc3','mc4'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) {
+      el.className = 'mc locked'; el.onclick = null;
+      el.querySelector('.mc-stars')?.remove();
+      if (!el.querySelector('.mc-lock')) {
+        const l = document.createElement('div'); l.className = 'mc-lock'; l.textContent = '🔒'; el.appendChild(l);
+      }
+    }
+  });
+  document.getElementById('mc1').className = 'mc';
+  document.getElementById('mc1').onclick = () => startMission(1);
+  document.getElementById('mc1stars').textContent = '☆☆☆';
+  renderSB(); showScreen('screen-intro');
+}
+
+// =============================================
+// ===== 포트폴리오 JSON 데이터 =====
+// =============================================
+const portfolioData = {
+  id: '#005',
+  title: '날씨 구조대 게임',
+  grade: '초등 1~2학년',
+  subjects: ['국어', '수학', '슬기로운 생활'],
+  theme: '세계 기상의 날 (3월 23일) 연계',
+  features: ['날씨 이름 맞추기', '날씨 분류 드래그', '스토리 선택(멀티엔딩)', '날씨 수 세기'],
+  extras: ['타이머', '힌트', '오답피드백', '점수판(LocalStorage)', 'QR코드(qrcode.js)', '배경음악(WebAudio)'],
+  url: 'https://milab2019.github.io/main/weather_rescue.html',
+  date: '2025.03.23',
+  status: '운영 중'
+};
+console.log('📋 미랩 포트폴리오 업데이트 데이터:', JSON.stringify(portfolioData, null, 2));
+
+// =============================================
+// ===== 초기화 =====
+// =============================================
+initBg(); renderSB(); initQR();
+</script>
+</body>
+</html>
