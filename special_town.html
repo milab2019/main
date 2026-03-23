@@ -1,0 +1,1291 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>🏘️ 우리 동네 탐험대 - 미랩 특수학급 교육 게임</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Jua&family=Nanum+Gothic:wght@400;700;800&display=swap');
+
+/* ===== 특수교육 전용 루트 변수 ===== */
+:root {
+  /* 파스텔 팔레트 — 눈 부담 최소화 */
+  --sky:    #d4eeff;
+  --grass:  #c8f0c0;
+  --sun:    #ffe066;
+  --peach:  #ffd6b8;
+  --lilac:  #e8d4ff;
+  --mint:   #b8f0e8;
+  --pink:   #ffd4e8;
+  --white:  #fffef8;
+  --text:   #2a2a2a;      /* 고대비 텍스트 */
+  --muted:  #666666;
+  --red:    #ff6b6b;
+  --green:  #4caf50;
+  --blue:   #4a90d9;
+  --orange: #ff9800;
+  --shadow: 0 6px 24px rgba(0,0,0,0.15);
+  --radius: 24px;
+  --rmd:    18px;
+  /* 특수교육용 큰 폰트 */
+  --fs-xl:  2rem;
+  --fs-lg:  1.5rem;
+  --fs-md:  1.2rem;
+  --fs-sm:  1rem;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+html, body { height: 100%; }
+body {
+  font-family: 'Nanum Gothic', sans-serif;
+  background: linear-gradient(180deg, var(--sky) 0%, var(--grass) 100%);
+  min-height: 100vh;
+  overflow-x: hidden;
+  /* 선택 방지 - 실수 클릭 방지 */
+  -webkit-user-select: none; user-select: none;
+}
+
+/* ===== 배경 애니메이션 ===== */
+.bg-wrap { position: fixed; inset: 0; z-index: 0; overflow: hidden; pointer-events: none; }
+.sun-orb {
+  position: absolute; top: 20px; right: 30px;
+  width: 80px; height: 80px; border-radius: 50%;
+  background: radial-gradient(circle, #ffe566, #ffcc00);
+  box-shadow: 0 0 40px rgba(255,220,0,0.6);
+  animation: sunPulse 4s ease-in-out infinite;
+}
+@keyframes sunPulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.08)} }
+.cloud {
+  position: absolute; background: white; border-radius: 50px; opacity: 0.8;
+  animation: cloudFloat linear infinite;
+}
+@keyframes cloudFloat { from{transform:translateX(-200px)} to{transform:translateX(110vw)} }
+.bird {
+  position: absolute; font-size: 1.6rem;
+  animation: birdFly 12s linear infinite;
+}
+@keyframes birdFly { from{left:-60px;top:10%} to{left:110vw;top:8%} }
+
+/* ===== 앱 컨테이너 ===== */
+#app {
+  position: relative; z-index: 10;
+  max-width: 700px; margin: 0 auto;
+  padding: 12px;
+  min-height: 100vh;
+}
+
+/* ===== 화면 전환 ===== */
+.screen { display: none; animation: popIn 0.4s cubic-bezier(0.34,1.56,0.64,1); }
+.screen.active { display: block; }
+@keyframes popIn { from{opacity:0;transform:scale(0.92)} to{opacity:1;transform:scale(1)} }
+
+/* ===== 공통 헤더 ===== */
+.g-hd {
+  display: flex; align-items: center; justify-content: space-between;
+  background: white; border-radius: var(--rmd);
+  padding: 12px 18px; margin-bottom: 12px;
+  box-shadow: var(--shadow);
+}
+.g-title {
+  font-family: 'Jua', sans-serif;
+  font-size: var(--fs-lg); color: var(--blue);
+}
+.g-sub { font-size: var(--fs-sm); color: var(--muted); margin-top: 2px; }
+.score-badge {
+  background: var(--sun); color: var(--text);
+  font-family: 'Jua', sans-serif; font-size: var(--fs-md);
+  padding: 8px 18px; border-radius: 30px;
+  box-shadow: 0 3px 8px rgba(0,0,0,0.15);
+}
+
+/* ===== 진행 바 ===== */
+.prog-wrap { margin-bottom: 12px; }
+.prog-lbl {
+  display: flex; justify-content: space-between;
+  font-size: var(--fs-md); font-weight: 800; color: var(--blue);
+  margin-bottom: 6px;
+}
+.prog-track {
+  height: 18px; background: rgba(255,255,255,0.7);
+  border-radius: 12px; overflow: hidden;
+  box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
+}
+.prog-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--blue), #88ccff);
+  border-radius: 12px;
+  transition: width 0.6s cubic-bezier(0.22,1,0.36,1);
+}
+
+/* ===== 타이머 ===== */
+.timer-row {
+  display: flex; align-items: center; gap: 10px;
+  background: white; border-radius: var(--rmd);
+  padding: 10px 16px; margin-bottom: 12px;
+  box-shadow: var(--shadow);
+}
+.t-track { flex:1; height: 18px; background: #eee; border-radius: 12px; overflow: hidden; }
+.t-fill { height: 100%; border-radius: 12px; transition: width 1s linear; }
+.t-ok   { background: linear-gradient(90deg, #4caf50, #88dd88); }
+.t-warn { background: linear-gradient(90deg, #ff9800, #ffcc44); }
+.t-hot  { background: linear-gradient(90deg, #ff5722, #ff9800); animation: tBlink .5s infinite; }
+@keyframes tBlink { 0%,100%{opacity:1}50%{opacity:.4} }
+.t-num  {
+  font-family: 'Jua', sans-serif; font-size: var(--fs-xl);
+  min-width: 44px; text-align: right; color: var(--text);
+}
+
+/* ===== 카드 ===== */
+.card {
+  background: white; border-radius: var(--radius);
+  padding: 22px; box-shadow: var(--shadow); margin-bottom: 14px;
+}
+
+/* ===== 캐릭터 말풍선 ===== */
+.char-row { display: flex; align-items: flex-start; gap: 14px; margin-bottom: 14px; }
+.char-face {
+  width: 80px; height: 80px; border-radius: 50%; flex-shrink: 0;
+  background: var(--peach); border: 4px solid var(--orange);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 2.8rem;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  transition: all 0.4s cubic-bezier(0.34,1.56,0.64,1);
+}
+/* 특수교육용 — 더 과장된 감정 표현 */
+.cf-happy {
+  transform: scale(1.18) rotate(-8deg);
+  background: var(--sun); border-color: var(--orange);
+  animation: happyBounce 0.6s ease;
+}
+@keyframes happyBounce {
+  0%{transform:scale(1)} 40%{transform:scale(1.3) rotate(-8deg)} 70%{transform:scale(1.1) rotate(-6deg)} 100%{transform:scale(1.18) rotate(-8deg)}
+}
+.cf-sad {
+  transform: scale(0.88) rotate(6deg);
+  background: #ddd; border-color: #aaa;
+  filter: grayscale(30%);
+}
+.cf-wow {
+  transform: scale(1.2);
+  background: var(--lilac); border-color: #9c60d4;
+  animation: wowSpin 0.5s ease;
+}
+@keyframes wowSpin { 0%{transform:scale(0.8) rotate(-15deg)} 100%{transform:scale(1.2)} }
+.bubble {
+  background: var(--white);
+  border: 3px solid var(--blue);
+  border-radius: 20px 20px 20px 6px;
+  padding: 14px 18px; flex: 1;
+  font-size: var(--fs-md); line-height: 1.8;
+  color: var(--text);
+  box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+}
+.bubble-nm {
+  font-family: 'Jua', sans-serif;
+  font-size: var(--fs-sm); color: var(--blue);
+  margin-bottom: 4px;
+}
+
+/* ===== 버튼 — 특수교육용 크고 명확하게 ===== */
+.btn {
+  display: inline-block; padding: 18px 32px;
+  border: none; border-radius: 50px; cursor: pointer;
+  font-family: 'Jua', sans-serif; font-size: var(--fs-lg);
+  transition: all 0.15s; text-decoration: none;
+  /* 터치 영역 확대 */
+  min-height: 60px; min-width: 120px;
+  line-height: 1.2;
+  box-shadow: 0 6px 0 rgba(0,0,0,0.2);
+}
+.btn:active { transform: translateY(4px); box-shadow: 0 2px 0 rgba(0,0,0,0.2); }
+.btn-blue  { background: var(--blue); color: white; }
+.btn-blue:hover { background: #3a80c9; }
+.btn-green { background: var(--green); color: white; }
+.btn-green:hover { background: #43a047; }
+.btn-orange { background: var(--orange); color: white; }
+.btn-red   { background: var(--red); color: white; }
+.btn-ghost {
+  background: white; border: 3px solid #ccc;
+  color: var(--muted);
+}
+.btn-block { width: 100%; text-align: center; margin-top: 10px; }
+.btn-sm { padding: 12px 22px; font-size: var(--fs-sm); min-height: 48px; }
+
+/* ===== 힌트 ===== */
+.hint-btn {
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  background: var(--sun); border: 3px solid var(--orange);
+  color: var(--text); padding: 12px 22px; border-radius: 30px;
+  font-family: 'Jua', sans-serif; font-size: var(--fs-md);
+  cursor: pointer; margin-bottom: 12px;
+  min-height: 52px; box-shadow: 0 4px 0 rgba(0,0,0,0.15);
+  transition: all 0.15s;
+}
+.hint-btn:active { transform: translateY(3px); }
+.hint-box {
+  background: #fffbe6; border: 3px solid var(--orange);
+  border-radius: var(--rmd); padding: 14px 18px;
+  font-size: var(--fs-md); color: var(--text); margin-bottom: 12px;
+  display: none; line-height: 1.8;
+}
+.hint-box.show { display: block; animation: popIn .3s ease; }
+
+/* ===== 피드백 ===== */
+.fb {
+  border-radius: var(--rmd); padding: 16px 18px;
+  font-size: var(--fs-md); line-height: 1.8;
+  margin-top: 12px; display: none;
+  text-align: center; font-weight: 800;
+}
+.fb.show { display: block; animation: popIn .3s ease; }
+.fb-ok { background: #e8f8e8; border: 3px solid var(--green); color: #2e7d32; }
+.fb-no { background: #fde8e8; border: 3px solid var(--red);   color: #c62828; }
+
+/* ===== 인트로 ===== */
+#screen-intro { text-align: center; }
+.intro-hero {
+  background: white; border-radius: var(--radius);
+  padding: 28px 20px; margin: 8px 0 14px;
+  box-shadow: var(--shadow);
+}
+.hero-globe {
+  font-size: 6rem; display: block; margin: 0 auto 8px;
+  animation: heroFloat 2.5s ease-in-out infinite;
+  filter: drop-shadow(0 4px 12px rgba(0,0,0,0.2));
+}
+@keyframes heroFloat { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-14px)} }
+.hero-ttl {
+  font-family: 'Jua', sans-serif; font-size: 2.6rem; color: var(--blue);
+  margin-bottom: 8px; line-height: 1.3;
+}
+.hero-sub {
+  font-size: var(--fs-md); color: var(--muted);
+  margin-bottom: 6px; line-height: 1.6;
+}
+.hero-tag {
+  display: inline-block;
+  background: var(--sky); border: 2px solid var(--blue);
+  color: var(--blue); font-size: var(--fs-sm); font-weight: 800;
+  padding: 6px 16px; border-radius: 16px; margin-top: 8px;
+}
+.story-box {
+  background: var(--sky); border-radius: var(--rmd);
+  padding: 18px; margin: 14px 0; text-align: left;
+  line-height: 1.9; font-size: var(--fs-md); color: var(--text);
+  border: 2px solid var(--blue);
+}
+.story-ttl {
+  font-family: 'Jua', sans-serif; color: var(--orange);
+  font-size: var(--fs-lg); margin-bottom: 10px; text-align: center;
+}
+
+/* ===== 미션 그리드 ===== */
+.mission-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 14px 0; }
+.mc {
+  background: white; border: 3px solid var(--blue);
+  border-radius: var(--radius); padding: 18px 12px;
+  text-align: center; cursor: pointer;
+  transition: all 0.2s; box-shadow: 0 6px 0 rgba(0,0,0,0.12);
+}
+.mc:hover:not(.locked) {
+  transform: translateY(-5px); border-color: var(--orange);
+  box-shadow: 0 10px 0 rgba(0,0,0,0.12);
+}
+.mc:active:not(.locked) { transform: translateY(0); }
+.mc.locked { opacity: 0.4; cursor: not-allowed; border-color: #ccc; box-shadow: none; }
+.mc.done { border-color: var(--green); background: #f0fff0; }
+.mc-ic { font-size: 3rem; margin-bottom: 6px; }
+.mc-nm { font-family: 'Jua', sans-serif; font-size: var(--fs-md); color: var(--blue); }
+.mc-dc { font-size: var(--fs-sm); color: var(--muted); margin-top: 4px; }
+.mc-st { color: var(--orange); font-size: var(--fs-md); margin-top: 4px; }
+.mc-lk { font-size: 1.6rem; margin-top: 4px; color: #aaa; }
+
+/* ===== 선택지 버튼 — 특수교육용 초대형 ===== */
+.big-opts { display: grid; gap: 12px; margin: 14px 0; }
+.big-opt {
+  padding: 20px 18px; border-radius: var(--rmd);
+  border: 4px solid #ddd; background: white;
+  font-family: 'Jua', sans-serif; font-size: var(--fs-lg);
+  cursor: pointer; transition: all 0.15s;
+  text-align: left; display: flex; align-items: center; gap: 14px;
+  box-shadow: 0 5px 0 rgba(0,0,0,0.12); min-height: 72px;
+  color: var(--text);
+}
+.big-opt:hover:not(:disabled) { border-color: var(--blue); background: var(--sky); transform: translateX(5px); }
+.big-opt:active:not(:disabled) { transform: translateY(3px); box-shadow: 0 2px 0 rgba(0,0,0,0.12); }
+.big-opt.correct { border-color: var(--green); background: #e8f8e8; color: #2e7d32; }
+.big-opt.wrong   { border-color: var(--red);   background: #fde8e8; color: #c62828; }
+.opt-num {
+  width: 44px; height: 44px; border-radius: 50%;
+  background: var(--blue); color: white;
+  display: flex; align-items: center; justify-content: center;
+  font-size: var(--fs-md); flex-shrink: 0;
+}
+.big-opt.correct .opt-num { background: var(--green); }
+.big-opt.wrong   .opt-num { background: var(--red); }
+
+/* ===== 퀴즈 문제 텍스트 ===== */
+.quiz-q {
+  font-family: 'Jua', sans-serif;
+  font-size: var(--fs-xl); color: var(--text);
+  text-align: center; margin-bottom: 18px;
+  line-height: 1.5; padding: 16px;
+  background: var(--sky); border-radius: var(--rmd);
+  border: 2px solid var(--blue);
+}
+
+/* ===== 이미지형 선택 (그림 고르기) ===== */
+.pic-opts { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin: 14px 0; }
+.pic-opt {
+  background: white; border: 4px solid #ddd; border-radius: var(--rmd);
+  padding: 20px 14px; text-align: center; cursor: pointer;
+  transition: all 0.15s; box-shadow: 0 5px 0 rgba(0,0,0,0.12);
+  min-height: 120px; display: flex; flex-direction: column;
+  align-items: center; justify-content: center; gap: 8px;
+}
+.pic-opt:hover:not(:disabled) { border-color: var(--blue); transform: translateY(-4px); }
+.pic-opt:active:not(:disabled) { transform: translateY(1px); }
+.pic-opt .ic { font-size: 3.2rem; }
+.pic-opt .lbl { font-family: 'Jua', sans-serif; font-size: var(--fs-md); color: var(--text); }
+.pic-opt.correct { border-color: var(--green); background: #e8f8e8; }
+.pic-opt.wrong   { border-color: var(--red);   background: #fde8e8; }
+
+/* ===== 수 세기 / 수직선 ===== */
+.count-display {
+  background: var(--sky); border-radius: var(--rmd);
+  padding: 16px; text-align: center; margin-bottom: 14px;
+  border: 2px solid var(--blue);
+}
+.count-items { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin: 10px 0; }
+.count-item { font-size: 2.6rem; animation: popIn .3s ease; }
+.count-q-txt {
+  font-family: 'Jua', sans-serif; font-size: var(--fs-xl);
+  color: var(--text); text-align: center; margin: 14px 0;
+}
+.num-opts { display: grid; grid-template-columns: repeat(3,1fr); gap: 10px; margin: 10px 0; }
+.num-btn {
+  padding: 22px 10px;
+  background: white; border: 4px solid var(--blue);
+  border-radius: var(--rmd); cursor: pointer;
+  font-family: 'Jua', sans-serif; font-size: 2rem;
+  color: var(--blue); text-align: center;
+  box-shadow: 0 5px 0 rgba(0,0,0,0.12);
+  transition: all 0.15s; min-height: 80px;
+}
+.num-btn:hover:not(:disabled) { background: var(--sky); }
+.num-btn:active:not(:disabled) { transform: translateY(3px); }
+.num-btn.correct { border-color: var(--green); background: #e8f8e8; color: #2e7d32; }
+.num-btn.wrong   { border-color: var(--red);   background: #fde8e8; color: #c62828; }
+
+/* ===== 멀티엔딩 스토리 ===== */
+.scene-box {
+  background: var(--peach); border: 3px solid var(--orange);
+  border-radius: var(--radius); padding: 20px; margin-bottom: 14px; text-align: center;
+}
+.scene-em  { font-size: 4rem; margin-bottom: 8px; }
+.scene-txt {
+  font-family: 'Jua', sans-serif; font-size: var(--fs-lg);
+  color: var(--text); line-height: 1.7;
+}
+.scene-ctx { font-size: var(--fs-md); color: var(--muted); margin-top: 8px; line-height: 1.7; }
+.story-opts { display: grid; gap: 12px; }
+.s-btn {
+  padding: 18px 16px; border-radius: var(--rmd);
+  border: 4px solid var(--blue); background: white;
+  font-family: 'Jua', sans-serif; font-size: var(--fs-md);
+  cursor: pointer; transition: all 0.15s; text-align: left;
+  display: flex; align-items: center; gap: 12px;
+  box-shadow: 0 5px 0 rgba(0,0,0,0.12); min-height: 70px;
+  color: var(--text);
+}
+.s-btn:hover:not(:disabled) { border-color: var(--orange); background: var(--peach); }
+.s-good { border-color: var(--green); background: #e8f8e8; }
+.s-mid  { border-color: var(--orange); background: #fff8e0; }
+.s-bad  { border-color: var(--red);   background: #fde8e8; }
+.s-ic { font-size: 2rem; flex-shrink: 0; }
+.ending-box {
+  border-radius: var(--rmd); padding: 16px;
+  margin-top: 12px; display: none;
+  font-size: var(--fs-md); line-height: 1.8;
+  font-weight: 800; text-align: center;
+}
+.ending-box.show { display: block; animation: popIn .35s ease; }
+.e-hero { background: #e8f8e8; border: 3px solid var(--green); color: #2e7d32; }
+.e-mid  { background: #fff8e0; border: 3px solid var(--orange); color: #e65100; }
+.e-bad  { background: #fde8e8; border: 3px solid var(--red);   color: #c62828; }
+
+/* ===== 점수판 ===== */
+.sb-wrap {
+  background: white; border-radius: var(--rmd);
+  padding: 16px; margin: 12px 0;
+  box-shadow: var(--shadow);
+}
+.sb-ttl { font-family: 'Jua', sans-serif; font-size: var(--fs-lg); color: var(--orange); margin-bottom: 10px; }
+.sb-row {
+  display: flex; align-items: center; justify-content: space-between;
+  font-size: var(--fs-md); padding: 10px 12px; border-radius: 12px;
+  margin-bottom: 6px; background: var(--sky); color: var(--text);
+}
+.sb-row.r1 { background: var(--sun); }
+.sb-row.r2 { background: var(--mint); }
+.sb-row.r3 { background: var(--pink); }
+
+/* ===== QR ===== */
+.qr-panel {
+  background: white; border-radius: var(--rmd);
+  padding: 16px; text-align: center; margin: 12px 0;
+  box-shadow: var(--shadow);
+}
+.qr-ttl { font-family: 'Jua', sans-serif; font-size: var(--fs-md); color: var(--blue); margin-bottom: 10px; }
+.qr-url { font-size: var(--fs-sm); color: var(--muted); margin-top: 6px; word-break: break-all; }
+
+/* ===== 배지 ===== */
+.badge-row { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin: 10px 0; }
+.badge-it {
+  background: #eee; border-radius: 16px; padding: 8px 16px;
+  font-size: var(--fs-sm); color: var(--muted); font-weight: 800;
+}
+.badge-it.earned {
+  background: var(--sun); color: var(--text);
+  box-shadow: 0 3px 8px rgba(0,0,0,0.15); border: 2px solid var(--orange);
+  animation: badgePop .5s cubic-bezier(0.34,1.56,0.64,1);
+}
+@keyframes badgePop { from{transform:scale(0)} to{transform:scale(1)} }
+
+/* ===== 결과 ===== */
+#screen-result { text-align: center; }
+.res-hero {
+  background: white; border-radius: var(--radius);
+  padding: 28px; margin: 10px 0; box-shadow: var(--shadow);
+}
+.res-ic { font-size: 6rem; animation: badgePop .6s ease; }
+.res-ttl { font-family: 'Jua', sans-serif; font-size: 2.4rem; color: var(--orange); margin: 10px 0 5px; }
+.res-sub { font-size: var(--fs-md); color: var(--muted); }
+.res-rank { font-size: var(--fs-lg); color: var(--blue); font-family: 'Jua', sans-serif; margin-top: 8px; }
+.res-grid { display: grid; grid-template-columns: repeat(2,1fr); gap: 10px; margin: 14px 0; }
+.res-card {
+  background: white; border-radius: var(--rmd);
+  padding: 16px; text-align: center; box-shadow: var(--shadow);
+}
+.res-card .ri { font-size: 2.4rem; }
+.res-card .rn { font-size: var(--fs-sm); color: var(--blue); font-weight: 800; margin: 4px 0; }
+.res-card .rv { font-size: var(--fs-lg); font-weight: 800; color: var(--orange); }
+.res-card .rs { color: var(--orange); font-size: var(--fs-md); }
+.total-box {
+  background: var(--sun); border-radius: var(--rmd);
+  padding: 18px; margin: 10px 0; box-shadow: var(--shadow);
+}
+.total-box .tl { font-family: 'Jua', sans-serif; font-size: var(--fs-lg); color: var(--text); }
+.total-box .tn { font-family: 'Jua', sans-serif; font-size: 3.6rem; color: var(--text); line-height: 1; }
+.eval-card {
+  background: var(--sky); border-radius: var(--rmd);
+  padding: 16px; margin: 10px 0; font-size: var(--fs-md);
+  line-height: 1.8; color: var(--text); border: 2px solid var(--blue);
+}
+.music-btn {
+  position: fixed; top: 12px; right: 12px; z-index: 200;
+  background: white; border: 3px solid var(--blue);
+  color: var(--blue); padding: 10px 16px; border-radius: 20px;
+  font-family: 'Jua', sans-serif; font-size: var(--fs-sm);
+  cursor: pointer; box-shadow: var(--shadow);
+  min-height: 48px;
+}
+
+/* ===== 접근성: 포커스 스타일 ===== */
+button:focus, a:focus { outline: 4px solid var(--orange); outline-offset: 3px; }
+
+/* ===== 반응형 ===== */
+@media(max-width: 480px) {
+  :root { --fs-xl:1.6rem; --fs-lg:1.3rem; --fs-md:1.1rem; }
+  .hero-ttl { font-size: 2rem; }
+  .mission-grid { grid-template-columns: 1fr 1fr; }
+  .pic-opts { grid-template-columns: 1fr 1fr; }
+  .num-opts { grid-template-columns: repeat(3,1fr); }
+}
+</style>
+</head>
+<body>
+
+<div class="bg-wrap" id="bgWrap"></div>
+<button class="music-btn" id="musicBtn" onclick="toggleMusic()">🎵 음악</button>
+
+<div id="app">
+
+<!-- ===== 인트로 ===== -->
+<div id="screen-intro" class="screen active">
+  <div class="intro-hero">
+    <span class="hero-globe">🏘️</span>
+    <div class="hero-ttl">우리 동네 탐험대!</div>
+    <div class="hero-sub">같이 동네를 탐험해 보아요 🌟</div>
+    <span class="hero-tag">📅 2026.03.24 | 미랩(MILAB) 특수학급 교육</span>
+  </div>
+
+  <div class="story-box">
+    <div class="story-ttl">📖 오늘의 이야기</div>
+    <p>
+      안녕하세요! 저는 <strong style="color:var(--blue)">탐험 친구 '또리'</strong>예요! 🐱<br><br>
+      오늘은 우리 <strong style="color:var(--orange)">동네를 함께 탐험</strong>해요!<br>
+      가게도 찾고, 수도 세고, 이야기도 만들어요!<br><br>
+      준비되었나요? 출발~! 🚀
+    </p>
+  </div>
+
+  <div style="font-family:'Jua',sans-serif;font-size:var(--fs-lg);color:var(--blue);margin-bottom:10px;">📋 오늘의 탐험</div>
+  <div class="mission-grid" id="missionGrid">
+    <div class="mc" id="mc1" onclick="startMission(1)">
+      <div class="mc-ic">🏪</div>
+      <div class="mc-nm">탐험 1</div>
+      <div class="mc-dc">동네 가게 찾기</div>
+      <div class="mc-st" id="mc1st">☆☆☆</div>
+    </div>
+    <div class="mc locked" id="mc2">
+      <div class="mc-ic">🍎</div>
+      <div class="mc-nm">탐험 2</div>
+      <div class="mc-dc">수 세기 놀이</div>
+      <div class="mc-lk">🔒</div>
+    </div>
+    <div class="mc locked" id="mc3">
+      <div class="mc-ic">🌈</div>
+      <div class="mc-nm">탐험 3</div>
+      <div class="mc-dc">동네 이야기</div>
+      <div class="mc-lk">🔒</div>
+    </div>
+    <div class="mc locked" id="mc4">
+      <div class="mc-ic">📏</div>
+      <div class="mc-nm">탐험 4</div>
+      <div class="mc-dc">크기 비교</div>
+      <div class="mc-lk">🔒</div>
+    </div>
+  </div>
+
+  <div style="font-family:'Jua',sans-serif;font-size:var(--fs-md);color:var(--orange);margin-bottom:8px;">🏅 받은 배지</div>
+  <div class="badge-row" id="badgeRow">
+    <div class="badge-it" id="bdg-shop">🏪 가게 탐정</div>
+    <div class="badge-it" id="bdg-num">🔢 수학 천재</div>
+    <div class="badge-it" id="bdg-story">🌈 이야기꾼</div>
+    <div class="badge-it" id="bdg-size">📏 측정 박사</div>
+    <div class="badge-it" id="bdg-all">🏆 동네 탐험왕</div>
+  </div>
+
+  <div class="sb-wrap">
+    <div class="sb-ttl">🏆 우리 반 탐험 기록</div>
+    <div id="sbList"><div class="sb-row" style="justify-content:center;">첫 탐험을 시작해요!</div></div>
+  </div>
+
+  <div class="qr-panel">
+    <div class="qr-ttl">📱 선생님 공유 QR</div>
+    <div id="qr-wrap"></div>
+    <div class="qr-url">milab2019.github.io/main/special_town.html</div>
+  </div>
+</div>
+
+<!-- ===== 탐험1: 동네 가게 찾기 (국어 읽기 + 지역사회 인지) ===== -->
+<div id="screen-m1" class="screen">
+  <div class="g-hd">
+    <div>
+      <div class="g-title">🏪 탐험 1 — 동네 가게 찾기</div>
+      <div class="g-sub">국어(읽기·이해) + 슬기로운 생활(지역사회)</div>
+    </div>
+    <div class="score-badge">⭐ <span id="m1sc">0</span></div>
+  </div>
+  <div class="prog-wrap">
+    <div class="prog-lbl"><span>🗺️ 탐험 중!</span><span id="m1pg">0 / 5</span></div>
+    <div class="prog-track"><div class="prog-fill" id="m1pgb" style="width:0%"></div></div>
+  </div>
+  <div class="timer-row">
+    <span style="font-size:1.8rem;">⏱️</span>
+    <div class="t-track"><div class="t-fill t-ok" id="m1tb" style="width:100%"></div></div>
+    <div class="t-num" id="m1tn">30</div>
+  </div>
+  <div class="char-row">
+    <div class="char-face" id="m1f">🐱</div>
+    <div class="bubble">
+      <div class="bubble-nm">또리</div>
+      <span id="m1msg">그림을 잘 보고 맞는 가게를 골라요! 🏪</span>
+    </div>
+  </div>
+  <div class="card">
+    <button class="hint-btn" onclick="showH('m1')">💡 힌트 보기!</button>
+    <div class="hint-box" id="m1hint"></div>
+    <div class="quiz-q" id="m1q">문제 불러오는 중...</div>
+    <div class="pic-opts" id="m1opts"></div>
+    <div class="fb" id="m1fb"></div>
+    <div id="m1nw" style="text-align:center;margin-top:14px;display:none;">
+      <button class="btn btn-blue" onclick="nextM1()">다음으로 → </button>
+    </div>
+  </div>
+  <button class="btn btn-ghost btn-sm" onclick="goHome()">← 탐험 목록</button>
+</div>
+
+<!-- ===== 탐험2: 수 세기 놀이 (수학 수·연산) ===== -->
+<div id="screen-m2" class="screen">
+  <div class="g-hd">
+    <div>
+      <div class="g-title">🍎 탐험 2 — 수 세기 놀이</div>
+      <div class="g-sub">수학(수·연산) | 1~20까지 세기</div>
+    </div>
+    <div class="score-badge">⭐ <span id="m2sc">0</span></div>
+  </div>
+  <div class="prog-wrap">
+    <div class="prog-lbl"><span>🔢 세는 중!</span><span id="m2pg">0 / 6</span></div>
+    <div class="prog-track"><div class="prog-fill" id="m2pgb" style="width:0%"></div></div>
+  </div>
+  <div class="timer-row">
+    <span style="font-size:1.8rem;">⏱️</span>
+    <div class="t-track"><div class="t-fill t-ok" id="m2tb" style="width:100%"></div></div>
+    <div class="t-num" id="m2tn">40</div>
+  </div>
+  <div class="char-row">
+    <div class="char-face" id="m2f">🐱</div>
+    <div class="bubble">
+      <div class="bubble-nm">또리</div>
+      <span id="m2msg">물건이 몇 개인지 세어보아요! 🔢</span>
+    </div>
+  </div>
+  <div class="card">
+    <button class="hint-btn" onclick="showH('m2')">💡 힌트 보기!</button>
+    <div class="hint-box" id="m2hint"></div>
+    <div class="count-display">
+      <div id="m2items" class="count-items"></div>
+    </div>
+    <div class="count-q-txt" id="m2q">몇 개인가요?</div>
+    <div class="num-opts" id="m2opts"></div>
+    <div class="fb" id="m2fb"></div>
+    <div id="m2nw" style="text-align:center;margin-top:14px;display:none;">
+      <button class="btn btn-blue" onclick="nextM2()">다음으로 →</button>
+    </div>
+  </div>
+  <button class="btn btn-ghost btn-sm" onclick="goHome()">← 탐험 목록</button>
+</div>
+
+<!-- ===== 탐험3: 동네 이야기 (국어 말하기·멀티엔딩) ===== -->
+<div id="screen-m3" class="screen">
+  <div class="g-hd">
+    <div>
+      <div class="g-title">🌈 탐험 3 — 동네 이야기</div>
+      <div class="g-sub">국어(말하기·표현) | 바른 행동 선택 이야기</div>
+    </div>
+    <div class="score-badge">⭐ <span id="m3sc">0</span></div>
+  </div>
+  <div class="prog-wrap">
+    <div class="prog-lbl"><span>📖 이야기 중!</span><span id="m3pg">0 / 4</span></div>
+    <div class="prog-track"><div class="prog-fill" id="m3pgb" style="width:0%"></div></div>
+  </div>
+  <div class="char-row">
+    <div class="char-face" id="m3f">🐱</div>
+    <div class="bubble">
+      <div class="bubble-nm">또리</div>
+      <span id="m3msg">어떻게 하면 좋을까요? 같이 생각해봐요! 🤔</span>
+    </div>
+  </div>
+  <div class="card">
+    <div class="scene-box">
+      <div class="scene-em" id="m3em">😊</div>
+      <div class="scene-txt" id="m3tx">이야기 불러오는 중...</div>
+      <div class="scene-ctx" id="m3cx"></div>
+    </div>
+    <div class="story-opts" id="m3sg"></div>
+    <div class="ending-box" id="m3eb"></div>
+    <div id="m3nw" style="text-align:center;margin-top:14px;display:none;">
+      <button class="btn btn-blue" onclick="nextM3()">다음 이야기 →</button>
+    </div>
+  </div>
+  <button class="btn btn-ghost btn-sm" onclick="goHome()">← 탐험 목록</button>
+</div>
+
+<!-- ===== 탐험4: 크기 비교 (수학 측정·비교) ===== -->
+<div id="screen-m4" class="screen">
+  <div class="g-hd">
+    <div>
+      <div class="g-title">📏 탐험 4 — 크기 비교</div>
+      <div class="g-sub">수학(측정·비교) | 크다·작다·같다</div>
+    </div>
+    <div class="score-badge">⭐ <span id="m4sc">0</span></div>
+  </div>
+  <div class="prog-wrap">
+    <div class="prog-lbl"><span>📐 재는 중!</span><span id="m4pg">0 / 5</span></div>
+    <div class="prog-track"><div class="prog-fill" id="m4pgb" style="width:0%"></div></div>
+  </div>
+  <div class="timer-row">
+    <span style="font-size:1.8rem;">⏱️</span>
+    <div class="t-track"><div class="t-fill t-ok" id="m4tb" style="width:100%"></div></div>
+    <div class="t-num" id="m4tn">35</div>
+  </div>
+  <div class="char-row">
+    <div class="char-face" id="m4f">🐱</div>
+    <div class="bubble">
+      <div class="bubble-nm">또리</div>
+      <span id="m4msg">어느 것이 더 클까요? 잘 보고 골라요! 👀</span>
+    </div>
+  </div>
+  <div class="card">
+    <button class="hint-btn" onclick="showH('m4')">💡 힌트 보기!</button>
+    <div class="hint-box" id="m4hint"></div>
+    <div class="quiz-q" id="m4q">문제 불러오는 중...</div>
+    <div class="big-opts" id="m4opts"></div>
+    <div class="fb" id="m4fb"></div>
+    <div id="m4nw" style="text-align:center;margin-top:14px;display:none;">
+      <button class="btn btn-blue" onclick="nextM4()">다음으로 →</button>
+    </div>
+  </div>
+  <button class="btn btn-ghost btn-sm" onclick="goHome()">← 탐험 목록</button>
+</div>
+
+<!-- ===== 결과 ===== -->
+<div id="screen-result" class="screen">
+  <div style="padding-top:8px;">
+    <div class="res-hero">
+      <div class="res-ic" id="reic">🏆</div>
+      <div class="res-ttl" id="rettl">탐험 완료!</div>
+      <div class="res-sub">미랩(MILAB) 특수학급 우리 동네 탐험대</div>
+      <div class="res-rank" id="rerank"></div>
+    </div>
+    <div class="res-grid" id="regrid"></div>
+    <div class="total-box">
+      <div class="tl">🌟 오늘 받은 별</div>
+      <div class="tn" id="retotal">0</div>
+      <div style="font-size:var(--fs-md);color:var(--muted);margin-top:3px;">개 ★</div>
+    </div>
+    <div class="badge-row" id="rebadges"></div>
+    <div class="eval-card" id="reeval"></div>
+    <button class="btn btn-orange btn-block" onclick="resetGame()">🔄 다시 탐험하기!</button>
+  </div>
+</div>
+
+</div><!-- #app -->
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script>
+// =====================================================
+// ===== 상태 =====
+// =====================================================
+const GAME_URL = 'https://milab2019.github.io/main/special_town.html';
+const S = {
+  done:[false,false,false,false],
+  scores:[0,0,0,0], stars:[0,0,0,0],
+  badges:{shop:false,num:false,story:false,size:false},
+  history:[]
+};
+try { S.history = JSON.parse(localStorage.getItem('spt_scores')||'[]'); } catch(e){}
+let allT = [];
+const clrT = () => { allT.forEach(t=>clearInterval(t)); allT=[]; };
+
+// =====================================================
+// ===== 배경 =====
+// =====================================================
+function initBg(){
+  const bg = document.getElementById('bgWrap');
+  // 태양
+  const sun = document.createElement('div'); sun.className='sun-orb'; bg.appendChild(sun);
+  // 구름 3개
+  [[10,'140px','20px'],[18,'100px','28px'],[28,'160px','15px']].forEach(([top,w,h])=>{
+    const c=document.createElement('div'); c.className='cloud';
+    c.style.cssText=`top:${top}%;width:${w};height:${h};animation-duration:${18+Math.random()*12}s;animation-delay:-${Math.random()*15}s`;
+    bg.appendChild(c);
+  });
+  // 새
+  const bird = document.createElement('div'); bird.className='bird'; bird.textContent='🐦';
+  bird.style.animationDelay='-3s'; bg.appendChild(bird);
+}
+
+// =====================================================
+// ===== QR =====
+// =====================================================
+function initQR(){
+  const w = document.getElementById('qr-wrap'); if(!w) return;
+  try { new QRCode(w,{text:GAME_URL,width:130,height:130,colorDark:'#4a90d9',colorLight:'#fffef8',correctLevel:QRCode.CorrectLevel.M}); }
+  catch(e){ w.innerHTML=`<img src="https://api.qrserver.com/v1/create-qr-code/?size=130x130&data=${encodeURIComponent(GAME_URL)}&color=4a90d9&bgcolor=fffef8" style="border-radius:10px;border:3px solid white;">`; }
+}
+
+// =====================================================
+// ===== Web Audio API — 밝고 귀여운 멜로디 =====
+// =====================================================
+let actx=null, musicOn=false;
+function toggleMusic(){
+  musicOn=!musicOn;
+  document.getElementById('musicBtn').textContent = musicOn?'🎵 끄기':'🎵 음악';
+  if(musicOn) playBg(); else stopBg();
+}
+function playBg(){
+  try{
+    actx = new(window.AudioContext||window.webkitAudioContext)();
+    // 동요풍 밝은 멜로디 (도레미파솔)
+    const scale = [261,294,330,349,392,440,494,523];
+    const mel   = [0,2,4,5,7,5,4,2,0,0,2,4,5,7,9,7];
+    mel.forEach((n,i)=>{
+      const o=actx.createOscillator(); const g=actx.createGain();
+      o.connect(g); g.connect(actx.destination);
+      o.type='triangle'; o.frequency.value=scale[n%8];
+      const t=actx.currentTime+i*0.3;
+      g.gain.setValueAtTime(0,t);
+      g.gain.linearRampToValueAtTime(0.06,t+0.04);
+      g.gain.linearRampToValueAtTime(0,t+0.24);
+      o.start(t); o.stop(t+0.27);
+    });
+    setTimeout(()=>{ if(musicOn) playBg(); }, mel.length*300+400);
+  }catch(e){}
+}
+function stopBg(){ if(actx){ actx.close(); actx=null; } }
+function playS(t){
+  try{
+    const cx=new(window.AudioContext||window.webkitAudioContext)();
+    const o=cx.createOscillator(); const g=cx.createGain();
+    o.connect(g); g.connect(cx.destination);
+    if(t==='ok'){
+      // 정답: 밝은 상승음 2개
+      o.type='triangle'; o.frequency.setValueAtTime(523,cx.currentTime);
+      o.frequency.linearRampToValueAtTime(784,cx.currentTime+0.15);
+      g.gain.setValueAtTime(0.12,cx.currentTime); g.gain.exponentialRampToValueAtTime(0.001,cx.currentTime+0.5);
+    } else if(t==='no'){
+      // 오답: 낮은 두 번 소리
+      o.type='triangle'; o.frequency.value=220;
+      g.gain.setValueAtTime(0.08,cx.currentTime); g.gain.exponentialRampToValueAtTime(0.001,cx.currentTime+0.4);
+    } else if(t==='cl'){
+      // 완료: 팡파레
+      [523,659,784,1047].forEach((f,i)=>{
+        const o2=cx.createOscillator(); const g2=cx.createGain();
+        o2.connect(g2); g2.connect(cx.destination);
+        o2.type='triangle'; o2.frequency.value=f;
+        const tt=cx.currentTime+i*0.1;
+        g2.gain.setValueAtTime(0.1,tt); g2.gain.exponentialRampToValueAtTime(0.001,tt+0.3);
+        o2.start(tt); o2.stop(tt+0.32);
+      });
+    }
+    o.start(); o.stop(cx.currentTime+0.6);
+  }catch(e){}
+}
+
+// =====================================================
+// ===== 화면 전환 & 공통 유틸 =====
+// =====================================================
+const showScr=(id)=>{
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo(0,0);
+};
+const goHome=()=>{ clrT(); showScr('screen-intro'); renderSB(); renderBadges(); };
+const calcSt=(s,m)=>{ const p=s/m; return p>=0.9?3:p>=0.6?2:p>0?1:0; };
+const unlockMC=(n)=>{
+  const el=document.getElementById('mc'+n); if(!el) return;
+  el.classList.remove('locked'); el.querySelector('.mc-lk')?.remove();
+  const s=document.createElement('div'); s.className='mc-st'; s.id='mc'+n+'st'; s.textContent='☆☆☆';
+  el.appendChild(s); el.onclick=()=>startMission(n);
+};
+const updateSt=(n,st)=>{
+  const el=document.getElementById('mc'+n+'st');
+  if(el) el.textContent='★'.repeat(st)+'☆'.repeat(3-st);
+  document.getElementById('mc'+n)?.classList.add('done');
+};
+const startMission=(n)=>{ clrT(); [initM1,initM2,initM3,initM4][n-1](); showScr('screen-m'+n); };
+const showH=(id)=>{
+  const hMap={
+    m1:['가게 이름을 크게 읽어봐요!','가게에서 무엇을 파는지 생각해봐요!','가게 그림을 손가락으로 짚어봐요!'],
+    m2:['하나씩 손가락으로 세어봐요!','소리 내어 1, 2, 3 세어봐요!','천천히 하나씩 짚어가며 세어봐요!'],
+    m4:['더 큰 것을 손가락으로 가리켜봐요!','실제 물건을 떠올려봐요!','눈으로 비교해봐요!']
+  };
+  const arr=hMap[id]||[];
+  const box=document.getElementById(id+'hint');
+  const idx=Math.floor(Math.random()*arr.length);
+  box.innerHTML='💡 <strong>힌트!</strong> '+arr[idx];
+  box.classList.add('show');
+};
+const updateTUI=(id,cur,max)=>{
+  const p=cur/max*100; const b=document.getElementById(id+'tb');
+  b.style.width=p+'%';
+  b.className='t-fill '+(p>50?'t-ok':p>25?'t-warn':'t-hot');
+  document.getElementById(id+'tn').textContent=cur;
+};
+const startTimer=(id,sec,cb)=>{
+  let s=sec; updateTUI(id,s,sec);
+  const t=setInterval(()=>{ s--; updateTUI(id,s,sec); if(s<=0){clearInterval(t);cb();} },1000);
+  allT.push(t);
+};
+const renderSB=()=>{
+  const el=document.getElementById('sbList');
+  const sorted=[...S.history].sort((a,b)=>b.total-a.total).slice(0,3);
+  if(!sorted.length){ el.innerHTML='<div class="sb-row" style="justify-content:center;">첫 탐험을 시작해요! 🌟</div>'; return; }
+  el.innerHTML=sorted.map((h,i)=>`<div class="sb-row ${['r1','r2','r3'][i]}"><span>${['🥇','🥈','🥉'][i]} 탐험가</span><span style="font-weight:800;">${h.total}점 ${'★'.repeat(Math.min(h.stars,12))}</span></div>`).join('');
+};
+const renderBadges=()=>{
+  Object.keys(S.badges).forEach(k=>{ const el=document.getElementById('bdg-'+k); if(el&&S.badges[k])el.classList.add('earned'); });
+  if(Object.values(S.badges).every(v=>v)) document.getElementById('bdg-all')?.classList.add('earned');
+};
+const saveScore=()=>{
+  const total=S.scores.reduce((a,b)=>a+b,0); const stars=S.stars.reduce((a,b)=>a+b,0);
+  S.history.push({total,stars,date:new Date().toLocaleDateString('ko')});
+  if(S.history.length>5) S.history.shift();
+  try { localStorage.setItem('spt_scores',JSON.stringify(S.history)); } catch(e){}
+};
+
+// =====================================================
+// ===== 탐험1: 동네 가게 찾기 =====
+// =====================================================
+const shopQs=[
+  { q:'빵과 케이크를 파는 곳은 어디일까요?',
+    opts:[{ic:'🍞',lb:'빵집',ok:true},{ic:'💊',lb:'약국',ok:false},{ic:'📚',lb:'서점',ok:false},{ic:'👗',lb:'옷가게',ok:false}],
+    pts:15, hint:'달콤한 냄새가 나는 곳이에요!'},
+  { q:'아플 때 약을 사는 곳은?',
+    opts:[{ic:'💊',lb:'약국',ok:true},{ic:'🍕',lb:'피자집',ok:false},{ic:'🏪',lb:'편의점',ok:false},{ic:'🌸',lb:'꽃가게',ok:false}],
+    pts:15, hint:'하얀 가운을 입은 분이 계세요!'},
+  { q:'야채, 과일, 고기를 파는 곳은?',
+    opts:[{ic:'🍎',lb:'마트',ok:true},{ic:'📬',lb:'우체국',ok:false},{ic:'🎮',lb:'문구점',ok:false},{ic:'☕',lb:'카페',ok:false}],
+    pts:15, hint:'장을 보러 가는 곳이에요!'},
+  { q:'책을 읽거나 빌릴 수 있는 곳은?',
+    opts:[{ic:'📚',lb:'도서관',ok:true},{ic:'🍦',lb:'아이스크림',ok:false},{ic:'🎠',lb:'놀이터',ok:false},{ic:'🚌',lb:'버스정류장',ok:false}],
+    pts:15, hint:'조용히 해야 하는 곳이에요!'},
+  { q:'머리를 자르는 곳은?',
+    opts:[{ic:'💇',lb:'미용실',ok:true},{ic:'🍣',lb:'초밥집',ok:false},{ic:'🏦',lb:'은행',ok:false},{ic:'🎭',lb:'영화관',ok:false}],
+    pts:15, hint:'가위와 빗이 있는 곳이에요!'},
+];
+let m1idx=0,m1sc=0;
+function initM1(){ m1idx=0; m1sc=0; document.getElementById('m1sc').textContent='0'; renderM1(); }
+function renderM1(){
+  if(m1idx>=shopQs.length){ finishM1(); return; }
+  clrT();
+  const q=shopQs[m1idx];
+  document.getElementById('m1pg').textContent=(m1idx+1)+' / '+shopQs.length;
+  document.getElementById('m1pgb').style.width=(m1idx/shopQs.length*100)+'%';
+  document.getElementById('m1q').textContent=q.q;
+  document.getElementById('m1hint').textContent='💡 힌트! '+q.hint; document.getElementById('m1hint').classList.remove('show');
+  document.getElementById('m1fb').classList.remove('show');
+  document.getElementById('m1nw').style.display='none';
+  document.getElementById('m1f').textContent='🐱'; document.getElementById('m1f').className='char-face';
+  document.getElementById('m1msg').textContent='그림을 잘 보고 맞는 가게를 골라요! 🏪';
+  // 보기 셔플
+  const shuffled=[...q.opts].sort(()=>Math.random()-0.5);
+  const optsEl=document.getElementById('m1opts'); optsEl.innerHTML='';
+  shuffled.forEach((opt)=>{
+    const div=document.createElement('div'); div.className='pic-opt';
+    div.innerHTML=`<span class="ic">${opt.ic}</span><span class="lbl">${opt.lb}</span>`;
+    div.onclick=()=>{
+      document.querySelectorAll('.pic-opt').forEach(b=>b.onclick=null);
+      const fb=document.getElementById('m1fb'); const face=document.getElementById('m1f');
+      if(opt.ok){
+        div.classList.add('correct'); m1sc+=q.pts; document.getElementById('m1sc').textContent=m1sc;
+        fb.className='fb show fb-ok'; fb.innerHTML='🎉 맞았어요! 잘했어요! +'+q.pts+'점';
+        face.textContent='😄'; face.className='char-face cf-happy'; playS('ok');
+      } else {
+        div.classList.add('wrong');
+        // 정답 강조
+        document.querySelectorAll('.pic-opt').forEach(b=>{ if(b.querySelector('.lbl').textContent===shuffled.find(o=>o.ok).lb) b.classList.add('correct'); });
+        fb.className='fb show fb-no'; fb.innerHTML='💪 다시 해봐요! 정답은 <strong>'+shuffled.find(o=>o.ok).lb+'</strong>이에요!';
+        face.textContent='😢'; face.className='char-face cf-sad'; playS('no');
+      }
+      document.getElementById('m1nw').style.display='block';
+    };
+    optsEl.appendChild(div);
+  });
+  startTimer('m1',30,()=>{
+    document.querySelectorAll('.pic-opt').forEach(b=>b.onclick=null);
+    const fb=document.getElementById('m1fb');
+    fb.className='fb show fb-no'; fb.innerHTML='⏰ 시간이 다 됐어요! 괜찮아요, 다음에 도전해요!';
+    document.getElementById('m1f').textContent='😢'; document.getElementById('m1f').className='char-face cf-sad';
+    document.getElementById('m1nw').style.display='block';
+  });
+}
+function nextM1(){ m1idx++; renderM1(); }
+function finishM1(){
+  clrT(); S.scores[0]=m1sc; S.stars[0]=calcSt(m1sc,75); S.done[0]=true; S.badges.shop=S.stars[0]>=2;
+  updateSt(1,S.stars[0]); unlockMC(2); playS('cl');
+  document.getElementById('m1msg').textContent='🎉 탐험 1 완료! '+m1sc+'점!';
+  document.getElementById('m1f').textContent='😄'; document.getElementById('m1f').className='char-face cf-wow';
+  setTimeout(()=>goHome(),2000);
+}
+
+// =====================================================
+// ===== 탐험2: 수 세기 (1~20) =====
+// =====================================================
+const countQs=[
+  {emoji:'🍎',cnt:3,  opts:[2,3,4,5],       hint:'하나씩 손가락으로 짚어봐요!'},
+  {emoji:'⭐',cnt:5,  opts:[4,5,6,7],        hint:'별을 하나씩 세어봐요!'},
+  {emoji:'🐥',cnt:7,  opts:[6,7,8,9],        hint:'병아리가 몇 마리인지 세어봐요!'},
+  {emoji:'🌸',cnt:4,  opts:[3,4,5,6],        hint:'꽃잎 수를 세어봐요!'},
+  {emoji:'🚗',cnt:6,  opts:[5,6,7,8],        hint:'자동차를 하나씩 세어봐요!'},
+  {emoji:'🍭',cnt:9,  opts:[8,9,10,11],      hint:'사탕을 천천히 세어봐요!'},
+];
+let m2idx=0,m2sc=0;
+function initM2(){ m2idx=0; m2sc=0; document.getElementById('m2sc').textContent='0'; renderM2(); }
+function renderM2(){
+  if(m2idx>=countQs.length){ finishM2(); return; }
+  clrT();
+  const q=countQs[m2idx];
+  document.getElementById('m2pg').textContent=(m2idx+1)+' / '+countQs.length;
+  document.getElementById('m2pgb').style.width=(m2idx/countQs.length*100)+'%';
+  document.getElementById('m2hint').textContent='💡 힌트! '+q.hint; document.getElementById('m2hint').classList.remove('show');
+  document.getElementById('m2fb').classList.remove('show');
+  document.getElementById('m2nw').style.display='none';
+  document.getElementById('m2f').textContent='🐱'; document.getElementById('m2f').className='char-face';
+  document.getElementById('m2msg').textContent='물건이 몇 개인지 세어보아요! 🔢';
+  // 아이템 표시
+  const itemsEl=document.getElementById('m2items'); itemsEl.innerHTML='';
+  for(let i=0;i<q.cnt;i++){
+    const span=document.createElement('span'); span.className='count-item';
+    span.textContent=q.emoji; span.style.animationDelay=(i*0.08)+'s';
+    itemsEl.appendChild(span);
+  }
+  document.getElementById('m2q').textContent=q.emoji+' 는 모두 몇 개인가요?';
+  // 숫자 보기 (셔플)
+  const shuffled=[...q.opts].sort(()=>Math.random()-0.5);
+  const optsEl=document.getElementById('m2opts'); optsEl.innerHTML='';
+  shuffled.forEach(num=>{
+    const btn=document.createElement('button'); btn.className='num-btn'; btn.textContent=num;
+    btn.onclick=()=>{
+      document.querySelectorAll('.num-btn').forEach(b=>b.disabled=true);
+      const fb=document.getElementById('m2fb'); const face=document.getElementById('m2f');
+      if(num===q.cnt){
+        btn.classList.add('correct'); m2sc+=15; document.getElementById('m2sc').textContent=m2sc;
+        fb.className='fb show fb-ok'; fb.innerHTML='🎉 정답! '+q.cnt+'개 맞아요! +15점';
+        face.textContent='😄'; face.className='char-face cf-happy'; playS('ok');
+      } else {
+        btn.classList.add('wrong');
+        document.querySelectorAll('.num-btn').forEach(b=>{ if(parseInt(b.textContent)===q.cnt) b.classList.add('correct'); });
+        fb.className='fb show fb-no'; fb.innerHTML='💪 아쉬워요! 정답은 <strong>'+q.cnt+'개</strong>예요!';
+        face.textContent='😢'; face.className='char-face cf-sad'; playS('no');
+      }
+      document.getElementById('m2nw').style.display='block';
+    };
+    optsEl.appendChild(btn);
+  });
+  startTimer('m2',40,()=>{
+    document.querySelectorAll('.num-btn').forEach(b=>b.disabled=true);
+    document.getElementById('m2fb').className='fb show fb-no';
+    document.getElementById('m2fb').innerHTML='⏰ 천천히 해봐요! 정답은 <strong>'+q.cnt+'개</strong>예요!';
+    document.getElementById('m2f').textContent='😢'; document.getElementById('m2f').className='char-face cf-sad';
+    document.getElementById('m2nw').style.display='block';
+  });
+}
+function nextM2(){ m2idx++; renderM2(); }
+function finishM2(){
+  clrT(); S.scores[1]=m2sc; S.stars[1]=calcSt(m2sc,90); S.done[1]=true; S.badges.num=S.stars[1]>=2;
+  updateSt(2,S.stars[1]); unlockMC(3); playS('cl');
+  document.getElementById('m2msg').textContent='🎉 탐험 2 완료! '+m2sc+'점!';
+  document.getElementById('m2f').textContent='😄'; document.getElementById('m2f').className='char-face cf-wow';
+  setTimeout(()=>goHome(),2000);
+}
+
+// =====================================================
+// ===== 탐험3: 동네 이야기 (바른 행동 멀티엔딩) =====
+// =====================================================
+const stories=[
+  {
+    em:'🛒', tx:'마트에서 물건을 사고 싶어요. 어떻게 할까요?',
+    cx:'엄마, 아빠와 함께 마트에 왔어요.',
+    choices:[
+      {ic:'✋',text:'물건을 집고 줄을 서서 계산해요.',type:'hero',pts:20,end:'👏 잘했어요! 줄 서서 계산하는 것은 아주 바른 행동이에요!',lesson:'가게에서는 줄을 서서 차례를 지켜요!'},
+      {ic:'🏃',text:'물건을 집고 그냥 나와요.',type:'bad',pts:0,end:'😟 그것은 안 돼요. 물건은 돈을 내고 사야 해요.',lesson:'물건을 가져가려면 꼭 계산해야 해요!'},
+      {ic:'👋',text:'물건이 어디 있는지 직원분께 물어봐요.',type:'mid',pts:15,end:'👍 좋아요! 모를 때는 어른께 여쭤보는 것이 좋아요.',lesson:'모르면 물어보는 것이 용기 있는 행동이에요!'},
+    ]
+  },
+  {
+    em:'🚌', tx:'버스를 탔는데 자리가 없어요. 할머니가 서 계셔요.',
+    cx:'버스 안에 사람이 가득 있어요.',
+    choices:[
+      {ic:'🧓',text:'내 자리를 할머니께 양보해요.',type:'hero',pts:20,end:'🌟 훌륭해요! 어른께 자리를 양보하는 것은 아주 착한 행동이에요!',lesson:'버스에서 어른께 자리를 양보해요!'},
+      {ic:'😴',text:'눈을 감고 자는 척해요.',type:'bad',pts:0,end:'😟 할머니가 힘드실 거예요. 자리를 양보해드려요.',lesson:'힘드신 분께는 자리를 양보해드려요!'},
+      {ic:'👀',text:'주변 친구에게 양보하라고 말해요.',type:'mid',pts:12,end:'💙 좋은 생각이에요! 하지만 내가 직접 양보하면 더 좋아요.',lesson:'도움이 필요한 분께 직접 도움을 드려봐요!'},
+    ]
+  },
+  {
+    em:'🏫', tx:'친구가 넘어져서 울고 있어요. 어떻게 할까요?',
+    cx:'운동장에서 친구가 넘어졌어요.',
+    choices:[
+      {ic:'🤝',text:'친구에게 달려가 괜찮냐고 물어봐요.',type:'hero',pts:20,end:'🌈 정말 따뜻한 마음이에요! 친구를 걱정해주는 것이 좋은 친구예요!',lesson:'친구가 힘들 때 먼저 말을 걸어봐요!'},
+      {ic:'😂',text:'웃으며 그냥 지나쳐요.',type:'bad',pts:0,end:'😟 친구가 많이 속상했을 거예요. 친구를 도와주는 것이 좋아요.',lesson:'친구가 힘들 때는 도와주어요!'},
+      {ic:'🏃',text:'선생님을 모셔와요.',type:'mid',pts:15,end:'👍 좋은 방법이에요! 다친 것 같을 때는 선생님께 알리는 것이 중요해요.',lesson:'다쳤을 때는 어른께 알리는 것이 맞아요!'},
+    ]
+  },
+  {
+    em:'🍽️', tx:'급식 시간이에요. 음식이 좋아하는 것만 있어요. 어떻게 할까요?',
+    cx:'오늘 급식에 여러 가지 음식이 나왔어요.',
+    choices:[
+      {ic:'😊',text:'골고루 조금씩 먹어봐요.',type:'hero',pts:20,end:'🌟 잘했어요! 골고루 먹으면 키도 크고 건강해져요!',lesson:'음식은 골고루 먹어야 건강해요!'},
+      {ic:'🙅',text:'싫어하는 건 전부 남겨요.',type:'bad',pts:0,end:'😟 음식을 남기면 안 돼요. 조금씩 맛보는 것이 좋아요.',lesson:'음식을 골고루 먹으면 몸이 튼튼해져요!'},
+      {ic:'👋',text:'조리사 선생님께 감사하다고 인사해요.',type:'mid',pts:15,end:'💛 정말 예의 바르네요! 감사 인사는 참 좋은 행동이에요.',lesson:'음식을 만들어 주신 분께 감사 인사를 해요!'},
+    ]
+  },
+];
+let m3idx=0,m3sc=0;
+function initM3(){ m3idx=0; m3sc=0; document.getElementById('m3sc').textContent='0'; renderM3(); }
+function renderM3(){
+  if(m3idx>=stories.length){ finishM3(); return; }
+  const sc=stories[m3idx];
+  document.getElementById('m3pg').textContent=(m3idx+1)+' / '+stories.length;
+  document.getElementById('m3pgb').style.width=(m3idx/stories.length*100)+'%';
+  document.getElementById('m3em').textContent=sc.em;
+  document.getElementById('m3tx').textContent=sc.tx;
+  document.getElementById('m3cx').textContent=sc.cx;
+  document.getElementById('m3eb').classList.remove('show');
+  document.getElementById('m3nw').style.display='none';
+  document.getElementById('m3f').textContent='🐱'; document.getElementById('m3f').className='char-face';
+  document.getElementById('m3msg').textContent='어떻게 하면 좋을까요? 같이 생각해봐요! 🤔';
+  const sg=document.getElementById('m3sg'); sg.innerHTML='';
+  sc.choices.forEach(c=>{
+    const btn=document.createElement('button'); btn.className='s-btn';
+    btn.innerHTML=`<span class="s-ic">${c.ic}</span><span>${c.text}</span>`;
+    btn.onclick=()=>{
+      document.querySelectorAll('.s-btn').forEach(b=>b.disabled=true);
+      btn.classList.add(c.type==='hero'?'s-good':c.type==='bad'?'s-bad':'s-mid');
+      const eb=document.getElementById('m3eb'); const face=document.getElementById('m3f');
+      if(c.type==='hero'){
+        m3sc+=c.pts; document.getElementById('m3sc').textContent=m3sc;
+        eb.className='ending-box show e-hero'; face.textContent='😄'; face.className='char-face cf-happy'; playS('ok');
+      } else if(c.type==='mid'){
+        m3sc+=c.pts; document.getElementById('m3sc').textContent=m3sc;
+        eb.className='ending-box show e-mid'; face.textContent='😊'; face.className='char-face';
+      } else {
+        eb.className='ending-box show e-bad'; face.textContent='😢'; face.className='char-face cf-sad'; playS('no');
+      }
+      eb.innerHTML=`${c.end}<br><br>📚 <strong>오늘의 약속:</strong> ${c.lesson}`;
+      document.getElementById('m3nw').style.display='block';
+    };
+    sg.appendChild(btn);
+  });
+}
+function nextM3(){ m3idx++; renderM3(); }
+function finishM3(){
+  S.scores[2]=m3sc; S.stars[2]=calcSt(m3sc,80); S.done[2]=true; S.badges.story=S.stars[2]>=2;
+  updateSt(3,S.stars[2]); unlockMC(4); playS('cl');
+  document.getElementById('m3msg').textContent='🎉 탐험 3 완료! '+m3sc+'점!';
+  document.getElementById('m3f').textContent='😄'; document.getElementById('m3f').className='char-face cf-wow';
+  setTimeout(()=>goHome(),2000);
+}
+
+// =====================================================
+// ===== 탐험4: 크기 비교 (수학 측정) =====
+// =====================================================
+const sizeQs=[
+  {
+    q:'더 큰 것은 무엇인가요?',
+    opts:[{ic:'🐘',lb:'코끼리',ok:true},{ic:'🐭',lb:'쥐',ok:false},{ic:'🐟',lb:'물고기',ok:false}],
+    pts:16,hint:'코끼리와 쥐 중 어느 것이 클까요?'
+  },
+  {
+    q:'더 높은 것은 무엇인가요?',
+    opts:[{ic:'🏢',lb:'건물',ok:true},{ic:'🏠',lb:'집',ok:false},{ic:'🛖',lb:'오두막',ok:false}],
+    pts:16,hint:'하늘 높이 솟은 것은 어느 것인가요?'
+  },
+  {
+    q:'더 짧은 것은 무엇인가요?',
+    opts:[{ic:'✏️',lb:'연필',ok:true},{ic:'🌳',lb:'나무',ok:false},{ic:'🗼',lb:'탑',ok:false}],
+    pts:16,hint:'가장 작은 것은 어느 것인가요?'
+  },
+  {
+    q:'더 무거운 것은 무엇인가요?',
+    opts:[{ic:'🚌',lb:'버스',ok:true},{ic:'🍎',lb:'사과',ok:false},{ic:'🖊️',lb:'볼펜',ok:false}],
+    pts:16,hint:'들기 힘든 것은 어느 것인가요?'
+  },
+  {
+    q:'더 작은 것은 무엇인가요?',
+    opts:[{ic:'🐜',lb:'개미',ok:true},{ic:'🐋',lb:'고래',ok:false},{ic:'🦁',lb:'사자',ok:false}],
+    pts:16,hint:'아주 작아서 잘 안 보이는 것은?'
+  },
+];
+let m4idx=0,m4sc=0;
+function initM4(){ m4idx=0; m4sc=0; document.getElementById('m4sc').textContent='0'; renderM4(); }
+function renderM4(){
+  if(m4idx>=sizeQs.length){ finishM4(); return; }
+  clrT();
+  const q=sizeQs[m4idx];
+  document.getElementById('m4pg').textContent=(m4idx+1)+' / '+sizeQs.length;
+  document.getElementById('m4pgb').style.width=(m4idx/sizeQs.length*100)+'%';
+  document.getElementById('m4q').textContent=q.q;
+  document.getElementById('m4hint').textContent='💡 힌트! '+q.hint; document.getElementById('m4hint').classList.remove('show');
+  document.getElementById('m4fb').classList.remove('show');
+  document.getElementById('m4nw').style.display='none';
+  document.getElementById('m4f').textContent='🐱'; document.getElementById('m4f').className='char-face';
+  document.getElementById('m4msg').textContent='어느 것이 더 클까요? 잘 보고 골라요! 👀';
+  const shuffled=[...q.opts].sort(()=>Math.random()-0.5);
+  const optsEl=document.getElementById('m4opts'); optsEl.innerHTML='';
+  shuffled.forEach((opt,i)=>{
+    const btn=document.createElement('button'); btn.className='big-opt';
+    btn.innerHTML=`<span class="opt-num">${['①','②','③'][i]}</span><span style="font-size:2.2rem;">${opt.ic}</span><span style="font-family:'Jua',sans-serif;font-size:var(--fs-lg);">${opt.lb}</span>`;
+    btn.onclick=()=>{
+      document.querySelectorAll('.big-opt').forEach(b=>b.disabled=true);
+      const fb=document.getElementById('m4fb'); const face=document.getElementById('m4f');
+      if(opt.ok){
+        btn.classList.add('correct'); m4sc+=q.pts; document.getElementById('m4sc').textContent=m4sc;
+        fb.className='fb show fb-ok'; fb.innerHTML='🎉 맞았어요! '+opt.lb+' 정답이에요! +'+q.pts+'점';
+        face.textContent='😄'; face.className='char-face cf-happy'; playS('ok');
+      } else {
+        btn.classList.add('wrong');
+        document.querySelectorAll('.big-opt').forEach(b=>{ if(b.querySelector('span:last-child').textContent===shuffled.find(o=>o.ok).lb) b.classList.add('correct'); });
+        fb.className='fb show fb-no'; fb.innerHTML='💪 다시 해봐요! 정답은 <strong>'+shuffled.find(o=>o.ok).lb+'</strong>이에요!';
+        face.textContent='😢'; face.className='char-face cf-sad'; playS('no');
+      }
+      document.getElementById('m4nw').style.display='block';
+    };
+    optsEl.appendChild(btn);
+  });
+  startTimer('m4',35,()=>{
+    document.querySelectorAll('.big-opt').forEach(b=>b.disabled=true);
+    document.getElementById('m4fb').className='fb show fb-no';
+    document.getElementById('m4fb').innerHTML='⏰ 시간이 됐어요! 괜찮아요! 정답은 <strong>'+q.opts.find(o=>o.ok).lb+'</strong>이에요!';
+    document.getElementById('m4f').textContent='😢'; document.getElementById('m4f').className='char-face cf-sad';
+    document.getElementById('m4nw').style.display='block';
+  });
+}
+function nextM4(){ m4idx++; renderM4(); }
+function finishM4(){
+  clrT(); S.scores[3]=m4sc; S.stars[3]=calcSt(m4sc,80); S.done[3]=true; S.badges.size=S.stars[3]>=2;
+  updateSt(4,S.stars[3]); saveScore(); playS('cl'); showResult();
+}
+
+// =====================================================
+// ===== 결과 =====
+// =====================================================
+function showResult(){
+  const total=S.scores.reduce((a,b)=>a+b,0); const ts=S.stars.reduce((a,b)=>a+b,0);
+  let icon='🌟',title='탐험 완료!',rank='';
+  if(ts>=10){icon='🏆';title='동네 탐험왕!';rank='최고예요! 모든 탐험을 잘 마쳤어요!';}
+  else if(ts>=7){icon='🌈';title='훌륭한 탐험가!';rank='정말 잘했어요!';}
+  else if(ts>=4){icon='😊';title='멋진 탐험가!';rank='좋아요! 더 도전해봐요!';}
+  else{icon='💪';title='도전하는 탐험가!';rank='용기 있게 도전했어요!';}
+  document.getElementById('reic').textContent=icon;
+  document.getElementById('rettl').textContent=title;
+  document.getElementById('rerank').textContent=rank;
+  const grid=document.getElementById('regrid'); grid.innerHTML='';
+  ['🏪','🍎','🌈','📏'].forEach((ic,i)=>{
+    const div=document.createElement('div'); div.className='res-card';
+    div.innerHTML=`<div class="ri">${ic}</div><div class="rn">${['가게 찾기','수 세기','동네 이야기','크기 비교'][i]}</div><div class="rv">${S.scores[i]}점</div><div class="rs">${'★'.repeat(S.stars[i])}${'☆'.repeat(3-S.stars[i])}</div>`;
+    grid.appendChild(div);
+  });
+  document.getElementById('retotal').textContent=total;
+  const rb=document.getElementById('rebadges'); rb.innerHTML='';
+  [['shop','🏪 가게 탐정'],['num','🔢 수학 천재'],['story','🌈 이야기꾼'],['size','📏 측정 박사']].forEach(([k,label])=>{
+    const el=document.createElement('div'); el.className='badge-it'+(S.badges[k]?' earned':''); el.textContent=label; rb.appendChild(el);
+  });
+  if(Object.values(S.badges).every(v=>v)){const el=document.createElement('div');el.className='badge-it earned';el.textContent='🏆 동네 탐험왕';rb.appendChild(el);}
+  const evals=['용기 있게 도전했어요! 선생님이 응원해요! 💪','잘하고 있어요! 조금만 더 연습하면 돼요! 😊','아주 잘했어요! 우리 동네를 잘 알고 있군요! 🌈','훌륭해요! 진짜 탐험왕이에요! 🏆'];
+  document.getElementById('reeval').innerHTML=`<strong style="color:var(--blue)">💬 또리의 한마디:</strong><br>${evals[Math.min(Math.floor(ts/3),3)]}<br><br><span style="color:var(--orange)">📅 2026.03.24 우리 동네 탐험 완료! 미랩(MILAB)</span>`;
+  showScr('screen-result');
+}
+function resetGame(){
+  clrT(); S.done=[false,false,false,false]; S.scores=[0,0,0,0]; S.stars=[0,0,0,0]; S.badges={shop:false,num:false,story:false,size:false};
+  ['mc2','mc3','mc4'].forEach(id=>{
+    const el=document.getElementById(id); if(!el) return;
+    el.className='mc locked'; el.onclick=null; el.querySelector('.mc-st')?.remove();
+    if(!el.querySelector('.mc-lk')){const l=document.createElement('div');l.className='mc-lk';l.textContent='🔒';el.appendChild(l);}
+  });
+  document.getElementById('mc1').className='mc'; document.getElementById('mc1').onclick=()=>startMission(1);
+  document.getElementById('mc1st').textContent='☆☆☆';
+  renderSB(); renderBadges(); showScr('screen-intro');
+}
+
+// ===== 포트폴리오 JSON =====
+const portfolioEntry={
+  id:'#007',title:'우리 동네 탐험대',grade:'특수학급 (중학교 1학년 / 초4~5 수준)',
+  target:'발달장애·지체장애 학생',
+  theme:'2026 부산특수교육 운영계획 발표(3.24) 연계 — 개별 맞춤형 특수교육',
+  subjects:['국어(읽기·이해·말하기)','수학(수·연산·측정·비교)','슬기로운 생활(지역사회)'],
+  missions:['동네 가게 찾기(그림 선택)','수 세기 놀이(1~20)','동네 이야기(바른 행동 멀티엔딩)','크기 비교(크다·작다)'],
+  accessibility:['큰 글씨(1.2rem~2rem)','큰 버튼(min-height 60~80px)','고대비 색상','즉각 피드백','오답 정답 동시 강조','시간 초과 시 정답 안내','귀여운 캐릭터 감정 표현','터치 최적화'],
+  extras:['타이머(색상변화)','힌트','오답해설','배지시스템','점수판(LocalStorage)','멀티엔딩','QR코드','Web Audio API(동요풍 멜로디)'],
+  url:'https://milab2019.github.io/main/special_town.html',
+  date:'2026.03.24',status:'운영 중'
+};
+console.log('📋 미랩 포트폴리오 JSON:\n'+JSON.stringify(portfolioEntry,null,2));
+
+initBg(); renderSB(); renderBadges(); initQR();
+</script>
+</body>
+</html>
