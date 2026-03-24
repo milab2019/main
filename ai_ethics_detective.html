@@ -1,0 +1,1482 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🔍 AI 윤리 탐정단 - 미랩 #009</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Jua&family=Black+Han+Sans&family=Nanum+Gothic:wght@400;700;800&display=swap');
+
+/* ══════════════════════════════
+   CSS 변수 — 사이버 네온 다크
+══════════════════════════════ */
+:root {
+  --bg0:      #05080f;
+  --bg1:      #0b1120;
+  --bg2:      #111827;
+  --bg3:      #1a2540;
+  --neon-a:   #00d4ff;   /* 시안 */
+  --neon-b:   #7c3aed;   /* 퍼플 */
+  --neon-c:   #10b981;   /* 에메랄드 */
+  --neon-y:   #fbbf24;   /* 앰버 */
+  --neon-r:   #ef4444;   /* 레드 */
+  --neon-pk:  #ec4899;   /* 핑크 */
+  --txt:      #e2e8f0;
+  --txt-m:    #94a3b8;
+  --border:   rgba(0,212,255,0.18);
+  --shadow-a: 0 0 30px rgba(0,212,255,0.18);
+  --r-lg:     20px;
+  --r-md:     14px;
+  --r-sm:     10px;
+  --f-title:  'Black Han Sans', 'Jua', sans-serif;
+  --f-body:   'Nanum Gothic', sans-serif;
+}
+
+* { box-sizing:border-box; margin:0; padding:0; }
+html { scroll-behavior:smooth; }
+body {
+  font-family: var(--f-body);
+  background: var(--bg0);
+  color: var(--txt);
+  min-height:100vh;
+  overflow-x:hidden;
+  position:relative;
+}
+
+/* ── 배경 그리드 + 글리치 효과 ── */
+body::before {
+  content:'';
+  position:fixed; inset:0; z-index:0;
+  background:
+    linear-gradient(rgba(0,212,255,0.03) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(0,212,255,0.03) 1px,transparent 1px);
+  background-size: 44px 44px;
+  pointer-events:none;
+}
+.scan-line {
+  position:fixed; top:-100%; left:0; right:0;
+  height:3px;
+  background: linear-gradient(90deg,transparent,var(--neon-a),transparent);
+  animation: scanMove 6s linear infinite;
+  z-index:1; pointer-events:none; opacity:0.25;
+}
+@keyframes scanMove { to { top:110%; } }
+
+/* ── 파티클 ── */
+.particle {
+  position:fixed; border-radius:50%;
+  animation:particleFloat linear infinite;
+  pointer-events:none; z-index:0;
+}
+@keyframes particleFloat {
+  0%   { transform:translateY(100vh) scale(0); opacity:0; }
+  10%  { opacity:1; }
+  90%  { opacity:.4; }
+  100% { transform:translateY(-60px) scale(1); opacity:0; }
+}
+
+/* ── 앱 ── */
+#app {
+  position:relative; z-index:10;
+  max-width:820px; margin:0 auto;
+  padding:14px;
+  min-height:100vh;
+}
+.screen { display:none; animation:fadeSlide .45s cubic-bezier(.22,1,.36,1); }
+.screen.active { display:block; }
+@keyframes fadeSlide {
+  from { opacity:0; transform:translateY(22px); }
+  to   { opacity:1; transform:translateY(0); }
+}
+
+/* ══════════════════════════════
+   공통 컴포넌트
+══════════════════════════════ */
+
+/* 헤더 */
+.g-hd {
+  display:flex; align-items:center; justify-content:space-between;
+  background: linear-gradient(135deg, rgba(11,17,32,.95), rgba(26,37,64,.9));
+  border:1px solid var(--border);
+  border-radius:var(--r-md);
+  padding:13px 18px; margin-bottom:13px;
+  backdrop-filter:blur(14px);
+  box-shadow: var(--shadow-a);
+}
+.g-title { font-family:var(--f-title); font-size:1.15rem; color:var(--neon-a); }
+.g-sub   { font-size:.72rem; color:var(--txt-m); margin-top:2px; }
+.score-chip {
+  background:linear-gradient(135deg,rgba(0,212,255,.15),rgba(124,58,237,.15));
+  border:1px solid var(--neon-a);
+  color:var(--neon-a); font-family:var(--f-title); font-size:1rem;
+  padding:5px 16px; border-radius:20px;
+  box-shadow: 0 0 10px rgba(0,212,255,.25);
+}
+
+/* 진행바 */
+.prog-wrap { margin-bottom:12px; }
+.prog-lbl  { display:flex; justify-content:space-between; font-size:.75rem; color:var(--neon-a); margin-bottom:5px; }
+.prog-track{ height:6px; background:rgba(255,255,255,.08); border-radius:6px; overflow:hidden; }
+.prog-fill {
+  height:100%;
+  background:linear-gradient(90deg, var(--neon-a), var(--neon-b));
+  border-radius:6px;
+  transition: width .7s cubic-bezier(.22,1,.36,1);
+  box-shadow: 0 0 8px var(--neon-a);
+}
+
+/* 타이머 */
+.timer-row {
+  display:flex; align-items:center; gap:10px;
+  background:rgba(11,17,32,.85); border:1px solid var(--border);
+  border-radius:var(--r-sm); padding:8px 14px; margin-bottom:12px;
+}
+.t-track { flex:1; height:10px; background:rgba(255,255,255,.07); border-radius:6px; overflow:hidden; }
+.t-fill  { height:100%; border-radius:6px; transition:width 1s linear; }
+.t-go   { background:linear-gradient(90deg,var(--neon-c),#6ee7b7); box-shadow:0 0 6px var(--neon-c); }
+.t-warn { background:linear-gradient(90deg,var(--neon-y),#f59e0b); }
+.t-hot  { background:linear-gradient(90deg,#f97316,var(--neon-r)); animation:tBlink .5s infinite; }
+@keyframes tBlink { 0%,100%{opacity:1} 50%{opacity:.35} }
+.t-num  { font-family:var(--f-title); font-size:1.2rem; min-width:30px; text-align:right; }
+
+/* 카드 */
+.card {
+  background:linear-gradient(135deg,rgba(11,17,32,.95),rgba(17,24,39,.9));
+  border:1px solid var(--border);
+  border-radius:var(--r-lg); padding:22px;
+  box-shadow: var(--shadow-a); margin-bottom:13px;
+  backdrop-filter:blur(10px);
+}
+.card-glow {
+  background:linear-gradient(135deg,rgba(11,17,32,.95),rgba(17,24,39,.9));
+  border:1px solid rgba(124,58,237,.35);
+  border-radius:var(--r-lg); padding:20px;
+  box-shadow: 0 0 30px rgba(124,58,237,.18);
+  margin-bottom:13px;
+}
+
+/* 마스코트 */
+.char-row { display:flex; align-items:flex-start; gap:13px; margin-bottom:13px; }
+.char-face {
+  width:62px; height:62px; border-radius:50%; flex-shrink:0;
+  background:linear-gradient(135deg,rgba(0,212,255,.15),rgba(124,58,237,.15));
+  border:2px solid var(--neon-a);
+  display:flex; align-items:center; justify-content:center;
+  font-size:2rem;
+  box-shadow: 0 0 20px rgba(0,212,255,.35);
+  transition:all .35s cubic-bezier(.34,1.56,.64,1);
+}
+.cf-ok   { transform:scale(1.15) rotate(-6deg); border-color:var(--neon-c); box-shadow:0 0 28px rgba(16,185,129,.5); }
+.cf-no   { transform:scale(.9) rotate(5deg); filter:grayscale(40%); border-color:var(--neon-r); }
+.cf-wow  { transform:scale(1.12); border-color:var(--neon-y); box-shadow:0 0 28px rgba(251,191,36,.5); animation:wowPulse .7s ease; }
+@keyframes wowPulse { 0%,100%{transform:scale(1.12)} 50%{transform:scale(1.22)} }
+.bubble {
+  background:rgba(17,24,39,.92);
+  border:1px solid rgba(0,212,255,.22);
+  border-radius:16px 16px 16px 4px;
+  padding:12px 16px; flex:1;
+  font-size:.9rem; line-height:1.75; color:var(--txt);
+}
+.bubble-nm { font-size:.72rem; color:var(--neon-a); font-weight:800; margin-bottom:3px; }
+
+/* 버튼 */
+.btn {
+  display:inline-block; padding:12px 26px;
+  border:none; border-radius:50px;
+  cursor:pointer; font-family:var(--f-title); font-size:1rem;
+  transition:all .18s; text-decoration:none;
+  letter-spacing:.3px;
+}
+.btn-cyan {
+  background:linear-gradient(135deg,#0e7490,var(--neon-a));
+  color:#000; box-shadow:0 4px 18px rgba(0,212,255,.35);
+}
+.btn-cyan:hover  { transform:translateY(-2px); box-shadow:0 8px 28px rgba(0,212,255,.5); }
+.btn-purple {
+  background:linear-gradient(135deg,#5b21b6,var(--neon-b));
+  color:white; box-shadow:0 4px 18px rgba(124,58,237,.4);
+}
+.btn-purple:hover { transform:translateY(-2px); }
+.btn-ghost  {
+  background:rgba(255,255,255,.06); border:1px solid var(--border);
+  color:var(--txt-m);
+}
+.btn-ghost:hover { background:rgba(255,255,255,.1); color:var(--txt); }
+.btn-sm   { padding:7px 17px; font-size:.85rem; }
+.btn-block{ width:100%; text-align:center; margin-top:8px; }
+
+/* 힌트 */
+.hint-btn {
+  display:inline-flex; align-items:center; gap:5px;
+  background:rgba(251,191,36,.1); border:1px solid rgba(251,191,36,.35);
+  color:var(--neon-y); padding:5px 14px; border-radius:18px;
+  font-size:.82rem; font-weight:800; cursor:pointer; margin-bottom:9px;
+  transition:all .18s;
+}
+.hint-btn:hover { background:rgba(251,191,36,.2); }
+.hint-box {
+  background:rgba(251,191,36,.06); border:1px solid rgba(251,191,36,.28);
+  border-radius:var(--r-sm); padding:10px 14px;
+  font-size:.85rem; color:var(--neon-y); margin-bottom:10px;
+  display:none; line-height:1.7;
+}
+.hint-box.show { display:block; animation:fadeSlide .3s ease; }
+
+/* 피드백 */
+.fb-box {
+  border-radius:var(--r-sm); padding:13px 15px;
+  font-size:.88rem; line-height:1.75; margin-top:12px; display:none;
+}
+.fb-box.show { display:block; animation:fadeSlide .3s ease; }
+.fb-ok { background:rgba(16,185,129,.08); border:1px solid rgba(16,185,129,.35); color:#6ee7b7; }
+.fb-no { background:rgba(239,68,68,.08);  border:1px solid rgba(239,68,68,.28); color:#fca5a5; }
+
+/* 난이도 탭 */
+.diff-row { display:flex; gap:7px; margin-bottom:13px; flex-wrap:wrap; }
+.diff-tab {
+  padding:5px 15px; border-radius:18px; border:1px solid;
+  font-size:.8rem; font-weight:800; cursor:pointer; transition:all .18s;
+}
+.dt-e { border-color:var(--neon-c); color:var(--neon-c); background:transparent; }
+.dt-e.on{ background:rgba(16,185,129,.18); }
+.dt-m { border-color:var(--neon-y); color:var(--neon-y); background:transparent; }
+.dt-m.on{ background:rgba(251,191,36,.18); }
+.dt-h { border-color:var(--neon-r); color:var(--neon-r); background:transparent; }
+.dt-h.on{ background:rgba(239,68,68,.18); }
+
+/* ══════════════════════════════
+   인트로
+══════════════════════════════ */
+#screen-intro { text-align:center; }
+.intro-badge {
+  display:inline-flex; align-items:center; gap:6px;
+  background:rgba(0,212,255,.1); border:1px solid rgba(0,212,255,.3);
+  color:var(--neon-a); font-size:.78rem; font-weight:800;
+  padding:5px 14px; border-radius:12px; margin-bottom:14px;
+}
+.intro-hero {
+  background:linear-gradient(135deg,rgba(11,17,32,.95),rgba(26,37,64,.9));
+  border:1px solid var(--border); border-radius:var(--r-lg);
+  padding:28px 18px; margin-bottom:14px;
+  box-shadow:var(--shadow-a);
+}
+.hero-icon {
+  font-size:5.5rem;
+  animation:heroFloat 3s ease-in-out infinite;
+  filter:drop-shadow(0 0 30px rgba(0,212,255,.8));
+  display:block; margin:0 auto 10px;
+}
+@keyframes heroFloat { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-12px)} }
+.hero-title {
+  font-family:var(--f-title); font-size:2.4rem;
+  background:linear-gradient(135deg,var(--neon-a),var(--neon-b),var(--neon-pk));
+  -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+  margin-bottom:6px;
+}
+.hero-sub  { color:var(--txt-m); font-size:.9rem; margin-bottom:4px; }
+.tag-row   { display:flex; flex-wrap:wrap; gap:7px; justify-content:center; margin-top:10px; }
+.tag       {
+  background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.15);
+  color:rgba(255,255,255,.8); font-size:.75rem; font-weight:800;
+  padding:4px 12px; border-radius:10px;
+}
+.story-panel {
+  background:rgba(11,17,32,.85); border:1px solid rgba(0,212,255,.18);
+  border-radius:var(--r-md); padding:18px; margin:14px 0;
+  text-align:left; line-height:1.85; font-size:.9rem; color:var(--txt);
+}
+.story-ttl {
+  font-family:var(--f-title); color:var(--neon-y);
+  font-size:1.05rem; margin-bottom:10px; text-align:center;
+}
+
+/* 사건 그리드 */
+.case-grid { display:grid; grid-template-columns:1fr 1fr; gap:11px; margin:14px 0; }
+.cc {
+  background:rgba(11,17,32,.88); border:1px solid rgba(0,212,255,.2);
+  border-radius:var(--r-md); padding:16px 12px;
+  text-align:center; cursor:pointer; transition:all .3s;
+  box-shadow:0 2px 10px rgba(0,0,0,.4);
+}
+.cc:hover:not(.locked) {
+  transform:translateY(-5px); border-color:var(--neon-a);
+  box-shadow:0 10px 30px rgba(0,212,255,.22);
+}
+.cc.locked { opacity:.35; cursor:not-allowed; border-color:rgba(48,54,61,.5); }
+.cc.done   { border-color:var(--neon-c); box-shadow:0 0 12px rgba(16,185,129,.18); }
+.cc-icon   { font-size:2.2rem; margin-bottom:6px; }
+.cc-name   { font-family:var(--f-title); font-size:.9rem; color:var(--neon-a); }
+.cc-desc   { font-size:.72rem; color:var(--txt-m); margin-top:3px; }
+.cc-stars  { color:var(--neon-y); font-size:.9rem; margin-top:4px; }
+.cc-lock   { font-size:1.1rem; margin-top:4px; color:var(--txt-m); }
+
+/* 배지 */
+.badge-row { display:flex; flex-wrap:wrap; gap:8px; justify-content:center; margin:10px 0; }
+.bdg {
+  background:rgba(33,38,45,.9); border:1px solid var(--border);
+  border-radius:12px; padding:8px 15px; font-size:.8rem; color:var(--txt-m);
+  transition:all .35s;
+}
+.bdg.earned {
+  border-color:var(--neon-y); color:var(--neon-y);
+  background:rgba(251,191,36,.08);
+  box-shadow:0 0 10px rgba(251,191,36,.2);
+  animation:badgePop .5s cubic-bezier(.34,1.56,.64,1);
+}
+@keyframes badgePop { from{transform:scale(0)} to{transform:scale(1)} }
+
+/* 점수판 */
+.sb-wrap {
+  background:rgba(11,17,32,.88); border:1px solid rgba(0,212,255,.15);
+  border-radius:var(--r-md); padding:14px; margin-bottom:13px;
+}
+.sb-ttl { font-family:var(--f-title); font-size:.9rem; color:var(--neon-y); margin-bottom:9px; }
+.sb-row {
+  display:flex; align-items:center; justify-content:space-between;
+  font-size:.82rem; padding:7px 11px; border-radius:8px;
+  color:var(--txt-m); margin-bottom:5px; background:rgba(26,37,64,.7);
+}
+.sb-row.r1 { background:rgba(251,191,36,.1); color:var(--neon-y); }
+.sb-row.r2 { background:rgba(148,163,184,.08); }
+.sb-row.r3 { background:rgba(180,110,40,.07); }
+
+/* QR */
+.qr-panel {
+  background:rgba(11,17,32,.88); border:1px solid rgba(0,212,255,.15);
+  border-radius:var(--r-md); padding:15px; text-align:center; margin-bottom:13px;
+}
+.qr-ttl { font-family:var(--f-title); font-size:.9rem; color:var(--neon-a); margin-bottom:10px; }
+.qr-url { font-size:.72rem; color:var(--txt-m); margin-top:7px; word-break:break-all; }
+
+/* ══════════════════════════════
+   사건1: 뉴스 팩트체크 — 고급형
+══════════════════════════════ */
+.news-card {
+  background:rgba(17,24,39,.95); border:1px solid var(--border);
+  border-radius:var(--r-md); padding:17px; margin-bottom:14px;
+  position:relative; overflow:hidden;
+}
+.news-card::before {
+  content:''; position:absolute; left:0; top:0; bottom:0; width:3px;
+  background:linear-gradient(180deg,var(--neon-a),var(--neon-b));
+}
+.news-source { font-size:.72rem; color:var(--txt-m); margin-bottom:6px; font-weight:800; }
+.news-headline { font-family:var(--f-title); font-size:1.05rem; color:var(--txt); margin-bottom:8px; line-height:1.5; }
+.news-body { font-size:.86rem; color:var(--txt-m); line-height:1.75; }
+.verdict-btns { display:flex; gap:9px; margin-top:14px; flex-wrap:wrap; }
+.v-btn {
+  flex:1; min-width:90px; padding:11px; border-radius:var(--r-sm);
+  border:1px solid; font-family:var(--f-title); font-size:.9rem;
+  cursor:pointer; transition:all .18s;
+}
+.vt { border-color:var(--neon-c); color:var(--neon-c); background:rgba(16,185,129,.06); }
+.vf { border-color:var(--neon-r);  color:var(--neon-r);  background:rgba(239,68,68,.06); }
+.vp { border-color:var(--neon-y);  color:var(--neon-y);  background:rgba(251,191,36,.06); }
+.vt:hover { background:rgba(16,185,129,.18); }
+.vf:hover { background:rgba(239,68,68,.18); }
+.vp:hover { background:rgba(251,191,36,.15); }
+.v-sel-ok { border-width:2px; box-shadow:0 0 12px currentColor; }
+.v-sel-no { opacity:.45; }
+
+/* ══════════════════════════════
+   사건2: 데이터 분석 (통계)
+══════════════════════════════ */
+.data-panel {
+  background:rgba(17,24,39,.95); border:1px solid var(--border);
+  border-radius:var(--r-md); padding:16px; margin-bottom:14px;
+}
+.dp-ttl { font-family:var(--f-title); font-size:.95rem; color:var(--txt); text-align:center; margin-bottom:13px; }
+.bar-chart { display:flex; align-items:flex-end; gap:10px; height:110px; padding:0 4px; }
+.b-item    { flex:1; display:flex; flex-direction:column; align-items:center; gap:4px; }
+.b-fill    { width:100%; border-radius:5px 5px 0 0; transition:height .9s cubic-bezier(.22,1,.36,1); }
+.b-lbl     { font-size:.68rem; color:var(--txt-m); font-weight:800; text-align:center; }
+.b-val     { font-size:.68rem; font-weight:800; color:var(--txt); }
+.data-qs   { display:flex; flex-direction:column; gap:13px; margin-top:14px; }
+.dq        { background:rgba(26,37,64,.8); border:1px solid var(--border); border-radius:var(--r-sm); padding:13px; }
+.dq-txt    { font-weight:800; color:var(--txt); margin-bottom:9px; font-size:.88rem; }
+.dq-opts   { display:flex; gap:7px; flex-wrap:wrap; }
+.dq-opt {
+  padding:6px 15px; border-radius:18px;
+  border:1px solid rgba(0,212,255,.28); background:rgba(11,17,32,.8);
+  cursor:pointer; font-weight:800; font-size:.86rem; color:var(--txt);
+  transition:all .18s;
+}
+.dq-opt:hover:not(:disabled) { border-color:var(--neon-a); background:rgba(0,212,255,.08); }
+.dq-opt.correct { background:rgba(16,185,129,.12); border-color:var(--neon-c); color:#6ee7b7; }
+.dq-opt.wrong   { background:rgba(239,68,68,.1);   border-color:var(--neon-r); color:#fca5a5; }
+
+/* ══════════════════════════════
+   사건3: AI 윤리 딜레마 멀티엔딩
+══════════════════════════════ */
+.scene-box {
+  background:rgba(17,24,39,.95); border:1px solid rgba(124,58,237,.3);
+  border-radius:var(--r-md); padding:18px; margin-bottom:14px; text-align:center;
+}
+.scene-em  { font-size:3.5rem; margin-bottom:10px; }
+.scene-txt { font-family:var(--f-title); font-size:1rem; color:var(--txt); line-height:1.6; }
+.scene-ctx { font-size:.85rem; color:var(--txt-m); margin-top:8px; line-height:1.7; }
+.choice-btns { display:grid; gap:10px; }
+.c-btn {
+  padding:14px 16px; border-radius:var(--r-sm);
+  border:1px solid rgba(0,212,255,.2); background:rgba(11,17,32,.85);
+  color:var(--txt); cursor:pointer; font-size:.9rem; font-weight:800;
+  text-align:left; transition:all .18s; display:flex; align-items:center; gap:12px;
+}
+.c-btn:hover:not(:disabled) { transform:translateX(5px); border-color:var(--neon-a); }
+.c-hero { border-color:var(--neon-c); background:rgba(16,185,129,.08); }
+.c-mid  { border-color:var(--neon-y); background:rgba(251,191,36,.06); }
+.c-bad  { border-color:var(--neon-r); background:rgba(239,68,68,.07); }
+.c-lbl  { font-size:.72rem; font-weight:800; padding:2px 8px; border-radius:8px; flex-shrink:0; }
+.cl-A { background:rgba(0,212,255,.15); color:var(--neon-a); }
+.cl-B { background:rgba(124,58,237,.15); color:var(--neon-b); }
+.cl-C { background:rgba(16,185,129,.15); color:var(--neon-c); }
+.ending-box { border-radius:var(--r-sm); padding:14px; margin-top:12px; display:none; font-size:.88rem; line-height:1.75; }
+.ending-box.show { display:block; animation:fadeSlide .35s ease; }
+.e-hero { background:rgba(16,185,129,.08); border:1px solid rgba(16,185,129,.3); color:#6ee7b7; }
+.e-mid  { background:rgba(251,191,36,.08); border:1px solid rgba(251,191,36,.28); color:var(--neon-y); }
+.e-bad  { background:rgba(239,68,68,.08);  border:1px solid rgba(239,68,68,.25); color:#fca5a5; }
+
+/* ══════════════════════════════
+   사건4: 알고리즘 해독
+══════════════════════════════ */
+.code-block {
+  background:rgba(5,8,15,.98); border:1px solid rgba(0,212,255,.18);
+  border-radius:var(--r-md); padding:15px; margin-bottom:14px;
+  font-family:'Courier New',monospace;
+}
+.code-ttl-inner { font-family:var(--f-body); font-size:.9rem; color:var(--neon-b); margin-bottom:10px; font-weight:800; }
+.code-line { display:flex; align-items:flex-start; gap:10px; padding:6px 0; border-bottom:1px solid rgba(48,54,61,.4); }
+.code-line:last-child { border-bottom:none; }
+.code-ln   { width:22px; font-size:.72rem; color:var(--txt-m); flex-shrink:0; text-align:right; font-family:monospace; }
+.code-txt  { font-size:.85rem; color:var(--txt); flex:1; line-height:1.6; font-family:monospace; }
+.kw  { color:var(--neon-b); } /* 키워드 보라 */
+.fn  { color:var(--neon-a); } /* 함수 시안 */
+.st  { color:var(--neon-y); } /* 문자 앰버 */
+.nm  { color:#fb923c; }       /* 숫자 오렌지 */
+.cm  { color:var(--txt-m); font-style:italic; } /* 주석 */
+.quiz-q2 {
+  font-family:var(--f-title); font-size:1.05rem; color:var(--txt);
+  text-align:center; margin-bottom:15px; line-height:1.6;
+}
+.quiz-opts2 { display:grid; gap:9px; }
+.q2-opt {
+  padding:13px 16px; border-radius:var(--r-sm);
+  border:1px solid rgba(0,212,255,.2); background:rgba(11,17,32,.85);
+  color:var(--txt); cursor:pointer; font-size:.9rem; font-weight:800;
+  text-align:left; transition:all .18s;
+}
+.q2-opt:hover:not(:disabled) { border-color:var(--neon-a); background:rgba(0,212,255,.07); transform:translateX(4px); }
+.q2-opt.correct { border-color:var(--neon-c); background:rgba(16,185,129,.1); color:#6ee7b7; }
+.q2-opt.wrong   { border-color:var(--neon-r); background:rgba(239,68,68,.08); color:#fca5a5; }
+
+/* ══════════════════════════════
+   결과
+══════════════════════════════ */
+#screen-result { text-align:center; }
+.res-hero {
+  background:linear-gradient(135deg,rgba(11,17,32,.95),rgba(26,37,64,.9));
+  border:1px solid rgba(0,212,255,.25); border-radius:var(--r-lg);
+  padding:28px; margin:12px 0;
+  box-shadow:0 0 40px rgba(0,212,255,.12);
+}
+.res-ic    { font-size:5.2rem; animation:badgePop .6s cubic-bezier(.175,.885,.32,1.275); }
+.res-ttl   { font-family:var(--f-title); font-size:1.85rem; color:var(--neon-y); margin:9px 0 4px; }
+.res-sub   { color:var(--txt-m); font-size:.9rem; }
+.res-rank  { font-size:.98rem; color:var(--neon-a); margin-top:6px; font-weight:800; }
+.res-grid  { display:grid; grid-template-columns:repeat(2,1fr); gap:10px; margin:13px 0; }
+.res-card  {
+  background:rgba(11,17,32,.88); border:1px solid rgba(0,212,255,.15);
+  border-radius:var(--r-md); padding:13px; text-align:center;
+}
+.rc-i  { font-size:1.85rem; }
+.rc-n  { font-size:.75rem; color:var(--neon-a); margin:3px 0; }
+.rc-v  { font-size:1.08rem; font-weight:800; color:var(--neon-y); }
+.rc-s  { color:var(--neon-y); font-size:.9rem; }
+.total-box {
+  background:linear-gradient(135deg,rgba(0,212,255,.18),rgba(124,58,237,.15));
+  border:1px solid rgba(0,212,255,.3); border-radius:var(--r-md);
+  padding:16px; margin:10px 0;
+}
+.tb-lbl { font-family:var(--f-title); font-size:1rem; color:var(--neon-a); }
+.tb-num { font-family:var(--f-title); font-size:3.2rem; color:var(--txt); line-height:1; }
+.eval-card {
+  background:rgba(11,17,32,.88); border:1px solid rgba(0,212,255,.15);
+  border-radius:var(--r-md); padding:14px; margin:10px 0;
+  font-size:.88rem; line-height:1.75; text-align:left; color:var(--txt-m);
+}
+
+/* 음악 버튼 */
+.music-btn {
+  position:fixed; top:13px; right:13px; z-index:200;
+  background:rgba(11,17,32,.92); border:1px solid rgba(0,212,255,.3);
+  color:var(--neon-a); padding:7px 14px; border-radius:18px;
+  font-size:.8rem; cursor:pointer; backdrop-filter:blur(10px);
+}
+
+/* 반응형 */
+@media(max-width:520px) {
+  .case-grid { grid-template-columns:1fr 1fr; }
+  .hero-title { font-size:1.9rem; }
+  .res-grid { grid-template-columns:1fr 1fr; }
+  .verdict-btns { flex-direction:column; }
+}
+</style>
+</head>
+<body>
+
+<div class="scan-line"></div>
+<button class="music-btn" id="musicBtn" onclick="toggleMusic()">🎵 음악</button>
+
+<div id="app">
+
+<!-- ══════════ 인트로 ══════════ -->
+<div id="screen-intro" class="screen active">
+  <div class="intro-badge">📡 2026.03.24 · AI 아트 저작권 논란 이슈 연계</div>
+  <div class="intro-hero">
+    <span class="hero-icon">🔍</span>
+    <div class="hero-title">AI 윤리 탐정단</div>
+    <div class="hero-sub">중학교 1학년 · 국어 × 수학 × 정보 교과 융합</div>
+    <div class="tag-row">
+      <span class="tag">팩트체크</span><span class="tag">데이터 분석</span>
+      <span class="tag">AI 윤리</span><span class="tag">알고리즘</span>
+      <span class="tag">멀티엔딩</span><span class="tag">타이머</span>
+    </div>
+  </div>
+
+  <div class="story-panel">
+    <div class="story-ttl">🚨 탐정단 긴급 소집!</div>
+    <p>2026년, AI가 교실·직장·예술 현장에 파고들었습니다.<br>
+    하지만 <strong style="color:var(--neon-r)">가짜뉴스·저작권 침해·편향 알고리즘</strong>이 사회를 위협하고 있어요!<br><br>
+    오늘(3/24) <strong style="color:var(--neon-y)">게임사의 AI 아트 무단 사용 사과 사건</strong>이 터졌습니다.<br>
+    당신은 <strong style="color:var(--neon-a)">AI 윤리 탐정단</strong> 요원으로 임명되었습니다.<br>
+    4개 사건을 해결하고 <strong style="color:var(--neon-c)">최고 수사관</strong>이 되세요! 🌐</p>
+  </div>
+
+  <div style="font-family:var(--f-title);font-size:.95rem;color:var(--neon-a);margin-bottom:9px;">📂 사건 파일</div>
+  <div class="case-grid" id="caseGrid">
+    <div class="cc" id="cc1" onclick="startCase(1)">
+      <div class="cc-icon">📰</div>
+      <div class="cc-name">사건 1</div>
+      <div class="cc-desc">AI 뉴스 팩트체크</div>
+      <div class="cc-stars" id="cc1st">☆☆☆</div>
+    </div>
+    <div class="cc locked" id="cc2">
+      <div class="cc-icon">📊</div>
+      <div class="cc-name">사건 2</div>
+      <div class="cc-desc">데이터 조작 탐지</div>
+      <div class="cc-lock">🔒</div>
+    </div>
+    <div class="cc locked" id="cc3">
+      <div class="cc-icon">⚖️</div>
+      <div class="cc-name">사건 3</div>
+      <div class="cc-desc">AI 윤리 딜레마</div>
+      <div class="cc-lock">🔒</div>
+    </div>
+    <div class="cc locked" id="cc4">
+      <div class="cc-icon">💻</div>
+      <div class="cc-name">사건 4</div>
+      <div class="cc-desc">알고리즘 해독</div>
+      <div class="cc-lock">🔒</div>
+    </div>
+  </div>
+
+  <div style="font-family:var(--f-title);font-size:.85rem;color:var(--neon-y);margin-bottom:8px;">🏅 수사 배지</div>
+  <div class="badge-row" id="badgeRow">
+    <div class="bdg" id="bdg-fact">🔍 팩트체커</div>
+    <div class="bdg" id="bdg-data">📊 데이터 탐정</div>
+    <div class="bdg" id="bdg-eth">⚖️ 윤리 수호자</div>
+    <div class="bdg" id="bdg-algo">💻 알고리즘 해커</div>
+    <div class="bdg" id="bdg-all">🏆 AI 윤리 탐정단장</div>
+  </div>
+
+  <div class="sb-wrap" style="margin-top:12px;">
+    <div class="sb-ttl">🏆 탐정단 명예의 전당</div>
+    <div id="sbList"><div class="sb-row" style="justify-content:center;font-size:.82rem;">첫 번째 수사관이 되어보세요!</div></div>
+  </div>
+
+  <div class="qr-panel">
+    <div class="qr-ttl">📱 수업 공유 QR코드</div>
+    <div id="qr-wrap"></div>
+    <div class="qr-url">milab2019.github.io/main/ai_ethics_detective.html</div>
+  </div>
+</div>
+
+<!-- ══════════ 사건1: 팩트체크 ══════════ -->
+<div id="screen-c1" class="screen">
+  <div class="g-hd">
+    <div><div class="g-title">📰 사건 1 — AI 뉴스 팩트체크</div><div class="g-sub">국어(비판적 읽기·미디어 리터러시) + 정보(AI 리터러시)</div></div>
+    <div class="score-chip">⭐ <span id="c1sc">0</span></div>
+  </div>
+  <div class="prog-wrap">
+    <div class="prog-lbl"><span>수사 진행</span><span id="c1pg">0/5</span></div>
+    <div class="prog-track"><div class="prog-fill" id="c1pgb" style="width:0%"></div></div>
+  </div>
+  <div class="timer-row">
+    <span>⏱️</span>
+    <div class="t-track"><div class="t-fill t-go" id="c1tb" style="width:100%"></div></div>
+    <div class="t-num" id="c1tn">40</div>
+  </div>
+  <div class="char-row">
+    <div class="char-face" id="c1f">🕵️</div>
+    <div class="bubble"><div class="bubble-nm">수사관 '루미'</div><span id="c1msg">뉴스를 읽고 <strong style="color:var(--neon-c)">사실</strong>·<strong style="color:var(--neon-r)">거짓</strong>·<strong style="color:var(--neon-y)">부분사실</strong>을 판별하세요!</span></div>
+  </div>
+  <div class="card">
+    <div class="diff-row">
+      <button class="diff-tab dt-e on" onclick="setC1Diff('e')">🟢 쉬움</button>
+      <button class="diff-tab dt-m"    onclick="setC1Diff('m')">🟡 보통</button>
+      <button class="diff-tab dt-h"    onclick="setC1Diff('h')">🔴 도전</button>
+    </div>
+    <button class="hint-btn" onclick="showHint('c1')">💡 수사 힌트</button>
+    <div class="hint-box" id="c1hint"></div>
+    <div class="news-card">
+      <div class="news-source" id="c1src"></div>
+      <div class="news-headline" id="c1hl"></div>
+      <div class="news-body" id="c1bd"></div>
+    </div>
+    <div class="verdict-btns">
+      <button class="v-btn vt" onclick="selectV('t')">✅ 사실</button>
+      <button class="v-btn vf" onclick="selectV('f')">❌ 거짓</button>
+      <button class="v-btn vp" onclick="selectV('p')">⚠️ 부분사실</button>
+    </div>
+    <div class="fb-box" id="c1fb"></div>
+    <div id="c1nw" style="text-align:center;margin-top:13px;display:none;">
+      <button class="btn btn-cyan btn-sm" onclick="nextC1()">다음 뉴스 →</button>
+    </div>
+  </div>
+  <button class="btn btn-ghost btn-sm" onclick="goHome()">← 사건 목록</button>
+</div>
+
+<!-- ══════════ 사건2: 데이터 분석 ══════════ -->
+<div id="screen-c2" class="screen">
+  <div class="g-hd">
+    <div><div class="g-title">📊 사건 2 — 데이터 조작 탐지</div><div class="g-sub">수학(통계·그래프 해석) + 정보(데이터 리터러시)</div></div>
+    <div class="score-chip">⭐ <span id="c2sc">0</span></div>
+  </div>
+  <div class="prog-wrap">
+    <div class="prog-lbl"><span>분석 진행</span><span id="c2pg">0/2</span></div>
+    <div class="prog-track"><div class="prog-fill" id="c2pgb" style="width:0%"></div></div>
+  </div>
+  <div class="char-row">
+    <div class="char-face" id="c2f">🕵️</div>
+    <div class="bubble"><div class="bubble-nm">수사관 '루미'</div><span id="c2msg">그래프를 분석해 데이터 조작 여부를 찾아내세요!</span></div>
+  </div>
+  <div class="card">
+    <div class="data-panel">
+      <div class="dp-ttl" id="c2ct">그래프 불러오는 중...</div>
+      <div class="bar-chart" id="c2bc"></div>
+      <div id="c2note" style="font-size:.74rem;color:var(--txt-m);text-align:center;margin-top:8px;"></div>
+    </div>
+    <div class="data-qs" id="c2qs"></div>
+    <div id="c2nw" style="text-align:center;margin-top:13px;display:none;">
+      <button class="btn btn-cyan" onclick="nextC2()">다음 데이터 →</button>
+    </div>
+  </div>
+  <button class="btn btn-ghost btn-sm" onclick="goHome()">← 사건 목록</button>
+</div>
+
+<!-- ══════════ 사건3: 윤리 딜레마 ══════════ -->
+<div id="screen-c3" class="screen">
+  <div class="g-hd">
+    <div><div class="g-title">⚖️ 사건 3 — AI 윤리 딜레마</div><div class="g-sub">국어(토론·논술) + 도덕(AI 윤리) | 멀티엔딩</div></div>
+    <div class="score-chip">⭐ <span id="c3sc">0</span></div>
+  </div>
+  <div class="prog-wrap">
+    <div class="prog-lbl"><span>심문 진행</span><span id="c3pg">0/4</span></div>
+    <div class="prog-track"><div class="prog-fill" id="c3pgb" style="width:0%"></div></div>
+  </div>
+  <div class="char-row">
+    <div class="char-face" id="c3f">🕵️</div>
+    <div class="bubble"><div class="bubble-nm">수사관 '루미'</div><span id="c3msg">AI 윤리 딜레마 상황에서 최선의 선택을 해보세요!</span></div>
+  </div>
+  <div class="card">
+    <div class="scene-box">
+      <div class="scene-em" id="c3em">🤖</div>
+      <div class="scene-txt" id="c3tx">사건 불러오는 중...</div>
+      <div class="scene-ctx" id="c3cx"></div>
+    </div>
+    <div class="choice-btns" id="c3cg"></div>
+    <div class="ending-box" id="c3eb"></div>
+    <div id="c3nw" style="text-align:center;margin-top:13px;display:none;">
+      <button class="btn btn-purple" onclick="nextC3()">다음 사건 →</button>
+    </div>
+  </div>
+  <button class="btn btn-ghost btn-sm" onclick="goHome()">← 사건 목록</button>
+</div>
+
+<!-- ══════════ 사건4: 알고리즘 해독 ══════════ -->
+<div id="screen-c4" class="screen">
+  <div class="g-hd">
+    <div><div class="g-title">💻 사건 4 — 알고리즘 해독</div><div class="g-sub">수학(논리·순서) + 정보(알고리즘 원리) | 코드 읽기</div></div>
+    <div class="score-chip">⭐ <span id="c4sc">0</span></div>
+  </div>
+  <div class="prog-wrap">
+    <div class="prog-lbl"><span>해독 진행</span><span id="c4pg">0/4</span></div>
+    <div class="prog-track"><div class="prog-fill" id="c4pgb" style="width:0%"></div></div>
+  </div>
+  <div class="timer-row">
+    <span>⏱️</span>
+    <div class="t-track"><div class="t-fill t-go" id="c4tb" style="width:100%"></div></div>
+    <div class="t-num" id="c4tn">35</div>
+  </div>
+  <div class="char-row">
+    <div class="char-face" id="c4f">🕵️</div>
+    <div class="bubble"><div class="bubble-nm">수사관 '루미'</div><span id="c4msg">코드를 읽고 논리적으로 답을 찾아보세요!</span></div>
+  </div>
+  <div class="card">
+    <div class="diff-row">
+      <button class="diff-tab dt-e on" onclick="setC4Diff('e')">🟢 쉬움</button>
+      <button class="diff-tab dt-m"    onclick="setC4Diff('m')">🟡 보통</button>
+      <button class="diff-tab dt-h"    onclick="setC4Diff('h')">🔴 도전</button>
+    </div>
+    <button class="hint-btn" onclick="showHint('c4')">💡 알고리즘 힌트</button>
+    <div class="hint-box" id="c4hint"></div>
+    <div class="code-block" id="c4code"></div>
+    <div class="quiz-q2" id="c4q">질문 불러오는 중...</div>
+    <div class="quiz-opts2" id="c4opts"></div>
+    <div class="fb-box" id="c4fb"></div>
+    <div id="c4nw" style="text-align:center;margin-top:13px;display:none;">
+      <button class="btn btn-cyan btn-sm" onclick="nextC4()">다음 문제 →</button>
+    </div>
+  </div>
+  <button class="btn btn-ghost btn-sm" onclick="goHome()">← 사건 목록</button>
+</div>
+
+<!-- ══════════ 결과 ══════════ -->
+<div id="screen-result" class="screen">
+  <div style="padding-top:8px;">
+    <div class="res-hero">
+      <div class="res-ic" id="resIc">🏆</div>
+      <div class="res-ttl" id="resTtl">AI 윤리 탐정단 수료!</div>
+      <div class="res-sub">미랩(MILAB) AI 윤리 탐정단 #009 인증</div>
+      <div class="res-rank" id="resRank"></div>
+    </div>
+    <div class="res-grid" id="resGrid"></div>
+    <div class="total-box">
+      <div class="tb-lbl">🌟 총 획득 점수</div>
+      <div class="tb-num" id="tbNum">0</div>
+      <div style="font-size:.8rem;color:var(--txt-m);margin-top:2px;">/ 100점</div>
+    </div>
+    <div class="badge-row" id="resBadges"></div>
+    <div class="eval-card" id="evalCard"></div>
+    <button class="btn btn-cyan btn-block" onclick="resetGame()">🔄 다시 수사하기</button>
+  </div>
+</div>
+
+</div><!-- #app -->
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script>
+/* ═══════════════════════════════════════
+   AI 윤리 탐정단 #009 — 미랩 MILAB
+   중학교 1학년 · 국어·수학·정보 융합
+   2026.03.24 오늘의 이슈: AI 아트 저작권
+═══════════════════════════════════════ */
+const GAME_URL = 'https://milab2019.github.io/main/ai_ethics_detective.html';
+const ST = {
+  done:   [false,false,false,false],
+  scores: [0,0,0,0], stars:[0,0,0,0],
+  badges: {fact:false,data:false,eth:false,algo:false},
+  history:[]
+};
+try { ST.history = JSON.parse(localStorage.getItem('aed_h')||'[]'); } catch(e){}
+let allT = [];
+const clrT = () => { allT.forEach(t=>clearInterval(t)); allT=[]; };
+
+/* ── 배경 파티클 ── */
+function initBg(){
+  const colors=['#00d4ff','#7c3aed','#10b981','#fbbf24','#ec4899'];
+  for(let i=0;i<18;i++){
+    const el=document.createElement('div');
+    el.className='particle';
+    const sz=2+Math.random()*5;
+    el.style.cssText=`width:${sz}px;height:${sz}px;left:${Math.random()*100}%;background:${colors[i%5]};opacity:.35;animation-duration:${6+Math.random()*8}s;animation-delay:-${Math.random()*8}s`;
+    document.body.appendChild(el);
+  }
+}
+
+/* ── QR ── */
+function initQR(){
+  const w=document.getElementById('qr-wrap'); if(!w)return;
+  try{new QRCode(w,{text:GAME_URL,width:128,height:128,colorDark:'#00d4ff',colorLight:'#05080f',correctLevel:QRCode.CorrectLevel.M});}
+  catch(e){w.innerHTML=`<img src="https://api.qrserver.com/v1/create-qr-code/?size=128x128&data=${encodeURIComponent(GAME_URL)}&color=00d4ff&bgcolor=05080f" style="border-radius:10px;border:3px solid rgba(0,212,255,.4)">`;}
+}
+
+/* ── Web Audio API — 사이버 테크노 멜로디 ── */
+let actx=null,musicOn=false;
+function toggleMusic(){
+  musicOn=!musicOn;
+  document.getElementById('musicBtn').textContent=musicOn?'🎵 끄기':'🎵 음악';
+  if(musicOn)playBg();else stopBg();
+}
+function playBg(){
+  try{
+    actx=new(window.AudioContext||window.webkitAudioContext)();
+    // 사이버/탐정 느낌의 스케일 (도리안 모드)
+    const sc=[220,247,261,294,330,370,392,440,494,523];
+    const pat=[0,2,4,6,4,2,0,2,4,5,6,4,2,4,6,7];
+    pat.forEach((n,i)=>{
+      const o=actx.createOscillator();const g=actx.createGain();
+      o.connect(g);g.connect(actx.destination);
+      o.type='square';o.frequency.value=sc[n%sc.length];
+      const t=actx.currentTime+i*0.19;
+      g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(0.022,t+0.03);g.gain.linearRampToValueAtTime(0,t+0.15);
+      o.start(t);o.stop(t+0.17);
+    });
+    // 베이스라인
+    [0,0,4,4,2,2,6,6].forEach((n,i)=>{
+      const o=actx.createOscillator();const g=actx.createGain();
+      o.connect(g);g.connect(actx.destination);
+      o.type='sawtooth';o.frequency.value=sc[n]*0.5;
+      const t=actx.currentTime+i*0.38;
+      g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(0.018,t+0.05);g.gain.linearRampToValueAtTime(0,t+0.32);
+      o.start(t);o.stop(t+0.35);
+    });
+    setTimeout(()=>{if(musicOn)playBg();},pat.length*190+500);
+  }catch(e){}
+}
+function stopBg(){if(actx){actx.close();actx=null;}}
+function playS(t){
+  try{
+    const cx=new(window.AudioContext||window.webkitAudioContext)();
+    const o=cx.createOscillator();const g=cx.createGain();o.connect(g);g.connect(cx.destination);
+    if(t==='ok'){
+      o.type='square';o.frequency.setValueAtTime(440,cx.currentTime);o.frequency.linearRampToValueAtTime(660,cx.currentTime+0.12);
+      g.gain.setValueAtTime(0.09,cx.currentTime);g.gain.exponentialRampToValueAtTime(0.001,cx.currentTime+0.5);
+    }else if(t==='no'){
+      o.type='sawtooth';o.frequency.value=160;
+      g.gain.setValueAtTime(0.07,cx.currentTime);g.gain.exponentialRampToValueAtTime(0.001,cx.currentTime+0.3);
+    }else if(t==='cl'){
+      [523,659,784,1047].forEach((f,i)=>{
+        const o2=cx.createOscillator();const g2=cx.createGain();o2.connect(g2);g2.connect(cx.destination);
+        o2.type='square';o2.frequency.value=f;const tt=cx.currentTime+i*0.1;
+        g2.gain.setValueAtTime(0.08,tt);g2.gain.exponentialRampToValueAtTime(0.001,tt+0.28);o2.start(tt);o2.stop(tt+0.3);
+      });
+    }
+    o.start();o.stop(cx.currentTime+0.6);
+  }catch(e){}
+}
+
+/* ── 화면·유틸 ── */
+const showScr=id=>{document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active');window.scrollTo(0,0);};
+const goHome=()=>{clrT();showScr('screen-intro');renderSB();renderBadges();};
+const calcSt=(s,m)=>{const p=s/m;return p>=.9?3:p>=.6?2:p>0?1:0;};
+const unlockCC=n=>{
+  const el=document.getElementById('cc'+n);if(!el)return;
+  el.classList.remove('locked');el.querySelector('.cc-lock')?.remove();
+  const st=document.createElement('div');st.className='cc-stars';st.id='cc'+n+'st';st.textContent='☆☆☆';el.appendChild(st);
+  el.onclick=()=>startCase(n);
+};
+const updateSt=(n,st)=>{const el=document.getElementById('cc'+n+'st');if(el)el.textContent='★'.repeat(st)+'☆'.repeat(3-st);document.getElementById('cc'+n)?.classList.add('done');};
+const startCase=n=>{clrT();[initC1,initC2,initC3,initC4][n-1]();showScr('screen-c'+n);};
+const updateTUI=(id,c,m)=>{const p=c/m*100;const b=document.getElementById(id+'tb');b.style.width=p+'%';b.className='t-fill '+(p>50?'t-go':p>25?'t-warn':'t-hot');document.getElementById(id+'tn').textContent=c;};
+const startTimer=(id,sec,cb)=>{let s=sec;updateTUI(id,s,sec);const t=setInterval(()=>{s--;updateTUI(id,s,sec);if(s<=0){clearInterval(t);cb();}},1000);allT.push(t);};
+const showHint=id=>{
+  const hm={
+    c1:['출처를 확인하세요! 공식 기관(.go.kr, .edu)인지 봐요.','숫자·통계가 들어간 기사는 원본 데이터를 찾아요.','제목만 보지 말고 본문 전체를 꼼꼼히 읽어요.'],
+    c4:['조건문(if)은 조건이 맞을 때만 실행해요.','반복문(for)은 같은 작업을 여러 번 해요.','함수는 return 값을 확인해요!']
+  };
+  const arr=hm[id]||[];const d=id==='c1'?c1Diff:c4Diff;
+  const box=document.getElementById(id+'hint');
+  box.textContent='💡 '+(arr[d==='e'?0:d==='m'?1:2]||arr[0]);
+  box.classList.add('show');
+};
+const renderSB=()=>{
+  const el=document.getElementById('sbList');
+  const sorted=[...ST.history].sort((a,b)=>b.total-a.total).slice(0,5);
+  if(!sorted.length){el.innerHTML='<div class="sb-row" style="justify-content:center;">첫 번째 수사관이 되어보세요! 🔍</div>';return;}
+  el.innerHTML=sorted.map((h,i)=>`<div class="sb-row ${['r1','r2','r3','',''][i]}"><span>${['🥇','🥈','🥉','4위','5위'][i]} AI 윤리 탐정</span><span style="color:var(--neon-y);font-weight:800;">${h.total}점 ${'★'.repeat(Math.min(h.stars,12))}</span></div>`).join('');
+};
+const renderBadges=()=>{
+  Object.keys(ST.badges).forEach(k=>{const el=document.getElementById('bdg-'+k);if(el&&ST.badges[k])el.classList.add('earned');});
+  if(Object.values(ST.badges).every(v=>v))document.getElementById('bdg-all')?.classList.add('earned');
+};
+const saveScore=()=>{
+  const total=ST.scores.reduce((a,b)=>a+b,0);const stars=ST.stars.reduce((a,b)=>a+b,0);
+  ST.history.push({total,stars});if(ST.history.length>10)ST.history.shift();
+  try{localStorage.setItem('aed_h',JSON.stringify(ST.history));}catch(e){}
+};
+
+/* ═══════════════════════════════
+   사건1: AI 뉴스 팩트체크
+═══════════════════════════════ */
+const newsBank={
+  e:[
+    {src:'가상뉴스닷컴 (출처 불분명)',hl:'AI 로봇이 2025년까지 모든 직업을 대체한다',bd:'한 기사에서 "AI 로봇이 2025년까지 100% 모든 직업을 대체한다"고 주장합니다. 전문가 인용 없이 작성됐습니다.',v:'f',pts:8,exp:'거짓! AI가 일부 직업을 변화시키지만 모든 직업을 없앤다는 것은 과장된 주장이에요. 출처 없는 기사에 주의해요!'},
+    {src:'교육부 공식 발표 (2025.03)',hl:'올해부터 중학교 1학년에 AI 디지털교과서 도입',bd:'교육부는 2025년 3월부터 중학교 1학년 수학·영어·정보 교과에 AI 디지털교과서를 도입한다고 공식 발표했습니다.',v:'t',pts:8,exp:'사실! 교육부의 공식 발표로 확인된 내용이에요. 공공기관(.go.kr)의 발표는 신뢰도가 높아요.'},
+    {src:'인터넷 카페 익명 글',hl:'ChatGPT가 수능 만점을 받았다',bd:'ChatGPT에 수능 문제를 입력했더니 모두 정답을 맞혔다는 내용이 SNS에서 확산 중입니다.',v:'p',pts:8,exp:'부분 사실! AI가 일부 수능 문제를 잘 풀지만 "만점"은 과장이에요. 핵심은 맞지만 수치에 주의가 필요해요.'},
+    {src:'과학기술정보통신부 공식 보도자료',hl:'정부, 2026년 AI 안전 연구소 설립 확정',bd:'과기정통부는 2026년 상반기 내 AI 안전 연구소를 설립해 AI 위험 평가·모니터링을 전담한다고 발표했습니다.',v:'t',pts:8,exp:'사실! 정부 공식 보도자료로 확인된 내용이에요. 공공기관 출처는 1차 출처로 신뢰도가 높아요.'},
+    {src:'유튜브 썸네일 캡처 이미지',hl:'AI가 이미 인간보다 똑똑해졌다는 게 증명됨!',bd:'유튜브 썸네일에 "AI 완전 초월 확인됨"이라는 문구가 적혀 있습니다. 영상 내용과 실제 연구 결과는 확인되지 않았습니다.',v:'f',pts:8,exp:'거짓! 썸네일 과장은 조회 수를 위한 낚시 제목이에요. 영상 본문과 원본 연구를 직접 확인해야 해요.'},
+    {src:'KBS 뉴스 보도 (2025.12)',hl:'AI 번역 앱, 일부 언어에서 오역률 높아 논란',bd:'KBS가 보도한 내용으로, AI 번역 앱이 소수 언어(아프리카·아시아 일부)에서 30% 이상 오역이 발생한다는 연구 결과가 공개됐습니다.',v:'p',pts:8,exp:'부분 사실! AI 번역의 소수 언어 오류는 실제 문제지만 모든 번역 앱에 해당되지 않아요. 언어별 차이가 큽니다.'},
+  ],
+  m:[
+    {src:'AI생성뉴스봇 자동게시',hl:'과학자들, 2027년 AI 완전 의식 탄생 발표 예정',bd:'익명의 "과학자들"이 AI가 의식을 가지게 될 것을 발표할 예정이라는 내용입니다. "AI뉴스봇"이 수십 개 사이트에 동시 게시했어요.',v:'f',pts:12,exp:'AI 생성 가짜뉴스! 익명 출처+동시다발 게시+근거 없음은 AI 허위정보의 특징이에요.'},
+    {src:'크림슨 데저트 공식 X(트위터)',hl:'게임사, AI 생성 아트 무단 사용 공개 사과 (2026.03.24)',bd:'RPG 게임 개발사가 AI 생성 아트를 작가 동의 없이 게임에 사용했음을 인정하고 공개 사과했습니다. 전수 교체를 약속했습니다.',v:'t',pts:12,exp:'사실! 오늘(3/24) 실제 발생한 이슈예요. 공식 계정의 공식 성명은 신뢰할 수 있는 1차 출처예요.'},
+    {src:'블로그 (출처 불명)',hl:'AI가 작성한 에세이, 학교 선생님들이 구별 못 한다',bd:'학생들이 AI로 쓴 에세이를 제출해도 선생님이 100% 구별하지 못한다는 연구가 있다는 주장입니다.',v:'p',pts:12,exp:'부분 사실! 일부 연구에서 AI 글 구별이 어렵다는 결과가 있지만 "100%"는 과장이에요. 특히 AI 탐지 도구가 개발 중이에요.'},
+    {src:'SNS 공유 이미지 (출처 불명)',hl:'"삼성이 자사 직원 절반을 AI로 교체한다" 내부 문건 유출',bd:'삼성 내부 문건이라며 직원 50% 감축 계획이 담긴 이미지가 공유되고 있습니다. 삼성 공식 입장은 없습니다.',v:'f',pts:12,exp:'거짓! "내부 문건"을 주장하는 익명 자료는 진위 확인이 불가능해요. 기업 공식 채널에서 확인해야 해요.'},
+    {src:'서울시교육청 공식 보도자료 (2025.03.23)',hl:'서울시교육청, 전국 최초 초중고 AI 교육 종합계획 발표',bd:'서울시교육청이 2025년 3월 23일 초중고 AI 교육 종합계획을 발표하고 2027년까지 단계적 확대를 추진한다고 밝혔습니다.',v:'t',pts:12,exp:'사실! 서울시교육청 공식 발표로 확인된 내용이에요. 어제(3/23) 실제 발생한 이슈예요!'},
+    {src:'온라인 커뮤니티 게시글',hl:'AI 챗봇, 의학 정보 질문에 100% 정확하게 답변한다',bd:'AI 챗봇이 의학 질문에 완벽하게 답한다는 게시글이 커뮤니티에서 확산됩니다. 출처는 "지인의 경험"입니다.',v:'f',pts:12,exp:'거짓! AI 챗봇은 의학 정보에서 오류가 발생할 수 있어요. 의료 판단은 반드시 의사에게 받아야 해요.'},
+  ],
+  h:[
+    {src:'OECD 보고서 요약본 (재가공)',hl:'한국 청소년 AI 리터러시, OECD 평균 이하',bd:'OECD 2024 교육지표에서 한국 청소년의 AI 리터러시가 평균 이하라는 내용입니다. 그런데 이 요약본은 원문에는 없는 수치를 추가했습니다.',v:'f',pts:15,exp:'거짓! 원문 데이터를 왜곡한 재가공 정보예요. 인용 시 반드시 원문 출처를 확인해야 해요.'},
+    {src:'국회도서관 발간 AI 법제 보고서 2025',hl:'EU는 2024년 AI 법(AI Act)을 세계 최초로 시행했다',bd:'유럽연합이 2024년 8월부터 AI Act를 단계적으로 시행하기 시작했습니다. 고위험 AI 시스템에 대한 규제가 핵심입니다.',v:'t',pts:15,exp:'사실! EU AI Act는 2024년 8월부터 단계적 시행을 시작한 세계 최초의 포괄적 AI 규제법이에요.'},
+    {src:'해외 언론 번역 기사 (번역자 불명)',hl:'OpenAI, GPT-5로 의사 면허 시험 100% 통과',bd:'해외 기사를 번역한 글로, "GPT-5가 모든 국가의 의사 면허 시험을 100% 통과했다"고 주장합니다. 원문 링크가 없습니다.',v:'p',pts:15,exp:'부분 사실! GPT-4 계열이 미국 의사 면허 시험(USMLE)을 통과한 연구는 있지만, "모든 국가·100%"는 과장이에요. 번역 오류 가능성도 있어요.'},
+    {src:'IPCC 기후 보고서 + AI 미래 전망 혼합 기사',hl:'AI가 2030년까지 탄소 배출을 40% 줄인다는 UN 보고서 발표',bd:'UN이 AI로 탄소 배출을 40% 감축할 수 있다는 보고서를 냈다는 기사입니다. 하지만 해당 수치는 특정 조건 하의 최대 시나리오였습니다.',v:'p',pts:15,exp:'부분 사실! AI가 에너지 효율에 기여할 수 있다는 연구는 있지만 "40% 감축"은 특정 최적 조건의 시나리오예요. 맥락 없는 수치 인용에 주의해요.'},
+  ]
+};
+let c1Diff='e',c1List=[],c1Idx=0,c1Score=0;
+function initC1(){c1Idx=0;c1Score=0;document.getElementById('c1sc').textContent='0';setC1Diff('e');}
+function setC1Diff(d){
+  c1Diff=d;clrT();
+  document.querySelectorAll('#screen-c1 .diff-tab').forEach(b=>b.classList.remove('on'));
+  document.querySelector('#screen-c1 .diff-tab.dt-'+d).classList.add('on');
+  c1List=[...newsBank[d]].sort(()=>Math.random()-.5);c1Idx=0;c1Score=0;document.getElementById('c1sc').textContent='0';renderC1();
+}
+function renderC1(){
+  if(c1Idx>=c1List.length){finishC1();return;}
+  clrT();const n=c1List[c1Idx];
+  document.getElementById('c1src').textContent='📰 '+n.src;
+  document.getElementById('c1hl').textContent=n.hl;
+  document.getElementById('c1bd').textContent=n.bd;
+  document.getElementById('c1pg').textContent=c1Idx+'/'+c1List.length;
+  document.getElementById('c1pgb').style.width=(c1Idx/c1List.length*100)+'%';
+  document.getElementById('c1fb').classList.remove('show');
+  document.getElementById('c1nw').style.display='none';
+  document.getElementById('c1hint').classList.remove('show');
+  document.getElementById('c1f').textContent='🕵️';document.getElementById('c1f').className='char-face';
+  document.querySelectorAll('.v-btn').forEach(b=>{b.disabled=false;b.classList.remove('v-sel-ok','v-sel-no');});
+  const sec=c1Diff==='e'?40:c1Diff==='m'?32:25;
+  startTimer('c1',sec,()=>{
+    document.querySelectorAll('.v-btn').forEach(b=>b.disabled=true);
+    const fb=document.getElementById('c1fb');fb.className='fb-box show fb-no';fb.innerHTML='⏰ 시간 초과! 더 빠른 판단 연습이 필요해요.';
+    document.getElementById('c1f').className='char-face cf-no';document.getElementById('c1nw').style.display='block';
+  });
+}
+function selectV(v){
+  clrT();document.querySelectorAll('.v-btn').forEach(b=>b.disabled=true);
+  const n=c1List[c1Idx];const ok=(v===n.v);const fb=document.getElementById('c1fb');
+  if(ok){c1Score+=n.pts;document.getElementById('c1sc').textContent=c1Score;fb.className='fb-box show fb-ok';fb.innerHTML=`✅ 정확한 판별! +${n.pts}점<br><strong>📚 해설:</strong> ${n.exp}`;document.getElementById('c1f').className='char-face cf-ok';playS('ok');}
+  else{fb.className='fb-box show fb-no';fb.innerHTML=`❌ 판별 실패!<br><strong>📚 해설:</strong> ${n.exp}`;document.getElementById('c1f').className='char-face cf-no';playS('no');}
+  document.querySelectorAll('.v-btn').forEach(b=>{
+    const isOk=(b.classList.contains('vt')&&n.v==='t')||(b.classList.contains('vf')&&n.v==='f')||(b.classList.contains('vp')&&n.v==='p');
+    const isSel=(b.classList.contains('vt')&&v==='t')||(b.classList.contains('vf')&&v==='f')||(b.classList.contains('vp')&&v==='p');
+    if(isOk)b.classList.add('v-sel-ok');else if(isSel&&!ok)b.classList.add('v-sel-no');
+  });
+  document.getElementById('c1nw').style.display='block';
+}
+function nextC1(){c1Idx++;renderC1();}
+function finishC1(){
+  clrT();ST.scores[0]=c1Score;const max=c1Diff==='e'?48:c1Diff==='m'?72:60;
+  ST.stars[0]=calcSt(c1Score,max);ST.done[0]=true;ST.badges.fact=ST.stars[0]>=2;
+  updateSt(1,ST.stars[0]);unlockCC(2);playS('cl');
+  document.getElementById('c1msg').textContent='🎉 사건 1 해결! '+c1Score+'점 획득!';
+  document.getElementById('c1f').className='char-face cf-wow';setTimeout(()=>goHome(),1700);
+}
+
+/* ═══════════════════════════════
+   사건2: 데이터 조작 탐지 (수학 통계)
+═══════════════════════════════ */
+const dataSets=[
+  {
+    title:'AI 사용 현황 설문조사 (%)',
+    bars:[{l:'전혀 없음',v:5,c:'#10b981'},{l:'가끔',v:30,c:'#00d4ff'},{l:'자주',v:40,c:'#7c3aed'},{l:'매일',v:25,c:'#fbbf24'}],
+    note:'⚠️ Y축이 0부터 시작하지 않아 차이가 실제보다 크게 보입니다.',
+    qs:[
+      {q:'이 그래프에서 가장 의심스러운 점은?',opts:['색깔이 너무 많다','Y축이 0부터 시작하지 않아 값이 왜곡됐다','막대가 너무 얇다','글씨체가 이상하다'],ans:1,exp:'Y축 조작은 데이터 시각화의 대표적 오류! 막대 차이가 실제보다 훨씬 크게 보여요.',pts:12},
+      {q:'"가끔"과 "자주" 응답률의 합은?',opts:['60%','65%','70%','75%'],ans:2,exp:'30% + 40% = 70%! 수학적 계산으로 데이터 오류를 검증할 수 있어요.',pts:12},
+      {q:'표본 수가 없는 설문 결과를 신뢰할 수 있을까요?',opts:['네, 퍼센트가 있으니까요','아니요, 몇 명인지 모르면 신뢰 불가','네, 그래프가 예쁘니까요','모르겠어요'],ans:1,exp:'표본 수는 통계 신뢰도의 핵심! 10명 조사와 10,000명 조사는 완전히 달라요.',pts:12},
+    ]
+  },
+  {
+    title:'AI 오류율 연도별 변화 (%)',
+    bars:[{l:'2021',v:12,c:'#ef4444'},{l:'2022',v:9,c:'#f97316'},{l:'2023',v:6,c:'#fbbf24'},{l:'2024',v:4,c:'#10b981'},{l:'2025',v:2,c:'#00d4ff'}],
+    note:'출처: 가상 AI 연구소 내부 보고서 (미공개)',
+    qs:[
+      {q:'2021년 대비 2025년 오류율 감소폭은?',opts:['8%p','10%p','12%p','14%p'],ans:1,exp:'12% - 2% = 10%p 감소! 퍼센트 포인트(%p)와 퍼센트(%)의 차이도 중요해요.',pts:10},
+      {q:'"미공개 내부 보고서"를 데이터 출처로 신뢰할 수 있나요?',opts:['네, 숫자가 있으니까요','아니요, 검증할 수 없는 출처는 신뢰 불가','네, 연구소 이름이 있으니까요','모르겠어요'],ans:1,exp:'검증 불가 출처는 빨간 신호! 데이터는 반드시 공개된 출처에서 확인해야 해요.',pts:14},
+    ]
+  },
+  {
+    title:'국가별 AI 관련 법률 수 (2025년 기준)',
+    bars:[{l:'미국',v:48,c:'#3b82f6'},{l:'EU',v:35,c:'#6366f1'},{l:'중국',v:42,c:'#ef4444'},{l:'한국',v:18,c:'#10b981'},{l:'일본',v:22,c:'#fbbf24'}],
+    note:'출처: 가상 AI 정책 연구센터 (2025.02) — 법률 범위 기준 미명시',
+    qs:[
+      {q:'법률 수가 가장 많은 국가와 가장 적은 국가의 차이는?',opts:['24개','28개','30개','32개'],ans:2,exp:'미국(48) - 한국(18) = 30개! 두 값의 차이를 계산하면 돼요.',pts:12},
+      {q:'"법률 범위 기준 미명시"는 이 데이터에서 어떤 의미인가요?',opts:['데이터가 더 정확하다는 의미','어떤 법을 카운트했는지 불분명해 비교가 어렵다','미국이 가장 발전했다는 의미','숫자가 크면 좋은 것이다'],ans:1,exp:'기준이 불명확한 데이터는 비교 불가! 법률 범위를 어디까지로 정의했는지에 따라 결과가 완전히 달라져요.',pts:12},
+      {q:'이 데이터만으로 "미국이 AI를 가장 잘 규제하고 있다"고 결론 내릴 수 있나요?',opts:['네, 법률이 가장 많으니까요','아니요, 법률 수만으로 규제 품질을 알 수 없어요','네, 숫자가 가장 크니까요','모르겠어요'],ans:1,exp:'법률의 양보다 질이 중요해요! 데이터 하나로 성급한 결론을 내리는 것은 데이터 오독이에요.',pts:12},
+    ]
+  },
+  {
+    title:'AI 챗봇 사용자 만족도 조사 (10점 만점)',
+    bars:[{l:'ChatGPT',v:8,c:'#10b981'},{l:'Gemini',v:7,c:'#3b82f6'},{l:'Claude',v:8,c:'#7c3aed'},{l:'Copilot',v:7,c:'#fbbf24'}],
+    note:'⚠️ 조사 대상: 20대 대학생 50명 / 조사 방법: 자사 블로그 자발적 응답',
+    qs:[
+      {q:'ChatGPT와 Claude의 평균 점수는?',opts:['7점','7.5점','8점','8.5점'],ans:2,exp:'(8 + 8) ÷ 2 = 8점! 두 값을 더하고 2로 나누면 평균이 나와요.',pts:10},
+      {q:'"자사 블로그 자발적 응답"의 가장 큰 문제점은?',opts:['설문이 너무 짧다','자사 제품 호감자만 응답했을 편향 가능성','점수가 너무 높다','챗봇 종류가 너무 적다'],ans:1,exp:'자발적 응답(편의 표집)은 특정 성향의 사람만 참여해 결과가 왜곡돼요. 이것을 "선택 편향"이라고 해요.',pts:14},
+    ]
+  }
+];
+let c2Idx=0,c2Score=0,c2Answered=0;
+function initC2(){c2Idx=0;c2Score=0;document.getElementById('c2sc').textContent='0';renderC2();}
+function renderC2(){
+  if(c2Idx>=dataSets.length){finishC2();return;}
+  const ds=dataSets[c2Idx];
+  document.getElementById('c2pg').textContent=c2Idx+'/'+dataSets.length;
+  document.getElementById('c2pgb').style.width=(c2Idx/dataSets.length*100)+'%';
+  document.getElementById('c2ct').textContent=ds.title;
+  document.getElementById('c2note').textContent=ds.note;
+  const maxV=Math.max(...ds.bars.map(b=>b.v));
+  const chart=document.getElementById('c2bc');chart.innerHTML='';
+  ds.bars.forEach(bar=>{
+    const item=document.createElement('div');item.className='b-item';
+    const val=document.createElement('div');val.className='b-val';val.textContent=bar.v+'%';
+    const fill=document.createElement('div');fill.className='b-fill';
+    fill.style.cssText=`height:0;background:${bar.c};box-shadow:0 0 8px ${bar.c}60;`;
+    const lbl=document.createElement('div');lbl.className='b-lbl';lbl.textContent=bar.l;
+    item.appendChild(val);item.appendChild(fill);item.appendChild(lbl);
+    chart.appendChild(item);
+    setTimeout(()=>{fill.style.height=(bar.v/maxV*90)+'px';},120);
+  });
+  c2Answered=0;document.getElementById('c2nw').style.display='none';
+  const qEl=document.getElementById('c2qs');qEl.innerHTML='';
+  ds.qs.forEach((q,qi)=>{
+    const div=document.createElement('div');div.className='dq';div.id='dq'+qi;
+    div.innerHTML=`<div class="dq-txt">Q${qi+1}. ${q.q}</div><div class="dq-opts" id="dqo${qi}"></div><div class="fb-box" id="dqf${qi}"></div>`;
+    qEl.appendChild(div);
+    q.opts.forEach((opt,oi)=>{
+      const btn=document.createElement('button');btn.className='dq-opt';btn.textContent=opt;
+      btn.onclick=()=>{
+        document.querySelectorAll(`#dqo${qi} .dq-opt`).forEach(b=>b.disabled=true);
+        document.querySelectorAll(`#dqo${qi} .dq-opt`)[q.ans].classList.add('correct');
+        const fb=document.getElementById('dqf'+qi);
+        if(oi===q.ans){btn.classList.add('correct');c2Score+=q.pts;document.getElementById('c2sc').textContent=c2Score;fb.className='fb-box show fb-ok';fb.innerHTML=`✅ +${q.pts}점! ${q.exp}`;document.getElementById('c2f').className='char-face cf-ok';playS('ok');}
+        else{btn.classList.add('wrong');fb.className='fb-box show fb-no';fb.innerHTML=`❌ ${q.exp}`;document.getElementById('c2f').className='char-face cf-no';playS('no');}
+        c2Answered++;if(c2Answered>=dataSets[c2Idx].qs.length)document.getElementById('c2nw').style.display='block';
+      };
+      document.getElementById('dqo'+qi).appendChild(btn);
+    });
+  });
+}
+function nextC2(){c2Idx++;renderC2();}
+function finishC2(){
+  ST.scores[1]=c2Score;ST.stars[1]=calcSt(c2Score,124);ST.done[1]=true;ST.badges.data=ST.stars[1]>=2;
+  updateSt(2,ST.stars[1]);unlockCC(3);playS('cl');
+  document.getElementById('c2msg').textContent='🎉 사건 2 해결! '+c2Score+'점 획득!';
+  document.getElementById('c2f').className='char-face cf-wow';setTimeout(()=>goHome(),1700);
+}
+
+/* ═══════════════════════════════
+   사건3: AI 윤리 딜레마 (멀티엔딩)
+═══════════════════════════════ */
+const dilemmas=[
+  {
+    em:'🎨',
+    tx:'게임 개발사가 AI 생성 아트를 작가 동의 없이 게임에 사용했습니다. 오늘(3/24) 이 사실이 밝혀졌어요.',
+    cx:'2026년 현재, AI 생성 아트의 저작권 침해가 큰 사회 문제가 되고 있어요.',
+    choices:[
+      {lbl:'A',txt:'저렴하게 쓸 수 있으니까 괜찮다고 생각한다.',type:'bad',pts:0,end:'❌ AI로 생성했어도 원작자의 스타일·데이터가 사용됐어요. 허락 없이 사용하는 것은 윤리적으로 문제예요.',lesson:'AI 아트도 원본 작가의 권리를 존중해야 해요!'},
+      {lbl:'B',txt:'사과하고 모든 AI 아트를 원작자 작품으로 교체한다.',type:'hero',pts:20,end:'✅ 최선의 선택! 잘못을 인정하고 책임지는 행동이에요. 실제 오늘 이 게임사가 한 결정이에요.',lesson:'AI 사용 시 저작권·출처 명시가 핵심이에요!'},
+      {lbl:'C',txt:'"AI가 만든 거니까 저작권 없다"고 주장한다.',type:'mid',pts:5,end:'⚠️ 법적으로 불확실해요. AI 학습에 사용된 원작자 데이터에 대한 권리 문제가 남아 있어요.',lesson:'AI 생성물의 저작권은 아직 법적으로 논의 중이에요!'},
+    ]
+  },
+  {
+    em:'📚',
+    tx:'학생이 AI로 작성한 에세이를 선생님 몰래 제출하려고 합니다. AI 탐지 도구가 없어요.',
+    cx:'AI 글쓰기 도구가 학교 교육에 미치는 영향이 전 세계적 논쟁거리예요.',
+    choices:[
+      {lbl:'A',txt:'AI가 쓴 에세이를 그냥 제출한다.',type:'bad',pts:0,end:'❌ 학문적 정직성 위반이에요! 나중에 AI 탐지 도구가 발전하면 발각될 수도 있어요.',lesson:'AI를 활용했다면 반드시 밝히는 것이 학문적 윤리예요!'},
+      {lbl:'B',txt:'AI 도움을 받았음을 밝히고, 내가 수정한 내용을 설명한다.',type:'hero',pts:20,end:'✅ 훌륭한 선택! AI를 도구로 사용하되 투명하게 공개하는 것이 올바른 태도예요.',lesson:'AI 리터러시: AI를 도구로 쓰되 출처를 밝히고 비판적으로 검토해요!'},
+      {lbl:'C',txt:'AI를 전혀 사용하지 않기로 한다.',type:'mid',pts:12,end:'⚠️ 정직하지만 극단적이에요. AI를 올바르게 활용하는 방법을 배우는 것이 더 중요해요.',lesson:'AI를 아예 안 쓰는 것보다 올바르게 쓰는 법을 배워요!'},
+    ]
+  },
+  {
+    em:'🤖',
+    tx:'AI 추천 알고리즘이 내 유튜브 영상을 극단적인 콘텐츠로만 채우고 있어요.',
+    cx:'알고리즘 편향과 필터 버블이 사회 갈등을 심화시킨다는 연구가 있어요.',
+    choices:[
+      {lbl:'A',txt:'추천해주니까 계속 본다.',type:'bad',pts:0,end:'❌ 이것이 "필터 버블"이에요! 알고리즘은 내가 보고 싶은 것만 보여줘 세상을 좁게 만들어요.',lesson:'알고리즘은 다양한 관점을 숨길 수 있어요. 적극적으로 검색해요!'},
+      {lbl:'B',txt:'시청 기록을 초기화하고 다양한 주제를 검색한다.',type:'hero',pts:20,end:'✅ 완벽한 선택! 알고리즘을 이해하고 주체적으로 디지털 환경을 조절하는 능력이에요.',lesson:'알고리즘 리터러시: AI가 왜 이걸 추천하는지 이해하고 통제해요!'},
+      {lbl:'C',txt:'유튜브를 완전히 끊는다.',type:'mid',pts:8,end:'⚠️ 극단적이에요. 플랫폼을 사용하지 않는 것보다 올바르게 사용하는 능력이 중요해요.',lesson:'디지털 기기를 끊는 것이 아니라 주도적으로 활용하는 것이 목표예요!'},
+    ]
+  },
+  {
+    em:'💊',
+    tx:'AI가 할머니의 약을 처방해주는 앱이 있어요. 병원보다 빠르고 저렴해요.',
+    cx:'AI 의료 서비스의 윤리적 문제가 전 세계에서 논의 중이에요.',
+    choices:[
+      {lbl:'A',txt:'병원 안 가고 AI 앱 처방만 따른다.',type:'bad',pts:0,end:'❌ 매우 위험해요! AI 의료 서비스는 오진 위험이 있고, 개인 건강 정보 유출 위험도 있어요.',lesson:'AI는 의료 보조 도구! 최종 판단은 반드시 의사에게 받아야 해요.'},
+      {lbl:'B',txt:'AI 앱을 참고는 하되 반드시 의사에게 확인한다.',type:'hero',pts:20,end:'✅ 최선의 선택! AI를 의료 정보 도구로 활용하되 전문가 확인을 거치는 것이 올바른 태도예요.',lesson:'AI와 전문가의 협업! AI는 보조, 판단은 전문가에게.'},
+      {lbl:'C',txt:'가격이 저렴하니 한 번만 써본다.',type:'mid',pts:5,end:'⚠️ 한 번이라도 위험할 수 있어요. 특히 약 처방은 개인별 상태가 달라 AI 판단에 의존하면 안 돼요.',lesson:'의료 AI는 편의성보다 안전성이 최우선이에요!'},
+    ]
+  },
+  {
+    em:'📸',
+    tx:'친구가 AI로 만든 가짜 사진을 "실제 여행 사진"이라며 SNS에 올리려 합니다.',
+    cx:'딥페이크와 AI 생성 이미지가 SNS에서 사실처럼 유통되는 경우가 늘고 있어요.',
+    choices:[
+      {lbl:'A',txt:'재미있으니까 같이 올려주겠다고 한다.',type:'bad',pts:0,end:'❌ AI 생성 이미지를 사실처럼 속이는 것은 디지털 기만이에요. 타인이 허위 정보를 믿을 수 있어요.',lesson:'AI 생성물에는 반드시 "AI 생성"임을 표시해야 해요!'},
+      {lbl:'B',txt:'"AI 생성"임을 표시하면 올려도 된다고 알려준다.',type:'hero',pts:20,end:'✅ 올바른 선택! AI 생성 콘텐츠를 공유할 때는 반드시 출처를 밝히는 것이 디지털 시민 윤리예요.',lesson:'AI 콘텐츠 투명성: 생성 사실을 밝히면 창의적 표현으로 인정받을 수 있어요!'},
+      {lbl:'C',txt:'아무 말 안 하고 그냥 넘어간다.',type:'mid',pts:8,end:'⚠️ 방관도 공모가 될 수 있어요. 잘못된 정보 유포를 막는 것도 디지털 시민의 역할이에요.',lesson:'허위 정보를 보면 친구에게 올바른 방법을 알려주는 것이 용기 있는 행동이에요!'},
+    ]
+  },
+  {
+    em:'🏫',
+    tx:'선생님이 AI 챗봇으로 시험 문제 채점을 자동화하려고 해요. 일부 학생이 억울한 오채점을 받았어요.',
+    cx:'AI가 교육 현장에 도입되면서 평가 공정성 문제가 부각되고 있어요.',
+    choices:[
+      {lbl:'A',txt:'선생님이 결정한 거니까 그냥 따른다.',type:'bad',pts:0,end:'❌ AI 채점의 오류는 학생 권리 침해예요. 공정한 평가를 요구하는 것은 정당한 권리예요.',lesson:'AI 의사결정에도 이의 제기 절차(재검토 권리)가 필요해요!'},
+      {lbl:'B',txt:'오채점된 학생들과 함께 선생님께 AI 채점 기준 공개와 재검토를 요청한다.',type:'hero',pts:20,end:'✅ 최선의 선택! AI 결정에 대한 설명 요구와 재검토 요청은 AI 시대 핵심 권리예요.',lesson:'알고리즘 책임성: AI가 내린 결정은 반드시 설명 가능해야 해요!'},
+      {lbl:'C',txt:'내 점수가 올바르다면 그냥 넘어간다.',type:'mid',pts:8,end:'⚠️ 내가 피해자가 아니라도 같은 반 친구의 권리를 지키는 것이 공동체 의식이에요.',lesson:'AI 공정성: 나만 아니라 모든 학생의 권리가 동등하게 보호돼야 해요!'},
+    ]
+  },
+  {
+    em:'🔒',
+    tx:'가입한 AI 앱이 내 채팅 기록을 AI 학습에 사용하겠다고 동의를 요청합니다. 동의 안 하면 서비스 이용 불가예요.',
+    cx:'개인정보와 AI 학습 데이터 사용이 디지털 시대의 핵심 쟁점이에요.',
+    choices:[
+      {lbl:'A',txt:'읽지 않고 그냥 동의한다.',type:'bad',pts:0,end:'❌ 약관을 읽지 않고 동의하면 개인정보 유출 위험이 있어요. 내 채팅 기록이 AI 학습에 쓰일 수 있어요.',lesson:'개인정보 동의서는 반드시 읽고 서명하는 습관이 필요해요!'},
+      {lbl:'B',txt:'약관을 꼼꼼히 읽고, 동의 범위를 이해한 후 결정한다.',type:'hero',pts:20,end:'✅ 완벽한 선택! 개인정보 제공 전에 무엇을 어떻게 사용하는지 이해하는 것이 디지털 주권이에요.',lesson:'디지털 주권: 내 데이터가 어떻게 쓰이는지 알 권리가 있어요!'},
+      {lbl:'C',txt:'개인정보가 걱정돼서 앱을 바로 삭제한다.',type:'mid',pts:10,end:'⚠️ 신중한 결정이에요. 하지만 약관을 이해하고 최소 권한만 허용하는 방법도 있어요.',lesson:'앱 삭제보다 개인정보 설정을 최소화해 사용하는 방법을 배워봐요!'},
+    ]
+  },
+  {
+    em:'🌐',
+    tx:'AI 번역 앱이 소수 언어 사용자의 번역 오류를 자주 냅니다. 하지만 회사는 수정 계획이 없어요.',
+    cx:'AI 편향 문제는 특정 언어·인종·문화에 불평등한 서비스를 유발할 수 있어요.',
+    choices:[
+      {lbl:'A',txt:'소수 언어 사용자 문제니까 나와 관계없다.',type:'bad',pts:0,end:'❌ AI 편향은 사회적 불평등을 심화해요. 다수에게 편리한 서비스가 소수를 차별하면 문제예요.',lesson:'AI 공정성: AI 서비스는 모든 사람에게 동등하게 작동해야 해요!'},
+      {lbl:'B',txt:'소비자 단체나 공공기관에 AI 편향 문제를 신고하고, SNS로 알린다.',type:'hero',pts:20,end:'✅ 훌륭한 선택! AI 편향 문제를 사회에 알리고 기업에 책임을 요구하는 것이 디지털 시민 행동이에요.',lesson:'AI 책임 요구: 시민이 목소리를 내야 AI 서비스가 공정해져요!'},
+      {lbl:'C',txt:'다른 번역 앱을 쓰면 된다고 생각한다.',type:'mid',pts:8,end:'⚠️ 개인적 해결책이에요. 하지만 문제를 알리지 않으면 편향은 계속돼요. 구조적 변화도 필요해요.',lesson:'개인 선택도 중요하지만 사회 문제는 집단적 행동으로 바꿔야 해요!'},
+    ]
+  }
+];
+let c3Idx=0,c3Score=0;
+function initC3(){c3Idx=0;c3Score=0;document.getElementById('c3sc').textContent='0';renderC3();}
+function renderC3(){
+  if(c3Idx>=dilemmas.length){finishC3();return;}
+  const d=dilemmas[c3Idx];
+  document.getElementById('c3pg').textContent=c3Idx+'/'+dilemmas.length;
+  document.getElementById('c3pgb').style.width=(c3Idx/dilemmas.length*100)+'%';
+  document.getElementById('c3em').textContent=d.em;
+  document.getElementById('c3tx').textContent=d.tx;
+  document.getElementById('c3cx').textContent=d.cx;
+  document.getElementById('c3eb').classList.remove('show');
+  document.getElementById('c3nw').style.display='none';
+  document.getElementById('c3f').textContent='🕵️';document.getElementById('c3f').className='char-face';
+  const cg=document.getElementById('c3cg');cg.innerHTML='';
+  d.choices.forEach(c=>{
+    const btn=document.createElement('button');btn.className='c-btn';
+    btn.innerHTML=`<span class="c-lbl cl-${c.lbl}">${c.lbl}</span>${c.txt}`;
+    btn.onclick=()=>{
+      document.querySelectorAll('.c-btn').forEach(b=>b.disabled=true);
+      btn.classList.add(c.type==='hero'?'c-hero':c.type==='bad'?'c-bad':'c-mid');
+      const eb=document.getElementById('c3eb');const face=document.getElementById('c3f');
+      if(c.type==='hero'){c3Score+=c.pts;document.getElementById('c3sc').textContent=c3Score;eb.className='ending-box show e-hero';face.className='char-face cf-wow';playS('ok');}
+      else if(c.type==='mid'){c3Score+=c.pts;document.getElementById('c3sc').textContent=c3Score;eb.className='ending-box show e-mid';face.className='char-face';}
+      else{eb.className='ending-box show e-bad';face.className='char-face cf-no';playS('no');}
+      eb.innerHTML=`${c.end}<br><br><strong style="color:var(--neon-a)">📚 AI 리터러시:</strong> ${c.lesson}`;
+      document.getElementById('c3nw').style.display='block';
+    };
+    cg.appendChild(btn);
+  });
+}
+function nextC3(){c3Idx++;renderC3();}
+function finishC3(){
+  ST.scores[2]=c3Score;ST.stars[2]=calcSt(c3Score,160);ST.done[2]=true;ST.badges.eth=ST.stars[2]>=2;
+  updateSt(3,ST.stars[2]);unlockCC(4);playS('cl');
+  document.getElementById('c3msg').textContent='🎉 사건 3 해결! '+c3Score+'점!';
+  document.getElementById('c3f').className='char-face cf-wow';setTimeout(()=>goHome(),1700);
+}
+
+/* ═══════════════════════════════
+   사건4: 알고리즘 해독 (수학+정보)
+═══════════════════════════════ */
+const algoBank={
+  e:[
+    {
+      ttl:'추천 알고리즘 기본 구조',
+      lines:[
+        {n:1,c:'<span class="cm">// 사용자 시청 기록을 분석하는 함수</span>'},
+        {n:2,c:'<span class="kw">함수</span> <span class="fn">추천하기</span>(사용자):'},
+        {n:3,c:'  기록 = 사용자.시청목록'},
+        {n:4,c:'  <span class="kw">만약</span> 기록.길이 > <span class="nm">10</span>:'},
+        {n:5,c:'    <span class="kw">반환</span> 비슷한_영상_찾기(기록)'},
+        {n:6,c:'  <span class="kw">아니면</span>:'},
+        {n:7,c:'    <span class="kw">반환</span> <span class="st">"인기 영상"</span>'},
+      ],
+      q:'시청 기록이 10개 이하일 때 이 알고리즘은 어떻게 동작하나요?',
+      opts:['시청 기록과 비슷한 영상을 추천한다','인기 영상을 추천한다','영상을 추천하지 않는다','에러가 발생한다'],
+      ans:1,pts:10,exp:'"아니면(else)" 조건이 실행되어 "인기 영상"을 반환해요! 처음 사용자에게 인기 영상을 보여주는 이유예요.',hint:'4번 줄 조건문(if)의 반대 경우(else)를 보세요!'
+    },
+    {
+      ttl:'AI 스팸 필터 알고리즘',
+      lines:[
+        {n:1,c:'<span class="kw">함수</span> <span class="fn">스팸판별</span>(메일):'},
+        {n:2,c:'  점수 = <span class="nm">0</span>'},
+        {n:3,c:'  <span class="kw">만약</span> <span class="st">"무료"</span> <span class="kw">in</span> 메일: 점수 += <span class="nm">10</span>'},
+        {n:4,c:'  <span class="kw">만약</span> <span class="st">"당첨"</span> <span class="kw">in</span> 메일: 점수 += <span class="nm">20</span>'},
+        {n:5,c:'  <span class="kw">만약</span> 점수 >= <span class="nm">15</span>:'},
+        {n:6,c:'    <span class="kw">반환</span> <span class="st">"스팸"</span>'},
+        {n:7,c:'  <span class="kw">반환</span> <span class="st">"정상"</span>'},
+      ],
+      q:'"무료 당첨되셨습니다!" 메일의 최종 판정 결과는?',
+      opts:['10점 → 정상','20점 → 정상','30점 → 스팸','30점 → 정상'],
+      ans:2,pts:10,exp:'"무료"→+10, "당첨"→+20, 합계 30점. 30 ≥ 15이므로 "스팸"으로 판정!',hint:'"무료"와 "당첨"이 모두 포함된 메일이에요. 점수를 합산해봐요!'
+    },
+    {
+      ttl:'AI 로그인 보안 알고리즘',
+      lines:[
+        {n:1,c:'<span class="kw">함수</span> <span class="fn">로그인확인</span>(입력_비번, 저장_비번):'},
+        {n:2,c:'  <span class="kw">만약</span> 입력_비번 == 저장_비번:'},
+        {n:3,c:'    <span class="kw">반환</span> <span class="st">"로그인 성공"</span>'},
+        {n:4,c:'  <span class="kw">아니면</span>:'},
+        {n:5,c:'    <span class="kw">반환</span> <span class="st">"로그인 실패"</span>'},
+      ],
+      q:'입력한 비밀번호가 저장된 것과 다를 때 결과는?',
+      opts:['"로그인 성공"','로그인 후 경고 표시','"로그인 실패"','앱이 종료된다'],
+      ans:2,pts:10,exp:'입력_비번 ≠ 저장_비번이면 "아니면(else)" 조건이 실행되어 "로그인 실패"를 반환해요!',hint:'2번 줄 조건이 거짓일 때 4번 줄 "아니면"이 실행돼요!'
+    },
+    {
+      ttl:'반복문으로 합계 계산하기',
+      lines:[
+        {n:1,c:'<span class="cm">// 점수 목록의 합계를 계산하는 알고리즘</span>'},
+        {n:2,c:'점수들 = [<span class="nm">80</span>, <span class="nm">90</span>, <span class="nm">70</span>, <span class="nm">100</span>]'},
+        {n:3,c:'합계 = <span class="nm">0</span>'},
+        {n:4,c:'<span class="kw">반복</span> 점수 <span class="kw">in</span> 점수들:'},
+        {n:5,c:'  합계 = 합계 + 점수'},
+        {n:6,c:'<span class="kw">출력</span>(합계)'},
+      ],
+      q:'이 알고리즘이 출력하는 값은?',
+      opts:['300','330','340','360'],
+      ans:2,exp:'80+90+70+100 = 340! 반복문이 리스트의 값을 하나씩 더해 합계를 구해요.',hint:'2번 줄의 숫자들을 전부 더해봐요!'
+    }
+  ],
+  m:[
+    {
+      ttl:'AI 이미지 분류 알고리즘',
+      lines:[
+        {n:1,c:'<span class="kw">함수</span> <span class="fn">이미지분류</span>(이미지):'},
+        {n:2,c:'  특징 = 이미지.특징_추출()'},
+        {n:3,c:'  결과 = {}'},
+        {n:4,c:'  <span class="kw">반복</span> 분류 <span class="kw">in</span> [<span class="st">"고양이"</span>, <span class="st">"강아지"</span>, <span class="st">"기타"</span>]:'},
+        {n:5,c:'    결과[분류] = 유사도계산(특징, 분류)'},
+        {n:6,c:'  <span class="kw">반환</span> 최대값(결과)'},
+      ],
+      q:'이 AI가 이미지를 분류하는 핵심 원리는?',
+      opts:['이미지를 하나씩 사람이 직접 판단','각 분류와의 유사도를 계산해 가장 높은 것 선택','랜덤으로 선택','이미지를 삭제'],
+      ans:1,pts:15,exp:'반복문으로 모든 분류의 유사도를 계산하고 최대값을 반환! 이것이 AI 분류의 핵심이에요.',hint:'4~6번 줄의 반복문과 최대값을 주목하세요!'
+    },
+    {
+      ttl:'점수 예측 AI (선형 회귀)',
+      lines:[
+        {n:1,c:'<span class="cm">// 공부 시간으로 시험 점수 예측</span>'},
+        {n:2,c:'<span class="kw">함수</span> <span class="fn">점수예측</span>(공부시간):'},
+        {n:3,c:'  기울기 = <span class="nm">8.5</span>   <span class="cm">// 1시간당 8.5점</span>'},
+        {n:4,c:'  절편 = <span class="nm">40</span>     <span class="cm">// 기본 점수</span>'},
+        {n:5,c:'  <span class="kw">반환</span> 기울기 × 공부시간 + 절편'},
+      ],
+      q:'하루 4시간 공부했을 때 예측 점수는?',
+      opts:['74점','78점','80점','84점'],
+      ans:0,pts:15,exp:'8.5 × 4 + 40 = 34 + 40 = 74점! 이것이 수학의 일차함수 y=ax+b와 같은 원리예요.',hint:'기울기×공부시간+절편 공식에 4를 대입해봐요!'
+    },
+    {
+      ttl:'AI 가짜 뉴스 점수 판별기',
+      lines:[
+        {n:1,c:'<span class="kw">함수</span> <span class="fn">신뢰도측정</span>(기사):'},
+        {n:2,c:'  점수 = <span class="nm">100</span>'},
+        {n:3,c:'  <span class="kw">만약</span> 기사.출처 == <span class="st">"익명"</span>:    점수 -= <span class="nm">40</span>'},
+        {n:4,c:'  <span class="kw">만약</span> 기사.날짜 == <span class="st">"없음"</span>:    점수 -= <span class="nm">30</span>'},
+        {n:5,c:'  <span class="kw">만약</span> 기사.링크 == <span class="st">"없음"</span>:    점수 -= <span class="nm">20</span>'},
+        {n:6,c:'  <span class="kw">반환</span> 점수'},
+      ],
+      q:'출처=익명, 날짜=없음, 링크=있음인 기사의 신뢰도 점수는?',
+      opts:['10점','20점','30점','40점'],
+      ans:2,pts:15,exp:'100 - 40(익명) - 30(날짜 없음) = 30점! 링크는 있으므로 -20은 적용 안 돼요.',hint:'3번·4번 조건만 해당돼요. 5번은 링크가 있으니 해당 안 됩니다!'
+    },
+    {
+      ttl:'중앙값 계산 알고리즘',
+      lines:[
+        {n:1,c:'<span class="cm">// AI 데이터 분석의 기초 — 중앙값 구하기</span>'},
+        {n:2,c:'<span class="kw">함수</span> <span class="fn">중앙값</span>(데이터):'},
+        {n:3,c:'  정렬된 = 오름차순정렬(데이터)'},
+        {n:4,c:'  중간 = 데이터.길이 ÷ <span class="nm">2</span>'},
+        {n:5,c:'  <span class="kw">반환</span> 정렬된[중간]'},
+        {n:6,c:''},
+        {n:7,c:'결과 = <span class="fn">중앙값</span>([<span class="nm">3</span>, <span class="nm">7</span>, <span class="nm">1</span>, <span class="nm">9</span>, <span class="nm">5</span>])'},
+      ],
+      q:'중앙값([3, 7, 1, 9, 5])의 결과는?',
+      opts:['3','5','7','9'],
+      ans:1,pts:15,exp:'오름차순 정렬: [1, 3, 5, 7, 9]. 중간 인덱스=5÷2=2. 정렬된[2]=5! 중앙값은 5예요.',hint:'먼저 숫자를 오름차순으로 정렬한 다음 가운데 값을 찾아봐요!'
+    }
+  ],
+  h:[
+    {
+      ttl:'재귀 알고리즘 — AI 탐색 트리',
+      lines:[
+        {n:1,c:'<span class="kw">함수</span> <span class="fn">팩토리얼</span>(n):'},
+        {n:2,c:'  <span class="kw">만약</span> n == <span class="nm">0</span>:'},
+        {n:3,c:'    <span class="kw">반환</span> <span class="nm">1</span>  <span class="cm">// 종료 조건</span>'},
+        {n:4,c:'  <span class="kw">반환</span> n × <span class="fn">팩토리얼</span>(n - <span class="nm">1</span>)'},
+        {n:5,c:''},
+        {n:6,c:'결과 = <span class="fn">팩토리얼</span>(<span class="nm">4</span>)'},
+      ],
+      q:'팩토리얼(4)의 결과는? (AI 게임 탐색에서 자주 사용됩니다)',
+      opts:['8','16','24','32'],
+      ans:2,pts:20,exp:'4×3×2×1=24! 재귀는 함수가 자기 자신을 부르는 구조로 AI 게임 탐색·경로 찾기에 사용돼요.',hint:'팩토리얼(4)→4×팩토리얼(3)→4×3×팩토리얼(2)→… 단계별로 펼쳐봐요!'
+    },
+    {
+      ttl:'AI 콘텐츠 필터 — 윤리 점수',
+      lines:[
+        {n:1,c:'<span class="kw">함수</span> <span class="fn">콘텐츠검사</span>(텍스트):'},
+        {n:2,c:'  금지어 = [<span class="st">"혐오"</span>, <span class="st">"폭력"</span>, <span class="st">"거짓"</span>]'},
+        {n:3,c:'  위험도 = <span class="nm">0</span>'},
+        {n:4,c:'  <span class="kw">반복</span> 단어 <span class="kw">in</span> 금지어:'},
+        {n:5,c:'    <span class="kw">만약</span> 단어 <span class="kw">in</span> 텍스트:'},
+        {n:6,c:'      위험도 += <span class="nm">1</span>'},
+        {n:7,c:'  <span class="kw">반환</span> 위험도 >= <span class="nm">2</span>'},
+      ],
+      q:'"이 정보는 거짓이지만 혐오는 없어요" 텍스트의 반환값은?',
+      opts:['True (위험)','False (안전)','1','3'],
+      ans:0,pts:20,exp:'"거짓"은 텍스트에 있어 +1. "혐오"도 텍스트에 포함("혐오는 없어요"에 혐오가 등장!)되어 +1. 위험도=2, 2≥2=True(위험)!',hint:'"혐오"라는 단어가 문장 안에 포함되어 있는지 확인해봐요!'
+    },
+    {
+      ttl:'이진 탐색 알고리즘 — AI 검색 엔진',
+      lines:[
+        {n:1,c:'<span class="cm">// 정렬된 목록에서 빠르게 찾는 알고리즘</span>'},
+        {n:2,c:'<span class="kw">함수</span> <span class="fn">이진탐색</span>(목록, 찾는값):'},
+        {n:3,c:'  왼쪽 = <span class="nm">0</span>;  오른쪽 = 목록.길이 - <span class="nm">1</span>'},
+        {n:4,c:'  <span class="kw">반복</span> (왼쪽 <= 오른쪽):'},
+        {n:5,c:'    중간 = (왼쪽 + 오른쪽) ÷ <span class="nm">2</span>'},
+        {n:6,c:'    <span class="kw">만약</span> 목록[중간] == 찾는값: <span class="kw">반환</span> 중간'},
+        {n:7,c:'    <span class="kw">만약</span> 목록[중간] < 찾는값:  왼쪽 = 중간 + <span class="nm">1</span>'},
+        {n:8,c:'    <span class="kw">아니면</span>:                    오른쪽 = 중간 - <span class="nm">1</span>'},
+      ],
+      q:'[1,3,5,7,9]에서 7을 찾을 때 첫 번째로 확인하는 중간 인덱스는?',
+      opts:['0','1','2','3'],
+      ans:2,pts:20,exp:'왼쪽=0, 오른쪽=4. 중간=(0+4)÷2=2. 목록[2]=5. 5<7이므로 왼쪽을 3으로 이동해 다음 탐색!',hint:'(왼쪽+오른쪽)÷2로 중간 인덱스를 계산해봐요!'
+    },
+    {
+      ttl:'AI 편향 탐지 알고리즘',
+      lines:[
+        {n:1,c:'<span class="kw">함수</span> <span class="fn">편향탐지</span>(예측결과):'},
+        {n:2,c:'  그룹A_정확도 = 예측결과[<span class="st">"A"</span>].맞은수 / 예측결과[<span class="st">"A"</span>].전체수'},
+        {n:3,c:'  그룹B_정확도 = 예측결과[<span class="st">"B"</span>].맞은수 / 예측결과[<span class="st">"B"</span>].전체수'},
+        {n:4,c:'  차이 = 그룹A_정확도 - 그룹B_정확도'},
+        {n:5,c:'  <span class="kw">만약</span> 차이 > <span class="nm">0.1</span>:   <span class="cm">// 10%p 이상 차이</span>'},
+        {n:6,c:'    <span class="kw">반환</span> <span class="st">"편향 감지됨"</span>'},
+        {n:7,c:'  <span class="kw">반환</span> <span class="st">"편향 없음"</span>'},
+      ],
+      q:'A그룹 정확도=0.85, B그룹 정확도=0.72일 때 결과는?',
+      opts:['"편향 없음" (차이=0.13)','편향 없음 (차이=0.08)','"편향 감지됨" (차이=0.13)','"편향 감지됨" (차이=0.08)'],
+      ans:2,pts:20,exp:'0.85 - 0.72 = 0.13. 0.13 > 0.1이므로 "편향 감지됨"! AI가 특정 그룹에 더 정확하면 공정성 문제예요.',hint:'두 정확도의 차이를 계산하고 0.1과 비교해봐요!'
+    }
+  ]
+};
+let c4Diff='e',c4List=[],c4Idx=0,c4Score=0;
+function initC4(){c4Idx=0;c4Score=0;document.getElementById('c4sc').textContent='0';setC4Diff('e');}
+function setC4Diff(d){
+  c4Diff=d;clrT();
+  document.querySelectorAll('#screen-c4 .diff-tab').forEach(b=>b.classList.remove('on'));
+  document.querySelector('#screen-c4 .diff-tab.dt-'+d).classList.add('on');
+  c4List=[...algoBank[d]].sort(()=>Math.random()-.5);c4Idx=0;c4Score=0;document.getElementById('c4sc').textContent='0';renderC4();
+}
+function renderC4(){
+  if(c4Idx>=c4List.length){finishC4();return;}
+  clrT();const q=c4List[c4Idx];
+  document.getElementById('c4pg').textContent=c4Idx+'/'+c4List.length;
+  document.getElementById('c4pgb').style.width=(c4Idx/c4List.length*100)+'%';
+  document.getElementById('c4hint').classList.remove('show');
+  document.getElementById('c4hint').textContent='💡 '+q.hint;
+  document.getElementById('c4fb').classList.remove('show');
+  document.getElementById('c4nw').style.display='none';
+  document.getElementById('c4f').textContent='🕵️';document.getElementById('c4f').className='char-face';
+  const cb=document.getElementById('c4code');
+  cb.innerHTML=`<div class="code-ttl-inner">📋 ${q.ttl}</div>`+q.lines.map(l=>`<div class="code-line"><div class="code-ln">${l.n||''}</div><div class="code-txt">${l.c}</div></div>`).join('');
+  document.getElementById('c4q').textContent=q.q;
+  const optsEl=document.getElementById('c4opts');optsEl.innerHTML='';
+  q.opts.forEach((opt,i)=>{
+    const btn=document.createElement('button');btn.className='q2-opt';
+    btn.innerHTML=`<span style="color:var(--neon-a);margin-right:8px;">${['①','②','③','④'][i]}</span>${opt}`;
+    btn.onclick=()=>{
+      clrT();document.querySelectorAll('.q2-opt').forEach(b=>b.disabled=true);
+      document.querySelectorAll('.q2-opt')[q.ans].classList.add('correct');
+      const fb=document.getElementById('c4fb');const face=document.getElementById('c4f');
+      if(i===q.ans){btn.classList.add('correct');c4Score+=q.pts;document.getElementById('c4sc').textContent=c4Score;fb.className='fb-box show fb-ok';fb.innerHTML=`✅ 해독 성공! +${q.pts}점<br><strong>📚 해설:</strong> ${q.exp}`;face.className='char-face cf-ok';playS('ok');}
+      else{btn.classList.add('wrong');fb.className='fb-box show fb-no';fb.innerHTML=`❌ 다시 코드를 읽어봐요!<br><strong>📚 해설:</strong> ${q.exp}`;face.className='char-face cf-no';playS('no');}
+      document.getElementById('c4nw').style.display='block';
+    };
+    optsEl.appendChild(btn);
+  });
+  const sec=c4Diff==='e'?35:c4Diff==='m'?28:22;
+  startTimer('c4',sec,()=>{
+    document.querySelectorAll('.q2-opt').forEach(b=>b.disabled=true);
+    document.getElementById('c4fb').className='fb-box show fb-no';
+    document.getElementById('c4fb').innerHTML='⏰ 시간 초과! 코드를 차근차근 읽는 연습이 필요해요.';
+    document.getElementById('c4f').className='char-face cf-no';document.getElementById('c4nw').style.display='block';
+  });
+}
+function nextC4(){c4Idx++;renderC4();}
+function finishC4(){
+  clrT();ST.scores[3]=c4Score;const max=c4Diff==='e'?40:c4Diff==='m'?60:80;
+  ST.stars[3]=calcSt(c4Score,max);ST.done[3]=true;ST.badges.algo=ST.stars[3]>=2;
+  updateSt(4,ST.stars[3]);saveScore();playS('cl');showResult();
+}
+
+/* ═══════════════════════════════
+   결과 화면
+═══════════════════════════════ */
+function showResult(){
+  const total=ST.scores.reduce((a,b)=>a+b,0);const ts=ST.stars.reduce((a,b)=>a+b,0);
+  let ic='🔍',ttl='AI 윤리 탐정단 수료!',rank='';
+  if(ts>=10){ic='🏆';ttl='AI 시대 디지털 시민 대장';rank='최고 등급! AI를 완전히 이해해요!';}
+  else if(ts>=7){ic='🌟';ttl='AI 윤리 전문 탐정';rank='우수! AI 리터러시가 뛰어나요!';}
+  else if(ts>=5){ic='🔎';ttl='AI 윤리 탐정';rank='통과! 디지털 시민 자격 있어요!';}
+  else if(ts>=3){ic='📚';ttl='AI 윤리 견습생';rank='계속 공부해봐요!';}
+  document.getElementById('resIc').textContent=ic;
+  document.getElementById('resTtl').textContent=ttl;
+  document.getElementById('resRank').textContent=rank;
+  const grid=document.getElementById('resGrid');grid.innerHTML='';
+  ['📰','📊','⚖️','💻'].forEach((em,i)=>{
+    const d=document.createElement('div');d.className='res-card';
+    d.innerHTML=`<div class="rc-i">${em}</div><div class="rc-n">${['팩트체크','데이터 분석','AI 윤리','알고리즘'][i]}</div><div class="rc-v">${ST.scores[i]}점</div><div class="rc-s">${'★'.repeat(ST.stars[i])}${'☆'.repeat(3-ST.stars[i])}</div>`;
+    grid.appendChild(d);
+  });
+  document.getElementById('tbNum').textContent=total;
+  const rb=document.getElementById('resBadges');rb.innerHTML='';
+  [['fact','🔍 팩트체커'],['data','📊 데이터 탐정'],['eth','⚖️ 윤리 수호자'],['algo','💻 알고리즘 해커']].forEach(([k,label])=>{
+    const el=document.createElement('div');el.className='bdg'+(ST.badges[k]?' earned':'');el.textContent=label;rb.appendChild(el);
+  });
+  if(Object.values(ST.badges).every(v=>v)){const el=document.createElement('div');el.className='bdg earned';el.textContent='🏆 AI 윤리 탐정단장';rb.appendChild(el);}
+  const evals=['AI 세계는 어렵지만 도전한 것이 대단해요! 다시 도전해봐요! 💪','잘하고 있어요! AI 리터러시의 기초를 쌓고 있어요. 🌱','훌륭해요! AI 시대를 살아갈 기본 능력을 갖추었어요! 🔍','뛰어나요! AI를 비판적으로 이해하는 진정한 디지털 시민이에요! 🌐','완벽해요! AI 윤리 탐정단장 자격 충분! 🏆'];
+  document.getElementById('evalCard').innerHTML=`<strong style="color:var(--neon-a)">💬 탐정단 최종 평가 (${new Date().toLocaleDateString('ko')}):</strong><br>${evals[Math.min(Math.floor(ts/3),4)]}<br><br><span style="color:var(--neon-y)">📅 2026.03.24 이슈: AI 아트 저작권 논란 — AI 사용 시 항상 출처를 밝히고 원작자를 존중해요!</span>`;
+  showScr('screen-result');
+}
+
+function resetGame(){
+  clrT();ST.done=[false,false,false,false];ST.scores=[0,0,0,0];ST.stars=[0,0,0,0];ST.badges={fact:false,data:false,eth:false,algo:false};
+  ['cc2','cc3','cc4'].forEach(id=>{
+    const el=document.getElementById(id);if(!el)return;
+    el.className='cc locked';el.onclick=null;el.querySelector('.cc-stars')?.remove();
+    if(!el.querySelector('.cc-lock')){const l=document.createElement('div');l.className='cc-lock';l.textContent='🔒';el.appendChild(l);}
+  });
+  document.getElementById('cc1').className='cc';document.getElementById('cc1').onclick=()=>startCase(1);
+  document.getElementById('cc1st').textContent='☆☆☆';
+  renderSB();renderBadges();showScr('screen-intro');
+}
+
+/* ── 포트폴리오 JSON ── */
+const portfolioEntry={
+  id:'#009',title:'AI 윤리 탐정단',grade:'중학교 1학년',
+  subjects:['국어(비판적 읽기·미디어 리터러시)','수학(통계·데이터 분석)','정보(AI 원리·알고리즘)'],
+  theme:'AI 아트 저작권 논란 (2026.03.24) + AI 디지털교과서 도입 연계',
+  cases:['AI 뉴스 팩트체크(타이머+난이도3단계)','데이터 조작 탐지(SVG 그래프+통계 계산)','AI 윤리 딜레마(멀티엔딩4편)','알고리즘 코드 해독(타이머+실제 코드)'],
+  extras:['Web Audio API(사이버 멜로디+베이스라인)','파티클 배경','스캔라인 효과','배지시스템','점수판(LocalStorage)','QR코드'],
+  url:'https://milab2019.github.io/main/ai_ethics_detective.html',
+  date:'2026.03.24',status:'운영 중'
+};
+console.log('📋 미랩 포트폴리오 업데이트 JSON:\n'+JSON.stringify(portfolioEntry,null,2));
+
+/* ── 초기화 ── */
+initBg();renderSB();renderBadges();initQR();
+</script>
+</body>
+</html>
