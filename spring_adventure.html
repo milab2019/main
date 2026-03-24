@@ -1,0 +1,1020 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>🌸 봄봄 탐험대 - 미랩 특수학급</title>
+<style>
+/* ============================================
+   봄봄 탐험대 — 특수학급 초4~5세 수준
+   설계 원칙:
+   · 한글 최소화 → 이모지/그림 100%
+   · 버튼 최소 90px × 90px (지체장애 터치)
+   · 고대비 파스텔 배경
+   · 즉각 피드백 + 반짝임 효과
+   · 글자 선택 방지 (집중력 유지)
+============================================ */
+@import url('https://fonts.googleapis.com/css2?family=Jua&display=swap');
+
+:root {
+  --sky:   #b8e8ff;
+  --grass: #c8f0a0;
+  --pink:  #ffb8d8;
+  --yel:   #ffe880;
+  --peach: #ffd0a8;
+  --lav:   #e0c8ff;
+  --mint:  #b8f0d8;
+  --white: #fffef5;
+  --text:  #1a1a1a;
+  --shadow: 0 8px 28px rgba(0,0,0,0.18);
+  --r: 28px;
+  --FONT: 'Jua', sans-serif;
+}
+* { box-sizing:border-box; margin:0; padding:0;
+    -webkit-tap-highlight-color:transparent;
+    -webkit-user-select:none; user-select:none; }
+html,body { height:100%; }
+body {
+  font-family: var(--FONT);
+  background: linear-gradient(160deg, var(--sky) 0%, var(--grass) 100%);
+  min-height:100vh; overflow-x:hidden;
+}
+
+/* ── 배경 데코 ── */
+.bg {position:fixed;inset:0;z-index:0;overflow:hidden;pointer-events:none;}
+.petal {
+  position:absolute; font-size:2rem;
+  animation: petalFall linear infinite;
+  opacity:0;
+}
+@keyframes petalFall {
+  0%  {opacity:0; transform:translateY(-60px) rotate(0deg);}
+  10% {opacity:.9;}
+  90% {opacity:.6;}
+  100%{opacity:0; transform:translateY(110vh) rotate(360deg);}
+}
+.sun {
+  position:absolute; top:18px; right:22px;
+  width:70px; height:70px; border-radius:50%;
+  background:radial-gradient(#ffe800,#ffaa00);
+  box-shadow: 0 0 36px rgba(255,200,0,.7);
+  animation: sunGlow 3s ease-in-out infinite alternate;
+}
+@keyframes sunGlow{from{box-shadow:0 0 30px rgba(255,200,0,.5)}to{box-shadow:0 0 55px rgba(255,200,0,.9)}}
+.cloud {
+  position:absolute; background:white; border-radius:50px; opacity:.82;
+  animation:cloudMove linear infinite;
+}
+@keyframes cloudMove{from{transform:translateX(-180px)}to{transform:translateX(110vw)}}
+
+/* ── 앱 ── */
+#app{position:relative;z-index:10;max-width:680px;margin:0 auto;padding:12px;min-height:100vh;}
+.screen{display:none;animation:popIn .4s cubic-bezier(.34,1.56,.64,1);}
+.screen.active{display:block;}
+@keyframes popIn{from{opacity:0;transform:scale(.9)}to{opacity:1;transform:scale(1)}}
+
+/* ── 헤더 ── */
+.g-hd{
+  display:flex; align-items:center; justify-content:space-between;
+  background:white; border-radius:var(--r);
+  padding:12px 18px; margin-bottom:11px;
+  box-shadow:var(--shadow);
+}
+.g-title{font-size:1.6rem; color:#e06090;}
+.score-chip{
+  background:var(--yel); font-size:1.4rem;
+  padding:8px 20px; border-radius:30px;
+  box-shadow:0 4px 0 rgba(0,0,0,.15);
+  min-width:70px; text-align:center;
+}
+
+/* ── 별 진행바 ── */
+.star-bar{
+  display:flex; gap:8px; justify-content:center;
+  margin-bottom:11px;
+}
+.star-ic{font-size:2.2rem; transition:all .3s; filter:grayscale(1); opacity:.35;}
+.star-ic.lit{filter:none; opacity:1; animation:starPop .4s cubic-bezier(.34,1.56,.64,1);}
+@keyframes starPop{from{transform:scale(.4)}to{transform:scale(1)}}
+
+/* ── 카드 ── */
+.card{
+  background:white; border-radius:var(--r);
+  padding:22px; box-shadow:var(--shadow); margin-bottom:12px;
+}
+
+/* ── 마스코트 ── */
+.mascot-row{display:flex;align-items:flex-start;gap:14px;margin-bottom:14px;}
+.mascot{
+  width:90px; height:90px; border-radius:50%; flex-shrink:0;
+  background:var(--peach); border:5px solid #f08040;
+  display:flex; align-items:center; justify-content:center;
+  font-size:3.2rem;
+  box-shadow: 0 6px 18px rgba(0,0,0,.18);
+  transition: all .4s cubic-bezier(.34,1.56,.64,1);
+}
+.m-happy{
+  transform:scale(1.2) rotate(-8deg);
+  background:var(--yel); border-color:#e0a000;
+  animation:happyDance .5s ease;
+}
+@keyframes happyDance{
+  0%{transform:scale(1)}25%{transform:scale(1.3) rotate(-10deg)}
+  50%{transform:scale(1.2) rotate(-6deg)}75%{transform:scale(1.25) rotate(-9deg)}
+  100%{transform:scale(1.2) rotate(-8deg)}
+}
+.m-sad{transform:scale(.88) rotate(6deg);background:#ddd;border-color:#aaa;filter:grayscale(.3);}
+.m-cheer{transform:scale(1.15);background:var(--lav);border-color:#9060e0;animation:cheerBounce .6s ease;}
+@keyframes cheerBounce{0%,100%{transform:scale(1.15)}50%{transform:scale(1.28)}}
+
+/* 말풍선 */
+.bubble{
+  background:var(--white); border:3px solid #4aade8;
+  border-radius:22px 22px 22px 6px;
+  padding:14px 18px; flex:1;
+  font-size:1.3rem; line-height:1.9; color:var(--text);
+  box-shadow:0 3px 10px rgba(0,0,0,.1);
+  min-height:70px;
+}
+
+/* ── 대형 그림 버튼 (지체장애용) ── */
+.pic-grid-2{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:12px 0;}
+.pic-grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin:12px 0;}
+.pic-btn{
+  background:white; border:5px solid #ddd;
+  border-radius:var(--r); padding:16px 10px;
+  display:flex; flex-direction:column;
+  align-items:center; justify-content:center; gap:8px;
+  cursor:pointer; transition:all .15s;
+  box-shadow:0 7px 0 rgba(0,0,0,.14);
+  min-height:120px;
+}
+.pic-btn:hover:not(:disabled){border-color:#4aade8;transform:translateY(-5px);}
+.pic-btn:active:not(:disabled){transform:translateY(2px);box-shadow:0 3px 0 rgba(0,0,0,.14);}
+.pic-btn .em{font-size:3.8rem;}
+.pic-btn .lbl{font-size:1.2rem;color:var(--text);}
+.pic-btn.ok{border-color:#44cc44;background:#e8ffe8;}
+.pic-btn.no{border-color:#ff5555;background:#ffe8e8;}
+
+/* ── 수 세기 버튼 ── */
+.num-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:12px 0;}
+.num-btn{
+  background:white; border:5px solid #aad8ff;
+  border-radius:var(--r); padding:20px 10px;
+  font-size:2.4rem; color:#2266aa; text-align:center;
+  cursor:pointer; box-shadow:0 6px 0 rgba(0,0,0,.14);
+  transition:all .15s; min-height:90px;
+}
+.num-btn:hover:not(:disabled){background:var(--sky);}
+.num-btn:active:not(:disabled){transform:translateY(3px);box-shadow:0 3px 0 rgba(0,0,0,.14);}
+.num-btn.ok{border-color:#44cc44;background:#e8ffe8;color:#228822;}
+.num-btn.no{border-color:#ff5555;background:#ffe8e8;color:#cc2222;}
+
+/* ── 색깔 버튼 ── */
+.color-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin:14px 0;}
+.color-btn{
+  height:110px; border-radius:var(--r); border:5px solid rgba(0,0,0,.12);
+  cursor:pointer; box-shadow:0 7px 0 rgba(0,0,0,.15);
+  transition:all .15s; display:flex;flex-direction:column;
+  align-items:center;justify-content:center; gap:6px;
+  font-size:1.1rem; color:var(--text);
+}
+.color-btn:hover:not(:disabled){transform:translateY(-5px);}
+.color-btn:active:not(:disabled){transform:translateY(2px);box-shadow:0 3px 0 rgba(0,0,0,.15);}
+.color-btn.ok{outline:7px solid #44cc44;}
+.color-btn.no{outline:7px solid #ff5555;filter:brightness(.85);}
+
+/* ── 이모지 아이템 표시 ── */
+.items-box{
+  background:var(--sky); border-radius:var(--r);
+  padding:18px; text-align:center; margin-bottom:14px;
+  border:3px solid #4aade8; min-height:100px;
+  display:flex; flex-wrap:wrap; gap:10px;
+  align-items:center; justify-content:center;
+}
+.item-em{
+  font-size:3rem; animation:popIn .3s ease;
+  cursor:default;
+}
+
+/* ── 질문 표시 ── */
+.q-box{
+  background:var(--pink); border-radius:var(--r);
+  padding:16px 18px; text-align:center; margin-bottom:12px;
+  font-size:1.5rem; line-height:1.7; color:var(--text);
+  border:3px solid #e06090;
+}
+
+/* ── 피드백 ── */
+.fb{
+  border-radius:var(--r); padding:16px 18px;
+  font-size:1.4rem; line-height:1.8; margin-top:12px;
+  display:none; text-align:center;
+}
+.fb.show{display:block;animation:popIn .35s ease;}
+.fb-ok{background:#e8ffe8;border:4px solid #44cc44;color:#228822;}
+.fb-no{background:#ffe8e8;border:4px solid #ff5555;color:#cc2222;}
+
+/* ── 파티클 효과 ── */
+.confetti-wrap{position:fixed;inset:0;pointer-events:none;z-index:999;}
+.conf{
+  position:absolute; width:14px; height:14px; border-radius:3px;
+  animation:confFall linear forwards;
+}
+@keyframes confFall{
+  0%{opacity:1;transform:translateY(-30px) rotate(0deg);}
+  100%{opacity:0;transform:translateY(100vh) rotate(720deg);}
+}
+
+/* ── 다음 버튼 ── */
+.next-wrap{text-align:center;margin-top:14px;display:none;}
+.next-btn{
+  background:linear-gradient(135deg,#4aade8,#66ccff);
+  color:white; border:none; border-radius:50px;
+  padding:20px 44px; font-family:var(--FONT);
+  font-size:1.6rem; cursor:pointer;
+  box-shadow:0 7px 0 rgba(0,100,200,.3);
+  transition:all .15s; min-height:68px;
+}
+.next-btn:active{transform:translateY(4px);box-shadow:0 3px 0 rgba(0,100,200,.3);}
+
+/* ── 힌트 ── */
+.hint-btn{
+  display:flex;align-items:center;justify-content:center;gap:8px;
+  background:var(--yel);border:4px solid #e0a000;
+  color:var(--text);padding:12px 24px;border-radius:30px;
+  font-family:var(--FONT);font-size:1.3rem;cursor:pointer;
+  margin-bottom:12px; min-height:54px;
+  box-shadow:0 5px 0 rgba(0,0,0,.15);transition:all .15s;
+}
+.hint-btn:active{transform:translateY(3px);}
+.hint-box{
+  background:#fffbe0;border:3px solid #e0a000;border-radius:var(--r);
+  padding:14px 18px;font-size:1.3rem;color:var(--text);
+  margin-bottom:12px;display:none;line-height:1.8;text-align:center;
+}
+.hint-box.show{display:block;animation:popIn .3s ease;}
+
+/* ── 인트로 ── */
+#screen-intro{text-align:center;}
+.hero-wrap{
+  background:white;border-radius:var(--r);padding:24px 16px;
+  margin:8px 0 14px;box-shadow:var(--shadow);
+}
+.hero-em{font-size:6.5rem;display:block;margin:0 auto 8px;
+  animation:heroFloat 2.5s ease-in-out infinite;
+  filter:drop-shadow(0 6px 12px rgba(0,0,0,.2));}
+@keyframes heroFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-16px)}}
+.hero-title{font-size:2.8rem;color:#e06090;margin-bottom:6px;}
+.hero-sub{font-size:1.3rem;color:#666;margin-bottom:6px;}
+.hero-tag{
+  display:inline-block;background:var(--sky);
+  border:3px solid #4aade8;color:#226699;
+  font-size:1rem;padding:6px 18px;border-radius:18px;margin-top:8px;
+}
+.story-box{
+  background:var(--sky);border-radius:var(--r);
+  padding:18px;margin:14px 0;text-align:left;
+  font-size:1.3rem;line-height:1.9;color:var(--text);
+  border:3px solid #4aade8;
+}
+.story-title{font-size:1.5rem;color:#e06090;margin-bottom:10px;text-align:center;}
+
+/* ── 미션 카드 그리드 ── */
+.mc-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:14px 0;}
+.mc{
+  background:white;border:5px solid #4aade8;
+  border-radius:var(--r);padding:18px 10px;
+  text-align:center;cursor:pointer;
+  box-shadow:0 7px 0 rgba(0,0,0,.12);transition:all .2s;
+}
+.mc:hover:not(.locked){transform:translateY(-6px);border-color:#e06090;box-shadow:0 12px 0 rgba(0,0,0,.12);}
+.mc:active:not(.locked){transform:translateY(0);}
+.mc.locked{opacity:.38;cursor:not-allowed;border-color:#ccc;box-shadow:none;}
+.mc.done{border-color:#44cc44;background:#f0fff0;}
+.mc-em{font-size:3.4rem;margin-bottom:6px;}
+.mc-lbl{font-size:1.2rem;color:#4aade8;}
+.mc-st{color:#e0a000;font-size:1.4rem;margin-top:4px;}
+.mc-lk{font-size:1.8rem;margin-top:4px;color:#aaa;}
+
+/* ── 점수판 ── */
+.sb-wrap{background:white;border-radius:var(--r);padding:16px;margin:12px 0;box-shadow:var(--shadow);}
+.sb-title{font-size:1.5rem;color:#e06090;margin-bottom:10px;text-align:center;}
+.sb-row{
+  display:flex;align-items:center;justify-content:space-between;
+  font-size:1.2rem;padding:10px 14px;border-radius:14px;
+  margin-bottom:6px;background:var(--sky);color:var(--text);
+}
+.sb-row.r1{background:var(--yel);}
+.sb-row.r2{background:var(--mint);}
+.sb-row.r3{background:var(--pink);}
+
+/* ── QR ── */
+.qr-panel{background:white;border-radius:var(--r);padding:14px;text-align:center;margin:12px 0;box-shadow:var(--shadow);}
+.qr-title{font-size:1.2rem;color:#4aade8;margin-bottom:10px;}
+.qr-url{font-size:.9rem;color:#888;margin-top:6px;word-break:break-all;}
+
+/* ── 배지 ── */
+.badge-row{display:flex;flex-wrap:wrap;gap:9px;justify-content:center;margin:10px 0;}
+.badge-it{
+  background:#eee;border-radius:18px;padding:9px 18px;
+  font-size:1.1rem;color:#888;
+}
+.badge-it.earned{
+  background:var(--yel);color:var(--text);
+  border:3px solid #e0a000;
+  box-shadow:0 4px 10px rgba(0,0,0,.15);
+  animation:badgePop .5s cubic-bezier(.34,1.56,.64,1);
+}
+@keyframes badgePop{from{transform:scale(0)}to{transform:scale(1)}}
+
+/* ── 결과 ── */
+#screen-result{text-align:center;}
+.res-hero{background:white;border-radius:var(--r);padding:28px;margin:10px 0;box-shadow:var(--shadow);}
+.res-em{font-size:6.5rem;animation:badgePop .6s ease;}
+.res-title{font-size:2.6rem;color:#e06090;margin:10px 0 5px;}
+.res-sub{font-size:1.2rem;color:#888;}
+.res-rank{font-size:1.6rem;color:#4aade8;margin-top:8px;}
+.res-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin:14px 0;}
+.res-card{background:white;border-radius:var(--r);padding:14px;text-align:center;box-shadow:var(--shadow);}
+.res-card .ri{font-size:2.6rem;}
+.res-card .rn{font-size:1rem;color:#4aade8;margin:4px 0;}
+.res-card .rv{font-size:1.5rem;color:#e0a000;}
+.res-card .rs{color:#e0a000;font-size:1.2rem;}
+.total-box{background:var(--yel);border-radius:var(--r);padding:18px;margin:10px 0;box-shadow:var(--shadow);}
+.total-box .tl{font-size:1.5rem;color:var(--text);}
+.total-box .tn{font-size:4rem;color:var(--text);line-height:1;}
+.eval-card{background:var(--sky);border-radius:var(--r);padding:14px;margin:10px 0;font-size:1.3rem;line-height:1.8;color:var(--text);border:3px solid #4aade8;}
+.music-btn{
+  position:fixed;top:12px;right:12px;z-index:200;
+  background:white;border:4px solid #4aade8;
+  color:#4aade8;padding:10px 16px;border-radius:22px;
+  font-family:var(--FONT);font-size:1.1rem;
+  cursor:pointer;box-shadow:var(--shadow);min-height:50px;
+}
+button:focus,a:focus{outline:5px solid #e06090;outline-offset:3px;}
+@media(max-width:480px){
+  .hero-title{font-size:2.2rem;}
+  .mc-grid{grid-template-columns:1fr 1fr;}
+  .pic-grid-2{grid-template-columns:1fr 1fr;}
+  .color-grid{grid-template-columns:repeat(3,1fr);}
+}
+</style>
+</head>
+<body>
+<div class="bg" id="BG"></div>
+<div class="confetti-wrap" id="confWrap"></div>
+<button class="music-btn" id="musicBtn" onclick="toggleMusic()">🎵</button>
+
+<div id="app">
+
+<!-- ======== 인트로 ======== -->
+<div id="screen-intro" class="screen active">
+  <div class="hero-wrap">
+    <span class="hero-em">🌸</span>
+    <div class="hero-title">봄봄 탐험대!</div>
+    <div class="hero-sub">봄이 왔어요 🐝🌺🦋</div>
+    <span class="hero-tag">🌿 2026.03.24 · 미랩 특수학급</span>
+  </div>
+
+  <div class="story-box">
+    <div class="story-title">📖</div>
+    <p>
+      안녕! 나는 <strong style="color:#e06090">꿀벌 '봄이'</strong> 🐝<br>
+      오늘 봄 꽃밭을 탐험해요!<br>
+      🌸 꽃도 찾고  🍀 풀도 찾고<br>
+      🎵 노래도 부르고  🎨 색깔도 찾아요!<br><br>
+      같이 가볼까요? 출발~! 🚀
+    </p>
+  </div>
+
+  <div class="mc-grid" id="mcGrid">
+    <div class="mc" id="mc1" onclick="startMission(1)">
+      <div class="mc-em">🌸</div>
+      <div class="mc-lbl">꽃 찾기</div>
+      <div class="mc-st" id="mc1st">☆☆☆</div>
+    </div>
+    <div class="mc locked" id="mc2">
+      <div class="mc-em">🍎</div>
+      <div class="mc-lbl">세기 놀이</div>
+      <div class="mc-lk">🔒</div>
+    </div>
+    <div class="mc locked" id="mc3">
+      <div class="mc-em">🎨</div>
+      <div class="mc-lbl">색깔 놀이</div>
+      <div class="mc-lk">🔒</div>
+    </div>
+    <div class="mc locked" id="mc4">
+      <div class="mc-em">🐣</div>
+      <div class="mc-lbl">동물 친구</div>
+      <div class="mc-lk">🔒</div>
+    </div>
+  </div>
+
+  <div class="badge-row" id="badgeRow">
+    <div class="badge-it" id="bdg-flower">🌸</div>
+    <div class="badge-it" id="bdg-num">⭐</div>
+    <div class="badge-it" id="bdg-color">🎨</div>
+    <div class="badge-it" id="bdg-animal">🐣</div>
+    <div class="badge-it" id="bdg-all">🏆</div>
+  </div>
+
+  <div class="sb-wrap">
+    <div class="sb-title">🏆 🌟 🌟 🌟</div>
+    <div id="sbList"><div class="sb-row" style="justify-content:center;font-size:1.3rem;">첫 탐험을 시작해요! 🌸</div></div>
+  </div>
+
+  <div class="qr-panel">
+    <div class="qr-title">📱</div>
+    <div id="qr-wrap"></div>
+    <div class="qr-url">milab2019.github.io/main/spring_adventure.html</div>
+  </div>
+</div>
+
+<!-- ======== 미션1: 꽃 찾기 (그림 매칭) ======== -->
+<div id="screen-m1" class="screen">
+  <div class="g-hd">
+    <div class="g-title">🌸</div>
+    <div class="score-chip">⭐<span id="m1sc">0</span></div>
+  </div>
+  <div class="star-bar" id="m1stars"></div>
+  <div class="mascot-row">
+    <div class="mascot" id="m1face">🐝</div>
+    <div class="bubble" id="m1msg">🌸 🌸 🌸 ?</div>
+  </div>
+  <div class="card">
+    <button class="hint-btn" onclick="showH('m1')">💡 !</button>
+    <div class="hint-box" id="m1hint"></div>
+    <div class="q-box" id="m1q">❓</div>
+    <div id="m1opts"></div>
+    <div class="fb" id="m1fb"></div>
+    <div class="next-wrap" id="m1nw">
+      <button class="next-btn" onclick="nextM1()">➡️</button>
+    </div>
+  </div>
+  <button onclick="goHome()" style="background:white;border:4px solid #ccc;border-radius:30px;padding:14px 28px;font-family:var(--FONT);font-size:1.2rem;cursor:pointer;box-shadow:var(--shadow);margin-top:6px;">🏠</button>
+</div>
+
+<!-- ======== 미션2: 수 세기 ======== -->
+<div id="screen-m2" class="screen">
+  <div class="g-hd">
+    <div class="g-title">🍎</div>
+    <div class="score-chip">⭐<span id="m2sc">0</span></div>
+  </div>
+  <div class="star-bar" id="m2stars"></div>
+  <div class="mascot-row">
+    <div class="mascot" id="m2face">🐝</div>
+    <div class="bubble" id="m2msg">🔢 ?</div>
+  </div>
+  <div class="card">
+    <button class="hint-btn" onclick="showH('m2')">💡 !</button>
+    <div class="hint-box" id="m2hint"></div>
+    <div class="items-box" id="m2items"></div>
+    <div class="q-box" id="m2q">❓</div>
+    <div class="num-grid" id="m2opts"></div>
+    <div class="fb" id="m2fb"></div>
+    <div class="next-wrap" id="m2nw">
+      <button class="next-btn" onclick="nextM2()">➡️</button>
+    </div>
+  </div>
+  <button onclick="goHome()" style="background:white;border:4px solid #ccc;border-radius:30px;padding:14px 28px;font-family:var(--FONT);font-size:1.2rem;cursor:pointer;box-shadow:var(--shadow);margin-top:6px;">🏠</button>
+</div>
+
+<!-- ======== 미션3: 색깔 찾기 ======== -->
+<div id="screen-m3" class="screen">
+  <div class="g-hd">
+    <div class="g-title">🎨</div>
+    <div class="score-chip">⭐<span id="m3sc">0</span></div>
+  </div>
+  <div class="star-bar" id="m3stars"></div>
+  <div class="mascot-row">
+    <div class="mascot" id="m3face">🐝</div>
+    <div class="bubble" id="m3msg">🎨 ?</div>
+  </div>
+  <div class="card">
+    <button class="hint-btn" onclick="showH('m3')">💡 !</button>
+    <div class="hint-box" id="m3hint"></div>
+    <div class="q-box" id="m3q">❓</div>
+    <div class="color-grid" id="m3opts"></div>
+    <div class="fb" id="m3fb"></div>
+    <div class="next-wrap" id="m3nw">
+      <button class="next-btn" onclick="nextM3()">➡️</button>
+    </div>
+  </div>
+  <button onclick="goHome()" style="background:white;border:4px solid #ccc;border-radius:30px;padding:14px 28px;font-family:var(--FONT);font-size:1.2rem;cursor:pointer;box-shadow:var(--shadow);margin-top:6px;">🏠</button>
+</div>
+
+<!-- ======== 미션4: 동물 친구 (크기·소리) ======== -->
+<div id="screen-m4" class="screen">
+  <div class="g-hd">
+    <div class="g-title">🐣</div>
+    <div class="score-chip">⭐<span id="m4sc">0</span></div>
+  </div>
+  <div class="star-bar" id="m4stars"></div>
+  <div class="mascot-row">
+    <div class="mascot" id="m4face">🐝</div>
+    <div class="bubble" id="m4msg">🐾 ?</div>
+  </div>
+  <div class="card">
+    <button class="hint-btn" onclick="showH('m4')">💡 !</button>
+    <div class="hint-box" id="m4hint"></div>
+    <div class="q-box" id="m4q">❓</div>
+    <div id="m4opts"></div>
+    <div class="fb" id="m4fb"></div>
+    <div class="next-wrap" id="m4nw">
+      <button class="next-btn" onclick="nextM4()">➡️</button>
+    </div>
+  </div>
+  <button onclick="goHome()" style="background:white;border:4px solid #ccc;border-radius:30px;padding:14px 28px;font-family:var(--FONT);font-size:1.2rem;cursor:pointer;box-shadow:var(--shadow);margin-top:6px;">🏠</button>
+</div>
+
+<!-- ======== 결과 ======== -->
+<div id="screen-result" class="screen">
+  <div style="padding-top:8px;">
+    <div class="res-hero">
+      <div class="res-em" id="reic">🏆</div>
+      <div class="res-title" id="rettl">완료!</div>
+      <div class="res-sub">미랩(MILAB) 봄봄 탐험대</div>
+      <div class="res-rank" id="rerank"></div>
+    </div>
+    <div class="res-grid" id="regrid"></div>
+    <div class="total-box">
+      <div class="tl">🌟</div>
+      <div class="tn" id="retotal">0</div>
+    </div>
+    <div class="badge-row" id="rebadges"></div>
+    <div class="eval-card" id="reeval"></div>
+    <button onclick="resetGame()"
+      style="width:100%;background:linear-gradient(135deg,#e06090,#ff88bb);color:white;border:none;border-radius:50px;padding:22px;font-family:var(--FONT);font-size:1.6rem;cursor:pointer;box-shadow:0 7px 0 rgba(180,0,80,.3);margin-top:10px;">
+      🔄 다시!
+    </button>
+  </div>
+</div>
+
+</div><!-- #app -->
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script>
+// =========================================================
+// 봄봄 탐험대 — 특수학급 (초4~5세 수준)
+// 설계 원칙:
+//  · 한글 최소 → 이모지/색/소리
+//  · 버튼 최소 90px (지체장애 터치 대응)
+//  · 즉각 시각·청각 피드백
+//  · 타이머 없음 (발달장애 — 시간 압박 배제)
+//  · 오답 허용 + 정답 자동 강조
+// =========================================================
+const GAME_URL='https://milab2019.github.io/main/spring_adventure.html';
+const S={done:[false,false,false,false],scores:[0,0,0,0],stars:[0,0,0,0],
+  badges:{flower:false,num:false,color:false,animal:false},history:[]};
+try{S.history=JSON.parse(localStorage.getItem('spr_s')||'[]');}catch(e){}
+
+// ─── 배경 초기화 ───
+function initBg(){
+  const bg=document.getElementById('BG');
+  bg.appendChild(Object.assign(document.createElement('div'),{className:'sun'}));
+  // 구름
+  [[8,'110px','22px'],[16,'80px','18px'],[26,'140px','28px']].forEach(([t,w,h])=>{
+    const c=document.createElement('div');c.className='cloud';
+    c.style.cssText=`top:${t}%;width:${w};height:${h};animation-duration:${18+Math.random()*10}s;animation-delay:-${Math.random()*15}s`;
+    bg.appendChild(c);
+  });
+  // 꽃잎
+  ['🌸','🌺','🌼','🌷','🍀'].forEach((f,i)=>{
+    const p=document.createElement('div');p.className='petal';p.textContent=f;
+    p.style.cssText=`left:${10+i*18}%;animation-duration:${5+Math.random()*5}s;animation-delay:-${Math.random()*7}s;font-size:${1.5+Math.random()}rem`;
+    bg.appendChild(p);
+  });
+}
+
+// ─── QR ───
+function initQR(){
+  const w=document.getElementById('qr-wrap');if(!w)return;
+  try{new QRCode(w,{text:GAME_URL,width:120,height:120,colorDark:'#e06090',colorLight:'#fffef5',correctLevel:QRCode.CorrectLevel.M});}
+  catch(e){w.innerHTML=`<img src="https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=${encodeURIComponent(GAME_URL)}&color=e06090&bgcolor=fffef5" style="border-radius:10px;border:3px solid white;">`;}
+}
+
+// ─── Web Audio API — 동요풍 봄 멜로디 ───
+// 음계: 도레미파솔라시도 → 봄나들이 느낌
+let actx=null,musicOn=false;
+function toggleMusic(){
+  musicOn=!musicOn;
+  document.getElementById('musicBtn').textContent=musicOn?'🔇':'🎵';
+  if(musicOn)playBg();else stopBg();
+}
+function playBg(){
+  try{
+    actx=new(window.AudioContext||window.webkitAudioContext)();
+    // 봄 멜로디: 도미솔 아르페지오 + 멜로디 라인
+    const hz=[261,294,330,349,392,440,494,523,587,659,784];
+    // 솔미도 도미솔 라솔미 레도 (봄나들이 느낌)
+    const mel=[4,2,0,0,2,4,5,4,2,1,0];
+    const beat=0.34;
+    mel.forEach((n,i)=>{
+      const o=actx.createOscillator();const g=actx.createGain();
+      o.connect(g);g.connect(actx.destination);
+      o.type='triangle';o.frequency.value=hz[n];
+      const t=actx.currentTime+i*beat;
+      g.gain.setValueAtTime(0,t);
+      g.gain.linearRampToValueAtTime(0.07,t+0.04);
+      g.gain.linearRampToValueAtTime(0,t+beat*.85);
+      o.start(t);o.stop(t+beat);
+    });
+    // 하모니 (하단 3도)
+    mel.forEach((n,i)=>{
+      const o2=actx.createOscillator();const g2=actx.createGain();
+      o2.connect(g2);g2.connect(actx.destination);
+      o2.type='sine';o2.frequency.value=hz[Math.max(0,n-2)]*0.5;
+      const t=actx.currentTime+i*beat;
+      g2.gain.setValueAtTime(0,t);g2.gain.linearRampToValueAtTime(0.03,t+0.05);g2.gain.linearRampToValueAtTime(0,t+beat*.8);
+      o2.start(t);o2.stop(t+beat);
+    });
+    setTimeout(()=>{if(musicOn)playBg();},mel.length*beat*1000+600);
+  }catch(e){}
+}
+function stopBg(){if(actx){actx.close();actx=null;}}
+
+// 효과음
+function playS(t){
+  try{
+    const cx=new(window.AudioContext||window.webkitAudioContext)();
+    if(t==='ok'){
+      // 정답: 밝은 팡파레 (도미솔도)
+      [261,330,392,523].forEach((f,i)=>{
+        const o=cx.createOscillator();const g=cx.createGain();
+        o.connect(g);g.connect(cx.destination);
+        o.type='triangle';o.frequency.value=f;
+        const tt=cx.currentTime+i*.1;
+        g.gain.setValueAtTime(0.12,tt);g.gain.exponentialRampToValueAtTime(.001,tt+.28);
+        o.start(tt);o.stop(tt+.3);
+      });
+    }else if(t==='no'){
+      // 오답: 부드러운 낮은 소리 (무섭지 않게)
+      const o=cx.createOscillator();const g=cx.createGain();
+      o.connect(g);g.connect(cx.destination);
+      o.type='sine';o.frequency.value=220;
+      g.gain.setValueAtTime(.08,cx.currentTime);g.gain.exponentialRampToValueAtTime(.001,cx.currentTime+.4);
+      o.start();o.stop(cx.currentTime+.45);
+    }else if(t==='cl'){
+      // 완료: 성대한 팡파레
+      [261,330,392,523,659,784].forEach((f,i)=>{
+        const o=cx.createOscillator();const g=cx.createGain();
+        o.connect(g);g.connect(cx.destination);
+        o.type='triangle';o.frequency.value=f;
+        const tt=cx.currentTime+i*.12;
+        g.gain.setValueAtTime(.1,tt);g.gain.exponentialRampToValueAtTime(.001,tt+.35);
+        o.start(tt);o.stop(tt+.38);
+      });
+    }
+  }catch(e){}
+}
+
+// ─── 파티클 폭죽 ───
+function fireConfetti(){
+  const wrap=document.getElementById('confWrap');
+  const colors=['#ff88bb','#ffe800','#88ddff','#88ff99','#ffaa44','#cc88ff'];
+  for(let i=0;i<40;i++){
+    const c=document.createElement('div');c.className='conf';
+    c.style.cssText=`left:${Math.random()*100}%;top:-20px;background:${colors[Math.floor(Math.random()*colors.length)]};animation-duration:${1+Math.random()*1.5}s;animation-delay:${Math.random()*.4}s;transform:rotate(${Math.random()*360}deg)`;
+    wrap.appendChild(c);
+    setTimeout(()=>c.remove(),3000);
+  }
+}
+
+// ─── 화면 전환 & 유틸 ───
+const showScr=id=>{document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active');window.scrollTo(0,0);};
+const goHome=()=>{showScr('screen-intro');renderSB();renderBadges();};
+const calcSt=(s,m)=>{const p=s/m;return p>=.85?3:p>=.55?2:p>0?1:0;};
+const unlockMC=n=>{
+  const el=document.getElementById('mc'+n);if(!el)return;
+  el.classList.remove('locked');el.querySelector('.mc-lk')?.remove();
+  const st=document.createElement('div');st.className='mc-st';st.id='mc'+n+'st';st.textContent='☆☆☆';
+  el.appendChild(st);el.onclick=()=>startMission(n);
+};
+const updateSt=(n,st)=>{
+  const el=document.getElementById('mc'+n+'st');
+  if(el)el.textContent='★'.repeat(st)+'☆'.repeat(3-st);
+  document.getElementById('mc'+n)?.classList.add('done');
+};
+const startMission=n=>{[initM1,initM2,initM3,initM4][n-1]();showScr('screen-m'+n);};
+
+// 별 진행바 렌더
+function renderStarBar(id,total,current){
+  const el=document.getElementById(id);if(!el)return;
+  el.innerHTML='';
+  for(let i=0;i<total;i++){
+    const s=document.createElement('span');s.className='star-ic'+(i<current?' lit':'');
+    s.textContent='⭐';el.appendChild(s);
+  }
+}
+
+const showH=id=>{
+  const hm={
+    m1:['손가락으로 꽃을 가리켜봐요! 🌸','예쁜 꽃을 찾아봐요! 🌺','꽃잎이 있는 것을 골라봐요! 🌼'],
+    m2:['하나씩 손가락으로 세어봐요! ☝️','1, 2, 3 소리 내어 세어봐요!','천천히 하나씩 짚어봐요! 👆'],
+    m3:['같은 색깔을 찾아봐요! 🎨','색깔을 손가락으로 가리켜봐요!','무지개 색깔을 찾아봐요! 🌈'],
+    m4:['동물을 잘 보아요! 🐾','큰 동물을 찾아봐요! 🐘','작은 동물을 찾아봐요! 🐭']
+  };
+  const arr=hm[id]||[];
+  const box=document.getElementById(id+'hint');
+  box.innerHTML='💡 '+arr[Math.floor(Math.random()*arr.length)];
+  box.classList.add('show');
+};
+const renderSB=()=>{
+  const el=document.getElementById('sbList');
+  const s=[...S.history].sort((a,b)=>b.total-a.total).slice(0,3);
+  if(!s.length){el.innerHTML='<div class="sb-row" style="justify-content:center;font-size:1.3rem;">🌸🌸🌸</div>';return;}
+  el.innerHTML=s.map((h,i)=>`<div class="sb-row ${['r1','r2','r3'][i]}"><span>${['🥇','🥈','🥉'][i]}</span><span>${h.total}⭐</span></div>`).join('');
+};
+const renderBadges=()=>{
+  Object.keys(S.badges).forEach(k=>{const el=document.getElementById('bdg-'+k);if(el&&S.badges[k])el.classList.add('earned');});
+  if(Object.values(S.badges).every(v=>v))document.getElementById('bdg-all')?.classList.add('earned');
+};
+const saveScore=()=>{
+  const total=S.scores.reduce((a,b)=>a+b,0);const stars=S.stars.reduce((a,b)=>a+b,0);
+  S.history.push({total,stars});if(S.history.length>5)S.history.shift();
+  try{localStorage.setItem('spr_s',JSON.stringify(S.history));}catch(e){}
+};
+
+// ─── 공통 정답 처리 ───
+function handleAnswer(isOk, fbId, faceId, scId, pts, correctLabel, wrongLabel, nextWrapId){
+  const fb=document.getElementById(fbId);
+  const face=document.getElementById(faceId);
+  const sc=document.getElementById(scId);
+  if(isOk){
+    playS('ok'); fireConfetti();
+    fb.className='fb show fb-ok';
+    fb.innerHTML='🎉🎉🎉 '+correctLabel;
+    face.textContent='😄';face.className='mascot m-happy';
+    const cur=parseInt(sc.textContent||'0')+pts;
+    sc.textContent=cur;
+  }else{
+    playS('no');
+    fb.className='fb show fb-no';
+    fb.innerHTML='💪 '+wrongLabel;
+    face.textContent='😢';face.className='mascot m-sad';
+  }
+  document.getElementById(nextWrapId).style.display='block';
+}
+
+// =========================================================
+// 미션1: 꽃 찾기 — 어떤 그림이 꽃인가? (국어·슬기로운 생활)
+// 쉬움: 꽃 vs 완전히 다른 것
+// 보통: 비슷한 식물 중 꽃 고르기
+// 도전: 꽃의 특징 이해 (잎 vs 꽃)
+// =========================================================
+const flowerQs=[
+  // 쉬움
+  {q:'🌸 꽃을 찾아요!',opts:[{em:'🌸',lb:'꽃',ok:true},{em:'🚌',lb:'버스',ok:false},{em:'🍕',lb:'피자',ok:false},{em:'🎮',lb:'게임기',ok:false}],pts:10,hint:'예쁜 꽃잎이 있어요 🌸'},
+  {q:'🌺 꽃을 찾아요!',opts:[{em:'🌺',lb:'꽃',ok:true},{em:'🚗',lb:'자동차',ok:false},{em:'🏠',lb:'집',ok:false},{em:'📺',lb:'TV',ok:false}],pts:10,hint:'빨간 꽃을 찾아요 🌺'},
+  // 보통
+  {q:'🌼 노란 꽃은?',opts:[{em:'🌼',lb:'노란꽃',ok:true},{em:'🍀',lb:'클로버',ok:false},{em:'🌿',lb:'풀',ok:false},{em:'🍃',lb:'나뭇잎',ok:false}],pts:12,hint:'노란색 꽃잎이 있어요 🌼'},
+  {q:'🌷 봄꽃은?',opts:[{em:'🌷',lb:'봄꽃',ok:true},{em:'🌵',lb:'선인장',ok:false},{em:'🎋',lb:'대나무',ok:false},{em:'🍂',lb:'낙엽',ok:false}],pts:12,hint:'봄에 피는 꽃 🌷'},
+  // 도전
+  {q:'💐 꽃다발은?',opts:[{em:'💐',lb:'꽃다발',ok:true},{em:'🌾',lb:'벼이삭',ok:false},{em:'🎄',lb:'나무',ok:false},{em:'🪨',lb:'돌',ok:false}],pts:15,hint:'여러 꽃이 모여 있어요 💐'},
+];
+let m1i=0,m1sc=0;
+function initM1(){m1i=0;m1sc=0;document.getElementById('m1sc').textContent='0';renderM1();}
+function renderM1(){
+  if(m1i>=flowerQs.length){finishM1();return;}
+  const q=flowerQs[m1i];
+  renderStarBar('m1stars',flowerQs.length,m1i);
+  document.getElementById('m1q').textContent=q.q;
+  document.getElementById('m1hint').textContent='💡 '+q.hint;document.getElementById('m1hint').classList.remove('show');
+  document.getElementById('m1fb').classList.remove('show');document.getElementById('m1nw').style.display='none';
+  document.getElementById('m1face').textContent='🐝';document.getElementById('m1face').className='mascot';
+  document.getElementById('m1msg').textContent='🌸 어느 것이 꽃일까요?';
+  const shuffled=[...q.opts].sort(()=>Math.random()-.5);
+  const wrap=document.getElementById('m1opts');wrap.innerHTML='';
+  const grid=document.createElement('div');grid.className='pic-grid-2';
+  shuffled.forEach(opt=>{
+    const b=document.createElement('div');b.className='pic-btn';
+    b.innerHTML=`<span class="em">${opt.em}</span>`;
+    b.onclick=()=>{
+      document.querySelectorAll('#m1opts .pic-btn').forEach(x=>x.onclick=null);
+      shuffled.forEach((o,i)=>{if(o.ok)grid.children[shuffled.indexOf(o)]?.classList.add('ok');});
+      if(opt.ok){m1sc+=q.pts;document.getElementById('m1sc').textContent=m1sc;b.classList.add('ok');}
+      else{b.classList.add('no');}
+      handleAnswer(opt.ok,'m1fb','m1face','m1sc',0,'🌸🌸🌸','💪💪💪','m1nw');
+    };
+    grid.appendChild(b);
+  });
+  wrap.appendChild(grid);
+}
+function nextM1(){m1i++;renderM1();}
+function finishM1(){
+  S.scores[0]=m1sc;S.stars[0]=calcSt(m1sc,59);S.done[0]=true;S.badges.flower=S.stars[0]>=2;
+  updateSt(1,S.stars[0]);unlockMC(2);playS('cl');fireConfetti();
+  document.getElementById('m1msg').textContent='🌸🌸🌸 🎉🎉🎉';
+  document.getElementById('m1face').className='mascot m-cheer';
+  setTimeout(()=>goHome(),2200);
+}
+
+// =========================================================
+// 미션2: 수 세기 (1~5) — 수학
+// 이모지를 화면에 표시 → 숫자 버튼 선택
+// 타이머 없음 (발달장애 특성)
+// =========================================================
+const countQs=[
+  {em:'🌸',cnt:2,opts:[1,2,3],hint:'하나씩 짚어봐요 ☝️☝️'},
+  {em:'🐝',cnt:3,opts:[2,3,4],hint:'꿀벌이 몇 마리? 🐝'},
+  {em:'🍎',cnt:4,opts:[3,4,5],hint:'사과가 몇 개? 🍎'},
+  {em:'🌼',cnt:5,opts:[4,5,6],hint:'꽃이 몇 송이? 🌼'},
+  {em:'🐛',cnt:3,opts:[2,3,4],hint:'애벌레가 몇 마리? 🐛'},
+  {em:'🦋',cnt:2,opts:[1,2,3],hint:'나비가 몇 마리? 🦋'},
+];
+let m2i=0,m2sc=0;
+function initM2(){m2i=0;m2sc=0;document.getElementById('m2sc').textContent='0';renderM2();}
+function renderM2(){
+  if(m2i>=countQs.length){finishM2();return;}
+  const q=countQs[m2i];
+  renderStarBar('m2stars',countQs.length,m2i);
+  const itemsEl=document.getElementById('m2items');itemsEl.innerHTML='';
+  for(let i=0;i<q.cnt;i++){
+    const sp=document.createElement('span');sp.className='item-em';sp.textContent=q.em;
+    sp.style.animationDelay=(i*.1)+'s';itemsEl.appendChild(sp);
+  }
+  document.getElementById('m2q').textContent=q.em+' 몇 개?';
+  document.getElementById('m2hint').textContent='💡 '+q.hint;document.getElementById('m2hint').classList.remove('show');
+  document.getElementById('m2fb').classList.remove('show');document.getElementById('m2nw').style.display='none';
+  document.getElementById('m2face').textContent='🐝';document.getElementById('m2face').className='mascot';
+  document.getElementById('m2msg').textContent='🔢 몇 개인지 눌러요!';
+  const shuffled=[...q.opts].sort(()=>Math.random()-.5);
+  const wrap=document.getElementById('m2opts');wrap.innerHTML='';
+  const grid=document.createElement('div');grid.className='num-grid';
+  shuffled.forEach(num=>{
+    const b=document.createElement('button');b.className='num-btn';b.textContent=num;
+    b.onclick=()=>{
+      grid.querySelectorAll('button').forEach(x=>{x.disabled=true;if(parseInt(x.textContent)===q.cnt)x.classList.add('ok');});
+      if(num===q.cnt){m2sc+=15;document.getElementById('m2sc').textContent=m2sc;b.classList.add('ok');}
+      else b.classList.add('no');
+      handleAnswer(num===q.cnt,'m2fb','m2face','m2sc',0,'⭐⭐⭐','💪💪','m2nw');
+    };
+    grid.appendChild(b);
+  });
+  wrap.appendChild(grid);
+}
+function nextM2(){m2i++;renderM2();}
+function finishM2(){
+  S.scores[1]=m2sc;S.stars[1]=calcSt(m2sc,90);S.done[1]=true;S.badges.num=S.stars[1]>=2;
+  updateSt(2,S.stars[1]);unlockMC(3);playS('cl');fireConfetti();
+  document.getElementById('m2msg').textContent='⭐⭐⭐ 🎉🎉🎉';
+  document.getElementById('m2face').className='mascot m-cheer';
+  setTimeout(()=>goHome(),2200);
+}
+
+// =========================================================
+// 미션3: 색깔 찾기 — 수학·미술(슬기로운 생활)
+// 색상 버튼 → 제시된 색과 같은 것 고르기
+// =========================================================
+const colorQs=[
+  // 쉬움: 완전히 다른 3색
+  {q:'🔴 빨강을 찾아요!',target:'red',colors:[{c:'#ff4444',ok:true,lbl:'🔴'},{c:'#44aaff',ok:false,lbl:'🔵'},{c:'#ffee44',ok:false,lbl:'🟡'}],hint:'사과 색이에요 🍎'},
+  {q:'🟡 노랑을 찾아요!',target:'yel',colors:[{c:'#44aaff',ok:false,lbl:'🔵'},{c:'#ffee22',ok:true,lbl:'🟡'},{c:'#44cc44',ok:false,lbl:'🟢'}],hint:'바나나 색이에요 🍌'},
+  // 보통
+  {q:'🟢 초록을 찾아요!',target:'grn',colors:[{c:'#ff4444',ok:false,lbl:'🔴'},{c:'#ffee22',ok:false,lbl:'🟡'},{c:'#44cc44',ok:true,lbl:'🟢'}],hint:'나뭇잎 색이에요 🍃'},
+  {q:'🩷 분홍을 찾아요!',target:'pink',colors:[{c:'#ff88bb',ok:true,lbl:'🩷'},{c:'#8844ff',ok:false,lbl:'🟣'},{c:'#ff8844',ok:false,lbl:'🟠'}],hint:'벚꽃 색이에요 🌸'},
+  // 도전
+  {q:'🔵 파랑을 찾아요!',target:'blu',colors:[{c:'#44aaff',ok:true,lbl:'🔵'},{c:'#ff88bb',ok:false,lbl:'🩷'},{c:'#44cc44',ok:false,lbl:'🟢'}],hint:'하늘 색이에요 ☀️'},
+  {q:'🟠 주황을 찾아요!',target:'org',colors:[{c:'#44cc44',ok:false,lbl:'🟢'},{c:'#44aaff',ok:false,lbl:'🔵'},{c:'#ff8844',ok:true,lbl:'🟠'}],hint:'귤 색이에요 🍊'},
+];
+let m3i=0,m3sc=0;
+function initM3(){m3i=0;m3sc=0;document.getElementById('m3sc').textContent='0';renderM3();}
+function renderM3(){
+  if(m3i>=colorQs.length){finishM3();return;}
+  const q=colorQs[m3i];
+  renderStarBar('m3stars',colorQs.length,m3i);
+  document.getElementById('m3q').textContent=q.q;
+  document.getElementById('m3hint').textContent='💡 '+q.hint;document.getElementById('m3hint').classList.remove('show');
+  document.getElementById('m3fb').classList.remove('show');document.getElementById('m3nw').style.display='none';
+  document.getElementById('m3face').textContent='🐝';document.getElementById('m3face').className='mascot';
+  document.getElementById('m3msg').textContent='🎨 같은 색을 눌러요!';
+  const shuffled=[...q.colors].sort(()=>Math.random()-.5);
+  const grid=document.getElementById('m3opts');grid.innerHTML='';
+  shuffled.forEach(col=>{
+    const b=document.createElement('div');b.className='color-btn';
+    b.style.background=col.c;
+    b.innerHTML=`<span style="font-size:1.8rem;">${col.lbl}</span>`;
+    b.onclick=()=>{
+      grid.querySelectorAll('.color-btn').forEach(x=>{x.onclick=null;});
+      shuffled.forEach(c=>{if(c.ok)grid.children[shuffled.indexOf(c)]?.classList.add('ok');});
+      if(col.ok){m3sc+=14;document.getElementById('m3sc').textContent=m3sc;b.classList.add('ok');}
+      else b.classList.add('no');
+      handleAnswer(col.ok,'m3fb','m3face','m3sc',0,'🎨🎨🎨','💪💪💪','m3nw');
+    };
+    grid.appendChild(b);
+  });
+}
+function nextM3(){m3i++;renderM3();}
+function finishM3(){
+  S.scores[2]=m3sc;S.stars[2]=calcSt(m3sc,84);S.done[2]=true;S.badges.color=S.stars[2]>=2;
+  updateSt(3,S.stars[2]);unlockMC(4);playS('cl');fireConfetti();
+  document.getElementById('m3msg').textContent='🎨🌈 🎉🎉🎉';
+  document.getElementById('m3face').className='mascot m-cheer';
+  setTimeout(()=>goHome(),2200);
+}
+
+// =========================================================
+// 미션4: 동물 친구 — 크기 비교 + 분류 (수학·슬기로운 생활)
+// =========================================================
+const animalQs=[
+  // 쉬움: 어느 것이 더 큰가
+  {q:'🐘 더 큰 동물은?',opts:[{em:'🐘',lb:'코끼리',ok:true,sz:5},{em:'🐭',lb:'쥐',ok:false,sz:1},{em:'🐦',lb:'새',ok:false,sz:2},{em:'🐛',lb:'애벌레',ok:false,sz:1}],pts:12,hint:'커다란 귀를 가진 동물 🐘'},
+  {q:'🐶 강아지를 찾아요!',opts:[{em:'🐶',lb:'강아지',ok:true},{em:'🐟',lb:'물고기',ok:false},{em:'🦋',lb:'나비',ok:false},{em:'🌻',lb:'해바라기',ok:false}],pts:12,hint:'꼬리를 흔들어요 🐶'},
+  // 보통
+  {q:'🐱 고양이를 찾아요!',opts:[{em:'🐱',lb:'고양이',ok:true},{em:'🐻',lb:'곰',ok:false},{em:'🐸',lb:'개구리',ok:false},{em:'🦁',lb:'사자',ok:false}],pts:14,hint:'야옹~ 하고 울어요 🐱'},
+  {q:'🐥 아기 새를 찾아요!',opts:[{em:'🐥',lb:'아기새',ok:true},{em:'🐊',lb:'악어',ok:false},{em:'🐘',lb:'코끼리',ok:false},{em:'🦊',lb:'여우',ok:false}],pts:14,hint:'삐약삐약 울어요 🐥'},
+  // 도전
+  {q:'🦋 나비를 찾아요!',opts:[{em:'🦋',lb:'나비',ok:true},{em:'🐢',lb:'거북이',ok:false},{em:'🦒',lb:'기린',ok:false},{em:'🐺',lb:'늑대',ok:false}],pts:16,hint:'꽃에 앉아 꿀을 마셔요 🦋'},
+];
+let m4i=0,m4sc=0;
+function initM4(){m4i=0;m4sc=0;document.getElementById('m4sc').textContent='0';renderM4();}
+function renderM4(){
+  if(m4i>=animalQs.length){finishM4();return;}
+  const q=animalQs[m4i];
+  renderStarBar('m4stars',animalQs.length,m4i);
+  document.getElementById('m4q').textContent=q.q;
+  document.getElementById('m4hint').textContent='💡 '+q.hint;document.getElementById('m4hint').classList.remove('show');
+  document.getElementById('m4fb').classList.remove('show');document.getElementById('m4nw').style.display='none';
+  document.getElementById('m4face').textContent='🐝';document.getElementById('m4face').className='mascot';
+  document.getElementById('m4msg').textContent='🐾 동물 친구를 찾아요!';
+  const shuffled=[...q.opts].sort(()=>Math.random()-.5);
+  const wrap=document.getElementById('m4opts');wrap.innerHTML='';
+  const grid=document.createElement('div');grid.className='pic-grid-2';
+  shuffled.forEach(opt=>{
+    const b=document.createElement('div');b.className='pic-btn';
+    b.innerHTML=`<span class="em">${opt.em}</span>`;
+    b.onclick=()=>{
+      document.querySelectorAll('#m4opts .pic-btn').forEach(x=>x.onclick=null);
+      shuffled.forEach(o=>{if(o.ok)grid.children[shuffled.indexOf(o)]?.classList.add('ok');});
+      if(opt.ok){m4sc+=q.pts;document.getElementById('m4sc').textContent=m4sc;b.classList.add('ok');}
+      else b.classList.add('no');
+      handleAnswer(opt.ok,'m4fb','m4face','m4sc',0,'🐾🐾🐾','💪💪💪','m4nw');
+    };
+    grid.appendChild(b);
+  });
+  wrap.appendChild(grid);
+}
+function nextM4(){m4i++;renderM4();}
+function finishM4(){
+  S.scores[3]=m4sc;S.stars[3]=calcSt(m4sc,68);S.done[3]=true;S.badges.animal=S.stars[3]>=2;
+  updateSt(4,S.stars[3]);saveScore();playS('cl');fireConfetti();showResult();
+}
+
+// ─── 결과 ───
+function showResult(){
+  const total=S.scores.reduce((a,b)=>a+b,0);const ts=S.stars.reduce((a,b)=>a+b,0);
+  let ic='🌸',ttl='봄봄 완료!',rank='';
+  if(ts>=10){ic='🏆';ttl='탐험왕! 🏆';rank='최고예요! 🌟🌟🌟';}
+  else if(ts>=7){ic='🌈';ttl='잘했어요! 🌈';rank='훌륭해요! 🌟🌟';}
+  else if(ts>=4){ic='🌸';ttl='봄봄! 🌸';rank='좋아요! 🌟';}
+  else{ic='💪';ttl='도전! 💪';rank='다시 해봐요!';}
+  document.getElementById('reic').textContent=ic;
+  document.getElementById('rettl').textContent=ttl;
+  document.getElementById('rerank').textContent=rank;
+  const grid=document.getElementById('regrid');grid.innerHTML='';
+  ['🌸','🍎','🎨','🐣'].forEach((em,i)=>{
+    const d=document.createElement('div');d.className='res-card';
+    d.innerHTML=`<div class="ri">${em}</div><div class="rn">${['꽃','수세기','색깔','동물'][i]}</div><div class="rv">${S.scores[i]}</div><div class="rs">${'★'.repeat(S.stars[i])}${'☆'.repeat(3-S.stars[i])}</div>`;
+    grid.appendChild(d);
+  });
+  document.getElementById('retotal').textContent=total;
+  const rb=document.getElementById('rebadges');rb.innerHTML='';
+  [['flower','🌸'],['num','⭐'],['color','🎨'],['animal','🐣']].forEach(([k,em])=>{
+    const el=document.createElement('div');el.className='badge-it'+(S.badges[k]?' earned':'');el.textContent=em;rb.appendChild(el);
+  });
+  if(Object.values(S.badges).every(v=>v)){const el=document.createElement('div');el.className='badge-it earned';el.textContent='🏆';rb.appendChild(el);}
+  const msgs=['💪 잘했어요! 다시 해봐요!','😊 좋아요! 조금 더!','🌸 훌륭해요!','🏆 최고예요!'];
+  document.getElementById('reeval').innerHTML=`🐝 봄이: ${msgs[Math.min(Math.floor(ts/3),3)]}<br><span style="color:#e06090">🌸 2026.03.24 봄봄 탐험 완료!</span>`;
+  showScr('screen-result');
+}
+function resetGame(){
+  S.done=[false,false,false,false];S.scores=[0,0,0,0];S.stars=[0,0,0,0];S.badges={flower:false,num:false,color:false,animal:false};
+  ['mc2','mc3','mc4'].forEach(id=>{
+    const el=document.getElementById(id);if(!el)return;
+    el.className='mc locked';el.onclick=null;el.querySelector('.mc-st')?.remove();
+    if(!el.querySelector('.mc-lk')){const l=document.createElement('div');l.className='mc-lk';l.textContent='🔒';el.appendChild(l);}
+  });
+  document.getElementById('mc1').className='mc';document.getElementById('mc1').onclick=()=>startMission(1);
+  document.getElementById('mc1st').textContent='☆☆☆';
+  renderSB();renderBadges();showScr('screen-intro');
+}
+
+// 포트폴리오 JSON
+const portfolioEntry={
+  id:'#008',title:'봄봄 탐험대',
+  grade:'특수학급 중1 (발달·지체장애 / 초4~5세 수준)',
+  theme:'봄 계절 — 3월 이슈: 2026 부산특수교육 운영계획 발표 연계',
+  subjects:['국어(그림 읽기·분류)','수학(수 세기·크기 비교)','슬기로운 생활(자연·동물)'],
+  missions:['꽃 찾기(그림 매칭)','수 세기(1~5, 이모지)','색깔 찾기(색상 버튼)','동물 친구(분류·비교)'],
+  accessibility:['한글 최소·이모지 100%','버튼 최소 90×90px','타이머 없음','즉각 파티클+음향 피드백','오답 부드러운 피드백','고대비 파스텔 색상','지체장애 터치 최적화'],
+  extras:['Web Audio API(봄 동요 멜로디+하모니)','파티클 폭죽 효과','꽃잎 배경 애니메이션','배지시스템','점수판(LocalStorage)','QR코드'],
+  url:'https://milab2019.github.io/main/spring_adventure.html',
+  date:'2026.03.24',status:'운영 중'
+};
+console.log('📋 미랩 포트폴리오 JSON:\n'+JSON.stringify(portfolioEntry,null,2));
+
+initBg();renderSB();renderBadges();initQR();
+</script>
+</body>
+</html>
