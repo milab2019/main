@@ -1,0 +1,616 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🎓 학점 로드맵 설계단 — 미랩 고등학생 진로탐구</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Jua&family=Nanum+Gothic:wght@400;700;800&display=swap');
+:root{
+  --bg:#0a0612;--bg2:#130d1e;--bg3:#1e1530;
+  --pu:#7c3aed;--pu2:#a855f7;--pu3:#c084fc;
+  --gold:#fbbf24;--gold2:#fde68a;
+  --cyan:#06b6d4;--green:#10b981;--red:#ef4444;
+  --txt:#f5f0ff;--txt2:#c4b5fd;--txt3:#7c6ba8;
+  --card:rgba(124,58,237,0.08);--border:rgba(124,58,237,0.25);
+  --shadow:0 8px 32px rgba(124,58,237,0.2);--r:18px;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Nanum Gothic',sans-serif;background:var(--bg);color:var(--txt);min-height:100vh;overflow-x:hidden;}
+body::before{content:'';position:fixed;inset:0;
+  background:radial-gradient(ellipse 80% 50% at 50% -20%,rgba(124,58,237,0.15),transparent),
+             radial-gradient(ellipse 60% 40% at 80% 80%,rgba(6,182,212,0.08),transparent);
+  pointer-events:none;z-index:0;}
+#app{position:relative;z-index:1;max-width:820px;margin:0 auto;padding:16px;}
+.scr{display:none;animation:up .4s ease;}
+.scr.on{display:block;}
+@keyframes up{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+
+/* ── 헤더 ── */
+.gh{display:flex;align-items:center;justify-content:space-between;
+  background:rgba(124,58,237,0.1);border:1px solid var(--border);
+  border-radius:var(--r);padding:12px 18px;margin-bottom:14px;
+  backdrop-filter:blur(8px);}
+.gh-title{font-family:'Jua',sans-serif;font-size:1.05rem;color:var(--pu3);}
+.gh-sub{font-size:.72rem;color:var(--txt2);margin-top:2px;}
+.sc-badge{background:linear-gradient(135deg,var(--gold),var(--gold2));color:#000;
+  font-weight:800;padding:4px 12px;border-radius:20px;font-size:.88rem;
+  font-family:'Jua',sans-serif;}
+
+/* ── 진행바 ── */
+.pg-wrap{margin-bottom:12px;}
+.pg-label{display:flex;justify-content:space-between;font-size:.75rem;color:var(--pu3);margin-bottom:4px;}
+.pg-bar{height:8px;background:rgba(255,255,255,.06);border-radius:8px;overflow:hidden;}
+.pg-fill{height:100%;background:linear-gradient(90deg,var(--pu),var(--gold));border-radius:8px;transition:width .5s ease;}
+
+/* ── 카드 ── */
+.card{background:var(--card);border:1px solid var(--border);border-radius:var(--r);
+  padding:22px;margin-bottom:14px;box-shadow:var(--shadow);backdrop-filter:blur(4px);}
+
+/* ── 버블 ── */
+.bubble{display:flex;align-items:flex-start;gap:12px;margin-bottom:14px;}
+.char-face{font-size:2.2rem;flex-shrink:0;transition:all .3s;}
+.cf-ok{filter:drop-shadow(0 0 10px #a855f7);}
+.cf-no{filter:drop-shadow(0 0 8px #ef4444);animation:shk .3s ease;}
+.cf-wow{filter:drop-shadow(0 0 14px #fbbf24);animation:pop .4s ease;}
+@keyframes shk{0%,100%{transform:translateX(0)}25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
+@keyframes pop{0%{transform:scale(.8)}60%{transform:scale(1.15)}100%{transform:scale(1)}}
+.bubble-txt{background:rgba(124,58,237,.1);border:1px solid var(--border);
+  border-radius:14px 14px 14px 4px;padding:10px 14px;color:var(--txt);
+  font-size:.9rem;line-height:1.6;flex:1;}
+.bubble-name{font-size:.7rem;color:var(--pu3);font-weight:800;margin-bottom:3px;}
+
+/* ── 난이도 탭 ── */
+.dt-row{display:flex;gap:8px;margin-bottom:14px;}
+.dt{padding:6px 18px;border-radius:20px;border:1px solid;font-size:.82rem;
+  font-weight:700;cursor:pointer;transition:all .2s;background:transparent;}
+.dt-e{border-color:#10b981;color:#10b981;}.dt-e.on{background:#10b981;color:#000;}
+.dt-m{border-color:var(--cyan);color:var(--cyan);}.dt-m.on{background:var(--cyan);color:#000;}
+.dt-h{border-color:var(--pu2);color:var(--pu2);}.dt-h.on{background:var(--pu2);color:#fff;}
+
+/* ── 타이머 ── */
+.timer-row{display:flex;align-items:center;gap:10px;margin-bottom:12px;}
+.timer-num{font-family:'Jua',sans-serif;font-size:1.5rem;color:var(--pu3);min-width:44px;text-align:center;}
+.timer-num.warn{color:var(--gold);animation:blk .5s infinite;}
+@keyframes blk{0%,100%{opacity:1}50%{opacity:.4}}
+.timer-bar{flex:1;height:6px;background:rgba(255,255,255,.08);border-radius:6px;overflow:hidden;}
+.timer-fill{height:100%;background:linear-gradient(90deg,var(--pu),var(--gold));border-radius:6px;transition:width .9s linear;}
+
+/* ── 문제/선택지 ── */
+.q-txt{font-family:'Jua',sans-serif;font-size:1.05rem;color:var(--txt);
+  text-align:center;margin-bottom:16px;line-height:1.65;white-space:pre-line;}
+.hint{margin-top:8px;padding:8px 12px;border-radius:10px;
+  background:rgba(251,191,36,.08);border:1px solid rgba(251,191,36,.25);
+  color:var(--gold);font-size:.8rem;display:none;}
+.hint.show{display:block;}
+.opts{display:grid;gap:9px;}
+.opt{padding:12px 16px;border-radius:12px;border:1px solid rgba(124,58,237,.3);
+  background:rgba(124,58,237,.06);cursor:pointer;font-size:.88rem;font-weight:700;
+  color:var(--txt);transition:all .2s;text-align:left;}
+.opt:hover:not(:disabled){border-color:var(--pu2);background:rgba(168,85,247,.15);transform:translateX(4px);}
+.opt.ok{border-color:var(--green)!important;background:rgba(16,185,129,.15)!important;color:#6ee7b7!important;}
+.opt.no{border-color:var(--red)!important;background:rgba(239,68,68,.12)!important;color:#fca5a5!important;}
+.opt:disabled{cursor:not-allowed;}
+.fb{margin-top:12px;padding:12px 14px;border-radius:12px;font-size:.85rem;line-height:1.6;display:none;}
+.fb.show{display:block;animation:up .3s ease;}
+.fb.fb-ok{background:rgba(16,185,129,.1);border:1px solid rgba(16,185,129,.4);color:#6ee7b7;}
+.fb.fb-no{background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.3);color:#fca5a5;}
+
+/* ── 버튼 ── */
+.btn{display:inline-block;padding:12px 28px;border:none;border-radius:50px;cursor:pointer;font-family:'Jua',sans-serif;font-size:1rem;transition:all .2s;}
+.btn-pu{background:linear-gradient(135deg,var(--pu),var(--pu2));color:#fff;box-shadow:0 4px 16px rgba(124,58,237,.4);}
+.btn-pu:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(124,58,237,.5);}
+.btn-ghost{background:rgba(255,255,255,.06);color:var(--txt);border:1px solid rgba(255,255,255,.15);}
+.btn-ghost:hover{background:rgba(255,255,255,.12);}
+.btn-sm{padding:8px 20px;font-size:.88rem;}
+.btn-block{width:100%;text-align:center;}
+
+/* ── 선택지(딜레마) ── */
+.ch-btn{display:flex;align-items:flex-start;gap:10px;width:100%;padding:14px 16px;
+  border-radius:12px;border:1px solid rgba(124,58,237,.3);background:rgba(124,58,237,.06);
+  cursor:pointer;font-size:.88rem;font-weight:700;color:var(--txt);transition:all .2s;
+  text-align:left;margin-bottom:9px;white-space:pre-line;}
+.ch-btn:hover:not(:disabled){border-color:var(--pu2);background:rgba(168,85,247,.12);}
+.ch-lbl{min-width:28px;height:28px;border-radius:50%;display:flex;align-items:center;
+  justify-content:center;font-size:.8rem;font-weight:800;flex-shrink:0;
+  background:rgba(124,58,237,.25);color:var(--pu3);}
+.ch-hero{border-color:var(--green)!important;background:rgba(16,185,129,.12)!important;}
+.ch-mid{border-color:var(--gold)!important;background:rgba(251,191,36,.08)!important;}
+.ch-bad{border-color:var(--red)!important;background:rgba(239,68,68,.1)!important;}
+.end-box{margin-top:12px;padding:14px;border-radius:12px;font-size:.88rem;line-height:1.7;display:none;}
+.end-box.show{display:block;animation:up .3s ease;}
+.e-hero{background:rgba(16,185,129,.1);border:1px solid rgba(16,185,129,.4);color:#6ee7b7;}
+.e-mid{background:rgba(251,191,36,.08);border:1px solid rgba(251,191,36,.3);color:var(--gold);}
+.e-bad{background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.3);color:#fca5a5;}
+
+/* ── 인트로 ── */
+#screen-intro{text-align:center;padding-top:10px;}
+.intro-logo{font-size:4.5rem;animation:flt 2.5s ease-in-out infinite;}
+@keyframes flt{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+.intro-title{font-family:'Jua',sans-serif;font-size:2.1rem;
+  background:linear-gradient(135deg,var(--pu3),var(--gold));-webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  margin-bottom:8px;}
+.intro-sub{color:var(--txt2);font-size:.88rem;margin-bottom:6px;}
+.story-box{background:rgba(124,58,237,.08);border:1px solid var(--border);
+  border-radius:var(--r);padding:18px;margin:18px 0;text-align:left;line-height:1.8;font-size:.9rem;}
+.story-title{font-family:'Jua',sans-serif;color:var(--gold);font-size:1rem;margin-bottom:10px;text-align:center;}
+.mc-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:16px 0;}
+.mc{background:rgba(124,58,237,.08);border:1px solid var(--border);border-radius:14px;
+  padding:16px;text-align:center;cursor:pointer;transition:all .3s;position:relative;}
+.mc:not(.locked):hover{transform:translateY(-4px);border-color:var(--pu2);box-shadow:0 8px 20px rgba(124,58,237,.3);}
+.mc.locked{opacity:.4;cursor:not-allowed;}
+.mc.done{border-color:var(--gold);}
+.mc-ic{font-size:1.8rem;margin-bottom:6px;}
+.mc-nm{font-family:'Jua',sans-serif;font-size:.9rem;color:var(--pu3);}
+.mc-ds{font-size:.72rem;color:var(--txt2);margin-top:3px;}
+.mc-st{color:var(--gold);font-size:.85rem;margin-top:3px;}
+.mc-lk{font-size:1.1rem;margin-top:3px;}
+.sb-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:12px;}
+.sb-item{background:rgba(124,58,237,.08);border:1px solid var(--border);border-radius:12px;padding:10px;text-align:center;}
+.sb-ic{font-size:1.5rem;}
+.sb-nm{font-size:.7rem;color:var(--txt2);margin:2px 0;}
+.sb-sc{font-size:1rem;font-weight:800;color:var(--gold);}
+.sb-st{color:var(--gold);font-size:.82rem;}
+.bdg-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;}
+.bdg{padding:5px 12px;border-radius:20px;font-size:.75rem;font-weight:700;
+  background:rgba(255,255,255,.05);color:var(--txt2);border:1px solid rgba(255,255,255,.1);}
+.bdg.earned{background:rgba(251,191,36,.15);color:var(--gold);border-color:rgba(251,191,36,.4);}
+
+/* ── 결과 ── */
+.res-badge{background:linear-gradient(135deg,var(--bg3),#0f0a1e);
+  border:2px solid var(--gold);border-radius:var(--r);padding:28px;
+  text-align:center;margin:16px 0;box-shadow:0 0 40px rgba(251,191,36,.2);}
+.res-ic{font-size:4.5rem;animation:pop .5s ease;}
+.res-ttl{font-family:'Jua',sans-serif;font-size:1.7rem;color:var(--gold);margin:8px 0 4px;}
+.res-rk{color:var(--txt2);font-size:.9rem;}
+.rc-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin:14px 0;}
+.rc{background:rgba(124,58,237,.08);border:1px solid var(--border);border-radius:12px;padding:12px;text-align:center;}
+.rc-i{font-size:1.5rem;}
+.rc-n{font-size:.72rem;color:var(--txt2);margin:3px 0;}
+.rc-v{font-size:1rem;font-weight:800;color:var(--gold);}
+.rc-s{color:var(--gold);font-size:.82rem;}
+.tb-box{background:linear-gradient(135deg,var(--gold),var(--gold2));border-radius:14px;padding:14px;margin:10px 0;font-family:'Jua',sans-serif;text-align:center;}
+.tb-lbl{font-size:.9rem;color:#000;}
+.tb-n{font-size:2.8rem;color:#000;line-height:1;}
+.qr-wrap{display:flex;flex-direction:column;align-items:center;margin:16px 0;
+  padding:16px;background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:14px;}
+.qr-label{font-size:.78rem;color:var(--txt2);margin-top:8px;}
+.info-box{padding:10px 14px;border-radius:10px;background:rgba(6,182,212,.08);
+  border:1px solid rgba(6,182,212,.25);color:#7dd3fc;font-size:.82rem;margin-bottom:12px;line-height:1.6;}
+</style>
+</head>
+<body>
+<div id="app">
+
+<!-- ══════ 인트로 ══════ -->
+<div id="screen-intro" class="scr on">
+  <div class="intro-logo">🎓</div>
+  <div class="intro-title">학점 로드맵 설계단</div>
+  <div class="intro-sub">고등학생 대상 · 국어 × 사회(진로) × 정보(AI) 교과 융합</div>
+  <div class="intro-sub" style="color:var(--pu3);font-size:.78rem;margin-top:2px;">미랩(MILAB) 충주 진로체험 교육 · 2026.03.25</div>
+
+  <div class="story-box">
+    <div class="story-title">📋 2026년 — 고교학점제 전면 시행의 시대</div>
+    <p>2026년 3월, <strong style="color:var(--gold)">고교학점제가 고1~3 전 학년에 전면 시행</strong>됩니다!<br>
+    졸업하려면 <strong style="color:var(--pu3)">3년간 192학점(교과 174 + 창체 18)</strong>을 스스로 설계해야 해요.<br>
+    2028 수능 개편으로 <strong style="color:var(--gold)">선택과목이 폐지</strong>되고 통합형으로 바뀝니다.<br><br>
+    여러분은 오늘 <strong style="color:var(--pu3)">학점 로드맵 설계단</strong>으로 임명되었습니다!<br>
+    4개 임무를 완수하고 나만의 고교 진로를 전략적으로 설계해봐요! 🔮</p>
+  </div>
+
+  <div class="info-box">
+    🗞️ <strong>오늘의 이슈(2026.03.25):</strong> 어제(3/24) 전국 1,948개 고등학교에서 2027학년도 3월 모의고사 실시 — 약 122만 명 응시 · 2028 수능 개편안 첫 적용(고1·2)
+  </div>
+
+  <div class="bdg-row" id="bdgRow" style="justify-content:center;"></div>
+  <div class="sb-grid" id="sbGrid"></div>
+
+  <div style="color:var(--pu3);font-family:'Jua',sans-serif;font-size:.95rem;margin-bottom:10px;text-align:left;">📋 임무 목록</div>
+  <div class="mc-grid">
+    <div class="mc" id="mc1" onclick="startM(1)">
+      <div class="mc-ic">📚</div><div class="mc-nm">임무 1</div>
+      <div class="mc-ds">학점제 & 수능 전략</div><div class="mc-st" id="m1st">☆☆☆</div>
+    </div>
+    <div class="mc locked" id="mc2">
+      <div class="mc-ic">🧭</div><div class="mc-nm">임무 2</div>
+      <div class="mc-ds">진로 유형 분석</div><div class="mc-lk">🔒</div>
+    </div>
+    <div class="mc locked" id="mc3">
+      <div class="mc-ic">🤖</div><div class="mc-nm">임무 3</div>
+      <div class="mc-ds">AI 시대 직업 심층</div><div class="mc-lk">🔒</div>
+    </div>
+    <div class="mc locked" id="mc4">
+      <div class="mc-ic">🗺️</div><div class="mc-nm">임무 4</div>
+      <div class="mc-ds">나의 학점 로드맵</div><div class="mc-lk">🔒</div>
+    </div>
+  </div>
+
+  <div class="qr-wrap">
+    <div id="qr-div"></div>
+    <div class="qr-label">📱 QR코드로 바로 체험 — milab2019.github.io/main/credit_roadmap_hs.html</div>
+  </div>
+</div>
+
+<!-- ══════ 임무1: 학점제 & 수능 전략 ══════ -->
+<div id="screen-m1" class="scr">
+  <div class="gh">
+    <div><div class="gh-title">📚 임무 1 — 학점제 & 수능 전략</div><div class="gh-sub">사회(진로) + 국어(비판적 읽기) + 정보</div></div>
+    <div class="sc-badge">⭐ <span id="m1sc">0</span></div>
+  </div>
+  <div class="pg-wrap"><div class="pg-label"><span>진행</span><span id="m1pg">1/5</span></div><div class="pg-bar"><div class="pg-fill" id="m1pgb" style="width:0%"></div></div></div>
+  <div class="bubble">
+    <div class="char-face" id="m1f">🧙</div>
+    <div class="bubble-txt"><div class="bubble-name">진로 설계 AI 마법사 '루나(LUNA)'</div><span id="m1msg">난이도를 선택하고 고교학점제 전략을 마스터해봐요!</span></div>
+  </div>
+  <div class="card">
+    <div class="dt-row">
+      <button class="dt dt-e on" onclick="setM1D('e')">🌱 기초</button>
+      <button class="dt dt-m" onclick="setM1D('m')">💡 심화</button>
+      <button class="dt dt-h" onclick="setM1D('h')">🔮 전략</button>
+    </div>
+    <div class="timer-row">
+      <div class="timer-num" id="m1tm">40</div>
+      <div class="timer-bar"><div class="timer-fill" id="m1tmb" style="width:100%"></div></div>
+      <button class="btn btn-ghost btn-sm" onclick="toggleHint('m1hint')">💡 힌트</button>
+    </div>
+    <div class="q-txt" id="m1q"></div>
+    <div class="hint" id="m1hint"></div>
+    <div class="opts" id="m1opts"></div>
+    <div class="fb" id="m1fb"></div>
+    <div id="m1nw" style="text-align:center;margin-top:14px;display:none;"><button class="btn btn-pu" onclick="nextM1()">다음 문제 →</button></div>
+  </div>
+  <button class="btn btn-ghost btn-sm" onclick="goHome()">← 임무 목록</button>
+</div>
+
+<!-- ══════ 임무2: 진로 유형 분석 ══════ -->
+<div id="screen-m2" class="scr">
+  <div class="gh">
+    <div><div class="gh-title">🧭 임무 2 — 진로 유형 분석</div><div class="gh-sub">사회(진로·직업) + 국어(논술·토론)</div></div>
+    <div class="sc-badge">⭐ <span id="m2sc">0</span></div>
+  </div>
+  <div class="pg-wrap"><div class="pg-label"><span>진행</span><span id="m2pg">1/5</span></div><div class="pg-bar"><div class="pg-fill" id="m2pgb" style="width:0%"></div></div></div>
+  <div class="bubble">
+    <div class="char-face" id="m2f">🧙</div>
+    <div class="bubble-txt"><div class="bubble-name">루나(LUNA)</div><span id="m2msg">홀랜드 직업유형부터 학종 자소서까지 — 진로 설계의 핵심이에요!</span></div>
+  </div>
+  <div class="card">
+    <div class="timer-row">
+      <div class="timer-num" id="m2tm">38</div>
+      <div class="timer-bar"><div class="timer-fill" id="m2tmb" style="width:100%"></div></div>
+      <button class="btn btn-ghost btn-sm" onclick="toggleHint('m2hint')">💡 힌트</button>
+    </div>
+    <div class="q-txt" id="m2q"></div>
+    <div class="hint" id="m2hint"></div>
+    <div class="opts" id="m2opts"></div>
+    <div class="fb" id="m2fb"></div>
+    <div id="m2nw" style="text-align:center;margin-top:14px;display:none;"><button class="btn btn-pu" onclick="nextM2()">다음 문제 →</button></div>
+  </div>
+  <button class="btn btn-ghost btn-sm" onclick="goHome()">← 임무 목록</button>
+</div>
+
+<!-- ══════ 임무3: AI 시대 직업 심층 ══════ -->
+<div id="screen-m3" class="scr">
+  <div class="gh">
+    <div><div class="gh-title">🤖 임무 3 — AI 시대 직업 심층</div><div class="gh-sub">정보(AI·데이터) + 사회(경제·직업)</div></div>
+    <div class="sc-badge">⭐ <span id="m3sc">0</span></div>
+  </div>
+  <div class="pg-wrap"><div class="pg-label"><span>진행</span><span id="m3pg">1/5</span></div><div class="pg-bar"><div class="pg-fill" id="m3pgb" style="width:0%"></div></div></div>
+  <div class="bubble">
+    <div class="char-face" id="m3f">🧙</div>
+    <div class="bubble-txt"><div class="bubble-name">루나(LUNA)</div><span id="m3msg">AI 마이스터고부터 데이터 사이언티스트까지 — 2026 직업 트렌드를 파악해봐요!</span></div>
+  </div>
+  <div class="card">
+    <div class="timer-row">
+      <div class="timer-num" id="m3tm">35</div>
+      <div class="timer-bar"><div class="timer-fill" id="m3tmb" style="width:100%"></div></div>
+      <button class="btn btn-ghost btn-sm" onclick="toggleHint('m3hint')">💡 힌트</button>
+    </div>
+    <div class="q-txt" id="m3q"></div>
+    <div class="hint" id="m3hint"></div>
+    <div class="opts" id="m3opts"></div>
+    <div class="fb" id="m3fb"></div>
+    <div id="m3nw" style="text-align:center;margin-top:14px;display:none;"><button class="btn btn-pu" onclick="nextM3()">다음 문제 →</button></div>
+  </div>
+  <button class="btn btn-ghost btn-sm" onclick="goHome()">← 임무 목록</button>
+</div>
+
+<!-- ══════ 임무4: 학점 로드맵 멀티엔딩 ══════ -->
+<div id="screen-m4" class="scr">
+  <div class="gh">
+    <div><div class="gh-title">🗺️ 임무 4 — 나의 학점 로드맵</div><div class="gh-sub">진로·직업 + 국어(논술) + 정보(AI)</div></div>
+    <div class="sc-badge">⭐ <span id="m4sc">0</span></div>
+  </div>
+  <div class="pg-wrap"><div class="pg-label"><span>진행</span><span id="m4pg">1/4</span></div><div class="pg-bar"><div class="pg-fill" id="m4pgb" style="width:0%"></div></div></div>
+  <div class="bubble">
+    <div class="char-face" id="m4f">🧙</div>
+    <div class="bubble-txt"><div class="bubble-name">루나(LUNA)</div><span id="m4msg">고교 3년의 중요한 선택 순간! 현명하게 결정하면 꿈이 가까워져요.</span></div>
+  </div>
+  <div class="card">
+    <div style="font-size:2.8rem;text-align:center;margin-bottom:10px;" id="m4em">🤔</div>
+    <div class="q-txt" id="m4tx"></div>
+    <div style="font-size:.8rem;color:var(--txt2);text-align:center;margin-bottom:16px;padding:8px 14px;
+      background:rgba(251,191,36,.06);border-radius:10px;border:1px solid rgba(251,191,36,.2);" id="m4cx"></div>
+    <div id="m4cg"></div>
+    <div class="end-box" id="m4eb"></div>
+    <div id="m4nw" style="text-align:center;margin-top:14px;display:none;"><button class="btn btn-pu" onclick="nextM4()">다음 상황 →</button></div>
+  </div>
+  <button class="btn btn-ghost btn-sm" onclick="goHome()">← 임무 목록</button>
+</div>
+
+<!-- ══════ 결과 ══════ -->
+<div id="screen-result" class="scr">
+  <div class="res-badge">
+    <div class="res-ic" id="resIc">🎓</div>
+    <div class="res-ttl" id="resTtl">학점 로드맵 설계 완료!</div>
+    <div class="res-rk" id="resRk">미랩(MILAB) 고교 진로 설계단 인증</div>
+  </div>
+  <div class="rc-grid" id="resGrid"></div>
+  <div class="tb-box"><div class="tb-lbl">🌟 총 획득 점수</div><div class="tb-n" id="tbN">0</div><div style="font-size:.8rem;color:#333;margin-top:2px;">/ 100점</div></div>
+  <div class="bdg-row" id="resBdg" style="justify-content:center;margin:12px 0;"></div>
+  <div class="card" id="evalCard" style="font-size:.88rem;line-height:1.7;color:var(--txt2);"></div>
+  <div style="text-align:center;margin-top:10px;"><button class="btn btn-pu btn-block" onclick="resetGame()">🔄 처음부터 다시하기</button></div>
+</div>
+
+</div><!-- #app -->
+
+<script>
+/* ══ 상태 ══ */
+const ST={done:[false,false,false,false],scores:[0,0,0,0],stars:[0,0,0,0],
+  badges:{crd:false,car:false,ai:false,map:false}};
+let timerID=null;
+
+/* ══ 공통 유틸 ══ */
+function showScr(id){document.querySelectorAll('.scr').forEach(s=>s.classList.remove('on'));document.getElementById(id).classList.add('on');window.scrollTo(0,0);}
+function goHome(){clrT();showScr('screen-intro');renderSB();renderBdg();}
+function clrT(){if(timerID){clearInterval(timerID);timerID=null;}}
+function calcSt(sc,mx){const p=sc/mx;if(p>=.9)return 3;if(p>=.6)return 2;if(p>0)return 1;return 0;}
+function toggleHint(id){document.getElementById(id).classList.toggle('show');}
+function playS(t){try{const ctx=new(window.AudioContext||window.webkitAudioContext)();const o=ctx.createOscillator(),g=ctx.createGain();o.connect(g);g.connect(ctx.destination);if(t==='ok'){o.type='sine';o.frequency.value=587;g.gain.setValueAtTime(.1,ctx.currentTime);g.gain.exponentialRampToValueAtTime(.001,ctx.currentTime+.6);}else if(t==='no'){o.type='sawtooth';o.frequency.value=200;g.gain.setValueAtTime(.07,ctx.currentTime);g.gain.exponentialRampToValueAtTime(.001,ctx.currentTime+.35);}else{o.frequency.value=784;g.gain.setValueAtTime(.1,ctx.currentTime);g.gain.exponentialRampToValueAtTime(.001,ctx.currentTime+.9);}o.start();o.stop(ctx.currentTime+1);}catch(e){}}
+function startTimer(tmId,sec,onEnd){clrT();const el=document.getElementById(tmId);const barId=tmId+'b';let left=sec;el.textContent=left;document.getElementById(barId).style.width='100%';el.classList.remove('warn');timerID=setInterval(()=>{left--;el.textContent=left;document.getElementById(barId).style.width=(left/sec*100)+'%';if(left<=10)el.classList.add('warn');if(left<=0){clrT();if(onEnd)onEnd();}},1000);}
+function makeOpts(pfx,q){
+  const el=document.getElementById(pfx+'opts');el.innerHTML='';
+  q.opts.forEach((opt,i)=>{
+    const btn=document.createElement('button');btn.className='opt';
+    btn.textContent=['① ','② ','③ ','④ '][i]+opt;
+    btn.onclick=()=>{
+      clrT();
+      document.querySelectorAll('#'+pfx+'opts .opt').forEach(b=>b.disabled=true);
+      document.querySelectorAll('#'+pfx+'opts .opt')[q.ans].classList.add('ok');
+      const fb=document.getElementById(pfx+'fb');const face=document.getElementById(pfx+'f');
+      if(i===q.ans){btn.classList.add('ok');const cur=parseInt(document.getElementById(pfx+'sc').textContent||0);document.getElementById(pfx+'sc').textContent=cur+q.pts;fb.className='fb fb-ok show';fb.innerHTML='✅ 정답! +'+q.pts+'점<br><strong>📚 해설:</strong> '+q.exp;face.className='char-face cf-ok';playS('ok');}
+      else{btn.classList.add('no');fb.className='fb fb-no show';fb.innerHTML='❌ 오답! 정답: '+q.opts[q.ans]+'<br><strong>📚 해설:</strong> '+q.exp;face.className='char-face cf-no';playS('no');}
+      document.getElementById(pfx+'nw').style.display='block';
+    };
+    el.appendChild(btn);
+  });
+}
+function unlockMC(n){const el=document.getElementById('mc'+n);if(!el)return;el.classList.remove('locked');el.querySelector('.mc-lk')?.remove();if(!el.querySelector('.mc-st')){const s=document.createElement('div');s.className='mc-st';s.id='m'+n+'st';s.textContent='☆☆☆';el.appendChild(s);}el.onclick=()=>startM(n);}
+function updateSt(n,stars){const el=document.getElementById('m'+n+'st');if(el)el.textContent='★'.repeat(stars)+'☆'.repeat(3-stars);document.getElementById('mc'+n)?.classList.add('done');}
+function renderSB(){const g=document.getElementById('sbGrid');if(!g)return;g.innerHTML='';['📚 학점 전략','🧭 진로 유형','🤖 AI 직업','🗺️ 로드맵'].forEach((nm,i)=>{const d=document.createElement('div');d.className='sb-item';d.innerHTML='<div class="sb-ic">'+['📚','🧭','🤖','🗺️'][i]+'</div><div class="sb-nm">'+nm+'</div><div class="sb-sc">'+ST.scores[i]+'점</div><div class="sb-st">'+'★'.repeat(ST.stars[i])+'☆'.repeat(3-ST.stars[i])+'</div>';g.appendChild(d);});}
+function renderBdg(){const r=document.getElementById('bdgRow');if(!r)return;r.innerHTML='';[['crd','📚 학점 마스터'],['car','🧭 진로 분석가'],['ai','🤖 AI 전문가'],['map','🗺️ 로드맵 설계사']].forEach(([k,l])=>{const d=document.createElement('div');d.className='bdg'+(ST.badges[k]?' earned':'');d.textContent=l;r.appendChild(d);});}
+function saveScore(){try{localStorage.setItem('milab_credit_hs',JSON.stringify(ST));}catch(e){}}
+function loadScore(){try{const d=JSON.parse(localStorage.getItem('milab_credit_hs'));if(d)Object.assign(ST,d);}catch(e){}}
+function startM(n){if(n===1)initM1();else if(n===2)initM2();else if(n===3)initM3();else initM4();showScr('screen-m'+n);}
+function initQR(){try{const d=document.getElementById('qr-div');if(!d)return;d.innerHTML='';new QRCode(d,{text:'https://milab2019.github.io/main/credit_roadmap_hs.html',width:100,height:100,colorDark:'#a855f7',colorLight:'#0a0612'});}catch(e){const d=document.getElementById('qr-div');if(d)d.innerHTML='<div style="color:var(--txt2);font-size:.72rem;padding:4px;">milab2019.github.io/main/credit_roadmap_hs.html</div>';}}
+
+/* ══════════════════════════════════════
+   임무1: 학점제 & 수능 전략
+══════════════════════════════════════ */
+const m1Bank={
+  e:[
+    {q:'2026년 고교학점제에서 고등학생이 졸업하려면\n총 몇 학점을 이수해야 하나요?',opts:['150학점','172학점','192학점','210학점'],ans:2,pts:10,exp:'고교학점제 졸업 기준: 교과 174학점 + 창의적 체험활동 18학점 = 총 192학점이에요. 3년간 스스로 과목을 선택해 이수해야 해요!',hint:'교과 174 + 창체 18 = ?'},
+    {q:'고교학점제에서 내신 성취평가제의 방식으로 옳은 것은?',opts:['상위 4%만 A를 받는 상대평가','절대적 성취 수준에 따라 A~E 5단계로 평가','전교 1등부터 순위를 매기는 방식','시험 없이 출석만으로 평가'],ans:1,pts:10,exp:'고교학점제 내신 = 절대평가(A~E 5단계)! 경쟁보다 과정 중심 학습이 강조돼요. A는 90점 이상, E는 40점 미만이에요.',hint:'절대 = 나의 성취 수준 기준, 상대 = 다른 학생과 비교'},
+    {q:'2028 수능 개편안에서 사라지는 것은?',opts:['국어 영역','수능 자체','탐구 영역의 선택과목제','영어 절대평가'],ans:2,pts:10,exp:'2028 수능: 사회·과학탐구 선택과목 폐지! 이제 통합사회·통합과학 두 과목 모두 응시해야 해요. 기존 사탐/과탐 선택이 없어져요.',hint:'2028 수능 개편 = 선택과목 폐지 = 통합형'},
+    {q:'고교학점제에서 학생이 원하는 과목을 다른 학교나 온라인에서\n수강하는 제도를 무엇이라고 하나요?',opts:['방과후 수업','공동교육과정·온라인 과정','특기적성 활동','자유학기제'],ans:1,pts:10,exp:'공동교육과정·온라인 과정! 내 학교에 없는 과목을 인근 학교나 온라인 플랫폼에서 수강할 수 있어요. 다양한 진로 과목 선택 가능!',hint:'내 학교에 없는 과목 → 다른 학교/온라인 수강'},
+    {q:'2026년 3월 24일 전국 모의고사에 응시한 고등학생 수는?',opts:['약 50만 명','약 80만 명','약 122만 명','약 200만 명'],ans:2,pts:10,exp:'2026년 3월 24일 전국연합학력평가에 약 122만 명이 응시했어요. 고1 약 42만 명 + 고2 약 40만 명 + 고3 약 41만 명이에요!',hint:'122만 명 = 고1(42만) + 고2(40만) + 고3(41만)'},
+  ],
+  m:[
+    {q:'고교학점제에서 이공계 대학 진학을 목표로 할 때\n유리한 과목 선택 전략으로 가장 적절한 것은?',opts:['체육·예술 과목 위주로 선택','미적분·물리학·화학 등 이공계 연계 과목을 선택해 심화 이수','국어·영어·역사만 선택','과목 수를 최소화해 성적 관리'],ans:1,pts:14,exp:'이공계 학종(학생부종합전형)은 전공 연계 과목 이수 이력이 핵심! 미적분·물리학·화학·정보과학 등을 선택해야 대학 심사에서 유리해요.',hint:'학과 특성에 맞는 과목을 선택하는 것이 고교학점제의 핵심!'},
+    {q:'2028 수능에서 처음으로 적용되는 "통합사회·통합과학"\n동시 응시 규정의 의미로 옳은 것은?',opts:['사회나 과학 중 하나만 골라 응시','통합사회·통합과학 두 과목 모두 응시해야 최종 성적 산출','선택 과목 중 가장 좋은 과목을 고름','수능에서 탐구 영역이 사라짐'],ans:1,pts:14,exp:'2028 수능 탐구: 통합사회·통합과학 2과목 모두 필수 응시! 한 과목이라도 안 치면 성적 산출이 안 돼요. 기존 사탐/과탐 선택 방식과 완전히 달라요.',hint:'Both = 둘 다 응시 필수'},
+    {q:'학생부종합전형(학종)에서 가장 중요한 평가 요소는?',opts:['수능 점수','학교 등급(특목고·일반고 여부)','교과 이수 내역·세부능력특기사항·진로 활동의 일관성','부모님 직업'],ans:2,pts:14,exp:'학종 핵심: 어떤 과목을 선택했는가, 수업에서 어떤 탐구를 했는가(세특), 진로 활동이 일관성 있는가! 스펙 나열보다 스토리가 중요해요.',hint:'학종 = 스펙 나열 X, 진로 스토리 O'},
+    {q:'고교학점제 도입 후 일반고 교사들이 가장 우려하는 문제로\n조사에서 가장 많이 지적된 것은?',opts:['학생들이 공부를 안 해서','선택 과목 수 증가로 교사 확충 없이 운영 부담이 커지는 구조적 문제','학교 건물이 부족해서','수능이 너무 어려워져서'],ans:1,pts:14,exp:'전국 교원 9,485명 조사 결과: 교사 10명 중 8명이 제도 성공에 회의적! 핵심 이유는 교사 확충 없는 선택 과목 증가, 소규모 학교의 과목 개설 한계예요.',hint:'교사 확충 없이 과목 수 증가 → 현장 부담'},
+    {q:'고교학점제에서 "미이수제"의 의미로 가장 옳은 것은?',opts:['출석이 부족한 학생에게 벌점을 주는 제도','일정 수준의 성취에 미달하면 학점을 인정하지 않는 제도','수능에 불합격한 학생을 재수하게 하는 제도','졸업을 늦추는 제도'],ans:1,pts:14,exp:'미이수제: 성취율 40% 미만(E 이하)이면 학점 불인정! 단순 출석만으로는 졸업이 안 되고, 보충 이수 기회가 주어져요. 학습의 질 보장이 목표예요.',hint:'미이수 = 40% 미만 = 학점 불인정'},
+  ],
+  h:[
+    {q:'2028 수능 개편 후 N수생(재수생)이 불리해지는 핵심 이유는?',opts:['수능이 더 어려워져서','기하·미적분II·사회/과학 진로선택과목을 수능으로 평가받지 못해 학종 불리','재수 학원 비용이 높아서','모의고사를 못 봐서'],ans:1,pts:18,exp:'2028 수능에서 기하·미적분Ⅱ·사회/과학 진로선택과목이 빠졌어요. 재학생은 학교생활기록부로 평가받지만, N수생은 이 이수 이력이 없어 불리해질 수 있어요.',hint:'재수생 = 학생부 이수 이력 없음 → 학종 불리'},
+    {q:'고교학점제에서 "융합선택과목"을 적극 선택해야 하는 이유로\n교육부가 제시한 논거는?',opts:['점수 받기 쉬워서','통합적·융합적 교육을 유도하고 2028 수능의 통합형 방향과 일치해서','선생님이 수업 준비를 덜 해도 되어서','친구들과 같이 들을 수 있어서'],ans:1,pts:18,exp:'교육부: "융합선택과목 활성화가 통합적 학습 유도의 핵심!" 2028 수능이 통합형으로 바뀐 방향과 연결돼요. 사회+과학 융합, 인문+IT 융합 과목들이 주목받아요.',hint:'2028 수능 통합형 ↔ 고교학점제 융합선택과목 연계'},
+    {q:'서울대가 2028 입시부터 강화하는 "교과 평가"의\n핵심 방향으로 가장 옳은 것은?',opts:['내신 등급 숫자만 본다','수능 점수 비중을 대폭 늘린다','어떤 과목을 선택하고 얼마나 심도 있게 학습했는지의 이수 내역을 강화한다','봉사 시간을 중시한다'],ans:2,pts:18,exp:'서울대 2028 입시: 정시에서 교과 평가 반영 비중 확대! 내신 등급보다 어떤 과목을 선택했는지, 세특(세부능력특기사항)의 수준이 핵심이에요.',hint:'등급 < 과목 이수 내역 + 학습 깊이'},
+  ]
+};
+let m1D='e',m1List=[],m1Idx=0;
+function initM1(){m1Idx=0;document.getElementById('m1sc').textContent='0';setM1D('e');}
+function setM1D(d){m1D=d;clrT();document.querySelectorAll('#screen-m1 .dt').forEach(b=>b.classList.remove('on'));document.querySelector('#screen-m1 .dt-'+d).classList.add('on');m1List=[...m1Bank[d]].sort(()=>Math.random()-.5);m1Idx=0;document.getElementById('m1sc').textContent='0';renderM1();}
+function renderM1(){
+  if(m1Idx>=m1List.length){finishM1();return;}
+  clrT();const q=m1List[m1Idx];
+  document.getElementById('m1pg').textContent=(m1Idx+1)+'/'+m1List.length;
+  document.getElementById('m1pgb').style.width=(m1Idx/m1List.length*100)+'%';
+  document.getElementById('m1q').textContent=q.q;
+  document.getElementById('m1hint').textContent='💡 힌트: '+q.hint;
+  document.getElementById('m1hint').classList.remove('show');
+  document.getElementById('m1fb').className='fb';document.getElementById('m1nw').style.display='none';
+  document.getElementById('m1f').textContent='🧙';document.getElementById('m1f').className='char-face';
+  makeOpts('m1',q);
+  const sec=m1D==='e'?40:m1D==='m'?32:26;
+  startTimer('m1tm',sec,()=>{document.querySelectorAll('#m1opts .opt').forEach(b=>b.disabled=true);const fb=document.getElementById('m1fb');fb.className='fb fb-no show';fb.innerHTML='⏰ 시간 초과! 정답: '+q.opts[q.ans];document.getElementById('m1nw').style.display='block';});
+}
+function nextM1(){m1Idx++;renderM1();}
+function finishM1(){clrT();const sc=parseInt(document.getElementById('m1sc').textContent||0);ST.scores[0]=sc;const max=m1D==='e'?50:m1D==='m'?70:54;ST.stars[0]=calcSt(sc,max);ST.done[0]=true;ST.badges.crd=ST.stars[0]>=2;updateSt(1,ST.stars[0]);unlockMC(2);playS('cl');document.getElementById('m1msg').textContent='🎉 임무 1 완료! '+sc+'점!';document.getElementById('m1f').className='char-face cf-wow';setTimeout(()=>goHome(),1600);}
+
+/* ══════════════════════════════════════
+   임무2: 진로 유형 분석
+══════════════════════════════════════ */
+const m2Qs=[
+  {q:'홀랜드(Holland) 직업 유형 중 "사회형(S)"에 해당하는\n직업으로 가장 적절한 것은?',opts:['기계 엔지니어','교사·상담사·사회복지사','건축 설계사','회계사'],ans:1,pts:12,exp:'홀랜드 사회형(S): 다른 사람을 돕고 가르치고 상담하는 것을 좋아해요. 교사·상담사·사회복지사·간호사가 대표적이에요!',hint:'사회형 S = Social = 사람을 돕는 직업'},
+  {q:'학생부종합전형(학종)에서 "세부능력특기사항(세특)"의\n올바른 의미는?',opts:['수능 과목별 점수','교과 수업에서 학생이 탐구한 내용·발표·토론 기록','봉사 시간 합계','수상 이력'],ans:1,pts:12,exp:'세특(세부능력특기사항): 각 교과 수업에서 학생이 무엇을 탐구하고 발표하고 질문했는지 선생님이 기록해요. 학종에서 가장 중요한 자료 중 하나예요!',hint:'세특 = 수업 시간 나의 활동 기록'},
+  {q:'진로 설계에서 MBTI보다 직업 적합도 예측에 더 유용하다고\n알려진 심리 검사 도구는?',opts:['MBTI(성격 유형 지표)','홀랜드 직업적성검사 또는 강점혁명(StrengthsFinder)','혈액형 성격론','IQ 검사'],ans:1,pts:12,exp:'홀랜드 직업적성검사와 강점혁명은 직업 만족도·성과와 더 높은 상관관계가 있어요. MBTI는 성격을 보여주지만 직업 성공 예측력은 홀랜드가 더 강해요!',hint:'직업 = 흥미+강점 조합이 중요해요'},
+  {q:'고교 생활기록부에서 "자율·진로활동"이 중요한 이유로\n가장 적절한 것은?',opts:['성적과 직접 연결돼서','학과·진로 연계 활동을 통해 관심사의 일관성과 탐구 깊이를 보여줄 수 있어서','대회 수상 실적으로 환산돼서','출석 점수에 포함돼서'],ans:1,pts:12,exp:'자율·진로 활동: 어떤 직업에 관심을 갖고, 어떤 활동으로 탐구했는지의 스토리를 만들어요. 학종 심사관은 "이 학생의 진로 스토리가 일관성 있는가?"를 봐요.',hint:'진로 활동 = 나의 관심사 스토리 증명'},
+  {q:'고교학점제에서 의예과를 목표로 할 때\n가장 전략적으로 선택해야 하는 과목군은?',opts:['체육·음악·미술 위주','생명과학I·II, 화학I·II, 생명과학실험 등 생명·화학 계열 심화과목','국어와 영어만 집중','역사·지리 과목 위주'],ans:1,pts:12,exp:'의예과 학종: 생명과학·화학 계열 과목을 심화 이수하고, 해당 수업에서 의료·바이오 연계 탐구를 한 세특 기록이 핵심이에요! 과목 선택이 합격을 좌우해요.',hint:'의예과 = 생명과학 + 화학 심화 이수'},
+];
+let m2Idx=0;
+function initM2(){m2Idx=0;document.getElementById('m2sc').textContent='0';renderM2();}
+function renderM2(){
+  if(m2Idx>=m2Qs.length){finishM2();return;}
+  clrT();const q=m2Qs[m2Idx];
+  document.getElementById('m2pg').textContent=(m2Idx+1)+'/'+m2Qs.length;
+  document.getElementById('m2pgb').style.width=(m2Idx/m2Qs.length*100)+'%';
+  document.getElementById('m2q').textContent=q.q;
+  document.getElementById('m2hint').textContent='💡 힌트: '+q.hint;
+  document.getElementById('m2hint').classList.remove('show');
+  document.getElementById('m2fb').className='fb';document.getElementById('m2nw').style.display='none';
+  document.getElementById('m2f').textContent='🧙';document.getElementById('m2f').className='char-face';
+  makeOpts('m2',q);
+  startTimer('m2tm',38,()=>{document.querySelectorAll('#m2opts .opt').forEach(b=>b.disabled=true);const fb=document.getElementById('m2fb');fb.className='fb fb-no show';fb.innerHTML='⏰ 시간 초과! 정답: '+q.opts[q.ans];document.getElementById('m2nw').style.display='block';});
+}
+function nextM2(){m2Idx++;renderM2();}
+function finishM2(){clrT();const sc=parseInt(document.getElementById('m2sc').textContent||0);ST.scores[1]=sc;ST.stars[1]=calcSt(sc,60);ST.done[1]=true;ST.badges.car=ST.stars[1]>=2;updateSt(2,ST.stars[1]);unlockMC(3);playS('cl');document.getElementById('m2msg').textContent='🎉 임무 2 완료! '+sc+'점!';document.getElementById('m2f').className='char-face cf-wow';setTimeout(()=>goHome(),1600);}
+
+/* ══════════════════════════════════════
+   임무3: AI 시대 직업 심층
+══════════════════════════════════════ */
+const m3Qs=[
+  {q:'2026년 AI 마이스터고의 평균 취업률은?\n(교육부·한국교육개발원 2024년 직업계고 졸업자 통계)',opts:['약 42%','약 52%','약 62%','약 72.6%'],ans:3,pts:12,exp:'AI·마이스터고 취업률 72.6%! 특성화고(52.3%)보다 20%p 이상 높아요. 수도전기공업고는 2024년 취업률 97% 달성, 유지취업률 82.2% 기록!',hint:'마이스터고 > 특성화고 > 일반고 직업반 순으로 취업률 높음'},
+  {q:'2026년 자격증 시장에서 가장 빠르게 성장하는 분야는?\n(한국산업인력공단 통계 기반)',opts:['부동산·금융 자격증','전통 공예·식품 자격증','AI·클라우드·데이터 분석 관련 디지털 자격증','운전면허·건설 자격증'],ans:2,pts:12,exp:'2026 자격증 트렌드 핵심 키워드 = AI + 데이터! 정부의 디지털 국가자격 신설 로드맵(2025~2028) 발표로 AI·데이터 분석·빅데이터 처리 자격이 급성장 중이에요.',hint:'2026년 = AI 시대 = 디지털 자격증 급성장'},
+  {q:'대기업 채용에서 TOEIC 중심 평가가 바뀌고 있는 방향은?',opts:['토익 점수를 더 높은 기준으로 강화','말하기 능력 중심(OPIc·TOEIC Speaking) 평가로 전환','영어 시험 폐지','학점 기준 강화'],ans:1,pts:12,exp:'SK·CJ·삼성 등 대기업: TOEIC 점수 → OPIc·TOEIC Speaking 실용 회화 평가로 전환! 2025년 OPIc 응시자 31만 명(전년比 18% 증가)으로 확인됐어요.',hint:'회화 능력 = OPIc, TOEIC Speaking'},
+  {q:'"데이터 관리기사" 신규 국가자격시험이 처음 시행되는 시기는?',opts:['2025년 상반기 이미 시행','2026년 하반기 첫 시험 확정','2028년 예정','2030년 이후'],ans:1,pts:12,exp:'데이터 관리기사: 2026년 하반기 첫 시험 확정! AI 시대의 데이터 관리·분석 전문가를 위한 새 국가기술자격이에요. 지금 준비하면 선점 효과가 있어요!',hint:'2026년 하반기 = 데이터 관리기사 첫 시험'},
+  {q:'AI 시대에 기후위기 대응 분야 직업이 주목받는 이유로\n가장 타당한 것은?',opts:['기후가 좋아져서','탄소중립 기본계획(2026~2030) 시행 + ESG 경영 확산으로 친환경 전문 인력 수요 급증','날씨를 예측하는 AI가 생겨서','환경 자격증이 취득하기 쉬워서'],ans:1,pts:12,exp:'2026년부터 탄소중립 기본계획 시행 + ESG 의무 공시 확대! 산업안전기사·에너지관리기사·환경기능사 관련 응시율이 전년 대비 12% 증가했어요.',hint:'ESG + 탄소중립 = 친환경 전문가 수요 급증'},
+];
+let m3Idx=0;
+function initM3(){m3Idx=0;document.getElementById('m3sc').textContent='0';renderM3();}
+function renderM3(){
+  if(m3Idx>=m3Qs.length){finishM3();return;}
+  clrT();const q=m3Qs[m3Idx];
+  document.getElementById('m3pg').textContent=(m3Idx+1)+'/'+m3Qs.length;
+  document.getElementById('m3pgb').style.width=(m3Idx/m3Qs.length*100)+'%';
+  document.getElementById('m3q').textContent=q.q;
+  document.getElementById('m3hint').textContent='💡 힌트: '+q.hint;
+  document.getElementById('m3hint').classList.remove('show');
+  document.getElementById('m3fb').className='fb';document.getElementById('m3nw').style.display='none';
+  document.getElementById('m3f').textContent='🧙';document.getElementById('m3f').className='char-face';
+  makeOpts('m3',q);
+  startTimer('m3tm',35,()=>{document.querySelectorAll('#m3opts .opt').forEach(b=>b.disabled=true);const fb=document.getElementById('m3fb');fb.className='fb fb-no show';fb.innerHTML='⏰ 시간 초과! 정답: '+q.opts[q.ans];document.getElementById('m3nw').style.display='block';});
+}
+function nextM3(){m3Idx++;renderM3();}
+function finishM3(){clrT();const sc=parseInt(document.getElementById('m3sc').textContent||0);ST.scores[2]=sc;ST.stars[2]=calcSt(sc,60);ST.done[2]=true;ST.badges.ai=ST.stars[2]>=2;updateSt(3,ST.stars[2]);unlockMC(4);playS('cl');document.getElementById('m3msg').textContent='🎉 임무 3 완료! '+sc+'점!';document.getElementById('m3f').className='char-face cf-wow';setTimeout(()=>goHome(),1600);}
+
+/* ══════════════════════════════════════
+   임무4: 나의 학점 로드맵 멀티엔딩
+══════════════════════════════════════ */
+const m4Scenes=[
+  {
+    em:'📚',
+    tx:'고1 첫 학기, 과목 선택 시간이 찾아왔어요.\n담임 선생님이 "이공계라면 과학을 많이 들어야 해"라고 해요.\n하지만 나는 인문·사회에 더 흥미가 있어요. 어떻게 할까요?',
+    cx:'📋 참고: 학생부종합전형에서 지원 학과와 선택 과목의 연계성이 합격의 핵심이에요. 2028 수능 탐구는 통합사회·통합과학 필수 응시!',
+    choices:[
+      {lbl:'A',txt:'선생님 말씀대로 과학 과목을 억지로 다 선택한다.',type:'bad',pts:0,end:'❌ 흥미 없는 과목을 강제로 선택하면 학습 동기가 떨어지고 세특도 빈약해져요. 억지 선택은 오히려 학종에 불리해요.',lesson:'선택과목 = 내 흥미 + 지원 학과 연계를 함께 고려해야 해요!'},
+      {lbl:'B',txt:'인문·사회 흥미를 살리면서, 지망 학과의 전공 연계 과목도\n체계적으로 선택하는 로드맵을 진로 상담 선생님과 함께 설계한다.',type:'hero',pts:20,end:'✅ 완벽한 전략! 흥미 + 진로 연계 = 최강의 학종 스토리예요. 진로 상담 선생님과 함께 과목 선택 로드맵을 짜는 것이 고교학점제 활용의 핵심이에요!',lesson:'과목 선택 = 흥미 × 진로 연계 × 장기 전략! 3가지를 함께 고려해요.'},
+      {lbl:'C',txt:'친구들이 많이 듣는 과목을 따라 선택한다.',type:'mid',pts:8,end:'⚠️ 친구 따라가면 나만의 스토리가 없어요. 나의 진로와 흥미를 중심으로 선택해야 학종에서 차별화돼요.',lesson:'남 따라가는 과목 선택 ≠ 나만의 진로 스토리예요!'},
+    ]
+  },
+  {
+    em:'🧭',
+    tx:'2학년이 됐어요. 희망 전공이 컴퓨터공학인데,\n학교에 정보과학 심화과목이 없어요.\n어떻게 하면 좋을까요?',
+    cx:'💡 고교학점제 활용: 공동교육과정·온라인 과정에서 다른 학교 과목 수강 가능! 진로선택과목 = 정보과학, 인공지능 기초 등',
+    choices:[
+      {lbl:'A',txt:'학교에 과목이 없으니 포기하고 다른 전공을 알아본다.',type:'bad',pts:0,end:'❌ 고교학점제에는 공동교육과정이 있어요! 인근 학교나 온라인 플랫폼에서 정보과학·AI 과목을 수강할 수 있어요. 포기는 이르다!',lesson:'고교학점제 = 내 학교 과목 없어도 공동교육과정·온라인으로 해결!'},
+      {lbl:'B',txt:'공동교육과정·온라인 과정으로 정보과학 심화과목을 신청하고,\n방과 후 코딩 대회·프로젝트 활동을 병행한다.',type:'hero',pts:20,end:'✅ 탁월한 선택! 공동교육과정으로 과목을 이수하고, 활동으로 세특과 진로활동을 채우면 컴퓨터공학 학종에서 경쟁력이 생겨요!',lesson:'공동교육과정 + 자기 활동 = 학종 최강 조합!'},
+      {lbl:'C',txt:'학교에서 제공하는 과목 중 그냥 쉬운 것들로 채운다.',type:'mid',pts:8,end:'⚠️ 쉬운 과목만 선택하면 세특 내용도 얕아지고 지원 학과와 연계성이 없어져요. 학종에서 불리해질 수 있어요.',lesson:'선택과목의 수준과 연계성이 학종 심사에서 중요해요!'},
+    ]
+  },
+  {
+    em:'🤖',
+    tx:'고3이에요. AI 마이스터고 출신 친구가\n"나는 이미 취업했어!"라고 해요.\n대학 진학을 준비하는 나는 흔들려요.',
+    cx:'📊 2024 통계: 마이스터고 취업률 72.6%, 유지취업률 82.2% | 일부 마이스터고 취업률 97% | 단 대학원·경영진 진입은 대졸자가 유리',
+    choices:[
+      {lbl:'A',txt:'"나도 취업할 걸 그랬나..." 갑자기 계획을 바꾸기로 한다.',type:'bad',pts:0,end:'❌ 고3 때 갑작스러운 진로 변경은 위험해요! 마이스터고 취업도 훌륭하지만, 나의 강점·흥미를 기반으로 설계한 진로가 최고예요.',lesson:'남의 성공에 흔들리지 말고, 내 로드맵을 신뢰해요!'},
+      {lbl:'B',txt:'친구의 성공을 존중하되, 나의 대학 진학 계획은 내 강점과\n장기 목표에 맞게 유지하며 마지막 스퍼트를 준비한다.',type:'hero',pts:20,end:'✅ 현명한 선택! 대학 진학도, 마이스터고 취업도 모두 훌륭한 길이에요. 중요한 것은 내 강점·흥미·장기 목표에 맞는 선택이에요!',lesson:'진로는 남과의 비교가 아니라 나 자신과의 대화로 결정해요!'},
+      {lbl:'C',txt:'친구 성공 이야기를 SNS에 올리며 부러워하다 공부를 못 한다.',type:'bad',pts:0,end:'❌ SNS 비교는 진로 불안을 키워요. 지금 내가 할 일에 집중하는 것이 가장 현명한 전략이에요.',lesson:'비교 대신 내 길에 집중! 남의 성공은 나의 동기로 활용해요.'},
+    ]
+  },
+  {
+    em:'🗺️',
+    tx:'고교 3년 학점 로드맵을 완성해야 해요.\n다음 중 가장 전략적인 고교 3년 설계는?',
+    cx:'🎯 핵심 원칙: 흥미 × 진로 연계 × 대입 전형 전략을 통합적으로 고려해야 해요!',
+    choices:[
+      {lbl:'A',txt:'성적 받기 쉬운 과목만 골라 내신을 관리한다.',type:'mid',pts:10,end:'⚠️ 단기 내신 관리는 되지만, 학종 심사에서 진로 연계성이 없어 불리할 수 있어요. 2028 수능 개편과도 맞지 않는 방향이에요.',lesson:'내신 관리 + 진로 연계 둘 다 잡는 균형이 필요해요!'},
+      {lbl:'B',txt:'1학년: 탐색(다양한 과목 체험) → 2학년: 집중(진로 연계 심화과목 선택 + 세특 강화) → 3학년: 완성(대입 전략 + 공동교육과정 활용)의 3단계 로드맵을 설계한다.',type:'hero',pts:20,end:'✅ 완벽한 로드맵! 1학년 탐색 → 2학년 집중 → 3학년 완성의 3단계 전략이 고교학점제 활용의 정석이에요. 진로 상담 선생님, AI 진로 도구와 함께 실행해봐요!',lesson:'고교 3년 = 탐색(1) → 집중(2) → 완성(3)! 지금부터 설계해요.'},
+      {lbl:'C',txt:'친구들이 가는 인기 학과를 목표로 과목을 맞춘다.',type:'bad',pts:0,end:'❌ 인기 학과가 나의 강점·흥미와 맞지 않으면 대학에서 힘들어져요. 나 자신을 먼저 알고 진로를 설계해야 해요!',lesson:'인기 ≠ 나에게 맞는 진로. 홀랜드 검사, 강점 탐색으로 나를 먼저 알아요!'},
+    ]
+  }
+];
+let m4Idx=0,m4Sc=0;
+function initM4(){m4Idx=0;m4Sc=0;document.getElementById('m4sc').textContent='0';renderM4();}
+function renderM4(){
+  if(m4Idx>=m4Scenes.length){finishM4();return;}
+  const sc=m4Scenes[m4Idx];
+  document.getElementById('m4pg').textContent=(m4Idx+1)+'/'+m4Scenes.length;
+  document.getElementById('m4pgb').style.width=(m4Idx/m4Scenes.length*100)+'%';
+  document.getElementById('m4em').textContent=sc.em;
+  document.getElementById('m4tx').textContent=sc.tx;
+  document.getElementById('m4cx').textContent=sc.cx;
+  document.getElementById('m4eb').className='end-box';
+  document.getElementById('m4nw').style.display='none';
+  document.getElementById('m4f').textContent='🧙';document.getElementById('m4f').className='char-face';
+  const cg=document.getElementById('m4cg');cg.innerHTML='';
+  sc.choices.forEach(c=>{
+    const btn=document.createElement('button');btn.className='ch-btn';
+    btn.innerHTML='<span class="ch-lbl">'+c.lbl+'</span><span>'+c.txt+'</span>';
+    btn.onclick=()=>{
+      document.querySelectorAll('.ch-btn').forEach(b=>b.disabled=true);
+      btn.classList.add(c.type==='hero'?'ch-hero':c.type==='bad'?'ch-bad':'ch-mid');
+      const eb=document.getElementById('m4eb');const face=document.getElementById('m4f');
+      if(c.type==='hero'){m4Sc+=c.pts;document.getElementById('m4sc').textContent=m4Sc;eb.className='end-box show e-hero';face.className='char-face cf-wow';playS('ok');}
+      else if(c.type==='mid'){m4Sc+=c.pts;document.getElementById('m4sc').textContent=m4Sc;eb.className='end-box show e-mid';}
+      else{eb.className='end-box show e-bad';face.className='char-face cf-no';playS('no');}
+      eb.innerHTML=c.end+'<br><br><strong style="color:var(--pu3)">📚 로드맵 인사이트:</strong> '+c.lesson;
+      document.getElementById('m4nw').style.display='block';
+    };
+    cg.appendChild(btn);
+  });
+}
+function nextM4(){m4Idx++;renderM4();}
+function finishM4(){ST.scores[3]=m4Sc;ST.stars[3]=calcSt(m4Sc,80);ST.done[3]=true;ST.badges.map=ST.stars[3]>=2;saveScore();playS('cl');showResult();}
+
+/* ══ 결과 ══ */
+function showResult(){
+  const total=ST.scores.reduce((a,b)=>a+b,0);const ts=ST.stars.reduce((a,b)=>a+b,0);
+  let ic='🎓',ttl='학점 로드맵 설계 완료!',rk='미랩(MILAB) 고교 진로 설계단 인증';
+  if(ts>=10){ic='🏆';ttl='진로 전략 마스터!';rk='탁월해요! 최상위 고교 전략가예요!';}
+  else if(ts>=7){ic='⭐';ttl='학점 로드맵 설계사';rk='훌륭해요! 명확한 방향이 있어요!';}
+  else if(ts>=4){ic='🔮';ttl='진로 탐험가';rk='잘하고 있어요! 계속 탐구해봐요!';}
+  else{ic='🌱';ttl='진로 새싹';rk='지금부터 전략을 세워봐요!';}
+  document.getElementById('resIc').textContent=ic;document.getElementById('resTtl').textContent=ttl;document.getElementById('resRk').textContent=rk;
+  const grid=document.getElementById('resGrid');grid.innerHTML='';
+  ['📚 학점 전략','🧭 진로 유형','🤖 AI 직업','🗺️ 로드맵'].forEach((nm,i)=>{
+    const d=document.createElement('div');d.className='rc';
+    d.innerHTML='<div class="rc-i">'+['📚','🧭','🤖','🗺️'][i]+'</div><div class="rc-n">'+nm+'</div><div class="rc-v">'+ST.scores[i]+'점</div><div class="rc-s">'+'★'.repeat(ST.stars[i])+'☆'.repeat(3-ST.stars[i])+'</div>';
+    grid.appendChild(d);
+  });
+  document.getElementById('tbN').textContent=total;
+  const rb=document.getElementById('resBdg');rb.innerHTML='';
+  [['crd','📚 학점 마스터'],['car','🧭 진로 분석가'],['ai','🤖 AI 전문가'],['map','🗺️ 로드맵 설계사']].forEach(([k,l])=>{
+    const el=document.createElement('div');el.className='bdg'+(ST.badges[k]?' earned':'');el.textContent=l;rb.appendChild(el);
+  });
+  if(Object.values(ST.badges).every(v=>v)){const el=document.createElement('div');el.className='bdg earned';el.textContent='🏆 진로 전략 마스터';rb.appendChild(el);}
+  const evals=['지금부터 전략을 세워요! 🌱 루나가 함께할게요.','진로의 방향이 보이기 시작했어요! 🔮 계속 탐구해봐요.','훌륭한 학점 로드맵 설계사예요 ⭐ 방향이 명확해요!','완벽한 진로 전략 마스터예요 🏆 미래가 기대돼요!'];
+  document.getElementById('evalCard').innerHTML='<strong style="color:var(--pu3)">💬 루나(LUNA)의 평가 — 2026.03.25:</strong><br>'+evals[Math.min(Math.floor(ts/3),3)]+'<br><br><span style="color:var(--gold)">📅 2026 핵심 이슈: 고교학점제 전면 시행 + 2028 수능 개편 + AI 마이스터고 전국 확산! 지금 여러분의 전략이 대입을 결정해요!</span>';
+  showScr('screen-result');
+}
+
+function resetGame(){
+  clrT();Object.assign(ST,{done:[false,false,false,false],scores:[0,0,0,0],stars:[0,0,0,0],badges:{crd:false,car:false,ai:false,map:false}});
+  ['mc2','mc3','mc4'].forEach(id=>{const el=document.getElementById(id);if(!el)return;el.className='mc locked';el.onclick=null;el.querySelector('.mc-st')?.remove();if(!el.querySelector('.mc-lk')){const l=document.createElement('div');l.className='mc-lk';l.textContent='🔒';el.appendChild(l);}});
+  document.getElementById('mc1').className='mc';document.getElementById('mc1').onclick=()=>startM(1);
+  document.getElementById('m1st').textContent='☆☆☆';renderSB();renderBdg();showScr('screen-intro');
+}
+
+/* ── 포트폴리오 JSON ── */
+const portfolioEntry={id:'#013',title:'학점 로드맵 설계단',grade:'고등학생 전학년',theme:'2026 고교학점제 전면 시행 + 2028 수능 개편 + AI 마이스터고 확산',subjects:['국어(논술·비판적 사고)','사회(진로·직업·경제)','정보(AI·데이터 직업)'],missions:['임무1: 학점제 & 수능 전략(3단계 난이도)','임무2: 진로 유형 분석(홀랜드·학종·세특)','임무3: AI 시대 직업 심층(2026 트렌드)','임무4: 나의 학점 로드맵(멀티엔딩 4편)'],url:'https://milab2019.github.io/main/credit_roadmap_hs.html',date:'2026.03.25',status:'운영 중'};
+console.log('📋 포트폴리오 JSON:\n'+JSON.stringify(portfolioEntry,null,2));
+
+loadScore();renderSB();renderBdg();
+window.addEventListener('load',()=>setTimeout(initQR,600));
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+</body>
+</html>
