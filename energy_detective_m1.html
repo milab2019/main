@@ -1,0 +1,583 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>⚡ 에너지 위기 탐정단 - 미랩 중1 #010</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Jua&family=Nanum+Gothic:wght@400;700;800&display=swap');
+:root{
+  --bg0:#0a0e1a;--bg1:#0f1525;--bg2:#162038;
+  --cyan:#00e5ff;--amber:#ffb300;--green:#00e676;
+  --red:#ff5252;--purple:#e040fb;--orange:#ff6d00;
+  --txt:#e8f0fe;--muted:#90a4ae;
+  --r:18px;--shadow:0 8px 32px rgba(0,229,255,.12);
+  --f:'Jua',sans-serif;--fb:'Nanum Gothic',sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:var(--fb);background:var(--bg0);color:var(--txt);min-height:100vh;overflow-x:hidden;}
+body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse 80% 60% at 50% 0%,rgba(0,229,255,.07),transparent);pointer-events:none;z-index:0;}
+.scan{position:fixed;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--cyan),transparent);animation:scanMove 5s linear infinite;z-index:1;opacity:.3;}
+@keyframes scanMove{to{top:100vh;}}
+#app{position:relative;z-index:10;max-width:820px;margin:0 auto;padding:14px;min-height:100vh;}
+.screen{display:none;animation:fadeUp .4s ease;}
+.screen.active{display:block;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(18px);}to{opacity:1;transform:translateY(0);}}
+/* 헤더 */
+.g-hd{display:flex;align-items:center;justify-content:space-between;background:rgba(15,21,37,.92);border:1px solid rgba(0,229,255,.22);border-radius:var(--r);padding:12px 18px;margin-bottom:12px;backdrop-filter:blur(12px);}
+.g-title{font-family:var(--f);font-size:1.1rem;color:var(--cyan);}
+.g-sub{font-size:.72rem;color:var(--muted);margin-top:2px;}
+.chip{background:rgba(0,229,255,.12);border:1px solid var(--cyan);color:var(--cyan);font-family:var(--f);font-size:.95rem;padding:5px 16px;border-radius:18px;}
+/* 진행 */
+.prog-wrap{margin-bottom:11px;}
+.prog-lbl{display:flex;justify-content:space-between;font-size:.75rem;color:var(--cyan);margin-bottom:4px;}
+.prog-track{height:6px;background:rgba(255,255,255,.08);border-radius:6px;overflow:hidden;}
+.prog-fill{height:100%;background:linear-gradient(90deg,var(--cyan),var(--purple));border-radius:6px;transition:width .6s ease;box-shadow:0 0 8px var(--cyan);}
+/* 타이머 */
+.timer-row{display:flex;align-items:center;gap:10px;background:rgba(15,21,37,.85);border:1px solid rgba(0,229,255,.15);border-radius:12px;padding:8px 14px;margin-bottom:11px;}
+.t-track{flex:1;height:10px;background:rgba(255,255,255,.07);border-radius:6px;overflow:hidden;}
+.t-fill{height:100%;border-radius:6px;transition:width 1s linear;}
+.t-go{background:linear-gradient(90deg,var(--green),#69f0ae);box-shadow:0 0 6px var(--green);}
+.t-warn{background:linear-gradient(90deg,var(--amber),#ffd54f);}
+.t-hot{background:linear-gradient(90deg,var(--orange),var(--red));animation:blink .5s infinite;}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+.t-num{font-family:var(--f);font-size:1.2rem;min-width:30px;text-align:right;}
+/* 카드 */
+.card{background:rgba(15,21,37,.92);border:1px solid rgba(0,229,255,.18);border-radius:var(--r);padding:20px;margin-bottom:12px;backdrop-filter:blur(10px);}
+/* 마스코트 */
+.char-row{display:flex;gap:12px;align-items:flex-start;margin-bottom:12px;}
+.char-face{width:58px;height:58px;border-radius:50%;flex-shrink:0;background:rgba(0,229,255,.12);border:2px solid var(--cyan);display:flex;align-items:center;justify-content:center;font-size:2rem;box-shadow:0 0 20px rgba(0,229,255,.3);transition:all .35s cubic-bezier(.34,1.56,.64,1);}
+.cf-ok{transform:scale(1.15) rotate(-6deg);border-color:var(--green);box-shadow:0 0 25px rgba(0,230,118,.5);}
+.cf-no{transform:scale(.9) rotate(5deg);filter:grayscale(.4);border-color:var(--red);}
+.cf-wow{animation:wowPop .6s ease;border-color:var(--amber);box-shadow:0 0 25px rgba(255,179,0,.5);}
+@keyframes wowPop{0%,100%{transform:scale(1.1)}50%{transform:scale(1.25)}}
+.bubble{background:rgba(22,32,56,.9);border:1px solid rgba(0,229,255,.2);border-radius:16px 16px 16px 4px;padding:11px 15px;flex:1;font-size:.88rem;line-height:1.75;}
+.bubble-nm{font-size:.7rem;color:var(--cyan);font-weight:800;margin-bottom:3px;}
+/* 버튼 */
+.btn{display:inline-block;padding:11px 24px;border:none;border-radius:50px;cursor:pointer;font-family:var(--f);font-size:.95rem;transition:all .18s;letter-spacing:.3px;}
+.btn-cyan{background:linear-gradient(135deg,#007c91,var(--cyan));color:#000;box-shadow:0 4px 16px rgba(0,229,255,.3);}
+.btn-cyan:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(0,229,255,.5);}
+.btn-ghost{background:rgba(255,255,255,.06);border:1px solid rgba(0,229,255,.2);color:var(--muted);}
+.btn-ghost:hover{background:rgba(255,255,255,.1);color:var(--txt);}
+.btn-sm{padding:7px 16px;font-size:.82rem;}
+.btn-block{width:100%;text-align:center;margin-top:8px;}
+/* 힌트 */
+.hint-btn{display:inline-flex;align-items:center;gap:5px;background:rgba(255,179,0,.1);border:1px solid rgba(255,179,0,.35);color:var(--amber);padding:5px 13px;border-radius:16px;font-size:.8rem;font-weight:800;cursor:pointer;margin-bottom:9px;transition:all .18s;}
+.hint-btn:hover{background:rgba(255,179,0,.2);}
+.hint-box{background:rgba(255,179,0,.06);border:1px solid rgba(255,179,0,.25);border-radius:10px;padding:10px 14px;font-size:.84rem;color:var(--amber);margin-bottom:10px;display:none;line-height:1.7;}
+.hint-box.show{display:block;animation:fadeUp .3s ease;}
+/* 피드백 */
+.fb{border-radius:10px;padding:12px 14px;font-size:.86rem;line-height:1.75;margin-top:11px;display:none;}
+.fb.show{display:block;animation:fadeUp .3s ease;}
+.fb-ok{background:rgba(0,230,118,.08);border:1px solid rgba(0,230,118,.3);color:#69f0ae;}
+.fb-no{background:rgba(255,82,82,.08);border:1px solid rgba(255,82,82,.25);color:#ff8a80;}
+/* 난이도 탭 */
+.diff-row{display:flex;gap:7px;margin-bottom:12px;flex-wrap:wrap;}
+.dt{padding:5px 14px;border-radius:16px;border:1px solid;font-size:.78rem;font-weight:800;cursor:pointer;transition:all .18s;background:transparent;}
+.dt-e{border-color:var(--green);color:var(--green);}  .dt-e.on{background:rgba(0,230,118,.15);}
+.dt-m{border-color:var(--amber);color:var(--amber);}  .dt-m.on{background:rgba(255,179,0,.15);}
+.dt-h{border-color:var(--red);color:var(--red);}      .dt-h.on{background:rgba(255,82,82,.15);}
+/* 퀴즈 */
+.q-box{background:rgba(0,229,255,.05);border:1px solid rgba(0,229,255,.18);border-radius:12px;padding:15px 18px;margin-bottom:13px;font-family:var(--f);font-size:1rem;color:var(--txt);line-height:1.6;text-align:center;}
+.opts{display:grid;gap:9px;}
+.opt{padding:12px 15px;border-radius:10px;border:1px solid rgba(0,229,255,.18);background:rgba(15,21,37,.85);color:var(--txt);cursor:pointer;font-size:.9rem;font-weight:800;text-align:left;transition:all .18s;display:flex;align-items:center;gap:10px;}
+.opt:hover:not(:disabled){border-color:var(--cyan);background:rgba(0,229,255,.07);transform:translateX(4px);}
+.opt.correct{border-color:var(--green);background:rgba(0,230,118,.1);color:#69f0ae;}
+.opt.wrong{border-color:var(--red);background:rgba(255,82,82,.08);color:#ff8a80;}
+.opt-n{width:26px;height:26px;border-radius:50%;background:rgba(0,229,255,.15);color:var(--cyan);font-size:.8rem;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-weight:800;}
+.opt.correct .opt-n{background:rgba(0,230,118,.2);color:var(--green);}
+.opt.wrong   .opt-n{background:rgba(255,82,82,.15);color:var(--red);}
+/* 멀티엔딩 */
+.scene-box{background:rgba(15,21,37,.95);border:1px solid rgba(224,64,251,.3);border-radius:var(--r);padding:18px;margin-bottom:13px;text-align:center;}
+.scene-em{font-size:3.2rem;margin-bottom:9px;}
+.scene-tx{font-family:var(--f);font-size:.98rem;color:var(--txt);line-height:1.6;}
+.scene-cx{font-size:.83rem;color:var(--muted);margin-top:7px;line-height:1.7;}
+.choices{display:grid;gap:9px;}
+.ch-btn{padding:13px 15px;border-radius:10px;border:1px solid rgba(0,229,255,.18);background:rgba(15,21,37,.85);color:var(--txt);cursor:pointer;font-size:.88rem;font-weight:800;text-align:left;display:flex;align-items:center;gap:10px;transition:all .18s;}
+.ch-btn:hover:not(:disabled){transform:translateX(5px);border-color:var(--cyan);}
+.ch-hero{border-color:var(--green);background:rgba(0,230,118,.07);}
+.ch-mid{border-color:var(--amber);background:rgba(255,179,0,.06);}
+.ch-bad{border-color:var(--red);background:rgba(255,82,82,.07);}
+.ch-lbl{font-size:.7rem;font-weight:800;padding:2px 7px;border-radius:7px;flex-shrink:0;}
+.cl-A{background:rgba(0,229,255,.15);color:var(--cyan);}
+.cl-B{background:rgba(224,64,251,.15);color:var(--purple);}
+.cl-C{background:rgba(0,230,118,.15);color:var(--green);}
+.end-box{border-radius:10px;padding:13px;margin-top:11px;display:none;font-size:.86rem;line-height:1.75;}
+.end-box.show{display:block;animation:fadeUp .3s ease;}
+.e-hero{background:rgba(0,230,118,.08);border:1px solid rgba(0,230,118,.28);color:#69f0ae;}
+.e-mid{background:rgba(255,179,0,.08);border:1px solid rgba(255,179,0,.25);color:var(--amber);}
+.e-bad{background:rgba(255,82,82,.08);border:1px solid rgba(255,82,82,.22);color:#ff8a80;}
+/* 인트로 */
+#screen-intro{text-align:center;}
+.intro-hero{background:rgba(15,21,37,.92);border:1px solid rgba(0,229,255,.22);border-radius:var(--r);padding:26px 18px;margin-bottom:13px;}
+.hero-em{font-size:5.5rem;display:block;margin:0 auto 9px;animation:heroFloat 3s ease-in-out infinite;filter:drop-shadow(0 0 24px rgba(0,229,255,.7));}
+@keyframes heroFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-12px)}}
+.hero-ttl{font-family:var(--f);font-size:2.3rem;background:linear-gradient(135deg,var(--cyan),var(--purple));-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:5px;}
+.hero-sub{color:var(--muted);font-size:.88rem;}
+.tag-row{display:flex;flex-wrap:wrap;justify-content:center;gap:6px;margin-top:9px;}
+.tag{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.14);color:rgba(255,255,255,.78);font-size:.73rem;font-weight:800;padding:4px 11px;border-radius:9px;}
+.story-panel{background:rgba(15,21,37,.88);border:1px solid rgba(0,229,255,.18);border-radius:var(--r);padding:16px;margin:13px 0;text-align:left;font-size:.88rem;line-height:1.85;color:var(--txt);}
+.story-ttl{font-family:var(--f);color:var(--amber);font-size:1rem;margin-bottom:9px;text-align:center;}
+/* 미션 그리드 */
+.m-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:13px 0;}
+.mc{background:rgba(15,21,37,.9);border:1px solid rgba(0,229,255,.2);border-radius:var(--r);padding:15px 11px;text-align:center;cursor:pointer;transition:all .28s;box-shadow:0 2px 10px rgba(0,0,0,.4);}
+.mc:hover:not(.locked){transform:translateY(-5px);border-color:var(--cyan);box-shadow:0 10px 28px rgba(0,229,255,.2);}
+.mc.locked{opacity:.33;cursor:not-allowed;border-color:rgba(48,54,61,.5);}
+.mc.done{border-color:var(--green);box-shadow:0 0 12px rgba(0,230,118,.15);}
+.mc-ic{font-size:2.1rem;margin-bottom:5px;}
+.mc-nm{font-family:var(--f);font-size:.88rem;color:var(--cyan);}
+.mc-dc{font-size:.7rem;color:var(--muted);margin-top:2px;}
+.mc-st{color:var(--amber);font-size:.87rem;margin-top:3px;}
+.mc-lk{font-size:1rem;margin-top:3px;color:var(--muted);}
+/* 배지 */
+.badge-row{display:flex;flex-wrap:wrap;gap:7px;justify-content:center;margin:9px 0;}
+.bdg{background:rgba(33,38,45,.9);border:1px solid rgba(0,229,255,.15);border-radius:11px;padding:7px 13px;font-size:.78rem;color:var(--muted);transition:all .3s;}
+.bdg.earned{border-color:var(--amber);color:var(--amber);background:rgba(255,179,0,.08);box-shadow:0 0 9px rgba(255,179,0,.2);animation:bdgPop .5s cubic-bezier(.34,1.56,.64,1);}
+@keyframes bdgPop{from{transform:scale(0)}to{transform:scale(1)}}
+/* 점수판 */
+.sb{background:rgba(15,21,37,.88);border:1px solid rgba(0,229,255,.15);border-radius:var(--r);padding:13px;margin-bottom:12px;}
+.sb-ttl{font-family:var(--f);font-size:.88rem;color:var(--amber);margin-bottom:8px;}
+.sb-row{display:flex;justify-content:space-between;font-size:.8rem;padding:6px 10px;border-radius:8px;color:var(--muted);margin-bottom:4px;background:rgba(22,32,56,.7);}
+.sb-row.r1{background:rgba(255,179,0,.1);color:var(--amber);}
+/* QR */
+.qr-panel{background:rgba(15,21,37,.88);border:1px solid rgba(0,229,255,.15);border-radius:var(--r);padding:13px;text-align:center;margin-bottom:12px;}
+.qr-ttl{font-family:var(--f);font-size:.87rem;color:var(--cyan);margin-bottom:9px;}
+.qr-url{font-size:.7rem;color:var(--muted);margin-top:6px;word-break:break-all;}
+/* 결과 */
+#screen-result{text-align:center;}
+.res-hero{background:rgba(15,21,37,.92);border:1px solid rgba(0,229,255,.25);border-radius:var(--r);padding:26px;margin:11px 0;box-shadow:0 0 40px rgba(0,229,255,.1);}
+.res-ic{font-size:5rem;animation:bdgPop .6s cubic-bezier(.175,.885,.32,1.275);}
+.res-ttl{font-family:var(--f);font-size:1.75rem;color:var(--amber);margin:8px 0 4px;}
+.res-sub{color:var(--muted);font-size:.87rem;}
+.res-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:9px;margin:12px 0;}
+.rc{background:rgba(15,21,37,.88);border:1px solid rgba(0,229,255,.15);border-radius:var(--r);padding:12px;text-align:center;}
+.rc-i{font-size:1.8rem;}.rc-n{font-size:.73rem;color:var(--cyan);margin:3px 0;}.rc-v{font-size:1.05rem;font-weight:800;color:var(--amber);}.rc-s{color:var(--amber);font-size:.87rem;}
+.total-box{background:linear-gradient(135deg,rgba(0,229,255,.15),rgba(224,64,251,.12));border:1px solid rgba(0,229,255,.28);border-radius:var(--r);padding:15px;margin:9px 0;}
+.tb-l{font-family:var(--f);font-size:.95rem;color:var(--cyan);}
+.tb-n{font-family:var(--f);font-size:3rem;line-height:1;}
+.eval-card{background:rgba(15,21,37,.88);border:1px solid rgba(0,229,255,.15);border-radius:var(--r);padding:13px;margin:9px 0;font-size:.85rem;line-height:1.75;text-align:left;color:var(--muted);}
+.music-btn{position:fixed;top:12px;right:12px;z-index:200;background:rgba(15,21,37,.92);border:1px solid rgba(0,229,255,.28);color:var(--cyan);padding:7px 13px;border-radius:16px;font-size:.78rem;cursor:pointer;backdrop-filter:blur(10px);}
+</style>
+</head>
+<body>
+<div class="scan"></div>
+<button class="music-btn" id="mBtn" onclick="toggleMusic()">🎵 음악</button>
+<div id="app">
+
+<!-- 인트로 -->
+<div id="screen-intro" class="screen active">
+  <div class="intro-hero">
+    <span class="hero-em">⚡</span>
+    <div class="hero-ttl">에너지 위기 탐정단</div>
+    <div class="hero-sub">중학교 1학년 · 과학 × 사회 × 기술 교과 융합</div>
+    <div class="tag-row">
+      <span class="tag">미래에너지</span><span class="tag">과학탐구</span>
+      <span class="tag">사회문제</span><span class="tag">기술·환경</span>
+      <span class="tag">멀티엔딩</span><span class="tag">타이머</span>
+    </div>
+  </div>
+  <div class="story-panel">
+    <div class="story-ttl">🚨 2026년 에너지 위기 경보!</div>
+    <p>중동 전쟁으로 국제 유가가 배럴당 <strong style="color:var(--red)">130달러</strong>를 넘어섰습니다!<br>
+    한국은 원유의 <strong style="color:var(--amber)">62.4%</strong>를 중동에서 수입하고 있어요.<br><br>
+    당신은 <strong style="color:var(--cyan)">에너지 위기 탐정단</strong>에 선발되었습니다.<br>
+    4가지 임무를 해결해 한국의 에너지 위기를 극복하세요! 🔋</p>
+  </div>
+  <div class="m-grid" id="mGrid">
+    <div class="mc" id="mc1" onclick="startM(1)"><div class="mc-ic">⚡</div><div class="mc-nm">임무 1</div><div class="mc-dc">에너지 원리 탐구</div><div class="mc-st" id="m1st">☆☆☆</div></div>
+    <div class="mc locked" id="mc2"><div class="mc-ic">🌍</div><div class="mc-nm">임무 2</div><div class="mc-dc">에너지 현황 분석</div><div class="mc-lk">🔒</div></div>
+    <div class="mc locked" id="mc3"><div class="mc-ic">🔬</div><div class="mc-nm">임무 3</div><div class="mc-dc">미래 에너지 실험</div><div class="mc-lk">🔒</div></div>
+    <div class="mc locked" id="mc4"><div class="mc-ic">🗺️</div><div class="mc-nm">임무 4</div><div class="mc-dc">에너지 정책 선택</div><div class="mc-lk">🔒</div></div>
+  </div>
+  <div class="badge-row" id="bRow">
+    <div class="bdg" id="bdg-sci">⚡ 에너지 과학자</div>
+    <div class="bdg" id="bdg-ana">🌍 에너지 분석가</div>
+    <div class="bdg" id="bdg-lab">🔬 미래에너지 연구원</div>
+    <div class="bdg" id="bdg-pol">🗺️ 에너지 정책관</div>
+    <div class="bdg" id="bdg-all">🏆 에너지 탐정단장</div>
+  </div>
+  <div class="sb"><div class="sb-ttl">🏆 탐정단 명예의 전당</div><div id="sbList"><div class="sb-row" style="justify-content:center;">첫 번째 에너지 탐정이 되어보세요!</div></div></div>
+  <div class="qr-panel"><div class="qr-ttl">📱 수업 공유 QR</div><div id="qr-wrap"></div><div class="qr-url">milab2019.github.io/main/energy_detective_m1.html</div></div>
+</div>
+
+<!-- 임무1: 에너지 과학 퀴즈 -->
+<div id="screen-m1" class="screen">
+  <div class="g-hd"><div><div class="g-title">⚡ 임무 1 — 에너지 원리 탐구</div><div class="g-sub">과학(에너지 전환·열역학 기초) + 기술(에너지 효율)</div></div><div class="chip">⭐ <span id="m1sc">0</span></div></div>
+  <div class="prog-wrap"><div class="prog-lbl"><span>탐구 진행</span><span id="m1pg">0/5</span></div><div class="prog-track"><div class="prog-fill" id="m1pgb" style="width:0%"></div></div></div>
+  <div class="timer-row"><span>⏱️</span><div class="t-track"><div class="t-fill t-go" id="m1tb" style="width:100%"></div></div><div class="t-num" id="m1tn">35</div></div>
+  <div class="char-row"><div class="char-face" id="m1f">🔬</div><div class="bubble"><div class="bubble-nm">탐정 '볼트'</div><span id="m1msg">에너지 원리를 파악하세요! 모든 에너지 해결책은 과학에서 시작됩니다!</span></div></div>
+  <div class="card">
+    <div class="diff-row"><button class="dt dt-e on" onclick="setM1D('e')">🟢 쉬움</button><button class="dt dt-m" onclick="setM1D('m')">🟡 보통</button><button class="dt dt-h" onclick="setM1D('h')">🔴 도전</button></div>
+    <button class="hint-btn" onclick="showH('m1')">💡 힌트</button>
+    <div class="hint-box" id="m1hint"></div>
+    <div class="q-box" id="m1q">문제 준비 중...</div>
+    <div class="opts" id="m1opts"></div>
+    <div class="fb" id="m1fb"></div>
+    <div id="m1nw" style="text-align:center;margin-top:12px;display:none;"><button class="btn btn-cyan btn-sm" onclick="nextM1()">다음 →</button></div>
+  </div>
+  <button class="btn btn-ghost btn-sm" onclick="goHome()">← 임무 목록</button>
+</div>
+
+<!-- 임무2: 에너지 현황 OX/선택 -->
+<div id="screen-m2" class="screen">
+  <div class="g-hd"><div><div class="g-title">🌍 임무 2 — 에너지 현황 분석</div><div class="g-sub">사회(에너지 자원·국제관계) + 과학(에너지 분류)</div></div><div class="chip">⭐ <span id="m2sc">0</span></div></div>
+  <div class="prog-wrap"><div class="prog-lbl"><span>분석 진행</span><span id="m2pg">0/5</span></div><div class="prog-track"><div class="prog-fill" id="m2pgb" style="width:0%"></div></div></div>
+  <div class="timer-row"><span>⏱️</span><div class="t-track"><div class="t-fill t-go" id="m2tb" style="width:100%"></div></div><div class="t-num" id="m2tn">40</div></div>
+  <div class="char-row"><div class="char-face" id="m2f">🔬</div><div class="bubble"><div class="bubble-nm">탐정 '볼트'</div><span id="m2msg">한국과 세계의 에너지 현황을 분석하세요! 정확한 수치를 기억하는 것이 중요해요.</span></div></div>
+  <div class="card">
+    <button class="hint-btn" onclick="showH('m2')">💡 힌트</button>
+    <div class="hint-box" id="m2hint"></div>
+    <div class="q-box" id="m2q">문제 준비 중...</div>
+    <div class="opts" id="m2opts"></div>
+    <div class="fb" id="m2fb"></div>
+    <div id="m2nw" style="text-align:center;margin-top:12px;display:none;"><button class="btn btn-cyan btn-sm" onclick="nextM2()">다음 →</button></div>
+  </div>
+  <button class="btn btn-ghost btn-sm" onclick="goHome()">← 임무 목록</button>
+</div>
+
+<!-- 임무3: 미래 에너지 실험 -->
+<div id="screen-m3" class="screen">
+  <div class="g-hd"><div><div class="g-title">🔬 임무 3 — 미래 에너지 실험</div><div class="g-sub">과학(신재생에너지 원리) + 기술(에너지 변환)</div></div><div class="chip">⭐ <span id="m3sc">0</span></div></div>
+  <div class="prog-wrap"><div class="prog-lbl"><span>실험 진행</span><span id="m3pg">0/5</span></div><div class="prog-track"><div class="prog-fill" id="m3pgb" style="width:0%"></div></div></div>
+  <div class="timer-row"><span>⏱️</span><div class="t-track"><div class="t-fill t-go" id="m3tb" style="width:100%"></div></div><div class="t-num" id="m3tn">38</div></div>
+  <div class="char-row"><div class="char-face" id="m3f">🔬</div><div class="bubble"><div class="bubble-nm">탐정 '볼트'</div><span id="m3msg">미래 에너지 원리를 이해해야 위기를 극복할 수 있어요!</span></div></div>
+  <div class="card">
+    <button class="hint-btn" onclick="showH('m3')">💡 힌트</button>
+    <div class="hint-box" id="m3hint"></div>
+    <div class="q-box" id="m3q">문제 준비 중...</div>
+    <div class="opts" id="m3opts"></div>
+    <div class="fb" id="m3fb"></div>
+    <div id="m3nw" style="text-align:center;margin-top:12px;display:none;"><button class="btn btn-cyan btn-sm" onclick="nextM3()">다음 →</button></div>
+  </div>
+  <button class="btn btn-ghost btn-sm" onclick="goHome()">← 임무 목록</button>
+</div>
+
+<!-- 임무4: 에너지 정책 멀티엔딩 -->
+<div id="screen-m4" class="screen">
+  <div class="g-hd"><div><div class="g-title">🗺️ 임무 4 — 에너지 정책 선택</div><div class="g-sub">사회(정책 결정·공동체) + 기술(에너지 시스템) | 멀티엔딩</div></div><div class="chip">⭐ <span id="m4sc">0</span></div></div>
+  <div class="prog-wrap"><div class="prog-lbl"><span>정책 협의</span><span id="m4pg">0/4</span></div><div class="prog-track"><div class="prog-fill" id="m4pgb" style="width:0%"></div></div></div>
+  <div class="char-row"><div class="char-face" id="m4f">🔬</div><div class="bubble"><div class="bubble-nm">탐정 '볼트'</div><span id="m4msg">에너지 위기 해결을 위한 최선의 정책을 선택하세요!</span></div></div>
+  <div class="card">
+    <div class="scene-box"><div class="scene-em" id="m4em">⚡</div><div class="scene-tx" id="m4tx">상황 로딩 중...</div><div class="scene-cx" id="m4cx"></div></div>
+    <div class="choices" id="m4cg"></div>
+    <div class="end-box" id="m4eb"></div>
+    <div id="m4nw" style="text-align:center;margin-top:12px;display:none;"><button class="btn btn-cyan" onclick="nextM4()">다음 상황 →</button></div>
+  </div>
+  <button class="btn btn-ghost btn-sm" onclick="goHome()">← 임무 목록</button>
+</div>
+
+<!-- 결과 -->
+<div id="screen-result" class="screen">
+  <div style="padding-top:8px;">
+    <div class="res-hero"><div class="res-ic" id="resIc">🏆</div><div class="res-ttl" id="resTtl">임무 완료!</div><div class="res-sub">미랩(MILAB) 에너지 위기 탐정단 #010</div><div style="font-size:.9rem;color:var(--cyan);margin-top:5px;font-weight:800;" id="resRk"></div></div>
+    <div class="res-grid" id="resGrid"></div>
+    <div class="total-box"><div class="tb-l">🌟 총 획득 점수</div><div class="tb-n" id="tbN">0</div><div style="font-size:.78rem;color:var(--muted);margin-top:2px;">/ 100점</div></div>
+    <div class="badge-row" id="resBdg"></div>
+    <div class="eval-card" id="evalCard"></div>
+    <button class="btn btn-cyan btn-block" onclick="resetGame()">🔄 다시 도전하기</button>
+  </div>
+</div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script>
+const GURL='https://milab2019.github.io/main/energy_detective_m1.html';
+const ST={done:[false,false,false,false],scores:[0,0,0,0],stars:[0,0,0,0],badges:{sci:false,ana:false,lab:false,pol:false},history:[]};
+try{ST.history=JSON.parse(localStorage.getItem('edm1_h')||'[]');}catch(e){}
+let allT=[];
+const clrT=()=>{allT.forEach(t=>clearInterval(t));allT=[];};
+// 배경음악
+let actx=null,musicOn=false;
+function toggleMusic(){musicOn=!musicOn;document.getElementById('mBtn').textContent=musicOn?'🎵 끄기':'🎵 음악';if(musicOn)playBg();else stopBg();}
+function playBg(){
+  try{
+    actx=new(window.AudioContext||window.webkitAudioContext)();
+    const sc=[220,247,277,311,370,415,466,523];
+    const pat=[0,2,4,5,4,2,0,1,3,5,6,5,3,1,2,4];
+    pat.forEach((n,i)=>{
+      const o=actx.createOscillator();const g=actx.createGain();o.connect(g);g.connect(actx.destination);
+      o.type='square';o.frequency.value=sc[n];
+      const t=actx.currentTime+i*.22;
+      g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(0.02,t+.04);g.gain.linearRampToValueAtTime(0,t+.18);
+      o.start(t);o.stop(t+.2);
+    });
+    setTimeout(()=>{if(musicOn)playBg();},pat.length*220+600);
+  }catch(e){}
+}
+function stopBg(){if(actx){actx.close();actx=null;}}
+function playS(t){
+  try{
+    const cx=new(window.AudioContext||window.webkitAudioContext)();
+    const o=cx.createOscillator();const g=cx.createGain();o.connect(g);g.connect(cx.destination);
+    if(t==='ok'){o.type='square';o.frequency.setValueAtTime(440,cx.currentTime);o.frequency.linearRampToValueAtTime(660,cx.currentTime+.12);g.gain.setValueAtTime(.08,cx.currentTime);g.gain.exponentialRampToValueAtTime(.001,cx.currentTime+.5);}
+    else if(t==='no'){o.type='sawtooth';o.frequency.value=180;g.gain.setValueAtTime(.06,cx.currentTime);g.gain.exponentialRampToValueAtTime(.001,cx.currentTime+.35);}
+    else if(t==='cl'){[523,659,784].forEach((f,i)=>{const o2=cx.createOscillator();const g2=cx.createGain();o2.connect(g2);g2.connect(cx.destination);o2.type='square';o2.frequency.value=f;const tt=cx.currentTime+i*.12;g2.gain.setValueAtTime(.08,tt);g2.gain.exponentialRampToValueAtTime(.001,tt+.3);o2.start(tt);o2.stop(tt+.32);});}
+    o.start();o.stop(cx.currentTime+.6);
+  }catch(e){}
+}
+// QR
+function initQR(){const w=document.getElementById('qr-wrap');if(!w)return;try{new QRCode(w,{text:GURL,width:120,height:120,colorDark:'#00e5ff',colorLight:'#0a0e1a',correctLevel:QRCode.CorrectLevel.M});}catch(e){w.innerHTML=`<img src="https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=${encodeURIComponent(GURL)}&color=00e5ff&bgcolor=0a0e1a" style="border-radius:10px;">`;}
+}
+// 화면 전환
+const showScr=id=>{document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active');window.scrollTo(0,0);};
+const goHome=()=>{clrT();showScr('screen-intro');renderSB();renderBdg();};
+const calcSt=(s,m)=>{const p=s/m;return p>=.9?3:p>=.6?2:p>0?1:0;};
+const unlockMC=n=>{const el=document.getElementById('mc'+n);if(!el)return;el.classList.remove('locked');el.querySelector('.mc-lk')?.remove();const st=document.createElement('div');st.className='mc-st';st.id='m'+n+'st';st.textContent='☆☆☆';el.appendChild(st);el.onclick=()=>startM(n);};
+const updateSt=(n,st)=>{const el=document.getElementById('m'+n+'st');if(el)el.textContent='★'.repeat(st)+'☆'.repeat(3-st);document.getElementById('mc'+n)?.classList.add('done');};
+const startM=n=>{clrT();[initM1,initM2,initM3,initM4][n-1]();showScr('screen-m'+n);};
+const updateT=(id,c,m)=>{const p=c/m*100;const b=document.getElementById(id+'tb');b.style.width=p+'%';b.className='t-fill '+(p>50?'t-go':p>25?'t-warn':'t-hot');document.getElementById(id+'tn').textContent=c;};
+const startTimer=(id,sec,cb)=>{let s=sec;updateT(id,s,sec);const t=setInterval(()=>{s--;updateT(id,s,sec);if(s<=0){clearInterval(t);cb();}},1000);allT.push(t);};
+const showH=id=>{
+  const hm={
+    m1:['에너지 전환은 에너지가 한 형태에서 다른 형태로 바뀌는 것이에요.','열효율 = 유용한 에너지 / 공급된 에너지 × 100%','재생에너지는 자연에서 무한히 얻을 수 있는 에너지예요.'],
+    m2:['2026년 한국의 중동 원유 의존도는 62.4%입니다.','화석연료(석유·석탄·천연가스)는 유한한 자원이에요.','국제 유가가 오르면 전기·가스 등 에너지 가격도 올라요.'],
+    m3:['태양광은 빛 에너지를 전기 에너지로 변환해요.','풍력은 바람의 운동 에너지를 전기로 변환해요.','수소는 물을 전기분해해서 만들 수 있어요.']
+  };
+  const arr=hm[id]||[];
+  const box=document.getElementById(id+'hint');
+  box.textContent='💡 '+arr[Math.floor(Math.random()*arr.length)];
+  box.classList.add('show');
+};
+const renderSB=()=>{
+  const el=document.getElementById('sbList');
+  const s=[...ST.history].sort((a,b)=>b.total-a.total).slice(0,5);
+  if(!s.length){el.innerHTML='<div class="sb-row" style="justify-content:center;">첫 번째 에너지 탐정이 되어보세요!</div>';return;}
+  el.innerHTML=s.map((h,i)=>`<div class="sb-row ${i===0?'r1':''}"><span>${['🥇','🥈','🥉','4위','5위'][i]} 에너지 탐정</span><span style="color:var(--amber);font-weight:800;">${h.total}점 ${'★'.repeat(Math.min(h.stars,12))}</span></div>`).join('');
+};
+const renderBdg=()=>{Object.keys(ST.badges).forEach(k=>{const el=document.getElementById('bdg-'+k);if(el&&ST.badges[k])el.classList.add('earned');});if(Object.values(ST.badges).every(v=>v))document.getElementById('bdg-all')?.classList.add('earned');};
+const saveScore=()=>{const total=ST.scores.reduce((a,b)=>a+b,0);const stars=ST.stars.reduce((a,b)=>a+b,0);ST.history.push({total,stars});if(ST.history.length>10)ST.history.shift();try{localStorage.setItem('edm1_h',JSON.stringify(ST.history));}catch(e){}};
+
+/* ===== 임무1: 에너지 과학 퀴즈 ===== */
+const m1Bank={
+  e:[
+    {q:'다음 중 에너지를 만들어 낼 수 없는 것은?',opts:['태양','바람','돌멩이','흐르는 물'],ans:2,pts:10,exp:'돌멩이 자체는 에너지를 생산하지 않아요. 하지만 높은 곳의 돌은 위치에너지를 가집니다!',hint:'에너지를 만들려면 움직임이나 빛이 필요해요.'},
+    {q:'전기를 만드는 것(발전)에 해당하지 않는 것은?',opts:['수력 발전','화력 발전','에너지 절약','태양광 발전'],ans:2,pts:10,exp:'에너지 절약은 발전이 아니라 소비를 줄이는 것이에요. 발전은 에너지를 전기로 바꾸는 과정이에요.',hint:'발전(發電)은 전기를 만드는 것이에요.'},
+    {q:'에너지 전환의 예로 올바른 것은?',opts:['물이 얼음이 됨','전등에서 빛이 남','소금이 물에 녹음','설탕이 달콤함'],ans:1,pts:10,exp:'전등은 전기 에너지 → 빛 에너지 + 열 에너지로 전환해요! 에너지 형태가 바뀌는 것이 에너지 전환이에요.',hint:'에너지 전환 = 에너지 형태가 바뀌는 것'},
+    {q:'화석 연료가 아닌 것은?',opts:['석유','석탄','천연가스','태양빛'],ans:3,pts:10,exp:'태양빛은 재생 가능한 에너지예요! 화석연료(석유·석탄·가스)는 수억 년 전 생물이 변한 것으로 유한해요.',hint:'화석연료는 땅속에서 캐내는 것이에요.'},
+    {q:'전기를 아끼는 방법으로 가장 효과적인 것은?',opts:['TV 화면 밝게 하기','사용 안 하는 콘센트 뽑기','냉장고 문 자주 열기','에어컨 24시간 가동'],ans:1,pts:10,exp:'대기전력! 사용하지 않아도 콘센트에 꽂혀 있으면 전기를 소비해요. 콘센트를 뽑으면 연간 약 11%의 전기를 아낄 수 있어요.',hint:'대기전력이라는 개념을 생각해봐요!'},
+  ],
+  m:[
+    {q:'발전소에서 전기를 만들 때 가장 많이 쓰이는 에너지원은?\n(2024년 한국 기준, 발전량 비율 1위)',opts:['태양광 (약 5%)','석탄 (약 27%)','LNG 천연가스 (약 28%)','원자력 (약 29%)'],ans:3,pts:14,exp:'2024년 한국 발전량 비율: 원자력 약 29% > LNG 약 28% > 석탄 약 27% > 신재생 약 10% 순이에요!',hint:'한국은 원전 비율을 점차 높이는 정책을 시행 중이에요.'},
+    {q:'태양광 발전의 핵심 부품인 태양전지(솔라셀)의 작동 원리는?',opts:['빛이 열로 바뀌어 터빈을 돌린다','빛이 반사되어 전기를 만든다','빛(광자)이 전자를 이동시켜 전류를 만든다','빛이 화학반응을 일으켜 전기를 만든다'],ans:2,pts:14,exp:'광전 효과! 빛 입자(광자)가 반도체에 부딪혀 전자를 튀어나오게 해 전류가 흘러요. 아인슈타인이 설명한 원리예요!',hint:'태양전지는 반도체(실리콘)로 만들어요.'},
+    {q:'에너지 효율이 40%인 가스보일러에 100 kJ의 에너지를 공급했을 때,\n실제 난방에 쓰이는 에너지(유용한 에너지)는?',opts:['20 kJ','40 kJ','60 kJ','80 kJ'],ans:1,pts:14,exp:'유용한 에너지 = 효율(40%) × 공급 에너지(100 kJ) = 40 kJ! 나머지 60 kJ은 열로 손실돼요.',hint:'유용한 에너지 = 효율(%) ÷ 100 × 공급 에너지'},
+    {q:'수력 발전소에서 전기를 만드는 에너지 전환 순서로 올바른 것은?',opts:['전기→운동→위치','위치→운동→전기','운동→위치→전기','열→운동→전기'],ans:1,pts:14,exp:'물의 위치에너지 → 흐르는 물의 운동에너지 → 터빈 회전 → 발전기에서 전기에너지! 에너지가 3단계로 전환돼요.',hint:'높은 곳의 물이 떨어지며 에너지가 변해요.'},
+    {q:'열효율이 35%인 자동차 엔진에 휘발유 1L(열량: 약 34,000 kJ)를 넣었을 때\n실제 달리는데 쓰이는 에너지는 약 몇 kJ인가요?',opts:['약 5,500 kJ','약 8,400 kJ','약 11,900 kJ','약 22,100 kJ'],ans:2,pts:14,exp:'34,000 kJ × 35% = 11,900 kJ! 나머지 22,100 kJ은 열로 손실돼요. 이게 자동차 엔진이 뜨거워지는 이유예요!',hint:'유용 에너지 = 34,000 × 0.35'},
+  ],
+  h:[
+    {q:'한국의 2025년 기준 1차 에너지 소비에서\n석유의 비중이 약 43%일 때, 1년 에너지 총소비량이 약 300 Mtoe라면\n석유 소비량은 약 몇 Mtoe인가요? (Mtoe: 석유환산백만톤)',opts:['약 87 Mtoe','약 129 Mtoe','약 152 Mtoe','약 210 Mtoe'],ans:1,pts:18,exp:'300 Mtoe × 43% = 129 Mtoe! 한국은 에너지 소비의 절반 가까이를 석유에 의존해요.',hint:'300 × 0.43을 계산해봐요!'},
+    {q:'태양광 패널 1 m²당 1시간에 받는 태양에너지가 평균 1.0 kWh이고,\n태양전지 효율이 20%일 때, 10 m² 패널이 5시간 발전하면\n생산 전력량은 몇 kWh인가요?',opts:['2 kWh','5 kWh','10 kWh','20 kWh'],ans:2,pts:18,exp:'1.0 kWh/m²/h × 20% × 10 m² × 5h = 10 kWh! 가정에서 하루 평균 10~15 kWh를 사용해요.',hint:'공급 에너지 × 효율 × 면적 × 시간'},
+    {q:'어느 화력발전소의 발전 효율이 40%이고, 하루 석탄 소비량이 1,000톤이다.\n석탄 1톤의 열량이 약 27,000 MJ일 때, 하루 생산되는 전기량은 약 몇 GJ인가요?\n(1 GJ = 1,000 MJ)',opts:['약 1,800 GJ','약 5,400 GJ','약 10,800 GJ','약 27,000 GJ'],ans:2,pts:18,exp:'1,000톤 × 27,000 MJ × 40% = 10,800,000 MJ = 10,800 GJ! 화력발전소 한 곳이 엄청난 에너지를 생산해요.',hint:'총 열량(MJ) × 효율(%) ÷ 1,000 = GJ'},
+  ]
+};
+let m1D='e',m1List=[],m1Idx=0,m1Sc=0;
+function initM1(){m1Idx=0;m1Sc=0;document.getElementById('m1sc').textContent='0';setM1D('e');}
+function setM1D(d){m1D=d;clrT();document.querySelectorAll('#screen-m1 .dt').forEach(b=>b.classList.remove('on'));document.querySelector('#screen-m1 .dt-'+d).classList.add('on');m1List=[...m1Bank[d]].sort(()=>Math.random()-.5);m1Idx=0;m1Sc=0;document.getElementById('m1sc').textContent='0';renderM1();}
+function renderM1(){
+  if(m1Idx>=m1List.length){finishM1();return;}
+  clrT();const q=m1List[m1Idx];
+  document.getElementById('m1pg').textContent=(m1Idx+1)+'/'+m1List.length;
+  document.getElementById('m1pgb').style.width=(m1Idx/m1List.length*100)+'%';
+  document.getElementById('m1q').textContent=q.q;
+  document.getElementById('m1hint').textContent='💡 '+q.hint;
+  document.getElementById('m1hint').classList.remove('show');
+  document.getElementById('m1fb').classList.remove('show');
+  document.getElementById('m1nw').style.display='none';
+  document.getElementById('m1f').textContent='🔬';document.getElementById('m1f').className='char-face';
+  const opts=document.getElementById('m1opts');opts.innerHTML='';
+  q.opts.forEach((opt,i)=>{
+    const btn=document.createElement('button');btn.className='opt';
+    btn.innerHTML=`<span class="opt-n">${['①','②','③','④'][i]}</span>${opt}`;
+    btn.onclick=()=>{
+      clrT();document.querySelectorAll('.opt').forEach(b=>b.disabled=true);
+      document.querySelectorAll('.opt')[q.ans].classList.add('correct');
+      const fb=document.getElementById('m1fb');const face=document.getElementById('m1f');
+      if(i===q.ans){btn.classList.add('correct');m1Sc+=q.pts;document.getElementById('m1sc').textContent=m1Sc;fb.className='fb show fb-ok';fb.innerHTML=`✅ 정답! +${q.pts}점<br><strong>📚 해설:</strong> ${q.exp}`;face.className='char-face cf-ok';playS('ok');}
+      else{btn.classList.add('wrong');fb.className='fb show fb-no';fb.innerHTML=`❌ 틀렸어요!<br><strong>📚 해설:</strong> ${q.exp}`;face.className='char-face cf-no';playS('no');}
+      document.getElementById('m1nw').style.display='block';
+    };
+    opts.appendChild(btn);
+  });
+  const sec=m1D==='e'?35:m1D==='m'?28:22;
+  startTimer('m1',sec,()=>{document.querySelectorAll('.opt').forEach(b=>b.disabled=true);document.getElementById('m1fb').className='fb show fb-no';document.getElementById('m1fb').innerHTML='⏰ 시간 초과!<br><strong>📚 해설:</strong> '+q.exp;document.getElementById('m1f').className='char-face cf-no';document.getElementById('m1nw').style.display='block';});
+}
+function nextM1(){m1Idx++;renderM1();}
+function finishM1(){clrT();ST.scores[0]=m1Sc;const max=m1D==='e'?50:m1D==='m'?70:54;ST.stars[0]=calcSt(m1Sc,max);ST.done[0]=true;ST.badges.sci=ST.stars[0]>=2;updateSt(1,ST.stars[0]);unlockMC(2);playS('cl');document.getElementById('m1msg').textContent='🎉 임무 1 완료! '+m1Sc+'점!';document.getElementById('m1f').className='char-face cf-wow';setTimeout(()=>goHome(),1600);}
+
+/* ===== 임무2: 에너지 현황 분석 ===== */
+const m2Qs=[
+  {q:'2026년 현재 한국이 중동에서 수입하는 원유 비율은 약 얼마인가요?',opts:['약 30%','약 45%','약 62.4%','약 80%'],ans:2,pts:12,exp:'한국은 원유의 약 62.4%를 중동에서 수입해요. 중동 지정학적 불안이 한국 에너지 안보에 직접 영향을 미치는 이유예요!',hint:'한국은 에너지 수입 의존도가 매우 높아요.'},
+  {q:'2026년 국제 유가가 배럴당 130달러로 급등했을 때\n한국에 미치는 가장 직접적인 영향은?',opts:['수출이 크게 늘어난다','수입 에너지 비용이 증가해 물가가 오른다','국내 원유 생산이 늘어난다','재생에너지 가격이 내려간다'],ans:1,pts:12,exp:'원유 가격이 오르면 가스·전기·휘발유 가격도 오르고, 이는 모든 물가 상승으로 이어져요. 2026년 3고(고유가·고환율·고물가) 현상이 바로 이것이에요!',hint:'한국은 에너지 대부분을 수입해요.'},
+  {q:'재생에너지가 화석연료보다 좋은 점이 아닌 것은?',opts:['이산화탄소를 거의 배출하지 않는다','자원이 고갈되지 않는다','언제 어디서나 안정적으로 공급 가능하다','환경 오염이 적다'],ans:2,pts:12,exp:'재생에너지의 단점! 태양광은 밤에, 풍력은 바람 없을 때 발전 불가예요. 이것을 간헐성 문제라고 해요. 에너지 저장 기술(ESS)이 중요한 이유입니다.',hint:'태양광이 못 쓰이는 때는 언제인가요?'},
+  {q:'에너지 자립도를 높이기 위한 국가 정책으로 적절하지 않은 것은?',opts:['재생에너지 발전 확대','건물 단열 강화로 에너지 소비 감소','화석연료 수입 더 늘리기','국내 수소 생산 기술 개발'],ans:2,pts:12,exp:'화석연료 수입을 늘리는 것은 에너지 자립도를 오히려 낮춰요! 자립도를 높이려면 국내 생산(재생에너지, 원자력)을 늘리고 소비를 줄여야 해요.',hint:'자립도 = 국내 생산 / 전체 소비'},
+  {q:'탄소중립(넷제로)이란 무엇인가요?',opts:['탄소를 전혀 배출하지 않는 것','배출한 탄소만큼 흡수해 실질 배출량을 0으로 만드는 것','탄소 세금을 내는 것','탄소를 땅에 묻는 것'],ans:1,pts:12,exp:'탄소중립(Net-Zero)은 배출한 CO₂만큼 나무 심기·탄소 포집 기술 등으로 흡수해 순 배출량을 0으로 만드는 것이에요. 한국은 2050년 탄소중립을 목표로 해요!',hint:'Net(순)+Zero(0) = 순 배출량 0'},
+];
+let m2Idx=0,m2Sc=0;
+function initM2(){m2Idx=0;m2Sc=0;document.getElementById('m2sc').textContent='0';renderM2();}
+function renderM2(){
+  if(m2Idx>=m2Qs.length){finishM2();return;}
+  clrT();const q=m2Qs[m2Idx];
+  document.getElementById('m2pg').textContent=(m2Idx+1)+'/'+m2Qs.length;
+  document.getElementById('m2pgb').style.width=(m2Idx/m2Qs.length*100)+'%';
+  document.getElementById('m2q').textContent=q.q;
+  document.getElementById('m2hint').textContent='💡 '+q.hint;document.getElementById('m2hint').classList.remove('show');
+  document.getElementById('m2fb').classList.remove('show');document.getElementById('m2nw').style.display='none';
+  document.getElementById('m2f').textContent='🔬';document.getElementById('m2f').className='char-face';
+  const opts=document.getElementById('m2opts');opts.innerHTML='';
+  q.opts.forEach((opt,i)=>{
+    const btn=document.createElement('button');btn.className='opt';
+    btn.innerHTML=`<span class="opt-n">${['①','②','③','④'][i]}</span>${opt}`;
+    btn.onclick=()=>{
+      clrT();document.querySelectorAll('#m2opts .opt').forEach(b=>b.disabled=true);
+      document.querySelectorAll('#m2opts .opt')[q.ans].classList.add('correct');
+      const fb=document.getElementById('m2fb');const face=document.getElementById('m2f');
+      if(i===q.ans){btn.classList.add('correct');m2Sc+=q.pts;document.getElementById('m2sc').textContent=m2Sc;fb.className='fb show fb-ok';fb.innerHTML=`✅ +${q.pts}점!<br><strong>📚 해설:</strong> ${q.exp}`;face.className='char-face cf-ok';playS('ok');}
+      else{btn.classList.add('wrong');fb.className='fb show fb-no';fb.innerHTML=`❌ 틀렸어요!<br><strong>📚 해설:</strong> ${q.exp}`;face.className='char-face cf-no';playS('no');}
+      document.getElementById('m2nw').style.display='block';
+    };
+    opts.appendChild(btn);
+  });
+  startTimer('m2',40,()=>{document.querySelectorAll('#m2opts .opt').forEach(b=>b.disabled=true);document.getElementById('m2fb').className='fb show fb-no';document.getElementById('m2fb').innerHTML='⏰ 시간 초과!<br>'+q.exp;document.getElementById('m2f').className='char-face cf-no';document.getElementById('m2nw').style.display='block';});
+}
+function nextM2(){m2Idx++;renderM2();}
+function finishM2(){clrT();ST.scores[1]=m2Sc;ST.stars[1]=calcSt(m2Sc,60);ST.done[1]=true;ST.badges.ana=ST.stars[1]>=2;updateSt(2,ST.stars[1]);unlockMC(3);playS('cl');document.getElementById('m2msg').textContent='🎉 임무 2 완료! '+m2Sc+'점!';document.getElementById('m2f').className='char-face cf-wow';setTimeout(()=>goHome(),1600);}
+
+/* ===== 임무3: 미래 에너지 실험 ===== */
+const m3Qs=[
+  {q:'태양광 패널에서 빛 에너지를 전기 에너지로 변환하는 소재로 주로 쓰이는 것은?',opts:['구리(Cu)','실리콘(Si) 반도체','알루미늄(Al)','철(Fe)'],ans:1,pts:12,exp:'실리콘 반도체가 빛(광자)을 받아 전자를 방출하는 광전 효과로 전기를 만들어요! 요즘은 페로브스카이트 등 새 소재도 연구 중이에요.',hint:'반도체의 광전 효과를 생각해봐요!'},
+  {q:'수소(H₂)를 연료로 사용하는 수소연료전지에서 일어나는 화학 반응은?',opts:['수소 + 산소 → 물 + 전기','수소 + 질소 → 암모니아','수소 + 탄소 → 이산화탄소','수소 + 산소 → 오존'],ans:0,pts:12,exp:'수소 + 산소 → 물(H₂O) + 전기! 연소 없이 화학 에너지를 전기로 변환하고 물만 배출해 친환경적이에요. 수소차의 원리예요.',hint:'수소연료전지는 수소와 산소를 반응시켜요.'},
+  {q:'풍력 발전에서 바람이 약할 때 발전량이 줄어드는 이유를\n물리적으로 설명하면?',opts:['바람에 먼지가 많아 터빈이 막힌다','운동에너지는 속도의 제곱에 비례하므로 속도가 절반이면 에너지는 4분의 1이 된다','터빈이 녹슬기 때문이다','전자가 이동하지 않기 때문이다'],ans:1,pts:12,exp:'운동에너지 E = ½mv² ! 속도(v)가 2배면 에너지는 4배, 절반이면 4분의 1이 돼요. 풍속이 발전량에 엄청난 영향을 미치는 이유예요!',hint:'운동에너지 공식: E = ½mv²'},
+  {q:'해수(바닷물) 온도 차이를 이용한 발전 방식은?',opts:['조력 발전','파력 발전','해양 온도차 발전(OTEC)','조류 발전'],ans:2,pts:12,exp:'해양 온도차 발전(OTEC)! 표면 따뜻한 물과 심층 차가운 물의 온도 차이(약 20°C)를 이용해 터빈을 돌려요. 우리나라도 연구 중이에요.',hint:'OTEC: Ocean Thermal Energy Conversion'},
+  {q:'2026년 현재 태양광 발전의 발전 비용(LCOE: 균등화 발전 비용)이\n화력발전보다 저렴해진 이유가 아닌 것은?',opts:['태양전지 제조 기술 발전으로 가격 하락','태양광 패널 수명이 30년 이상으로 향상','태양광은 연료비가 0원으로 운영비가 저렴','태양광 발전의 이산화탄소 배출량이 0이기 때문에'],ans:3,pts:12,exp:'LCOE는 경제성 지표예요! CO₂ 배출량은 발전 비용이 아니라 환경 지표예요. 비용이 낮아진 것은 기술 발전·연료비 없음 덕분이에요.',hint:'LCOE = 총 비용 / 총 발전량'},
+];
+let m3Idx=0,m3Sc=0;
+function initM3(){m3Idx=0;m3Sc=0;document.getElementById('m3sc').textContent='0';renderM3();}
+function renderM3(){
+  if(m3Idx>=m3Qs.length){finishM3();return;}
+  clrT();const q=m3Qs[m3Idx];
+  document.getElementById('m3pg').textContent=(m3Idx+1)+'/'+m3Qs.length;
+  document.getElementById('m3pgb').style.width=(m3Idx/m3Qs.length*100)+'%';
+  document.getElementById('m3q').textContent=q.q;
+  document.getElementById('m3hint').textContent='💡 '+q.hint;document.getElementById('m3hint').classList.remove('show');
+  document.getElementById('m3fb').classList.remove('show');document.getElementById('m3nw').style.display='none';
+  document.getElementById('m3f').textContent='🔬';document.getElementById('m3f').className='char-face';
+  const opts=document.getElementById('m3opts');opts.innerHTML='';
+  q.opts.forEach((opt,i)=>{
+    const btn=document.createElement('button');btn.className='opt';
+    btn.innerHTML=`<span class="opt-n">${['①','②','③','④'][i]}</span>${opt}`;
+    btn.onclick=()=>{
+      clrT();document.querySelectorAll('#m3opts .opt').forEach(b=>b.disabled=true);
+      document.querySelectorAll('#m3opts .opt')[q.ans].classList.add('correct');
+      const fb=document.getElementById('m3fb');const face=document.getElementById('m3f');
+      if(i===q.ans){btn.classList.add('correct');m3Sc+=q.pts;document.getElementById('m3sc').textContent=m3Sc;fb.className='fb show fb-ok';fb.innerHTML=`✅ +${q.pts}점!<br><strong>📚 해설:</strong> ${q.exp}`;face.className='char-face cf-ok';playS('ok');}
+      else{btn.classList.add('wrong');fb.className='fb show fb-no';fb.innerHTML=`❌ 틀렸어요!<br><strong>📚 해설:</strong> ${q.exp}`;face.className='char-face cf-no';playS('no');}
+      document.getElementById('m3nw').style.display='block';
+    };
+    opts.appendChild(btn);
+  });
+  startTimer('m3',38,()=>{document.querySelectorAll('#m3opts .opt').forEach(b=>b.disabled=true);document.getElementById('m3fb').className='fb show fb-no';document.getElementById('m3fb').innerHTML='⏰ 시간 초과!<br>'+q.exp;document.getElementById('m3f').className='char-face cf-no';document.getElementById('m3nw').style.display='block';});
+}
+function nextM3(){m3Idx++;renderM3();}
+function finishM3(){clrT();ST.scores[2]=m3Sc;ST.stars[2]=calcSt(m3Sc,60);ST.done[2]=true;ST.badges.lab=ST.stars[2]>=2;updateSt(3,ST.stars[2]);unlockMC(4);playS('cl');document.getElementById('m3msg').textContent='🎉 임무 3 완료! '+m3Sc+'점!';document.getElementById('m3f').className='char-face cf-wow';setTimeout(()=>goHome(),1600);}
+
+/* ===== 임무4: 에너지 정책 멀티엔딩 ===== */
+const m4Scenes=[
+  {
+    em:'🏭',tx:'2026년 에너지 위기! 정부가 전력 부족 해결책을 논의합니다.\n당신은 에너지 정책 자문관이에요. 어떤 방향을 제안하나요?',
+    cx:'한국 전력 예비율이 5% 이하로 떨어지면 정전 위기가 발생할 수 있어요.',
+    choices:[
+      {lbl:'A',txt:'노후 석탄발전소를 즉시 재가동해 전력을 늘린다.',type:'mid',pts:10,end:'⚠️ 단기 전력은 해결되지만 CO₂ 배출 급증으로 탄소중립 목표가 멀어져요. 장기적 해결책이 필요해요!',lesson:'단기 해결과 장기 지속가능성의 균형이 중요해요.'},
+      {lbl:'B',txt:'태양광·풍력 등 재생에너지를 빠르게 확충하고\n에너지 저장장치(ESS)를 함께 구축한다.',type:'hero',pts:20,end:'✅ 최선의 선택! 단기 비용이 들지만 장기적으로 에너지 자립과 탄소중립을 동시에 달성할 수 있어요.',lesson:'재생에너지 + ESS = 지속 가능한 에너지 미래!'},
+      {lbl:'C',txt:'국민에게 냉난방 자제를 요청하고 강제 절전을 시행한다.',type:'bad',pts:0,end:'❌ 임시방편이에요. 경제 활동과 국민 생활이 타격을 받아요. 에너지 공급 해결책이 병행되어야 해요.',lesson:'절전만으로는 한계가 있어요. 공급 확대가 필수예요!'},
+    ]
+  },
+  {
+    em:'⚛️',tx:'원자력 발전소 추가 건설 여부를 결정해야 합니다.\n어떤 입장을 취하나요?',
+    cx:'원자력은 탄소를 거의 배출하지 않지만 핵폐기물과 안전 문제가 있어요.',
+    choices:[
+      {lbl:'A',txt:'완전히 반대한다. 모든 에너지를 재생에너지로 대체한다.',type:'mid',pts:10,end:'⚠️ 재생에너지만으로는 안정적 전력 공급이 어려울 수 있어요. 기술 개발과 병행이 현실적이에요.',lesson:'에너지 전환에는 시간과 기술이 필요해요!'},
+      {lbl:'B',txt:'안전 기준을 강화하고 핵폐기물 처리 기술을 개발하며\n재생에너지 확충과 함께 균형 있게 활용한다.',type:'hero',pts:20,end:'✅ 균형 잡힌 접근! 탄소 배출 없는 원자력과 재생에너지를 함께 활용해 안정성과 친환경을 동시에 추구해요.',lesson:'에너지 믹스(다양한 에너지원 조합)가 중요해요!'},
+      {lbl:'C',txt:'원자력만 대규모 확충하고 재생에너지 투자를 줄인다.',type:'bad',pts:0,end:'❌ 에너지를 한 종류에 집중하면 위험해요. 다양한 에너지원이 에너지 안보를 높여요.',lesson:'에너지 다양성이 국가 에너지 안보의 핵심이에요!'},
+    ]
+  },
+  {
+    em:'🏘️',tx:'에너지 취약계층(저소득층, 노인)이 높은 에너지 비용으로\n어려움을 겪고 있어요. 어떤 정책을 제안하나요?',
+    cx:'에너지 빈곤: 소득의 10% 이상을 에너지 비용에 쓰는 상태를 말해요.',
+    choices:[
+      {lbl:'A',txt:'에너지 취약계층에게 에너지 바우처(지원금)를 제공하고\n주택 단열 공사를 지원한다.',type:'hero',pts:20,end:'✅ 훌륭한 정책! 단기 지원(바우처)과 장기 해결(단열 개선)을 함께해요. 단열이 좋으면 에너지 소비가 줄어요.',lesson:'에너지 효율 향상이 가장 경제적인 에너지 정책이에요!'},
+      {lbl:'B',txt:'모든 국민에게 전기요금을 일률적으로 낮춰준다.',type:'mid',pts:10,end:'⚠️ 에너지 과소비를 장려할 수 있어요. 취약계층에 집중 지원하는 것이 더 효율적이에요.',lesson:'정책은 필요한 곳에 집중될 때 효과가 극대화돼요!'},
+      {lbl:'C',txt:'시장 원리에 맡기고 정부는 개입하지 않는다.',type:'bad',pts:0,end:'❌ 에너지는 기본 생활권이에요. 정부의 역할이 필요해요. 에너지 취약계층 보호가 사회 안전망의 핵심이에요.',lesson:'에너지는 모든 사람에게 보장되어야 할 기본권이에요!'},
+    ]
+  },
+  {
+    em:'🌏',tx:'2030년까지 재생에너지 비율을 30%로 올리는 목표를 세웠어요.\n현재 10%에서 시작합니다. 실행 계획은?',
+    cx:'2024년 한국의 재생에너지 발전 비율은 약 10%예요.',
+    choices:[
+      {lbl:'A',txt:'1~3년차: 태양광 대규모 보급, 4~6년차: 해상풍력 개발,\n6~8년차: ESS 구축, 8~10년차: 스마트그리드 완성.',type:'hero',pts:20,end:'✅ 단계적이고 체계적인 로드맵! 각 기술의 특성에 맞게 순서를 정해 실현 가능한 목표를 달성해요.',lesson:'단계적 로드맵이 큰 목표를 이루는 가장 확실한 방법이에요!'},
+      {lbl:'B',txt:'목표는 좋지만 경제적 부담이 너무 크므로 목표를 15%로 낮춘다.',type:'mid',pts:10,end:'⚠️ 현실적이지만 기후변화 대응에 부족해요. 국제 약속과 미래 세대를 위해 도전적 목표가 필요해요.',lesson:'어렵지만 필요한 목표를 포기하지 않는 것이 중요해요!'},
+      {lbl:'C',txt:'당장 모든 화석연료 발전소를 폐쇄하고 재생에너지로만 간다.',type:'bad',pts:0,end:'❌ 준비 없는 급격한 전환은 전력 대란을 일으켜요. 단계적 전환이 현실적이에요.',lesson:'에너지 전환은 준비된 단계적 접근이 안전해요!'},
+    ]
+  }
+];
+let m4Idx=0,m4Sc=0;
+function initM4(){m4Idx=0;m4Sc=0;document.getElementById('m4sc').textContent='0';renderM4();}
+function renderM4(){
+  if(m4Idx>=m4Scenes.length){finishM4();return;}
+  const sc=m4Scenes[m4Idx];
+  document.getElementById('m4pg').textContent=(m4Idx+1)+'/'+m4Scenes.length;
+  document.getElementById('m4pgb').style.width=(m4Idx/m4Scenes.length*100)+'%';
+  document.getElementById('m4em').textContent=sc.em;
+  document.getElementById('m4tx').textContent=sc.tx;
+  document.getElementById('m4cx').textContent=sc.cx;
+  document.getElementById('m4eb').classList.remove('show');document.getElementById('m4nw').style.display='none';
+  document.getElementById('m4f').textContent='🔬';document.getElementById('m4f').className='char-face';
+  const cg=document.getElementById('m4cg');cg.innerHTML='';
+  sc.choices.forEach(c=>{
+    const btn=document.createElement('button');btn.className='ch-btn';
+    btn.innerHTML=`<span class="ch-lbl cl-${c.lbl}">${c.lbl}</span>${c.txt}`;
+    btn.onclick=()=>{
+      document.querySelectorAll('.ch-btn').forEach(b=>b.disabled=true);
+      btn.classList.add(c.type==='hero'?'ch-hero':c.type==='bad'?'ch-bad':'ch-mid');
+      const eb=document.getElementById('m4eb');const face=document.getElementById('m4f');
+      if(c.type==='hero'){m4Sc+=c.pts;document.getElementById('m4sc').textContent=m4Sc;eb.className='end-box show e-hero';face.className='char-face cf-wow';playS('ok');}
+      else if(c.type==='mid'){m4Sc+=c.pts;document.getElementById('m4sc').textContent=m4Sc;eb.className='end-box show e-mid';}
+      else{eb.className='end-box show e-bad';face.className='char-face cf-no';playS('no');}
+      eb.innerHTML=`${c.end}<br><br><strong style="color:var(--cyan)">📚 에너지 리터러시:</strong> ${c.lesson}`;
+      document.getElementById('m4nw').style.display='block';
+    };
+    cg.appendChild(btn);
+  });
+}
+function nextM4(){m4Idx++;renderM4();}
+function finishM4(){ST.scores[3]=m4Sc;ST.stars[3]=calcSt(m4Sc,80);ST.done[3]=true;ST.badges.pol=ST.stars[3]>=2;saveScore();playS('cl');showResult();}
+
+/* ===== 결과 ===== */
+function showResult(){
+  const total=ST.scores.reduce((a,b)=>a+b,0);const ts=ST.stars.reduce((a,b)=>a+b,0);
+  let ic='🔋',ttl='에너지 탐정 수료!',rk='';
+  if(ts>=10){ic='🏆';ttl='에너지 위기 탐정단장!';rk='에너지 전문가! 한국의 미래를 이끌 수 있어요!';}
+  else if(ts>=7){ic='⚡';ttl='에너지 수석 탐정';rk='훌륭해요! 에너지 문제를 깊이 이해해요!';}
+  else if(ts>=4){ic='🔬';ttl='에너지 탐정';rk='좋아요! 에너지 리터러시를 갖추었어요!';}
+  else{ic='💡';ttl='에너지 견습생';rk='도전해봐요! 에너지는 우리 삶의 핵심이에요!';}
+  document.getElementById('resIc').textContent=ic;document.getElementById('resTtl').textContent=ttl;document.getElementById('resRk').textContent=rk;
+  const grid=document.getElementById('resGrid');grid.innerHTML='';
+  ['⚡','🌍','🔬','🗺️'].forEach((em,i)=>{const d=document.createElement('div');d.className='rc';d.innerHTML=`<div class="rc-i">${em}</div><div class="rc-n">${['에너지 과학','현황 분석','미래 에너지','정책 선택'][i]}</div><div class="rc-v">${ST.scores[i]}점</div><div class="rc-s">${'★'.repeat(ST.stars[i])}${'☆'.repeat(3-ST.stars[i])}</div>`;grid.appendChild(d);});
+  document.getElementById('tbN').textContent=total;
+  const rb=document.getElementById('resBdg');rb.innerHTML='';
+  [['sci','⚡ 에너지 과학자'],['ana','🌍 에너지 분석가'],['lab','🔬 미래에너지 연구원'],['pol','🗺️ 에너지 정책관']].forEach(([k,l])=>{const el=document.createElement('div');el.className='bdg'+(ST.badges[k]?' earned':'');el.textContent=l;rb.appendChild(el);});
+  if(Object.values(ST.badges).every(v=>v)){const el=document.createElement('div');el.className='bdg earned';el.textContent='🏆 에너지 탐정단장';rb.appendChild(el);}
+  const evals=['계속 도전! 에너지 문제는 우리 모두의 과제예요 💪','잘하고 있어요! 에너지 리터러시를 키워요 🔋','훌륭해요! 에너지 문제를 잘 이해하고 있어요 ⚡','완벽해요! 미래 에너지 전문가예요 🏆'];
+  document.getElementById('evalCard').innerHTML=`<strong style="color:var(--cyan)">💬 볼트의 평가 (2026.03.25):</strong><br>${evals[Math.min(Math.floor(ts/3),3)]}<br><br><span style="color:var(--amber)">📅 오늘 이슈: 2026 에너지 위기 — 중동 유가 급등, 한국 원유 의존도 62.4%!</span>`;
+  showScr('screen-result');
+}
+function resetGame(){
+  clrT();ST.done=[false,false,false,false];ST.scores=[0,0,0,0];ST.stars=[0,0,0,0];ST.badges={sci:false,ana:false,lab:false,pol:false};
+  ['mc2','mc3','mc4'].forEach(id=>{const el=document.getElementById(id);if(!el)return;el.className='mc locked';el.onclick=null;el.querySelector('.mc-st')?.remove();if(!el.querySelector('.mc-lk')){const l=document.createElement('div');l.className='mc-lk';l.textContent='🔒';el.appendChild(l);}});
+  document.getElementById('mc1').className='mc';document.getElementById('mc1').onclick=()=>startM(1);document.getElementById('m1st').textContent='☆☆☆';
+  renderSB();renderBdg();showScr('screen-intro');
+}
+const portfolioEntry={id:'#010',title:'에너지 위기 탐정단',grade:'중학교 1학년',theme:'2026 에너지 위기 — 중동 유가 급등(배럴 130달러) 이슈 연계',subjects:['과학(에너지 전환·신재생에너지)','사회(에너지 자원·국제관계)','기술(에너지 시스템)'],url:'https://milab2019.github.io/main/energy_detective_m1.html',date:'2026.03.25',status:'운영 중'};
+console.log('📋 포트폴리오 JSON:\n'+JSON.stringify(portfolioEntry,null,2));
+initQR();renderSB();renderBdg();
+</script>
+</body>
+</html>
