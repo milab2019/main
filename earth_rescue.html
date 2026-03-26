@@ -1,0 +1,1459 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>🌍 지구 구조대 - 미랩 특수교육 게임</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Jua&family=Nanum+Gothic:wght@400;700;800&display=swap');
+
+  :root {
+    --sky: #b8e8ff;
+    --sky2: #e8f6ff;
+    --grass: #6dbf67;
+    --grass-dark: #4a9944;
+    --earth: #c8956b;
+    --sun: #ffdb4d;
+    --sun2: #ff9f1c;
+    --leaf: #5cb85c;
+    --water: #4fc3f7;
+    --cloud: #ffffff;
+    --pink: #ff8fab;
+    --purple: #c77dff;
+    --mint: #52d9c1;
+    --warm: #fff3e0;
+    --text-dark: #2d3a1e;
+    --text-mid: #4a5240;
+    --card-bg: rgba(255,255,255,0.96);
+    --shadow: 0 8px 32px rgba(60,100,40,0.18);
+    --radius: 28px;
+    --btn-h: 80px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+  body {
+    font-family: 'Nanum Gothic', sans-serif;
+    background: linear-gradient(180deg, var(--sky) 0%, var(--sky2) 60%, #d4f0c0 100%);
+    min-height: 100vh;
+    overflow-x: hidden;
+    position: relative;
+  }
+
+  /* ===== 배경 자연 요소 ===== */
+  .bg-wrap {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    pointer-events: none; z-index: 0; overflow: hidden;
+  }
+  .bg-sun {
+    position: absolute; top: 20px; right: 30px;
+    width: 90px; height: 90px;
+    background: radial-gradient(circle, var(--sun) 60%, var(--sun2) 100%);
+    border-radius: 50%;
+    box-shadow: 0 0 40px rgba(255,219,77,0.7);
+    animation: sunGlow 3s ease-in-out infinite alternate;
+  }
+  @keyframes sunGlow { from { box-shadow: 0 0 30px rgba(255,219,77,0.5); } to { box-shadow: 0 0 60px rgba(255,219,77,0.9); } }
+
+  .bg-cloud {
+    position: absolute;
+    background: white; border-radius: 50px;
+    opacity: 0.85;
+    animation: cloudFloat linear infinite;
+  }
+  @keyframes cloudFloat { from { transform: translateX(-120%); } to { transform: translateX(110vw); } }
+
+  .bg-tree {
+    position: absolute; bottom: 0; font-size: 3.5rem;
+    animation: treeSway 3s ease-in-out infinite alternate;
+    transform-origin: bottom center;
+    opacity: 0.6;
+  }
+  @keyframes treeSway { from { transform: rotate(-4deg); } to { transform: rotate(4deg); } }
+
+  .bg-bird {
+    position: absolute; font-size: 1.4rem;
+    animation: birdFly 8s linear infinite;
+    opacity: 0.7;
+  }
+  @keyframes birdFly {
+    0% { transform: translateX(0) translateY(0); }
+    50% { transform: translateX(40px) translateY(-20px); }
+    100% { transform: translateX(0) translateY(0); }
+  }
+
+  /* ===== 앱 컨테이너 ===== */
+  #app {
+    position: relative; z-index: 10;
+    max-width: 640px; margin: 0 auto;
+    padding: 12px 12px 80px;
+    min-height: 100vh;
+  }
+
+  /* ===== 화면 전환 ===== */
+  .screen { display: none; }
+  .screen.active { display: block; animation: popIn 0.4s cubic-bezier(0.34,1.56,0.64,1); }
+  @keyframes popIn { from { opacity: 0; transform: scale(0.92) translateY(16px); } to { opacity: 1; transform: scale(1) translateY(0); } }
+
+  /* ===== 공통 카드 ===== */
+  .card {
+    background: var(--card-bg);
+    border-radius: var(--radius);
+    padding: 20px;
+    box-shadow: var(--shadow);
+    margin-bottom: 14px;
+    border: 3px solid rgba(109,191,103,0.25);
+  }
+
+  /* ===== 게임 헤더 ===== */
+  .game-header {
+    display: flex; align-items: center; justify-content: space-between;
+    background: rgba(255,255,255,0.92);
+    border-radius: 20px; padding: 10px 16px; margin-bottom: 12px;
+    box-shadow: 0 4px 16px rgba(60,100,40,0.12);
+    border: 2px solid rgba(109,191,103,0.3);
+  }
+  .header-title { font-family: 'Jua', sans-serif; font-size: 1.1rem; color: var(--grass-dark); }
+  .header-sub { font-size: 0.72rem; color: #888; }
+  .star-badge {
+    background: linear-gradient(135deg, var(--sun), var(--sun2));
+    border-radius: 20px; padding: 6px 14px;
+    font-family: 'Jua', sans-serif; font-size: 1rem; color: #5a3800;
+    box-shadow: 0 2px 8px rgba(255,159,28,0.4);
+  }
+
+  /* ===== 진행바 ===== */
+  .prog-wrap { margin-bottom: 12px; }
+  .prog-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; }
+  .prog-label { font-size: 0.82rem; color: var(--grass-dark); font-weight: 800; }
+  .prog-bar { height: 14px; background: rgba(109,191,103,0.2); border-radius: 10px; overflow: hidden; }
+  .prog-fill { height: 100%; background: linear-gradient(90deg, var(--leaf), var(--sun)); border-radius: 10px; transition: width 0.6s ease; }
+
+  /* ===== 버튼 ===== */
+  .btn {
+    display: block; width: 100%;
+    padding: 0 20px;
+    height: var(--btn-h);
+    border: none; border-radius: 22px;
+    font-family: 'Jua', sans-serif;
+    font-size: 1.3rem; line-height: 1.3;
+    cursor: pointer; transition: all 0.18s;
+    position: relative; overflow: hidden;
+    text-align: center;
+    display: flex; align-items: center; justify-content: center;
+    gap: 8px;
+  }
+  .btn:active { transform: scale(0.96); }
+  .btn-green {
+    background: linear-gradient(135deg, #6dbf67, #4a9944);
+    color: white;
+    box-shadow: 0 6px 0 #3a7a34, 0 8px 20px rgba(74,153,68,0.4);
+  }
+  .btn-green:active { box-shadow: 0 2px 0 #3a7a34, 0 4px 10px rgba(74,153,68,0.3); transform: translateY(4px); }
+  .btn-blue {
+    background: linear-gradient(135deg, #4fc3f7, #0288d1);
+    color: white;
+    box-shadow: 0 6px 0 #01579b, 0 8px 20px rgba(79,195,247,0.4);
+  }
+  .btn-blue:active { box-shadow: 0 2px 0 #01579b; transform: translateY(4px); }
+  .btn-orange {
+    background: linear-gradient(135deg, var(--sun), var(--sun2));
+    color: #5a3800;
+    box-shadow: 0 6px 0 #c77000, 0 8px 20px rgba(255,159,28,0.4);
+  }
+  .btn-orange:active { box-shadow: 0 2px 0 #c77000; transform: translateY(4px); }
+  .btn-pink {
+    background: linear-gradient(135deg, #ff8fab, #e91e8c);
+    color: white;
+    box-shadow: 0 6px 0 #a0005a, 0 8px 20px rgba(255,143,171,0.4);
+  }
+  .btn-sm {
+    height: 52px; font-size: 1rem; width: auto;
+    display: inline-flex; padding: 0 20px;
+  }
+  .btn-ghost {
+    background: rgba(255,255,255,0.7);
+    color: var(--grass-dark); font-size: 0.95rem;
+    border: 2px solid rgba(109,191,103,0.4);
+    box-shadow: none; height: 52px; width: auto;
+    display: inline-flex; padding: 0 18px;
+  }
+
+  /* ===== 인트로 화면 ===== */
+  #screen-intro { text-align: center; }
+
+  .intro-hero {
+    background: linear-gradient(135deg, #e8f6e8, #d0f0d0);
+    border-radius: var(--radius);
+    padding: 28px 20px 20px;
+    margin-bottom: 14px;
+    border: 3px solid rgba(109,191,103,0.4);
+    position: relative; overflow: hidden;
+  }
+  .hero-globe {
+    font-size: 7rem;
+    animation: globeSpin 6s ease-in-out infinite;
+    display: block; margin-bottom: 8px;
+    filter: drop-shadow(0 8px 20px rgba(0,120,60,0.3));
+  }
+  @keyframes globeSpin {
+    0%,100% { transform: rotate(-5deg) scale(1); }
+    50% { transform: rotate(5deg) scale(1.08); }
+  }
+  .intro-title {
+    font-family: 'Jua', sans-serif; font-size: 2.6rem;
+    color: var(--grass-dark);
+    text-shadow: 0 2px 0 rgba(255,255,255,0.8);
+    margin-bottom: 4px;
+  }
+  .intro-badge {
+    display: inline-block;
+    background: var(--grass-dark); color: white;
+    font-size: 0.78rem; padding: 4px 14px; border-radius: 20px;
+    margin-bottom: 14px; font-weight: 800;
+  }
+
+  .story-box {
+    background: white; border-radius: 20px;
+    padding: 18px; margin-bottom: 14px;
+    border: 3px solid rgba(109,191,103,0.3);
+    text-align: left;
+  }
+  .story-title {
+    font-family: 'Jua', sans-serif; font-size: 1.1rem;
+    color: var(--grass-dark); margin-bottom: 10px; text-align: center;
+  }
+  .story-text { font-size: 1rem; color: var(--text-dark); line-height: 1.9; }
+  .story-text strong { color: var(--grass-dark); }
+
+  /* ===== 미션 그리드 ===== */
+  .mission-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px; }
+  .mission-card {
+    background: white; border-radius: 20px; padding: 16px;
+    border: 3px solid #d4edcc; text-align: center;
+    cursor: pointer; transition: all 0.25s;
+    box-shadow: 0 4px 0 #b8d9b0;
+  }
+  .mission-card:active { transform: translateY(4px); box-shadow: 0 0 0 #b8d9b0; }
+  .mission-card.locked {
+    opacity: 0.45; cursor: not-allowed;
+    border-color: #ccc; box-shadow: 0 4px 0 #bbb;
+  }
+  .mission-card.done { border-color: var(--sun); box-shadow: 0 4px 0 #c8a000; background: #fffbea; }
+  .mission-icon { font-size: 2.8rem; margin-bottom: 6px; }
+  .mission-name { font-family: 'Jua', sans-serif; font-size: 1rem; color: var(--grass-dark); }
+  .mission-desc { font-size: 0.78rem; color: #888; margin-top: 3px; }
+  .mission-stars { font-size: 1rem; margin-top: 4px; }
+  .lock-icon { font-size: 1.6rem; margin-top: 4px; }
+
+  /* ===== 올리버(마스코트) 말풍선 ===== */
+  .oliver-wrap {
+    display: flex; gap: 10px; align-items: flex-end; margin-bottom: 14px;
+  }
+  .oliver-face {
+    width: 72px; height: 72px; flex-shrink: 0;
+    background: radial-gradient(circle at 40% 40%, #b8ffc0, #6dbf67);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 2.6rem; border: 3px solid #4a9944;
+    box-shadow: 0 4px 12px rgba(74,153,68,0.3);
+    transition: all 0.4s;
+  }
+  .oliver-bubble {
+    background: white; border-radius: 18px 18px 18px 6px;
+    padding: 12px 16px; flex: 1;
+    border: 3px solid rgba(109,191,103,0.35);
+    font-size: 1rem; color: var(--text-dark); line-height: 1.7;
+    box-shadow: 0 4px 12px rgba(60,100,40,0.1);
+  }
+  .oliver-name { font-size: 0.75rem; color: var(--grass-dark); font-weight: 800; margin-bottom: 4px; }
+
+  /* ===== 미션1: 분리수거 드래그 ===== */
+  .items-row {
+    display: flex; gap: 10px; flex-wrap: wrap;
+    justify-content: center; margin: 14px 0;
+  }
+  .drag-item {
+    width: 90px; height: 90px;
+    background: white; border-radius: 18px;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    font-size: 2.8rem; border: 3px solid #ddd;
+    cursor: grab; transition: all 0.2s;
+    box-shadow: 0 4px 0 #ccc; user-select: none;
+    touch-action: none;
+  }
+  .drag-item:active { cursor: grabbing; transform: scale(1.12); z-index: 100; box-shadow: 0 10px 24px rgba(0,0,0,0.2); }
+  .drag-item.used { opacity: 0.3; pointer-events: none; }
+  .drag-item span { font-size: 0.65rem; color: #666; font-weight: 800; margin-top: 2px; }
+
+  .bins-row { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; margin-top: 10px; }
+  .bin {
+    flex: 1; min-width: 100px; min-height: 100px;
+    border-radius: 18px; border: 4px dashed;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    font-size: 1.9rem; transition: all 0.2s;
+    position: relative; background: rgba(255,255,255,0.8);
+    padding: 10px 6px; gap: 4px;
+  }
+  .bin.drag-over { transform: scale(1.06); filter: brightness(1.1); }
+  .bin.success-flash { animation: binFlash 0.5s ease; }
+  @keyframes binFlash { 0%,100%{background:rgba(255,255,255,0.8)} 50%{background:#e0ffe0} }
+  .bin-label { font-size: 0.8rem; font-weight: 800; text-align: center; }
+  .bin-count { font-size: 0.72rem; background: rgba(0,0,0,0.07); border-radius: 10px; padding: 2px 8px; }
+  .bin-paper { border-color: #4fc3f7; }
+  .bin-can { border-color: #c0c0c0; }
+  .bin-plastic { border-color: #ff8f00; }
+  .bin-glass { border-color: #66bb6a; }
+  .bin-food { border-color: #a1887f; }
+
+  /* ===== 미션2: 큰 버튼 퀴즈 ===== */
+  .big-question {
+    font-family: 'Jua', sans-serif; font-size: 1.3rem;
+    color: var(--text-dark); text-align: center;
+    margin-bottom: 18px; line-height: 1.7;
+    background: linear-gradient(135deg, #f0fff4, #e8f5e0);
+    padding: 16px; border-radius: 18px;
+    border: 2px solid rgba(109,191,103,0.3);
+  }
+  .big-opts { display: flex; flex-direction: column; gap: 12px; }
+  .big-opt {
+    min-height: 80px; padding: 14px 20px;
+    border-radius: 20px; border: 3px solid #d4edcc;
+    background: white; cursor: pointer;
+    font-family: 'Jua', sans-serif; font-size: 1.2rem;
+    color: var(--text-dark); transition: all 0.2s;
+    display: flex; align-items: center; gap: 12px;
+    box-shadow: 0 4px 0 #c5e0bc; text-align: left;
+  }
+  .big-opt:active:not(:disabled) { transform: translateY(4px); box-shadow: 0 0 0 #c5e0bc; }
+  .big-opt .opt-icon { font-size: 2rem; flex-shrink: 0; }
+  .big-opt.correct { border-color: #4caf50; background: #e8f5e9; box-shadow: 0 4px 0 #388e3c; }
+  .big-opt.wrong { border-color: #f44336; background: #ffebee; box-shadow: 0 4px 0 #c62828; }
+  .big-opt:disabled { cursor: not-allowed; }
+  .diff-tabs { display: flex; gap: 8px; margin-bottom: 14px; flex-wrap: wrap; }
+  .diff-tab {
+    flex: 1; min-height: 52px; border-radius: 14px;
+    border: 3px solid; font-family: 'Jua', sans-serif; font-size: 0.95rem;
+    cursor: pointer; transition: all 0.2s; background: white;
+  }
+  .diff-tab.easy { border-color: #66bb6a; color: #2e7d32; }
+  .diff-tab.easy.on { background: #66bb6a; color: white; }
+  .diff-tab.med { border-color: #ffa726; color: #e65100; }
+  .diff-tab.med.on { background: #ffa726; color: white; }
+  .diff-tab.hard { border-color: #ef5350; color: #b71c1c; }
+  .diff-tab.hard.on { background: #ef5350; color: white; }
+  .fb-box {
+    margin-top: 14px; padding: 14px; border-radius: 16px;
+    font-size: 0.98rem; line-height: 1.7; display: none; border: 3px solid;
+  }
+  .fb-box.show { display: block; animation: popIn 0.35s ease; }
+  .fb-ok { background: #e8f5e9; border-color: #66bb6a; color: #1b5e20; }
+  .fb-ng { background: #ffebee; border-color: #ef5350; color: #7f0000; }
+
+  /* ===== 미션3: 나무 심기 카드 정렬 ===== */
+  .sort-cards { display: flex; flex-direction: column; gap: 10px; }
+  .sort-card {
+    display: flex; align-items: center; gap: 12px;
+    padding: 14px 16px; border-radius: 18px;
+    background: white; border: 3px solid #d4edcc;
+    cursor: grab; user-select: none;
+    box-shadow: 0 4px 0 #c5e0bc; transition: all 0.2s;
+    min-height: 72px; touch-action: none;
+  }
+  .sort-card:active { cursor: grabbing; transform: scale(1.02) rotate(1deg); box-shadow: 0 10px 24px rgba(0,0,0,0.15); z-index: 100; }
+  .sort-card.dragging { opacity: 0.35; border-style: dashed; }
+  .sort-card.over { border-color: var(--grass); background: #f0fef0; transform: scale(1.01); }
+  .sort-card.correct-s { border-color: #4caf50; background: #e8f5e9; }
+  .sort-card.wrong-s { border-color: #f44336; background: #ffebee; }
+  .sc-num {
+    width: 40px; height: 40px; border-radius: 50%;
+    background: var(--grass); color: white;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Jua', sans-serif; font-size: 1.1rem; flex-shrink: 0;
+  }
+  .sc-icon { font-size: 2rem; flex-shrink: 0; }
+  .sc-text { font-size: 0.98rem; color: var(--text-dark); font-weight: 800; flex: 1; }
+
+  /* ===== 미션4: 생태계 OX 퀴즈 ===== */
+  .ox-question {
+    font-family: 'Jua', sans-serif; font-size: 1.3rem;
+    text-align: center; padding: 20px; line-height: 1.7;
+    background: linear-gradient(135deg, #fff9f0, #fff3e0);
+    border-radius: 20px; margin-bottom: 18px;
+    border: 2px solid rgba(255,167,38,0.4);
+  }
+  .ox-btns { display: flex; gap: 16px; }
+  .ox-btn {
+    flex: 1; height: 120px; border-radius: 24px;
+    border: 4px solid; font-family: 'Jua', sans-serif; font-size: 3rem;
+    cursor: pointer; transition: all 0.2s;
+    box-shadow: 0 8px 0; display: flex; flex-direction: column;
+    align-items: center; justify-content: center; gap: 6px;
+    line-height: 1;
+  }
+  .ox-btn span { font-size: 1rem; }
+  .ox-o { border-color: #e53935; color: #e53935; background: #fff5f5; box-shadow: 0 8px 0 #b71c1c; }
+  .ox-o:active { transform: translateY(8px); box-shadow: 0 0 0 #b71c1c; }
+  .ox-o.selected-ok { background: #ffcdd2; }
+  .ox-x { border-color: #1e88e5; color: #1e88e5; background: #f3f9ff; box-shadow: 0 8px 0 #0d47a1; }
+  .ox-x:active { transform: translateY(8px); box-shadow: 0 0 0 #0d47a1; }
+  .ox-x.selected-ok { background: #bbdefb; }
+  .ox-counter { text-align: center; font-family: 'Jua', sans-serif; font-size: 1rem; color: #888; margin-bottom: 10px; }
+
+  /* ===== 칭찬 스티커 오버레이 ===== */
+  .sticker-overlay {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    display: flex; align-items: center; justify-content: center;
+    z-index: 200; pointer-events: none;
+  }
+  .sticker-popup {
+    background: white; border-radius: 30px;
+    padding: 28px 36px; text-align: center;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+    border: 4px solid;
+    animation: stickerPop 0.5s cubic-bezier(0.34,1.56,0.64,1);
+    pointer-events: all;
+  }
+  @keyframes stickerPop { from { transform: scale(0.4) rotate(-10deg); opacity: 0; } to { transform: scale(1) rotate(0); opacity: 1; } }
+  .sticker-emoji { font-size: 5rem; display: block; margin-bottom: 8px; }
+  .sticker-text { font-family: 'Jua', sans-serif; font-size: 1.4rem; }
+  .sticker-sub { font-size: 0.9rem; color: #888; margin-top: 4px; }
+
+  /* ===== 결과 화면 ===== */
+  #screen-result { text-align: center; }
+  .result-hero {
+    background: linear-gradient(135deg, #e8f8e0, #d0f0e8);
+    border-radius: var(--radius); padding: 28px 20px;
+    margin-bottom: 14px; border: 3px solid rgba(92,184,92,0.4);
+  }
+  .result-badge-emoji { font-size: 6rem; animation: badgeBounce 1s cubic-bezier(0.34,1.56,0.64,1); }
+  @keyframes badgeBounce { from { transform: scale(0); } to { transform: scale(1); } }
+  .result-title { font-family: 'Jua', sans-serif; font-size: 2rem; color: var(--grass-dark); margin: 10px 0 4px; }
+  .result-sub { color: #666; font-size: 0.9rem; }
+  .result-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 12px 0; }
+  .result-item {
+    background: white; border-radius: 18px; padding: 14px;
+    border: 3px solid #d4edcc; text-align: center;
+  }
+  .ri-icon { font-size: 2rem; }
+  .ri-name { font-size: 0.78rem; color: #888; margin: 4px 0; }
+  .ri-score { font-family: 'Jua', sans-serif; font-size: 1.2rem; color: var(--grass-dark); }
+  .ri-stars { color: var(--sun); font-size: 0.95rem; }
+  .total-box {
+    background: linear-gradient(135deg, var(--sun), var(--sun2));
+    border-radius: 20px; padding: 16px; margin: 10px 0;
+  }
+  .total-label { font-family: 'Jua', sans-serif; font-size: 1rem; color: #5a3800; }
+  .total-num { font-family: 'Jua', sans-serif; font-size: 3.2rem; color: #5a3800; line-height: 1; }
+  .result-msg {
+    background: white; border-radius: 18px; padding: 16px;
+    margin: 10px 0; font-size: 0.98rem; line-height: 1.8;
+    color: var(--text-dark); border: 3px solid rgba(109,191,103,0.3);
+  }
+
+  /* ===== 파티클 ===== */
+  .particle {
+    position: fixed; pointer-events: none; z-index: 300;
+    font-size: 1.8rem; animation: particleFly 1.5s ease-out forwards;
+  }
+  @keyframes particleFly {
+    0% { transform: translate(0,0) scale(1); opacity: 1; }
+    100% { transform: translate(var(--px), var(--py)) scale(0.3); opacity: 0; }
+  }
+
+  /* ===== QR 코드 ===== */
+  .qr-wrap {
+    background: white; border-radius: 20px; padding: 16px;
+    border: 3px solid rgba(109,191,103,0.3); text-align: center;
+    margin-top: 12px;
+  }
+  .qr-title { font-family: 'Jua', sans-serif; font-size: 1rem; color: var(--grass-dark); margin-bottom: 10px; }
+  #qrCanvas { border-radius: 12px; }
+
+  /* ===== 홈 버튼 고정 ===== */
+  .home-fab {
+    position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+    background: white; border-radius: 30px; padding: 10px 20px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+    border: 2px solid rgba(109,191,103,0.4);
+    font-family: 'Jua', sans-serif; font-size: 0.9rem;
+    color: var(--grass-dark); cursor: pointer; z-index: 50;
+    display: none;
+  }
+  .home-fab.show { display: block; }
+
+  /* ===== 음악 버튼 ===== */
+  .music-fab {
+    position: fixed; top: 14px; right: 14px; z-index: 100;
+    background: white; border-radius: 20px; padding: 8px 14px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+    border: 2px solid rgba(109,191,103,0.4);
+    font-size: 0.85rem; cursor: pointer; font-family: 'Nanum Gothic', sans-serif;
+    color: var(--grass-dark); font-weight: 800;
+  }
+
+  @media (max-width: 400px) {
+    :root { --btn-h: 72px; }
+    .big-opt { font-size: 1.05rem; min-height: 70px; }
+    .intro-title { font-size: 2rem; }
+  }
+</style>
+</head>
+<body>
+
+<!-- 배경 -->
+<div class="bg-wrap" id="bgWrap"></div>
+<button class="music-fab" id="musicFab" onclick="toggleMusic()">🎵 음악 켜기</button>
+
+<div id="app">
+
+<!-- ===== 인트로 ===== -->
+<div id="screen-intro" class="screen active">
+  <div class="intro-hero">
+    <span class="hero-globe">🌍</span>
+    <div class="intro-title">지구 구조대!</div>
+    <div class="intro-badge">미랩(MILAB) · 특수교육 체험 게임 · 2026</div>
+  </div>
+  <div class="story-box">
+    <div class="story-title">🚨 지구가 위험해요!</div>
+    <p class="story-text">
+      지구 친구들이 힘들어해요.<br>
+      쓰레기가 너무 많고, 나무가 줄어들고 있어요! 😢<br><br>
+      <strong>우리가 지구 구조대!</strong> 🌱<br>
+      4가지 미션을 해결하고<br>지구를 구해봐요! 💪
+    </p>
+  </div>
+  <div style="font-family:'Jua',sans-serif; font-size:1.1rem; color:var(--grass-dark); margin-bottom:10px;">📋 미션을 골라요!</div>
+  <div class="mission-grid" id="missionGrid">
+    <div class="mission-card" id="mc1" onclick="startMission(1)">
+      <div class="mission-icon">♻️</div>
+      <div class="mission-name">미션 1</div>
+      <div class="mission-desc">분리수거 해요</div>
+      <div class="mission-stars" id="ms1">⭐⭐⭐</div>
+    </div>
+    <div class="mission-card locked" id="mc2">
+      <div class="mission-icon">🌿</div>
+      <div class="mission-name">미션 2</div>
+      <div class="mission-desc">환경 퀴즈</div>
+      <div class="lock-icon">🔒</div>
+    </div>
+    <div class="mission-card locked" id="mc3">
+      <div class="mission-icon">🌳</div>
+      <div class="mission-name">미션 3</div>
+      <div class="mission-desc">나무 심는 순서</div>
+      <div class="lock-icon">🔒</div>
+    </div>
+    <div class="mission-card locked" id="mc4">
+      <div class="mission-icon">🦋</div>
+      <div class="mission-name">미션 4</div>
+      <div class="mission-desc">생태계 OX 퀴즈</div>
+      <div class="lock-icon">🔒</div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== 미션1: 분리수거 ===== -->
+<div id="screen-m1" class="screen">
+  <div class="game-header">
+    <div><div class="header-title">♻️ 미션 1 — 분리수거</div><div class="header-sub">국어(분류) + 슬기로운생활</div></div>
+    <div class="star-badge">⭐ <span id="m1Sc">0</span></div>
+  </div>
+  <div class="prog-wrap">
+    <div class="prog-row"><span class="prog-label">진행 중</span><span class="prog-label" id="m1Prog">0/8</span></div>
+    <div class="prog-bar"><div class="prog-fill" id="m1PB" style="width:0%"></div></div>
+  </div>
+  <div class="oliver-wrap">
+    <div class="oliver-face" id="m1Oliver">🌱</div>
+    <div class="oliver-bubble"><div class="oliver-name">🌱 올리버</div><span id="m1Msg">쓰레기를 맞는 통에 넣어주세요! 드래그하거나 터치해서 옮겨요!</span></div>
+  </div>
+  <div class="card">
+    <div style="font-family:'Jua';font-size:1rem;color:var(--grass-dark);margin-bottom:8px;text-align:center;">🖐️ 아이템을 통에 옮겨요!</div>
+    <div class="items-row" id="itemsRow"></div>
+    <div class="bins-row" id="binsRow"></div>
+  </div>
+</div>
+
+<!-- ===== 미션2: 퀴즈 ===== -->
+<div id="screen-m2" class="screen">
+  <div class="game-header">
+    <div><div class="header-title">🌿 미션 2 — 환경 퀴즈</div><div class="header-sub">국어(이해) + 슬기로운생활</div></div>
+    <div class="star-badge">⭐ <span id="m2Sc">0</span></div>
+  </div>
+  <div class="prog-wrap">
+    <div class="prog-row"><span class="prog-label">진행 중</span><span class="prog-label" id="m2Prog">0/8</span></div>
+    <div class="prog-bar"><div class="prog-fill" id="m2PB" style="width:0%"></div></div>
+  </div>
+  <div class="oliver-wrap">
+    <div class="oliver-face" id="m2Oliver">🌱</div>
+    <div class="oliver-bubble"><div class="oliver-name">🌱 올리버</div><span id="m2Msg">난이도를 고르고 퀴즈에 도전해봐요!</span></div>
+  </div>
+  <div class="card">
+    <div class="diff-tabs">
+      <button class="diff-tab easy on" onclick="setDiff('easy')">🌱 쉬움</button>
+      <button class="diff-tab med" onclick="setDiff('med')">🌿 보통</button>
+      <button class="diff-tab hard" onclick="setDiff('hard')">🌲 도전!</button>
+    </div>
+    <div class="ox-counter" id="m2Counter">1 / 8 문제</div>
+    <div class="big-question" id="m2Q">문제 준비 중...</div>
+    <div class="big-opts" id="m2Opts"></div>
+    <div class="fb-box" id="m2Fb"></div>
+    <div id="m2NextWrap" style="margin-top:14px;display:none;">
+      <button class="btn btn-green" onclick="nextQuiz()">다음 문제 →</button>
+    </div>
+  </div>
+  <button class="btn btn-ghost btn-sm" onclick="goHome()" style="margin-top:4px;">← 미션 목록</button>
+</div>
+
+<!-- ===== 미션3: 순서 맞추기 ===== -->
+<div id="screen-m3" class="screen">
+  <div class="game-header">
+    <div><div class="header-title">🌳 미션 3 — 나무 심기</div><div class="header-sub">슬기로운생활 + 국어(절차)</div></div>
+    <div class="star-badge">⭐ <span id="m3Sc">0</span></div>
+  </div>
+  <div class="oliver-wrap">
+    <div class="oliver-face" id="m3Oliver">🌱</div>
+    <div class="oliver-bubble"><div class="oliver-name">🌱 올리버</div><span id="m3Msg">카드를 끌어서 올바른 순서로 만들어봐요!</span></div>
+  </div>
+  <div class="card">
+    <div style="font-family:'Jua';font-size:1rem;color:var(--grass-dark);margin-bottom:4px;" id="m3Title">🌱 나무 심기 순서를 맞춰요!</div>
+    <div style="font-size:0.82rem;color:#999;margin-bottom:12px;">위아래로 드래그해서 순서를 바꿔요</div>
+    <div class="sort-cards" id="sortCards"></div>
+    <div style="text-align:right;font-size:0.82rem;color:#aaa;margin-top:8px;">라운드 <span id="m3Round">1</span>/3</div>
+    <div style="margin-top:14px;">
+      <button class="btn btn-orange" onclick="checkSort()">✅ 순서 확인!</button>
+    </div>
+    <div class="fb-box" id="m3Fb"></div>
+  </div>
+  <button class="btn btn-ghost btn-sm" onclick="goHome()" style="margin-top:4px;">← 미션 목록</button>
+</div>
+
+<!-- ===== 미션4: OX 퀴즈 ===== -->
+<div id="screen-m4" class="screen">
+  <div class="game-header">
+    <div><div class="header-title">🦋 미션 4 — 생태계 OX</div><div class="header-sub">슬기로운생활(자연)</div></div>
+    <div class="star-badge">⭐ <span id="m4Sc">0</span></div>
+  </div>
+  <div class="prog-wrap">
+    <div class="prog-row"><span class="prog-label">진행 중</span><span class="prog-label" id="m4Prog">0/8</span></div>
+    <div class="prog-bar"><div class="prog-fill" id="m4PB" style="width:0%"></div></div>
+  </div>
+  <div class="oliver-wrap">
+    <div class="oliver-face" id="m4Oliver">🌱</div>
+    <div class="oliver-bubble"><div class="oliver-name">🌱 올리버</div><span id="m4Msg">맞으면 ⭕, 틀리면 ❌ 를 눌러요!</span></div>
+  </div>
+  <div class="card">
+    <div class="ox-counter" id="m4Counter">1 / 8 문제</div>
+    <div class="ox-question" id="m4Q">문제 준비 중...</div>
+    <div class="ox-btns">
+      <button class="ox-btn ox-o" id="oxO" onclick="answerOX(true)">⭕<span>맞아요</span></button>
+      <button class="ox-btn ox-x" id="oxX" onclick="answerOX(false)">❌<span>아니에요</span></button>
+    </div>
+    <div class="fb-box" id="m4Fb"></div>
+  </div>
+  <button class="btn btn-ghost btn-sm" onclick="goHome()" style="margin-top:4px;">← 미션 목록</button>
+</div>
+
+<!-- ===== 결과 ===== -->
+<div id="screen-result" class="screen">
+  <div class="result-hero">
+    <div class="result-badge-emoji" id="resBadge">🏆</div>
+    <div class="result-title" id="resTitle">지구 구조대 완료!</div>
+    <div class="result-sub">미랩(MILAB) 특수교육 체험</div>
+    <div style="font-size:1rem;color:var(--grass-dark);font-weight:800;margin-top:6px;" id="resRank"></div>
+  </div>
+  <div class="result-grid" id="resGrid"></div>
+  <div class="total-box">
+    <div class="total-label">🌟 총 점수</div>
+    <div class="total-num" id="resTot">0</div>
+    <div style="font-size:0.85rem;color:#5a3800;margin-top:4px;">/ 100점</div>
+  </div>
+  <div class="result-msg" id="resMsg"></div>
+
+  <!-- QR 코드 -->
+  <div class="qr-wrap">
+    <div class="qr-title">📱 미랩 포트폴리오 QR코드</div>
+    <canvas id="qrCanvas" width="160" height="160"></canvas>
+    <div style="font-size:0.78rem;color:#aaa;margin-top:6px;">milab2019.github.io/main/milab_portfolio.html</div>
+  </div>
+
+  <div style="margin-top:14px;">
+    <button class="btn btn-green" onclick="resetGame()">🔄 다시 해봐요!</button>
+  </div>
+</div>
+
+</div><!-- /app -->
+
+<!-- 칭찬 스티커 레이어 -->
+<div id="stickerLayer" style="display:none;" class="sticker-overlay">
+  <div class="sticker-popup" id="stickerPopup" style="border-color:#66bb6a;">
+    <span class="sticker-emoji" id="stickerEmoji">⭐</span>
+    <div class="sticker-text" id="stickerText">잘했어요!</div>
+    <div class="sticker-sub" id="stickerSub"></div>
+  </div>
+</div>
+
+<script>
+/* ====================================================
+   게임 상태
+==================================================== */
+const G = {
+  scores: [0,0,0,0],
+  stars: [0,0,0,0],
+  done: [false,false,false,false]
+};
+
+/* ====================================================
+   배경 생성
+==================================================== */
+function initBg() {
+  const w = document.getElementById('bgWrap');
+  // 해
+  const sun = document.createElement('div'); sun.className='bg-sun'; w.appendChild(sun);
+  // 구름
+  const clouds = [[60,'20%',40,18,'12s'],[ 90,'50%',60,22,'18s'],[50,'70%',45,16,'22s']];
+  clouds.forEach(([h,top,bw,br,dur])=>{
+    const c=document.createElement('div'); c.className='bg-cloud';
+    c.style.cssText=`height:${h}px;top:${top};width:${bw+80}px;border-radius:50px;animation-duration:${dur};animation-delay:-${parseFloat(dur)/2}s`;
+    const b=document.createElement('div');
+    b.style.cssText=`position:absolute;background:white;border-radius:50%;width:${bw}px;height:${bw}px;top:-${bw/2}px;left:${bw*0.3}px`;
+    c.appendChild(b); w.appendChild(c);
+  });
+  // 나무들
+  const treeEmojis=['🌲','🌳','🌴','🎋'];
+  for(let i=0;i<8;i++){
+    const t=document.createElement('div'); t.className='bg-tree';
+    t.textContent=treeEmojis[i%4];
+    t.style.left=(i*13+2)+'%';
+    t.style.fontSize=(3+Math.random())+'rem';
+    t.style.animationDelay=(Math.random()*2)+'s';
+    w.appendChild(t);
+  }
+  // 새
+  const birds=['🐦','🦋','🐝'];
+  for(let i=0;i<4;i++){
+    const b=document.createElement('div'); b.className='bg-bird';
+    b.textContent=birds[i%3];
+    b.style.left=(20+i*22)+'%';
+    b.style.top=(15+i*12)+'%';
+    b.style.animationDelay=(i*2)+'s';
+    w.appendChild(b);
+  }
+}
+
+/* ====================================================
+   음악 (Web Audio API — 봄 느낌 멜로디)
+==================================================== */
+let bgCtx=null, musicPlaying=false;
+function toggleMusic(){
+  musicPlaying=!musicPlaying;
+  document.getElementById('musicFab').textContent=musicPlaying?'🎵 음악 끄기':'🎵 음악 켜기';
+  musicPlaying ? playBg() : stopBg();
+}
+function playBg(){
+  bgCtx=new(window.AudioContext||window.webkitAudioContext)();
+  const notes=[261.63,293.66,329.63,392,440,523.25,587.33,659.25];
+  // 봄 느낌 멜로디 시퀀스
+  const seq=[0,2,4,5,4,2,0,-1,2,4,7,5,4,2,4,5];
+  let t=bgCtx.currentTime;
+  seq.forEach((n,i)=>{
+    if(n<0){t+=0.5;return;}
+    const osc=bgCtx.createOscillator();
+    const gain=bgCtx.createGain();
+    osc.connect(gain); gain.connect(bgCtx.destination);
+    osc.type='triangle';
+    osc.frequency.value=notes[n%8]*(n>4?0.5:0.5);
+    gain.gain.setValueAtTime(0,t);
+    gain.gain.linearRampToValueAtTime(0.05,t+0.08);
+    gain.gain.linearRampToValueAtTime(0,t+0.42);
+    osc.start(t); osc.stop(t+0.5);
+    t+=0.5;
+  });
+}
+function stopBg(){ if(bgCtx){bgCtx.close();bgCtx=null;} }
+function playSound(type){
+  try{
+    const ctx=new(window.AudioContext||window.webkitAudioContext)();
+    const osc=ctx.createOscillator(); const g=ctx.createGain();
+    osc.connect(g); g.connect(ctx.destination);
+    if(type==='ok'){
+      osc.type='sine'; osc.frequency.value=523;
+      g.gain.setValueAtTime(0.18,ctx.currentTime);
+      g.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+0.6);
+    } else if(type==='ng'){
+      osc.type='sawtooth'; osc.frequency.value=180;
+      g.gain.setValueAtTime(0.12,ctx.currentTime);
+      g.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+0.4);
+    } else if(type==='clear'){
+      [523,659,784,1047].forEach((f,i)=>{
+        const o2=ctx.createOscillator(); const g2=ctx.createGain();
+        o2.connect(g2); g2.connect(ctx.destination);
+        o2.type='sine'; o2.frequency.value=f;
+        g2.gain.setValueAtTime(0,ctx.currentTime+i*0.12);
+        g2.gain.linearRampToValueAtTime(0.15,ctx.currentTime+i*0.12+0.05);
+        g2.gain.linearRampToValueAtTime(0,ctx.currentTime+i*0.12+0.3);
+        o2.start(ctx.currentTime+i*0.12); o2.stop(ctx.currentTime+i*0.12+0.4);
+      });
+      return;
+    }
+    osc.start(); osc.stop(ctx.currentTime+0.7);
+  }catch(e){}
+}
+
+/* ====================================================
+   화면 전환
+==================================================== */
+function showScreen(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo(0,0);
+}
+function goHome(){ showScreen('screen-intro'); }
+
+/* ====================================================
+   미션 잠금 해제 / 별점 갱신
+==================================================== */
+function unlock(n){
+  const el=document.getElementById('mc'+n);
+  if(!el||!el.classList.contains('locked')) return;
+  el.classList.remove('locked');
+  const li=el.querySelector('.lock-icon'); if(li) li.remove();
+  const st=document.createElement('div'); st.className='mission-stars'; st.id='ms'+n; st.textContent='⭐⭐⭐';
+  el.appendChild(st);
+  el.onclick=()=>startMission(n);
+}
+function setStars(n, stars){
+  const el=document.getElementById('ms'+n);
+  if(el) el.textContent='⭐'.repeat(stars)+'☆'.repeat(3-stars);
+  document.getElementById('mc'+n)?.classList.add('done');
+}
+function calcStars(sc, mx){ const p=sc/mx; return p>=0.85?3:p>=0.55?2:p>0?1:0; }
+
+/* ====================================================
+   칭찬 스티커 팝업
+==================================================== */
+const praises = [
+  {emoji:'🌟',text:'완전 잘했어요!',color:'#ffd700'},
+  {emoji:'🎉',text:'대단해요!',color:'#ff8fab'},
+  {emoji:'🌈',text:'최고예요!',color:'#7bc8f6'},
+  {emoji:'💚',text:'지구가 고마워해요!',color:'#6dbf67'},
+  {emoji:'🏅',text:'금메달!',color:'#ff9f1c'},
+];
+const wrongs = [
+  {emoji:'🤗',text:'괜찮아요!',sub:'다시 한 번 해봐요 💪',color:'#aaa'},
+  {emoji:'🌱',text:'조금만 더!',sub:'잘 할 수 있어요!',color:'#6dbf67'},
+  {emoji:'💙',text:'노력하고 있어요!',sub:'정답을 확인해봐요',color:'#4fc3f7'},
+];
+function showSticker(isOk, cb){
+  const data = isOk ? praises[Math.floor(Math.random()*praises.length)] : wrongs[Math.floor(Math.random()*wrongs.length)];
+  const layer=document.getElementById('stickerLayer');
+  const popup=document.getElementById('stickerPopup');
+  document.getElementById('stickerEmoji').textContent=data.emoji;
+  document.getElementById('stickerText').textContent=data.text;
+  document.getElementById('stickerSub').textContent=data.sub||'';
+  popup.style.borderColor=data.color;
+  layer.style.display='flex';
+  if(isOk) spawnParticles();
+  setTimeout(()=>{ layer.style.display='none'; if(cb) cb(); }, 1200);
+}
+function spawnParticles(){
+  const emojis=['🌟','🌸','🍀','🌈','💫','🎉'];
+  for(let i=0;i<10;i++){
+    const p=document.createElement('div'); p.className='particle';
+    p.textContent=emojis[Math.floor(Math.random()*emojis.length)];
+    p.style.left=(20+Math.random()*60)+'%'; p.style.top='40%';
+    p.style.setProperty('--px',(Math.random()*200-100)+'px');
+    p.style.setProperty('--py',(-(80+Math.random()*120))+'px');
+    p.style.animationDelay=(Math.random()*0.3)+'s';
+    document.body.appendChild(p);
+    setTimeout(()=>p.remove(), 1800);
+  }
+}
+
+/* ====================================================
+   올리버 감정 변화
+==================================================== */
+function setOliver(id, type){
+  const el=document.getElementById(id);
+  if(!el) return;
+  const map={happy:'😄',sad:'😢',wow:'🤩',think:'🤔',cheer:'🥳',default:'🌱'};
+  el.textContent=map[type]||map.default;
+}
+
+/* ====================================================
+   미션 시작
+==================================================== */
+function startMission(n){
+  if(n===1) initM1();
+  else if(n===2) initM2();
+  else if(n===3) initM3();
+  else if(n===4) initM4();
+  showScreen('screen-m'+n);
+}
+
+/* ====================================================
+   미션1: 분리수거 드래그 앤 드롭 + 터치
+==================================================== */
+const ITEMS=[
+  {e:'📰',label:'신문지',bin:'paper'},
+  {e:'🥫',label:'캔',bin:'can'},
+  {e:'🍶',label:'유리병',bin:'glass'},
+  {e:'🧴',label:'플라스틱',bin:'plastic'},
+  {e:'🍎',label:'사과껍질',bin:'food'},
+  {e:'📦',label:'종이박스',bin:'paper'},
+  {e:'🥤',label:'플라스틱컵',bin:'plastic'},
+  {e:'🍺',label:'빈병',bin:'glass'},
+];
+const BINS=[
+  {id:'paper',e:'📄',label:'종이류',color:'#4fc3f7'},
+  {id:'can',e:'🪙',label:'캔류',color:'#9e9e9e'},
+  {id:'plastic',e:'🧴',label:'플라스틱',color:'#ff9800'},
+  {id:'glass',e:'🫙',label:'유리',color:'#66bb6a'},
+  {id:'food',e:'🥗',label:'음식물',color:'#8d6e63'},
+];
+let m1Score=0, m1Done=0, m1Total=ITEMS.length;
+let draggedItem=null;
+function initM1(){
+  m1Score=0; m1Done=0;
+  document.getElementById('m1Sc').textContent='0';
+  document.getElementById('m1Prog').textContent='0/'+m1Total;
+  document.getElementById('m1PB').style.width='0%';
+  setOliver('m1Oliver','default');
+  document.getElementById('m1Msg').textContent='쓰레기를 맞는 통에 넣어주세요!';
+  const shuffled=[...ITEMS].sort(()=>Math.random()-0.5);
+  const row=document.getElementById('itemsRow'); row.innerHTML='';
+  shuffled.forEach((item,i)=>{
+    const el=document.createElement('div');
+    el.className='drag-item'; el.dataset.bin=item.bin; el.id='item'+i;
+    el.innerHTML=`${item.e}<span>${item.label}</span>`;
+    // 드래그 이벤트
+    el.draggable=true;
+    el.addEventListener('dragstart',e=>{draggedItem=el; setTimeout(()=>el.classList.add('dragging'),0);});
+    el.addEventListener('dragend',()=>el.classList.remove('dragging'));
+    // 터치 이벤트
+    el.addEventListener('touchstart',handleTouchStart,{passive:true});
+    el.addEventListener('touchmove',handleTouchMove,{passive:false});
+    el.addEventListener('touchend',handleTouchEnd);
+    row.appendChild(el);
+  });
+  const brow=document.getElementById('binsRow'); brow.innerHTML='';
+  BINS.forEach(bin=>{
+    const el=document.createElement('div');
+    el.className='bin bin-'+bin.id; el.id='bin-'+bin.id;
+    el.innerHTML=`${bin.e}<div class="bin-label">${bin.label}</div><div class="bin-count">0개</div>`;
+    el.style.borderColor=bin.color;
+    // 드래그오버/드롭 이벤트
+    el.addEventListener('dragover',e=>{e.preventDefault();el.classList.add('drag-over');});
+    el.addEventListener('dragleave',()=>el.classList.remove('drag-over'));
+    el.addEventListener('drop',e=>{e.preventDefault();el.classList.remove('drag-over');if(draggedItem) dropItem(draggedItem,el);});
+    brow.appendChild(el);
+  });
+}
+// 터치 드래그 구현
+let touchGhost=null, touchItem=null;
+function handleTouchStart(e){
+  touchItem=e.currentTarget;
+  const rect=touchItem.getBoundingClientRect();
+  touchGhost=touchItem.cloneNode(true);
+  touchGhost.style.cssText=`position:fixed;width:${rect.width}px;height:${rect.height}px;opacity:0.8;pointer-events:none;z-index:999;top:${rect.top}px;left:${rect.left}px;border-radius:18px;border:3px solid #6dbf67;background:white;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:2.6rem;`;
+  document.body.appendChild(touchGhost);
+}
+function handleTouchMove(e){
+  e.preventDefault();
+  const t=e.touches[0];
+  if(touchGhost){
+    touchGhost.style.top=(t.clientY-45)+'px';
+    touchGhost.style.left=(t.clientX-45)+'px';
+  }
+}
+function handleTouchEnd(e){
+  if(touchGhost){ touchGhost.remove(); touchGhost=null; }
+  if(!touchItem) return;
+  const t=e.changedTouches[0];
+  const el=document.elementFromPoint(t.clientX,t.clientY);
+  const binEl=el?.closest('.bin');
+  if(binEl && touchItem) dropItem(touchItem, binEl);
+  touchItem=null;
+}
+function dropItem(itemEl, binEl){
+  if(itemEl.classList.contains('used')) return;
+  const correct=itemEl.dataset.bin===binEl.id.replace('bin-','');
+  itemEl.classList.add('used');
+  m1Done++;
+  document.getElementById('m1Prog').textContent=m1Done+'/'+m1Total;
+  document.getElementById('m1PB').style.width=(m1Done/m1Total*100)+'%';
+  if(correct){
+    m1Score+=12; if(m1Score>100) m1Score=100;
+    document.getElementById('m1Sc').textContent=m1Score;
+    binEl.classList.add('success-flash');
+    // 통의 카운트 증가
+    const cnt=binEl.querySelector('.bin-count');
+    if(cnt){ const n=parseInt(cnt.textContent)||0; cnt.textContent=(n+1)+'개'; }
+    setOliver('m1Oliver','happy');
+    document.getElementById('m1Msg').textContent='잘했어요! 맞게 넣었어요! 👍';
+    playSound('ok');
+    showSticker(true, ()=>{
+      if(m1Done>=m1Total) setTimeout(finishM1,200);
+    });
+  } else {
+    setOliver('m1Oliver','sad');
+    document.getElementById('m1Msg').textContent='아쉬워요! 다시 확인해봐요 🤔';
+    playSound('ng');
+    showSticker(false, ()=>{
+      itemEl.classList.remove('used');
+      if(m1Done>=m1Total) setTimeout(finishM1,200);
+    });
+  }
+}
+function finishM1(){
+  G.scores[0]=m1Score;
+  G.stars[0]=calcStars(m1Score,100);
+  G.done[0]=true;
+  setStars(1,G.stars[0]); unlock(2);
+  saveLS();
+  playSound('clear');
+  showSticker(true,()=>goHome());
+}
+
+/* ====================================================
+   미션2: 환경 퀴즈
+==================================================== */
+const QB={
+  easy:[
+    {q:'식물은 무엇을 마셔서 자라나요?',opts:['☕ 커피','💧 물','🥛 우유','🧃 주스'],ans:1,exp:'식물은 물을 마시고 햇빛을 받아서 자라요!'},
+    {q:'나무를 심으면 어떤 점이 좋을까요?',opts:['😴 잠이 잘 와요','🌬️ 공기가 깨끗해져요','🍕 피자가 생겨요','📺 TV가 나와요'],ans:1,exp:'나무는 이산화탄소를 먹고 맑은 공기를 만들어요!'},
+    {q:'쓰레기를 분리수거하면 무슨 일이 일어날까요?',opts:['길이 막혀요','쓰레기가 많아져요','환경이 좋아져요','집이 작아져요'],ans:2,exp:'분리수거하면 재활용이 돼서 환경을 지킬 수 있어요!'},
+    {q:'비닐봉지 대신 무엇을 쓰면 좋을까요?',opts:['종이봉지 또는 장바구니','더 큰 비닐봉지','유리봉지','철봉지'],ans:0,exp:'종이봉지나 천으로 된 장바구니를 쓰면 쓰레기가 줄어요!'},
+    {q:'다음 중 깨끗한 환경을 만드는 행동은?',opts:['쓰레기 아무데나 버리기','가까운 거리 걸어다니기','물 계속 틀어놓기','전기 낭비하기'],ans:1,exp:'가까운 거리는 걸어다니면 공기가 덜 오염돼요!'},
+    {q:'물을 아끼는 방법은?',opts:['샤워를 1시간 해요','양치할 때 물 잠가요','설거지하며 물 틀어놔요','물을 땅에 버려요'],ans:1,exp:'양치할 때 컵을 쓰거나 물을 잠그면 물을 아낄 수 있어요!'},
+    {q:'어떤 생물이 꽃가루를 옮겨줄까요?',opts:['🐠 물고기','🐝 꿀벌','🐊 악어','🦁 사자'],ans:1,exp:'꿀벌이 꽃에서 꽃으로 꽃가루를 옮겨줘요!'},
+    {q:'숲에서 하면 안 되는 행동은?',opts:['나무 심기','쓰레기 줍기','불 피우기','사진 찍기'],ans:2,exp:'숲에서 불을 피우면 산불이 날 수 있어요!'},
+  ],
+  med:[
+    {q:'지구온난화는 무엇 때문에 일어날까요?',opts:['나무가 너무 많아서','자동차 매연 등 이산화탄소 증가로','비가 너무 많이 와서','동물이 너무 많아서'],ans:1,exp:'자동차나 공장에서 나오는 이산화탄소가 지구를 따뜻하게 만들어요!'},
+    {q:'재활용 기호가 있는 제품은 어떻게 해야 할까요?',opts:['그냥 버려요','분리수거해요','땅에 묻어요','태워요'],ans:1,exp:'재활용 기호가 있는 것은 분리수거 통에 넣어요!'},
+    {q:'생태계에서 풀→메뚜기→개구리 순서는 무슨 관계일까요?',opts:['친구 관계','먹이사슬 관계','가족 관계','학교 관계'],ans:1,exp:'풀이 메뚜기에게, 메뚜기가 개구리에게 먹히는 먹이사슬이에요!'},
+    {q:'아이스크림을 사고 받은 비닐봉지, 어떻게 해야 할까요?',opts:['강에 버려요','재활용 분리수거에 넣어요','길에 버려요','태워요'],ans:1,exp:'비닐도 깨끗이 씻어서 분리수거에 넣으면 재활용 돼요!'},
+    {q:'다음 중 멸종위기 동물에 해당하는 것은?',opts:['강아지','고양이','반달가슴곰','소'],ans:2,exp:'반달가슴곰은 우리나라 지리산에 사는 멸종위기 동물이에요!'},
+    {q:'전기를 아끼는 방법이 아닌 것은?',opts:['안 쓰는 전등 끄기','에어컨 온도 낮추기','TV 안 볼 때 끄기','창문 열어 환기하기'],ans:1,exp:'에어컨 온도를 너무 낮추면 전기를 많이 써요!'},
+    {q:'숲이 없어지면 일어나는 일은?',opts:['공기가 더 맑아져요','동물이 살 곳이 없어요','비가 더 많이 와요','꽃이 더 피어요'],ans:1,exp:'숲이 없어지면 동물들이 살 곳을 잃게 돼요!'},
+    {q:'일회용 컵 대신 쓸 수 있는 것은?',opts:['더 큰 일회용 컵','텀블러 또는 머그컵','종이 컵 더 두꺼운 것','스티로폼 컵'],ans:1,exp:'텀블러나 개인 컵을 쓰면 일회용 쓰레기를 줄일 수 있어요!'},
+  ],
+  hard:[
+    {q:'탄소발자국이란 무엇일까요?',opts:['발에 탄소가 묻은 것','생활하면서 배출하는 이산화탄소 양','탄소로 만든 신발','자전거 타는 길'],ans:1,exp:'탄소발자국은 우리가 생활하면서 내보내는 이산화탄소의 양을 말해요!'},
+    {q:'먹이사슬에서 생산자 역할을 하는 것은?',opts:['개구리','메뚜기','식물(풀)','뱀'],ans:2,exp:'식물은 햇빛으로 스스로 양분을 만드는 생산자예요!'},
+    {q:'생물 다양성이 중요한 이유로 가장 맞는 것은?',opts:['동물원이 재미있어서','생태계 균형을 유지하기 때문에','생물이 예뻐서','먹을 것이 많아서'],ans:1,exp:'다양한 생물이 있어야 생태계가 균형 있게 유지돼요!'},
+    {q:'지구의 날(4월 22일) 에 하면 좋은 행동은?',opts:['전기를 가장 많이 써요','환경보호 캠페인에 참여해요','쓰레기를 많이 버려요','차를 많이 타요'],ans:1,exp:'지구의 날에는 환경보호 활동에 참여하고 에너지를 절약해요!'},
+    {q:'식목일(4월 5일) 이 생긴 이유로 올바른 것은?',opts:['나무를 많이 팔려고','나무 심기를 권장하기 위해','공휴일을 늘리려고','꽃구경을 위해'],ans:1,exp:'식목일은 나무 심기의 중요성을 알리고 숲을 가꾸기 위해 만들어졌어요!'},
+    {q:'우리나라 바다에 사는 멸종위기 해양생물은?',opts:['수달','상괭이(돌고래 종류)','강아지','고양이'],ans:1,exp:'상괭이는 우리나라 서해에 사는 멸종위기 소형 돌고래예요!'},
+    {q:'대기 오염을 줄이기 위한 가장 효과적인 방법은?',opts:['자동차 더 많이 사용','대중교통·자전거 이용','화석연료 더 태우기','공장 연기 늘리기'],ans:1,exp:'버스·기차·자전거를 이용하면 이산화탄소 배출을 크게 줄일 수 있어요!'},
+    {q:'퇴비(음식물 재활용)를 만들면 좋은 이유는?',opts:['쓰레기가 늘어나요','토양을 건강하게 해요','공기가 나빠져요','물이 오염돼요'],ans:1,exp:'음식물을 퇴비로 만들면 토양이 건강해지고 쓰레기도 줄어요!'},
+  ],
+};
+let curDiff='easy', quizList=[], qi=0, m2Score=0;
+function initM2(){ m2Score=0; qi=0; document.getElementById('m2Sc').textContent='0'; setDiff('easy'); }
+function setDiff(d){
+  curDiff=d;
+  document.querySelectorAll('.diff-tab').forEach(b=>b.classList.remove('on'));
+  document.querySelector('.diff-tab.'+d).classList.add('on');
+  quizList=[...QB[d]].sort(()=>Math.random()-0.5);
+  qi=0; m2Score=0; document.getElementById('m2Sc').textContent='0';
+  renderQuiz();
+}
+function renderQuiz(){
+  if(qi>=quizList.length){ finishM2(); return; }
+  const q=quizList[qi];
+  document.getElementById('m2Counter').textContent=(qi+1)+' / '+quizList.length+' 문제';
+  document.getElementById('m2Prog').textContent=qi+'/'+quizList.length;
+  document.getElementById('m2PB').style.width=(qi/quizList.length*100)+'%';
+  document.getElementById('m2Q').textContent=q.q;
+  const opts=document.getElementById('m2Opts'); opts.innerHTML='';
+  q.opts.forEach((opt,i)=>{
+    const btn=document.createElement('button');
+    btn.className='big-opt';
+    btn.innerHTML=`<span class="opt-icon">${['①','②','③','④'][i]}</span>${opt}`;
+    btn.onclick=()=>answerQuiz(i,q.ans,q.exp,btn);
+    opts.appendChild(btn);
+  });
+  document.getElementById('m2Fb').classList.remove('show');
+  document.getElementById('m2NextWrap').style.display='none';
+  setOliver('m2Oliver','default');
+  document.getElementById('m2Msg').textContent='잘 읽고 정답을 눌러봐요!';
+}
+function answerQuiz(idx,ans,exp,btn){
+  document.querySelectorAll('.big-opt').forEach(b=>b.disabled=true);
+  document.querySelectorAll('.big-opt')[ans].classList.add('correct');
+  const fb=document.getElementById('m2Fb');
+  if(idx===ans){
+    btn.classList.add('correct');
+    const pts=curDiff==='easy'?10:curDiff==='med'?12:15;
+    m2Score+=pts; document.getElementById('m2Sc').textContent=m2Score;
+    fb.className='fb-box show fb-ok';
+    fb.innerHTML=`✅ 정답! <strong>+${pts}점</strong><br>${exp}`;
+    setOliver('m2Oliver','wow');
+    document.getElementById('m2Msg').textContent='우와, 맞았어요! 🌟';
+    playSound('ok');
+    showSticker(true,null);
+  } else {
+    btn.classList.add('wrong');
+    fb.className='fb-box show fb-ng';
+    fb.innerHTML=`💙 괜찮아요! 정답은 위에 초록색이에요!<br>${exp}`;
+    setOliver('m2Oliver','sad');
+    document.getElementById('m2Msg').textContent='아쉽지만 괜찮아요 💙';
+    playSound('ng');
+    showSticker(false,null);
+  }
+  document.getElementById('m2NextWrap').style.display='block';
+}
+function nextQuiz(){ qi++; renderQuiz(); }
+function finishM2(){
+  const mx=curDiff==='easy'?80:curDiff==='med'?96:120;
+  G.scores[1]=Math.min(m2Score,100);
+  G.stars[1]=calcStars(m2Score,mx);
+  G.done[1]=true; setStars(2,G.stars[1]); unlock(3); saveLS();
+  playSound('clear');
+  showSticker(true,()=>goHome());
+}
+
+/* ====================================================
+   미션3: 순서 맞추기
+==================================================== */
+const EXPS=[
+  {title:'🌱 나무 심기 순서를 맞춰요!', steps:[
+    {e:'⛏️',t:'구덩이를 파요 (30cm)'},
+    {e:'🌱',t:'모종을 구덩이에 넣어요'},
+    {e:'🪨',t:'흙으로 덮고 꾹 눌러요'},
+    {e:'💧',t:'물을 충분히 줘요'},
+    {e:'☀️',t:'햇빛이 잘 드는지 확인해요'},
+  ]},
+  {title:'💧 물 절약 순서를 맞춰요!', steps:[
+    {e:'🚿',t:'샤워 시작 전 물 온도 맞춰요'},
+    {e:'🧼',t:'빠르게 비누칠 해요'},
+    {e:'🚿',t:'빠르게 물로 씻어요'},
+    {e:'🚰',t:'물을 잠가요'},
+    {e:'📝',t:'절약한 물의 양을 기록해요'},
+  ]},
+  {title:'♻️ 올바른 분리수거 순서!', steps:[
+    {e:'🫧',t:'용기에 남은 내용물을 비워요'},
+    {e:'🚿',t:'깨끗하게 씻어요'},
+    {e:'✂️',t:'라벨이나 뚜껑을 분리해요'},
+    {e:'♻️',t:'재질에 맞는 분리수거통에 넣어요'},
+    {e:'👏',t:'환경 지킴이가 됐어요!'},
+  ]},
+];
+let expRound=0, m3Score=0, sortDrag=null;
+function initM3(){ expRound=0; m3Score=0; document.getElementById('m3Sc').textContent='0'; renderExp(); }
+function renderExp(){
+  if(expRound>=EXPS.length){ finishM3(); return; }
+  const ex=EXPS[expRound];
+  document.getElementById('m3Title').textContent=ex.title;
+  document.getElementById('m3Round').textContent=(expRound+1);
+  document.getElementById('m3Fb').classList.remove('show');
+  setOliver('m3Oliver','think');
+  document.getElementById('m3Msg').textContent='카드를 끌어서 올바른 순서로 만들어봐요!';
+  const container=document.getElementById('sortCards'); container.innerHTML='';
+  const shuffled=[...ex.steps].map((s,i)=>({...s,orig:i})).sort(()=>Math.random()-0.5);
+  shuffled.forEach((step,i)=>{
+    const el=document.createElement('div');
+    el.className='sort-card'; el.draggable=true; el.dataset.orig=step.orig;
+    el.innerHTML=`<div class="sc-num">${i+1}</div><div class="sc-icon">${step.e}</div><div class="sc-text">${step.t}</div>`;
+    el.addEventListener('dragstart',()=>{ sortDrag=el; setTimeout(()=>el.classList.add('dragging'),0); });
+    el.addEventListener('dragend',()=>{ el.classList.remove('dragging'); updateSortNums(); });
+    el.addEventListener('dragover',e=>{ e.preventDefault(); el.classList.add('over'); });
+    el.addEventListener('dragleave',()=>el.classList.remove('over'));
+    el.addEventListener('drop',e=>{ e.preventDefault(); el.classList.remove('over'); if(sortDrag&&sortDrag!==el) container.insertBefore(sortDrag,el); });
+    // 터치
+    el.addEventListener('touchstart',handleSortTouchStart,{passive:true});
+    el.addEventListener('touchmove',handleSortTouchMove,{passive:false});
+    el.addEventListener('touchend',handleSortTouchEnd);
+    container.appendChild(el);
+  });
+}
+function updateSortNums(){ document.querySelectorAll('.sort-card .sc-num').forEach((n,i)=>n.textContent=i+1); }
+let sortTouchGhost=null, sortTouchEl=null;
+function handleSortTouchStart(e){
+  sortTouchEl=e.currentTarget;
+  const rect=sortTouchEl.getBoundingClientRect();
+  sortTouchGhost=sortTouchEl.cloneNode(true);
+  sortTouchGhost.style.cssText=`position:fixed;width:${rect.width}px;opacity:0.85;pointer-events:none;z-index:999;top:${rect.top}px;left:${rect.left}px;border-radius:18px;border:3px dashed #6dbf67;background:white;display:flex;align-items:center;gap:12px;padding:14px 16px;`;
+  document.body.appendChild(sortTouchGhost);
+  sortTouchEl.classList.add('dragging');
+}
+function handleSortTouchMove(e){
+  e.preventDefault();
+  const t=e.touches[0];
+  if(sortTouchGhost){
+    sortTouchGhost.style.top=(t.clientY-40)+'px';
+    sortTouchGhost.style.left=(t.clientX-80)+'px';
+  }
+  const container=document.getElementById('sortCards');
+  const cards=[...container.querySelectorAll('.sort-card:not(.dragging)')];
+  cards.forEach(c=>{
+    const r=c.getBoundingClientRect();
+    if(t.clientY>r.top && t.clientY<r.bottom) c.classList.add('over');
+    else c.classList.remove('over');
+  });
+}
+function handleSortTouchEnd(e){
+  if(sortTouchGhost){ sortTouchGhost.remove(); sortTouchGhost=null; }
+  if(!sortTouchEl) return;
+  sortTouchEl.classList.remove('dragging');
+  const t=e.changedTouches[0];
+  const container=document.getElementById('sortCards');
+  const cards=[...container.querySelectorAll('.sort-card:not(.dragging)')];
+  let target=null;
+  cards.forEach(c=>{ c.classList.remove('over'); const r=c.getBoundingClientRect(); if(t.clientY>r.top&&t.clientY<r.bottom) target=c; });
+  if(target && target!==sortTouchEl) container.insertBefore(sortTouchEl,target);
+  updateSortNums();
+  sortTouchEl=null;
+}
+function checkSort(){
+  const cards=document.querySelectorAll('.sort-card');
+  let correct=true;
+  cards.forEach((c,i)=>{ if(parseInt(c.dataset.orig)!==i) correct=false; });
+  const fb=document.getElementById('m3Fb');
+  if(correct){
+    m3Score+=30; document.getElementById('m3Sc').textContent=m3Score;
+    cards.forEach(c=>c.classList.add('correct-s'));
+    fb.className='fb-box show fb-ok';
+    fb.innerHTML='✅ 완벽해요! +30점<br>순서를 정확히 알고 있어요!';
+    setOliver('m3Oliver','cheer');
+    document.getElementById('m3Msg').textContent='완벽한 순서예요! 🎉';
+    playSound('ok');
+    showSticker(true,()=>{ expRound++; setTimeout(renderExp,300); });
+  } else {
+    cards.forEach(c=>c.classList.add('wrong-s'));
+    fb.className='fb-box show fb-ng';
+    fb.innerHTML='💙 순서가 달라요! 정답을 보여드릴게요!';
+    setOliver('m3Oliver','sad');
+    playSound('ng');
+    showSticker(false,()=>{
+      // 정답 표시
+      const ex=EXPS[expRound];
+      const con=document.getElementById('sortCards'); con.innerHTML='';
+      ex.steps.forEach((step,i)=>{
+        const el=document.createElement('div');
+        el.className='sort-card correct-s';
+        el.innerHTML=`<div class="sc-num">${i+1}</div><div class="sc-icon">${step.e}</div><div class="sc-text">${step.t}</div>`;
+        con.appendChild(el);
+      });
+      setTimeout(()=>{ expRound++; renderExp(); }, 2000);
+    });
+  }
+}
+function finishM3(){
+  G.scores[2]=m3Score;
+  G.stars[2]=calcStars(m3Score,90);
+  G.done[2]=true; setStars(3,G.stars[2]); unlock(4); saveLS();
+  playSound('clear');
+  showSticker(true,()=>goHome());
+}
+
+/* ====================================================
+   미션4: 생태계 OX 퀴즈
+==================================================== */
+const OX=[
+  {q:'꿀벌은 꽃가루를 옮겨줘서 식물이 자라도록 도와줘요.',ans:true,exp:'맞아요! 꿀벌이 꽃가루를 옮겨줘야 식물이 열매를 맺을 수 있어요!'},
+  {q:'쓰레기를 바다에 버려도 물고기에게 괜찮아요.',ans:false,exp:'아니에요! 바다 쓰레기는 물고기와 바다 생물에게 매우 해로워요!'},
+  {q:'나무를 심으면 공기가 더 깨끗해져요.',ans:true,exp:'맞아요! 나무는 이산화탄소를 흡수하고 산소를 내보내요!'},
+  {q:'자동차를 많이 탈수록 공기가 맑아져요.',ans:false,exp:'아니에요! 자동차 매연이 많아지면 공기가 더 오염돼요!'},
+  {q:'멸종위기 동물은 우리가 보호해야 해요.',ans:true,exp:'맞아요! 멸종위기 동물이 사라지면 생태계가 무너질 수 있어요!'},
+  {q:'개구리는 논이나 습지에서 살아요.',ans:true,exp:'맞아요! 개구리는 물과 육지 양쪽에서 살 수 있는 양서류예요!'},
+  {q:'비닐봉지는 자연에서 빠르게 없어져요.',ans:false,exp:'아니에요! 비닐은 수백 년이 지나도 잘 썩지 않아요!'},
+  {q:'숲에 사는 다람쥐는 도토리를 땅에 묻어서 나무를 심어줘요.',ans:true,exp:'맞아요! 다람쥐가 먹으려고 묻어둔 도토리가 싹을 틔워 나무가 되기도 해요!'},
+  {q:'지구의 날은 매년 6월 5일이에요.',ans:false,exp:'아니에요! 지구의 날은 4월 22일이에요! 6월 5일은 환경의 날이에요.'},
+  {q:'식목일(4월 5일)에는 나무를 심어요.',ans:true,exp:'맞아요! 식목일은 나무 심기의 중요성을 알리는 날이에요!'},
+];
+let oxList=[], oxi=0, m4Score=0;
+function initM4(){
+  m4Score=0; oxi=0;
+  document.getElementById('m4Sc').textContent='0';
+  oxList=[...OX].sort(()=>Math.random()-0.5).slice(0,8);
+  renderOX();
+}
+function renderOX(){
+  if(oxi>=oxList.length){ finishM4(); return; }
+  const q=oxList[oxi];
+  document.getElementById('m4Counter').textContent=(oxi+1)+' / '+oxList.length+' 문제';
+  document.getElementById('m4Prog').textContent=oxi+'/'+oxList.length;
+  document.getElementById('m4PB').style.width=(oxi/oxList.length*100)+'%';
+  document.getElementById('m4Q').textContent=q.q;
+  document.getElementById('m4Fb').classList.remove('show');
+  document.getElementById('oxO').disabled=false;
+  document.getElementById('oxX').disabled=false;
+  document.getElementById('oxO').classList.remove('selected-ok');
+  document.getElementById('oxX').classList.remove('selected-ok');
+  setOliver('m4Oliver','think');
+  document.getElementById('m4Msg').textContent='맞으면 ⭕, 틀리면 ❌를 눌러요!';
+}
+function answerOX(userAns){
+  const q=oxList[oxi];
+  document.getElementById('oxO').disabled=true;
+  document.getElementById('oxX').disabled=true;
+  const correct=(userAns===q.ans);
+  const fb=document.getElementById('m4Fb');
+  if(correct){
+    (userAns?document.getElementById('oxO'):document.getElementById('oxX')).classList.add('selected-ok');
+    m4Score+=12; document.getElementById('m4Sc').textContent=m4Score;
+    fb.className='fb-box show fb-ok';
+    fb.innerHTML=`✅ 정답! +12점<br>${q.exp}`;
+    setOliver('m4Oliver','happy');
+    document.getElementById('m4Msg').textContent='맞았어요! 🌟';
+    playSound('ok');
+    showSticker(true,()=>{ oxi++; setTimeout(renderOX,100); });
+  } else {
+    fb.className='fb-box show fb-ng';
+    fb.innerHTML=`💙 아쉬워요! 정답은 ${q.ans?'⭕':'❌'} 이에요!<br>${q.exp}`;
+    setOliver('m4Oliver','sad');
+    document.getElementById('m4Msg').textContent='괜찮아요, 다음에 맞춰요! 💙';
+    playSound('ng');
+    showSticker(false,()=>{ oxi++; setTimeout(renderOX,100); });
+  }
+}
+function finishM4(){
+  G.scores[3]=m4Score;
+  G.stars[3]=calcStars(m4Score,96);
+  G.done[3]=true; setStars(4,G.stars[3]); saveLS();
+  playSound('clear');
+  showResult();
+}
+
+/* ====================================================
+   결과 화면
+==================================================== */
+function showResult(){
+  const tot=Math.min(G.scores.reduce((a,b)=>a+b,0),100);
+  const totStars=G.stars.reduce((a,b)=>a+b,0);
+  let badge='🌱', title='새싹 구조대원';
+  if(totStars>=11){ badge='🌍'; title='지구 영웅 대장!'; }
+  else if(totStars>=8){ badge='🏆'; title='지구 구조 대장!'; }
+  else if(totStars>=6){ badge='🌟'; title='환경 지킴이!'; }
+  else if(totStars>=4){ badge='🍀'; title='자연 친구!'; }
+  else if(totStars>=2){ badge='🌿'; title='초록 도우미!'; }
+  document.getElementById('resBadge').textContent=badge;
+  document.getElementById('resTitle').textContent='🎉 미션 완료!';
+  document.getElementById('resRank').textContent='칭호: '+title;
+  const icons=['♻️','🌿','🌳','🦋'];
+  const names=['분리수거','환경퀴즈','나무심기','생태계OX'];
+  const grid=document.getElementById('resGrid'); grid.innerHTML='';
+  G.scores.forEach((sc,i)=>{
+    const div=document.createElement('div'); div.className='result-item';
+    div.innerHTML=`<div class="ri-icon">${icons[i]}</div><div class="ri-name">${names[i]}</div><div class="ri-score">${sc}점</div><div class="ri-stars">${'⭐'.repeat(G.stars[i])}${'☆'.repeat(3-G.stars[i])}</div>`;
+    grid.appendChild(div);
+  });
+  document.getElementById('resTot').textContent=tot;
+  const msgs=[
+    '🌱 첫 도전 정말 잘했어요! 또 해봐요!',
+    '🍀 조금씩 더 잘하고 있어요! 멋져요!',
+    '🌿 환경에 대해 많이 알고 있어요! 훌륭해요!',
+    '🌟 거의 완벽해요! 지구가 좋아해요!',
+    '🌍 완벽한 지구 영웅이에요! 최고예요!',
+  ];
+  document.getElementById('resMsg').innerHTML=msgs[Math.min(Math.floor(totStars/3),4)];
+  // LocalStorage 저장
+  const record={date:new Date().toLocaleDateString('ko-KR'),total:tot,stars:totStars,title};
+  const history=JSON.parse(localStorage.getItem('milab_earth_history')||'[]');
+  history.unshift(record); if(history.length>10) history.pop();
+  localStorage.setItem('milab_earth_history',JSON.stringify(history));
+  showScreen('screen-result');
+  setTimeout(()=>{ drawQR(); spawnParticles(); },300);
+}
+
+/* ====================================================
+   QR 코드 생성 (순수 Canvas — 라이브러리 없음)
+==================================================== */
+function drawQR(){
+  const canvas=document.getElementById('qrCanvas');
+  const ctx=canvas.getContext('2d');
+  const url='https://milab2019.github.io/main/milab_portfolio.html';
+  // 간단한 패턴 QR 시각화 (실제 QR 라이브러리 없이 패턴 표현)
+  ctx.fillStyle='white'; ctx.fillRect(0,0,160,160);
+  // QRCode.js CDN 로드 후 실제 생성
+  const script=document.createElement('script');
+  script.src='https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js';
+  script.onload=()=>{
+    canvas.width=160; canvas.height=160;
+    ctx.clearRect(0,0,160,160);
+    new QRCode(canvas,{text:url,width:160,height:160,correctLevel:QRCode.CorrectLevel.M});
+  };
+  script.onerror=()=>{
+    // 폴백: 텍스트 표시
+    ctx.fillStyle='#f0f0f0'; ctx.fillRect(0,0,160,160);
+    ctx.fillStyle='#333'; ctx.font='bold 11px sans-serif'; ctx.textAlign='center';
+    ctx.fillText('milab2019.github.io',80,75); ctx.fillText('/main/milab_portfolio.html',80,92);
+  };
+  document.head.appendChild(script);
+}
+
+/* ====================================================
+   LocalStorage 저장
+==================================================== */
+function saveLS(){
+  localStorage.setItem('milab_earth_state',JSON.stringify(G));
+}
+function loadLS(){
+  try{
+    const s=JSON.parse(localStorage.getItem('milab_earth_state'));
+    if(s){ Object.assign(G,s); applyLoadedState(); }
+  }catch(e){}
+}
+function applyLoadedState(){
+  G.done.forEach((done,i)=>{
+    if(done){
+      setStars(i+1,G.stars[i]);
+      if(i<3) unlock(i+2);
+    }
+  });
+}
+
+/* ====================================================
+   리셋
+==================================================== */
+function resetGame(){
+  G.scores=[0,0,0,0]; G.stars=[0,0,0,0]; G.done=[false,false,false,false];
+  localStorage.removeItem('milab_earth_state');
+  ['mc2','mc3','mc4'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(!el) return;
+    el.className='mission-card locked'; el.onclick=null;
+    const st=el.querySelector('.mission-stars'); if(st) st.remove();
+    if(!el.querySelector('.lock-icon')){
+      const li=document.createElement('div'); li.className='lock-icon'; li.textContent='🔒';
+      el.appendChild(li);
+    }
+  });
+  document.getElementById('mc1').className='mission-card';
+  document.getElementById('ms1').textContent='⭐⭐⭐';
+  showScreen('screen-intro');
+}
+
+/* ====================================================
+   초기화
+==================================================== */
+initBg();
+loadLS();
+</script>
+
+<!-- ====================================================
+  미랩 포트폴리오 JSON 메타데이터 (주석 형태로 삽입)
+  아래 데이터를 milab_portfolio.html의 games 배열에 추가하세요.
+  {
+    "id": "013",
+    "title": "🌍 지구 구조대",
+    "category": "특수교육",
+    "grade": "초등 1~3학년 / 특수교육",
+    "subjects": ["국어", "슬기로운생활"],
+    "difficulty": "쉬움~도전",
+    "missions": 4,
+    "features": ["분리수거 드래그", "환경 퀴즈", "순서 맞추기", "OX 퀴즈"],
+    "accessibility": true,
+    "special_ed": true,
+    "theme": "식목일·지구의날",
+    "file": "earth_rescue.html",
+    "date": "2026-03-26"
+  }
+==================================================== -->
+
+</body>
+</html>
