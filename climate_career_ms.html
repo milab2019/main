@@ -1,0 +1,1632 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>🌍 지구 기후 구조대 - 미랩 교육 게임</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Jua&family=Nanum+Gothic:wght@400;700;800&display=swap');
+
+  :root {
+    --space-dark: #0a0e1a;
+    --space-mid: #131929;
+    --space-blue: #1a2a4a;
+    --neon-blue: #4fc3f7;
+    --neon-green: #69f0ae;
+    --neon-yellow: #fff176;
+    --neon-orange: #ffb74d;
+    --neon-red: #ef5350;
+    --neon-purple: #ce93d8;
+    --earth-blue: #1565c0;
+    --earth-green: #2e7d32;
+    --danger-red: #c62828;
+    --card-bg: rgba(19,25,41,0.96);
+    --card-border: rgba(79,195,247,0.3);
+    --shadow: 0 8px 32px rgba(0,0,0,0.5);
+    --white: #e8f4ff;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Nanum Gothic', sans-serif;
+    background: var(--space-dark);
+    min-height: 100vh;
+    overflow-x: hidden;
+    position: relative;
+  }
+
+  /* 우주 배경 */
+  .bg-space {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: radial-gradient(ellipse at 20% 50%, #0d1b3e 0%, #0a0e1a 60%, #050810 100%);
+    z-index: 0; overflow: hidden;
+  }
+  .star {
+    position: absolute; border-radius: 50%;
+    background: white; animation: twinkle var(--dur) ease-in-out infinite alternate;
+  }
+  @keyframes twinkle { from { opacity: 0.1; transform: scale(0.8); } to { opacity: 1; transform: scale(1.2); } }
+  .earth-glow {
+    position: absolute; bottom: -40px; right: -40px;
+    width: 180px; height: 180px; border-radius: 50%;
+    background: radial-gradient(circle at 35% 35%, #4fc3f7 0%, #1565c0 40%, #0d47a1 70%, #01579b 100%);
+    box-shadow: 0 0 60px rgba(79,195,247,0.4), 0 0 120px rgba(21,101,192,0.2);
+    animation: earthRotate 20s linear infinite;
+    opacity: 0.7;
+  }
+  @keyframes earthRotate { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+  .aurora {
+    position: absolute; top: 0; left: 0; width: 100%; height: 40%;
+    background: linear-gradient(180deg, rgba(105,240,174,0.05) 0%, transparent 100%);
+    animation: auroraShift 8s ease-in-out infinite alternate;
+  }
+  @keyframes auroraShift { from { opacity: 0.3; transform: skewX(-5deg); } to { opacity: 0.8; transform: skewX(5deg); } }
+
+  /* 메인 컨테이너 */
+  #app {
+    position: relative; z-index: 10;
+    max-width: 800px; margin: 0 auto;
+    padding: 12px 12px 60px;
+    min-height: 100vh;
+  }
+
+  /* 화면 전환 */
+  .screen { display: none; animation: fadeUp 0.5s ease; }
+  .screen.active { display: block; }
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: translateY(0); } }
+
+  /* ===== 인트로 ===== */
+  #screen-intro { text-align: center; }
+
+  .intro-badge {
+    display: inline-block;
+    background: linear-gradient(135deg, rgba(79,195,247,0.15), rgba(105,240,174,0.1));
+    border: 1px solid rgba(79,195,247,0.4);
+    border-radius: 30px; padding: 6px 18px;
+    font-size: 0.78rem; color: var(--neon-blue);
+    letter-spacing: 1px; text-transform: uppercase;
+    margin-bottom: 12px; margin-top: 16px;
+  }
+  .earth-icon {
+    font-size: 6rem; display: block;
+    animation: earthFloat 3s ease-in-out infinite;
+    margin: 8px 0;
+    filter: drop-shadow(0 0 20px rgba(79,195,247,0.6));
+  }
+  @keyframes earthFloat { 0%,100%{transform:translateY(0) rotate(-5deg)} 50%{transform:translateY(-14px) rotate(5deg)} }
+
+  .intro-title {
+    font-family: 'Jua', sans-serif;
+    font-size: 2.2rem; 
+    background: linear-gradient(135deg, var(--neon-blue), var(--neon-green));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 4px;
+    filter: drop-shadow(0 0 20px rgba(79,195,247,0.5));
+  }
+  .intro-sub { color: rgba(232,244,255,0.6); font-size: 0.85rem; margin-bottom: 4px; }
+  .intro-date-badge {
+    display: inline-block;
+    background: rgba(255,177,74,0.15); border: 1px solid rgba(255,177,74,0.4);
+    border-radius: 20px; padding: 4px 14px;
+    font-size: 0.8rem; color: var(--neon-orange);
+    margin: 8px 0;
+  }
+
+  .story-box {
+    background: linear-gradient(135deg, rgba(19,25,41,0.95), rgba(13,27,62,0.95));
+    border: 1px solid var(--card-border);
+    border-radius: 16px; padding: 18px 20px; margin: 14px 0;
+    color: var(--white); text-align: left; line-height: 1.8; font-size: 0.92rem;
+    position: relative; overflow: hidden;
+  }
+  .story-box::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+    background: linear-gradient(90deg, var(--neon-blue), var(--neon-green), var(--neon-purple));
+  }
+  .story-title {
+    font-family: 'Jua', sans-serif; font-size: 1rem;
+    color: var(--neon-yellow); margin-bottom: 10px; text-align: center;
+    letter-spacing: 1px;
+  }
+
+  /* 미션 그리드 */
+  .mission-grid {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 10px; margin: 14px 0;
+  }
+  .mission-card {
+    background: linear-gradient(135deg, rgba(19,25,41,0.9), rgba(10,14,26,0.9));
+    border: 1px solid rgba(79,195,247,0.25);
+    border-radius: 16px; padding: 16px 12px; text-align: center;
+    cursor: pointer; transition: all 0.3s; position: relative; overflow: hidden;
+  }
+  .mission-card::after {
+    content: ''; position: absolute; inset: 0; border-radius: 16px;
+    background: linear-gradient(135deg, rgba(79,195,247,0.05), transparent);
+    opacity: 0; transition: opacity 0.3s;
+  }
+  .mission-card:not(.locked):not(.done):hover {
+    transform: translateY(-4px) scale(1.02);
+    border-color: var(--neon-blue);
+    box-shadow: 0 8px 30px rgba(79,195,247,0.25);
+  }
+  .mission-card:not(.locked):not(.done):hover::after { opacity: 1; }
+  .mission-card.locked { opacity: 0.4; cursor: not-allowed; }
+  .mission-card.done { border-color: rgba(105,240,174,0.5); }
+  .mission-icon { font-size: 2.2rem; margin-bottom: 6px; display: block; }
+  .mission-name { font-family: 'Jua', sans-serif; font-size: 0.9rem; color: var(--neon-blue); margin-bottom: 3px; }
+  .mission-desc { font-size: 0.72rem; color: rgba(232,244,255,0.5); margin-bottom: 6px; }
+  .mission-stars { color: var(--neon-yellow); font-size: 0.85rem; }
+  .lock-badge { font-size: 1.1rem; color: rgba(232,244,255,0.4); }
+  .subject-tags { display: flex; gap: 4px; justify-content: center; flex-wrap: wrap; margin-top: 4px; }
+  .s-tag {
+    font-size: 0.62rem; padding: 2px 6px; border-radius: 8px;
+    background: rgba(79,195,247,0.1); color: var(--neon-blue);
+    border: 1px solid rgba(79,195,247,0.2);
+  }
+
+  /* 공통 헤더 */
+  .game-header {
+    background: linear-gradient(135deg, rgba(19,25,41,0.95), rgba(10,14,26,0.95));
+    border: 1px solid var(--card-border);
+    border-radius: 14px; padding: 10px 14px; margin-bottom: 12px;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .header-title { font-family: 'Jua', sans-serif; font-size: 1rem; color: var(--neon-blue); }
+  .header-sub { font-size: 0.7rem; color: rgba(232,244,255,0.4); margin-top: 2px; }
+  .score-chip {
+    background: linear-gradient(135deg, rgba(255,241,118,0.15), rgba(255,177,74,0.1));
+    border: 1px solid rgba(255,241,118,0.4);
+    color: var(--neon-yellow); font-weight: 800;
+    padding: 4px 12px; border-radius: 20px; font-size: 0.85rem;
+  }
+
+  /* 진행바 */
+  .prog-wrap { margin-bottom: 12px; }
+  .prog-label { display: flex; justify-content: space-between; font-size: 0.75rem; color: rgba(232,244,255,0.5); margin-bottom: 4px; }
+  .prog-bar { height: 6px; background: rgba(255,255,255,0.1); border-radius: 6px; overflow: hidden; }
+  .prog-fill { height: 100%; background: linear-gradient(90deg, var(--neon-blue), var(--neon-green)); border-radius: 6px; transition: width 0.5s ease; box-shadow: 0 0 8px rgba(79,195,247,0.5); }
+
+  /* 캐릭터 버블 */
+  .char-bubble {
+    display: flex; align-items: flex-start; gap: 10px; margin-bottom: 12px;
+  }
+  .char-avatar {
+    width: 48px; height: 48px; border-radius: 50%; flex-shrink: 0;
+    background: linear-gradient(135deg, #1a2a4a, #0d1b3e);
+    border: 2px solid var(--card-border);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.6rem;
+    box-shadow: 0 0 12px rgba(79,195,247,0.2);
+  }
+  .bubble-wrap {
+    background: rgba(19,25,41,0.95); border: 1px solid var(--card-border);
+    border-radius: 12px 12px 12px 4px; padding: 10px 14px;
+    color: var(--white); font-size: 0.88rem; line-height: 1.6; flex: 1;
+  }
+  .bubble-name { font-size: 0.7rem; color: var(--neon-green); font-weight: 800; margin-bottom: 3px; }
+
+  /* 카드 */
+  .card {
+    background: linear-gradient(135deg, rgba(19,25,41,0.97), rgba(10,14,26,0.97));
+    border: 1px solid var(--card-border);
+    border-radius: 18px; padding: 20px;
+    box-shadow: var(--shadow); margin-bottom: 12px;
+    position: relative; overflow: hidden;
+  }
+  .card::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px;
+    background: linear-gradient(90deg, transparent, var(--neon-blue), transparent);
+  }
+
+  /* 버튼 */
+  .btn {
+    display: inline-block; padding: 12px 28px;
+    border: none; border-radius: 50px; cursor: pointer;
+    font-family: 'Jua', sans-serif; font-size: 1rem;
+    transition: all 0.2s; text-decoration: none; letter-spacing: 0.5px;
+  }
+  .btn-neon {
+    background: linear-gradient(135deg, #1565c0, #0d47a1);
+    color: var(--neon-blue);
+    border: 1px solid rgba(79,195,247,0.5);
+    box-shadow: 0 0 20px rgba(79,195,247,0.2);
+  }
+  .btn-neon:hover { transform: translateY(-2px); box-shadow: 0 0 30px rgba(79,195,247,0.4); border-color: var(--neon-blue); }
+  .btn-green {
+    background: linear-gradient(135deg, #1b5e20, #2e7d32);
+    color: var(--neon-green);
+    border: 1px solid rgba(105,240,174,0.4);
+    box-shadow: 0 0 16px rgba(105,240,174,0.15);
+  }
+  .btn-green:hover { box-shadow: 0 0 24px rgba(105,240,174,0.3); }
+  .btn-ghost {
+    background: rgba(255,255,255,0.05); color: rgba(232,244,255,0.6);
+    border: 1px solid rgba(255,255,255,0.1);
+  }
+  .btn-ghost:hover { background: rgba(255,255,255,0.1); }
+  .btn-sm { padding: 8px 18px; font-size: 0.85rem; }
+  .btn-block { width: 100%; text-align: center; display: block; }
+
+  /* 난이도 */
+  .diff-row { display: flex; gap: 8px; margin-bottom: 14px; flex-wrap: wrap; }
+  .diff-btn {
+    padding: 6px 14px; border-radius: 20px; border: 1px solid;
+    font-size: 0.78rem; font-weight: 700; cursor: pointer;
+    font-family: 'Nanum Gothic', sans-serif; transition: all 0.2s;
+  }
+  .diff-btn.easy { border-color: var(--neon-green); color: var(--neon-green); background: transparent; }
+  .diff-btn.easy.active { background: rgba(105,240,174,0.2); box-shadow: 0 0 10px rgba(105,240,174,0.3); }
+  .diff-btn.medium { border-color: var(--neon-orange); color: var(--neon-orange); background: transparent; }
+  .diff-btn.medium.active { background: rgba(255,177,74,0.15); box-shadow: 0 0 10px rgba(255,177,74,0.25); }
+  .diff-btn.hard { border-color: var(--neon-red); color: var(--neon-red); background: transparent; }
+  .diff-btn.hard.active { background: rgba(239,83,80,0.15); box-shadow: 0 0 10px rgba(239,83,80,0.25); }
+
+  /* 퀴즈 */
+  .quiz-q {
+    font-family: 'Jua', sans-serif; font-size: 1.15rem;
+    color: var(--white); text-align: center; margin-bottom: 18px; line-height: 1.6;
+  }
+  .quiz-counter { text-align: right; font-size: 0.78rem; color: rgba(232,244,255,0.4); margin-bottom: 8px; }
+  .opts-grid { display: grid; gap: 8px; }
+  .opt-btn {
+    padding: 13px 16px; border-radius: 12px;
+    border: 1px solid rgba(79,195,247,0.2);
+    background: rgba(19,25,41,0.8);
+    color: var(--white); font-size: 0.9rem; font-weight: 700;
+    cursor: pointer; text-align: left; transition: all 0.2s;
+    font-family: 'Nanum Gothic', sans-serif;
+  }
+  .opt-btn:hover:not(:disabled) { border-color: var(--neon-blue); background: rgba(79,195,247,0.08); transform: translateX(4px); }
+  .opt-btn.correct { border-color: var(--neon-green); background: rgba(105,240,174,0.12); color: var(--neon-green); }
+  .opt-btn.wrong { border-color: var(--neon-red); background: rgba(239,83,80,0.1); color: #ef9a9a; }
+  .opt-btn:disabled { cursor: not-allowed; }
+
+  .fb-box {
+    margin-top: 12px; padding: 12px 14px; border-radius: 12px;
+    font-size: 0.88rem; line-height: 1.6; display: none;
+  }
+  .fb-box.show { display: block; animation: fadeUp 0.3s ease; }
+  .fb-box.ok { background: rgba(105,240,174,0.08); border: 1px solid rgba(105,240,174,0.3); color: #a5d6a7; }
+  .fb-box.ng { background: rgba(239,83,80,0.08); border: 1px solid rgba(239,83,80,0.3); color: #ef9a9a; }
+
+  /* 힌트 */
+  .hint-btn {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 6px 14px; border-radius: 20px;
+    border: 1px solid rgba(255,241,118,0.3);
+    background: rgba(255,241,118,0.05);
+    color: var(--neon-yellow); font-size: 0.78rem;
+    cursor: pointer; font-family: 'Nanum Gothic', sans-serif; font-weight: 700;
+    transition: all 0.2s; margin-bottom: 10px;
+  }
+  .hint-btn:hover { background: rgba(255,241,118,0.1); box-shadow: 0 0 10px rgba(255,241,118,0.2); }
+  .hint-box {
+    background: rgba(255,241,118,0.06); border: 1px solid rgba(255,241,118,0.2);
+    border-radius: 10px; padding: 10px 14px; font-size: 0.82rem;
+    color: rgba(255,241,118,0.8); margin-bottom: 10px; display: none;
+    animation: fadeUp 0.3s ease;
+  }
+
+  /* 뱃지 스티커 */
+  .sticker-pop {
+    position: fixed; top: 50%; left: 50%; transform: translate(-50%,-50%);
+    background: rgba(19,25,41,0.97); border: 2px solid var(--neon-green);
+    border-radius: 20px; padding: 24px 32px; text-align: center;
+    z-index: 999; display: none;
+    box-shadow: 0 0 60px rgba(105,240,174,0.3);
+    animation: stickerIn 0.4s cubic-bezier(0.175,0.885,0.32,1.275);
+  }
+  @keyframes stickerIn { from{transform:translate(-50%,-50%) scale(0)} to{transform:translate(-50%,-50%) scale(1)} }
+  .sticker-icon { font-size: 4rem; animation: bounce 0.6s ease infinite alternate; }
+  @keyframes bounce { from{transform:translateY(0)} to{transform:translateY(-8px)} }
+  .sticker-text { font-family: 'Jua', sans-serif; font-size: 1.1rem; color: var(--neon-green); margin-top: 8px; }
+
+  /* 미션3: 시나리오 선택 */
+  .scenario-box {
+    background: rgba(13,27,62,0.8); border: 1px solid rgba(105,240,174,0.2);
+    border-radius: 14px; padding: 16px; margin-bottom: 14px;
+  }
+  .scenario-title { font-family: 'Jua', sans-serif; font-size: 1.05rem; color: var(--neon-blue); margin-bottom: 10px; line-height: 1.5; }
+  .scenario-opts { display: grid; gap: 8px; }
+  .s-opt {
+    padding: 12px 16px; border-radius: 12px;
+    border: 1px solid rgba(105,240,174,0.2);
+    background: rgba(19,25,41,0.7);
+    color: var(--white); font-size: 0.88rem; font-weight: 700;
+    cursor: pointer; text-align: left; transition: all 0.2s;
+    font-family: 'Nanum Gothic', sans-serif;
+  }
+  .s-opt:hover:not(:disabled) { border-color: var(--neon-green); background: rgba(105,240,174,0.07); transform: translateX(4px); }
+  .s-opt.best { border-color: var(--neon-green); background: rgba(105,240,174,0.1); color: var(--neon-green); }
+  .s-opt.good { border-color: var(--neon-yellow); background: rgba(255,241,118,0.08); color: var(--neon-yellow); }
+  .s-opt.meh { border-color: rgba(239,83,80,0.4); background: rgba(239,83,80,0.06); color: #ef9a9a; }
+
+  /* 미션4: 직업 카드 */
+  .career-grid {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 10px; margin: 12px 0;
+  }
+  .career-card {
+    background: rgba(13,27,62,0.6); border: 1px solid rgba(79,195,247,0.2);
+    border-radius: 14px; padding: 14px 12px; text-align: center;
+    cursor: pointer; transition: all 0.3s;
+  }
+  .career-card:hover { border-color: var(--neon-purple); background: rgba(206,147,216,0.08); transform: translateY(-2px); }
+  .career-card.selected { border-color: var(--neon-purple); background: rgba(206,147,216,0.12); box-shadow: 0 0 16px rgba(206,147,216,0.2); }
+  .career-emoji { font-size: 2rem; margin-bottom: 6px; display: block; }
+  .career-name { font-family: 'Jua', sans-serif; font-size: 0.85rem; color: var(--neon-purple); margin-bottom: 4px; }
+  .career-desc { font-size: 0.7rem; color: rgba(232,244,255,0.5); line-height: 1.4; }
+  .career-detail {
+    background: rgba(19,25,41,0.95); border: 1px solid rgba(206,147,216,0.3);
+    border-radius: 14px; padding: 16px; margin-top: 12px; display: none;
+    animation: fadeUp 0.3s ease;
+  }
+  .career-detail-title { font-family: 'Jua', sans-serif; font-size: 1rem; color: var(--neon-purple); margin-bottom: 10px; }
+  .career-fact { font-size: 0.82rem; color: rgba(232,244,255,0.7); line-height: 1.7; margin-bottom: 8px; }
+  .career-link-tags { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 8px; }
+  .c-tag {
+    font-size: 0.7rem; padding: 3px 8px; border-radius: 8px;
+    background: rgba(206,147,216,0.1); color: var(--neon-purple);
+    border: 1px solid rgba(206,147,216,0.2);
+  }
+
+  /* 결과 */
+  #screen-result { text-align: center; }
+  .result-hero {
+    background: linear-gradient(135deg, rgba(13,27,62,0.95), rgba(19,25,41,0.95));
+    border: 2px solid rgba(105,240,174,0.4);
+    border-radius: 20px; padding: 28px 20px; margin: 14px 0;
+    box-shadow: 0 0 40px rgba(105,240,174,0.15), 0 0 80px rgba(79,195,247,0.1);
+    position: relative; overflow: hidden;
+  }
+  .result-hero::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+    background: linear-gradient(90deg, var(--neon-blue), var(--neon-green), var(--neon-purple));
+  }
+  .result-badge-emoji { font-size: 5rem; filter: drop-shadow(0 0 20px rgba(105,240,174,0.5)); }
+  .result-title { font-family: 'Jua', sans-serif; font-size: 1.8rem; background: linear-gradient(135deg, var(--neon-green), var(--neon-blue)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; margin: 10px 0 4px; }
+  .result-sub { font-size: 0.85rem; color: rgba(232,244,255,0.6); }
+  .result-rank { font-family: 'Jua', sans-serif; font-size: 1rem; color: var(--neon-yellow); margin-top: 10px; }
+  .score-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 14px 0; }
+  .score-item {
+    background: rgba(19,25,41,0.9); border: 1px solid var(--card-border);
+    border-radius: 14px; padding: 12px; text-align: center;
+  }
+  .score-item-icon { font-size: 1.6rem; }
+  .score-item-name { font-size: 0.75rem; color: rgba(232,244,255,0.5); margin: 4px 0; }
+  .score-item-pts { font-size: 1.2rem; font-weight: 800; color: var(--neon-yellow); }
+  .score-item-stars { color: var(--neon-yellow); font-size: 0.85rem; }
+  .total-box {
+    background: linear-gradient(135deg, rgba(255,241,118,0.12), rgba(255,177,74,0.08));
+    border: 1px solid rgba(255,241,118,0.3);
+    border-radius: 16px; padding: 16px; margin: 10px 0;
+  }
+  .total-label { font-size: 0.9rem; color: rgba(232,244,255,0.6); }
+  .total-num { font-family: 'Jua', sans-serif; font-size: 3.2rem; color: var(--neon-yellow); line-height: 1; }
+  .result-msg {
+    background: rgba(19,25,41,0.9); border: 1px solid var(--card-border);
+    border-radius: 14px; padding: 14px; margin: 10px 0;
+    font-size: 0.88rem; line-height: 1.7; color: rgba(232,244,255,0.8);
+  }
+
+  /* QR */
+  .qr-wrap {
+    background: rgba(19,25,41,0.9); border: 1px solid var(--card-border);
+    border-radius: 14px; padding: 16px; margin: 10px 0; text-align: center;
+  }
+  .qr-wrap h3 { font-family: 'Jua', sans-serif; font-size: 0.95rem; color: var(--neon-blue); margin-bottom: 10px; }
+  #qrCode { margin: 0 auto; }
+  .qr-url { font-size: 0.72rem; color: rgba(232,244,255,0.4); margin-top: 8px; word-break: break-all; }
+
+  /* 음악 버튼 */
+  .music-fab {
+    position: fixed; bottom: 16px; right: 16px; z-index: 100;
+    background: rgba(19,25,41,0.95); border: 1px solid var(--card-border);
+    color: var(--neon-blue); padding: 10px 16px; border-radius: 24px;
+    font-size: 0.82rem; cursor: pointer;
+    font-family: 'Nanum Gothic', sans-serif; font-weight: 700;
+    box-shadow: 0 0 20px rgba(79,195,247,0.15);
+    transition: all 0.2s;
+  }
+  .music-fab:hover { box-shadow: 0 0 30px rgba(79,195,247,0.3); }
+
+  /* 반응형 */
+  @media (max-width: 480px) {
+    .intro-title { font-size: 1.8rem; }
+    .mission-grid { grid-template-columns: 1fr 1fr; gap: 8px; }
+    .career-grid { grid-template-columns: 1fr 1fr; }
+    .score-grid { grid-template-columns: 1fr 1fr; }
+    #app { padding: 8px 8px 70px; }
+    .card { padding: 14px; }
+  }
+
+  /* 파티클 */
+  .particle {
+    position: fixed; pointer-events: none; z-index: 999;
+    animation: particleFly var(--dur) ease-out forwards;
+  }
+  @keyframes particleFly {
+    0%{opacity:1;transform:translate(0,0) scale(1)}
+    100%{opacity:0;transform:translate(var(--dx),var(--dy)) scale(0)}
+  }
+</style>
+</head>
+<body>
+
+<!-- 배경 -->
+<div class="bg-space" id="bgSpace">
+  <div class="aurora"></div>
+  <div class="earth-glow"></div>
+</div>
+
+<!-- 스티커 팝업 -->
+<div class="sticker-pop" id="stickerPop">
+  <div class="sticker-icon" id="stickerIcon">🌟</div>
+  <div class="sticker-text" id="stickerText">잘했어요!</div>
+</div>
+
+<!-- 음악 버튼 -->
+<button class="music-fab" id="musicBtn" onclick="toggleMusic()">🎵 음악 켜기</button>
+
+<div id="app">
+
+  <!-- ===== 인트로 ===== -->
+  <div id="screen-intro" class="screen active">
+    <div class="intro-badge">🌍 MILAB × Earth Hour 2026</div>
+    <span class="earth-icon">🌍</span>
+    <div class="intro-title">지구 기후 구조대</div>
+    <div class="intro-sub">중학교 국어 × 과학 × 사회 진로 융합 탐구</div>
+    <div class="intro-date-badge">⚡ 어스아워 주간 특별판 · 2026.03.26</div>
+
+    <div class="story-box">
+      <div class="story-title">🚨 긴급 브리핑 — 지구 기후 위기 발령</div>
+      <p>2026년 3월 마지막 주, 전 세계는 <strong style="color:var(--neon-yellow)">어스아워(Earth Hour)</strong> 캠페인을 맞이했습니다.<br>
+      그런데 지구 기상 위성이 이상 신호를 포착했어요! 🛰️<br><br>
+      기후 변화가 가속화되면서 생태계가 무너지고, 동식물이 사라지고 있습니다.<br>
+      UN은 전 세계 청소년에게 긴급 요청을 보냈어요:<br><br>
+      <strong style="color:var(--neon-green)">여러분이 바로 지구 기후 구조대입니다! 🌿</strong><br>
+      4개 미션을 완수하고 미래 기후 진로를 탐색해봐요!</p>
+    </div>
+
+    <div style="font-family:'Jua',sans-serif;font-size:0.95rem;color:var(--neon-blue);margin-bottom:10px;text-align:left;">📋 미션 목록</div>
+    <div class="mission-grid" id="missionGrid">
+      <div class="mission-card" onclick="startMission(1)" id="mc1">
+        <span class="mission-icon">🧠</span>
+        <div class="mission-name">미션 1</div>
+        <div class="mission-desc">기후 위기 퀴즈</div>
+        <div class="subject-tags"><span class="s-tag">과학</span><span class="s-tag">사회</span></div>
+        <div class="mission-stars" id="ms1">☆☆☆</div>
+      </div>
+      <div class="mission-card locked" id="mc2">
+        <span class="mission-icon">📖</span>
+        <div class="mission-name">미션 2</div>
+        <div class="mission-desc">기후 텍스트 읽기</div>
+        <div class="subject-tags"><span class="s-tag">국어</span><span class="s-tag">과학</span></div>
+        <div class="lock-badge">🔒</div>
+      </div>
+      <div class="mission-card locked" id="mc3">
+        <span class="mission-icon">🌐</span>
+        <div class="mission-name">미션 3</div>
+        <div class="mission-desc">기후 시나리오 선택</div>
+        <div class="subject-tags"><span class="s-tag">사회</span><span class="s-tag">국어</span></div>
+        <div class="lock-badge">🔒</div>
+      </div>
+      <div class="mission-card locked" id="mc4">
+        <span class="mission-icon">🔭</span>
+        <div class="mission-name">미션 4</div>
+        <div class="mission-desc">미래 기후 진로 탐색</div>
+        <div class="subject-tags"><span class="s-tag">진로</span><span class="s-tag">정보</span></div>
+        <div class="lock-badge">🔒</div>
+      </div>
+    </div>
+
+    <!-- ===== 인트로 QR 코드 섹션 ===== -->
+    <div id="introQrSection" style="
+      margin-top: 20px;
+      background: linear-gradient(135deg, rgba(19,25,41,0.97), rgba(10,14,26,0.97));
+      border: 1px solid rgba(79,195,247,0.35);
+      border-radius: 20px;
+      padding: 20px 16px 18px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    ">
+      <!-- 상단 라인 -->
+      <div style="position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--neon-blue),var(--neon-green),var(--neon-purple));"></div>
+
+      <div style="font-family:'Jua',sans-serif;font-size:1rem;color:var(--neon-blue);margin-bottom:4px;">
+        📱 태블릿·스마트폰으로 바로 접속!
+      </div>
+      <div style="font-size:0.78rem;color:rgba(232,244,255,0.5);margin-bottom:16px;">
+        카메라로 QR코드를 찍으면 바로 게임이 시작돼요
+      </div>
+
+      <!-- QR + URL 나란히 배치 -->
+      <div style="display:flex;align-items:center;justify-content:center;gap:20px;flex-wrap:wrap;">
+
+        <!-- QR 코드 -->
+        <div style="
+          background: white;
+          border-radius: 14px;
+          padding: 10px;
+          box-shadow: 0 0 24px rgba(79,195,247,0.35);
+          display: inline-block;
+        ">
+          <canvas id="introQrCode" width="150" height="150"></canvas>
+        </div>
+
+        <!-- URL + 안내 -->
+        <div style="text-align:left;max-width:220px;">
+          <div style="
+            font-family:'Jua',sans-serif;font-size:0.82rem;
+            color:var(--neon-green);margin-bottom:8px;
+          ">🌐 게임 주소</div>
+          <div style="
+            background:rgba(79,195,247,0.07);
+            border:1px solid rgba(79,195,247,0.2);
+            border-radius:10px;
+            padding:8px 12px;
+            font-size:0.7rem;
+            color:rgba(232,244,255,0.75);
+            word-break:break-all;
+            line-height:1.6;
+            margin-bottom:10px;
+          ">milab2019.github.io<br>/main/climate_career_ms.html</div>
+          <div style="display:flex;flex-direction:column;gap:5px;">
+            <div style="display:flex;align-items:center;gap:6px;font-size:0.75rem;color:rgba(232,244,255,0.55);">
+              <span style="color:var(--neon-green);">✔</span> 스마트폰 OK
+            </div>
+            <div style="display:flex;align-items:center;gap:6px;font-size:0.75rem;color:rgba(232,244,255,0.55);">
+              <span style="color:var(--neon-green);">✔</span> 태블릿 OK
+            </div>
+            <div style="display:flex;align-items:center;gap:6px;font-size:0.75rem;color:rgba(232,244,255,0.55);">
+              <span style="color:var(--neon-green);">✔</span> 아이폰/아이패드 OK
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 미랩 서명 -->
+      <div style="margin-top:14px;font-size:0.7rem;color:rgba(232,244,255,0.3);letter-spacing:0.5px;">
+        미랩(MILAB) 충주 진로체험 교육 · 2026
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ===== 미션 1: 기후 퀴즈 ===== -->
+  <div id="screen-m1" class="screen">
+    <div class="game-header">
+      <div>
+        <div class="header-title">🧠 미션 1 — 기후 위기 퀴즈</div>
+        <div class="header-sub">과학 + 사회 연계</div>
+      </div>
+      <div class="score-chip">⭐ <span id="m1Score">0</span></div>
+    </div>
+    <div class="prog-wrap">
+      <div class="prog-label"><span>진행</span><span id="m1Prog">0/8</span></div>
+      <div class="prog-bar"><div class="prog-fill" id="m1Bar" style="width:0%"></div></div>
+    </div>
+    <div class="char-bubble">
+      <div class="char-avatar" id="m1Char">🤖</div>
+      <div class="bubble-wrap">
+        <div class="bubble-name">구조대 AI 조수 — 클라이마(CLIMA)</div>
+        <span id="m1Msg">난이도를 선택하고 기후 퀴즈에 도전해보세요!</span>
+      </div>
+    </div>
+    <div class="card">
+      <div class="diff-row">
+        <button class="diff-btn easy active" onclick="setQ1Diff('easy')">🌱 기초</button>
+        <button class="diff-btn medium" onclick="setQ1Diff('medium')">🌊 심화</button>
+        <button class="diff-btn hard" onclick="setQ1Diff('hard')">🔥 도전</button>
+      </div>
+      <div class="quiz-counter" id="m1Counter">1 / 8 문제</div>
+      <div class="quiz-q" id="m1Q">문제 준비 중...</div>
+      <button class="hint-btn" onclick="toggleHint('m1')">💡 힌트 보기</button>
+      <div class="hint-box" id="m1Hint"></div>
+      <div class="opts-grid" id="m1Opts"></div>
+      <div class="fb-box" id="m1Fb"></div>
+      <div id="m1NextWrap" style="text-align:center;margin-top:14px;display:none;">
+        <button class="btn btn-neon" onclick="nextM1()">다음 문제 →</button>
+      </div>
+    </div>
+    <button class="btn btn-ghost btn-sm" onclick="goHome()">← 미션 목록</button>
+  </div>
+
+  <!-- ===== 미션 2: 텍스트 읽기 ===== -->
+  <div id="screen-m2" class="screen">
+    <div class="game-header">
+      <div>
+        <div class="header-title">📖 미션 2 — 기후 텍스트 읽기</div>
+        <div class="header-sub">국어 + 과학 연계</div>
+      </div>
+      <div class="score-chip">⭐ <span id="m2Score">0</span></div>
+    </div>
+    <div class="prog-wrap">
+      <div class="prog-label"><span>진행</span><span id="m2Prog">0/3</span></div>
+      <div class="prog-bar"><div class="prog-fill" id="m2Bar" style="width:0%"></div></div>
+    </div>
+    <div class="char-bubble">
+      <div class="char-avatar" id="m2Char">🤖</div>
+      <div class="bubble-wrap">
+        <div class="bubble-name">클라이마(CLIMA)</div>
+        <span id="m2Msg">지문을 꼼꼼히 읽고 핵심을 파악해봐요!</span>
+      </div>
+    </div>
+    <div class="card" id="m2Card"></div>
+    <button class="btn btn-ghost btn-sm" onclick="goHome()">← 미션 목록</button>
+  </div>
+
+  <!-- ===== 미션 3: 시나리오 ===== -->
+  <div id="screen-m3" class="screen">
+    <div class="game-header">
+      <div>
+        <div class="header-title">🌐 미션 3 — 기후 시나리오 선택</div>
+        <div class="header-sub">사회 + 국어 연계 · 멀티엔딩</div>
+      </div>
+      <div class="score-chip">⭐ <span id="m3Score">0</span></div>
+    </div>
+    <div class="prog-wrap">
+      <div class="prog-label"><span>진행</span><span id="m3Prog">0/4</span></div>
+      <div class="prog-bar"><div class="prog-fill" id="m3Bar" style="width:0%"></div></div>
+    </div>
+    <div class="char-bubble">
+      <div class="char-avatar" id="m3Char">🤖</div>
+      <div class="bubble-wrap">
+        <div class="bubble-name">클라이마(CLIMA)</div>
+        <span id="m3Msg">상황을 읽고 가장 기후에 좋은 선택을 해봐요! 선택에 따라 결말이 달라져요.</span>
+      </div>
+    </div>
+    <div id="m3Content"></div>
+    <button class="btn btn-ghost btn-sm" onclick="goHome()">← 미션 목록</button>
+  </div>
+
+  <!-- ===== 미션 4: 진로 탐색 ===== -->
+  <div id="screen-m4" class="screen">
+    <div class="game-header">
+      <div>
+        <div class="header-title">🔭 미션 4 — 미래 기후 진로 탐색</div>
+        <div class="header-sub">진로 + 정보(AI) 연계</div>
+      </div>
+      <div class="score-chip">⭐ <span id="m4Score">0</span></div>
+    </div>
+    <div class="char-bubble">
+      <div class="char-avatar">🤖</div>
+      <div class="bubble-wrap">
+        <div class="bubble-name">클라이마(CLIMA)</div>
+        <span id="m4Msg">2050년 기후 관련 미래 직업을 탐색해봐요! 관심 있는 직업을 눌러보세요.</span>
+      </div>
+    </div>
+    <div class="card">
+      <div style="font-family:'Jua';font-size:0.95rem;color:var(--neon-blue);margin-bottom:12px;">🌱 기후 관련 미래 직업 8종 — 클릭해서 탐색!</div>
+      <div class="career-grid" id="careerGrid"></div>
+      <div class="career-detail" id="careerDetail"></div>
+      <div id="m4Quiz" style="margin-top:14px;display:none;">
+        <div style="font-family:'Jua';font-size:0.9rem;color:var(--neon-green);margin-bottom:10px;">🎯 진로 연결 퀴즈</div>
+        <div class="quiz-q" id="m4Q" style="font-size:1rem;"></div>
+        <div class="opts-grid" id="m4Opts"></div>
+        <div class="fb-box" id="m4Fb"></div>
+        <div id="m4NextWrap" style="text-align:center;margin-top:12px;display:none;">
+          <button class="btn btn-green" onclick="nextM4()">다음 문제 →</button>
+        </div>
+      </div>
+    </div>
+    <button class="btn btn-ghost btn-sm" onclick="goHome()">← 미션 목록</button>
+  </div>
+
+  <!-- ===== 결과 ===== -->
+  <div id="screen-result" class="screen">
+    <div class="result-hero">
+      <div class="result-badge-emoji" id="resBadge">🏆</div>
+      <div class="result-title" id="resTitle">지구 기후 구조대 수료!</div>
+      <div class="result-sub">미랩(MILAB) 기후 진로 탐구 인증 · 2026</div>
+      <div class="result-rank" id="resRank">칭호: 기후 탐정</div>
+    </div>
+
+    <div class="score-grid" id="scoreGrid"></div>
+
+    <div class="total-box">
+      <div class="total-label">🌟 총 획득 점수</div>
+      <div class="total-num" id="totalNum">0</div>
+      <div style="font-size:0.8rem;color:rgba(232,244,255,0.5);margin-top:4px;">/ 100점</div>
+    </div>
+
+    <div class="result-msg" id="resMsg"></div>
+
+    <div class="qr-wrap">
+      <h3>📱 QR코드로 친구에게 공유하기</h3>
+      <canvas id="qrCode" width="130" height="130"></canvas>
+      <div class="qr-url">milab2019.github.io/main/climate_career_ms.html</div>
+    </div>
+
+    <button class="btn btn-neon btn-block" style="margin-top:10px;" onclick="resetGame()">🔄 처음부터 다시하기</button>
+  </div>
+
+</div>
+
+<script>
+// ===== 게임 상태 =====
+const G = {
+  scores: [0, 0, 0, 0],
+  stars: [0, 0, 0, 0],
+  done: [false, false, false, false]
+};
+
+// ===== 배경 별 생성 =====
+function initBg() {
+  const bg = document.getElementById('bgSpace');
+  for (let i = 0; i < 80; i++) {
+    const s = document.createElement('div');
+    s.className = 'star';
+    const sz = Math.random() * 2.5 + 0.5;
+    s.style.cssText = `width:${sz}px;height:${sz}px;left:${Math.random()*100}%;top:${Math.random()*100}%;--dur:${2+Math.random()*4}s;animation-delay:${Math.random()*4}s`;
+    bg.appendChild(s);
+  }
+}
+
+// ===== 음악 =====
+let musicOn = false, audioCtx = null;
+function toggleMusic() {
+  musicOn = !musicOn;
+  document.getElementById('musicBtn').textContent = musicOn ? '🎵 음악 끄기' : '🎵 음악 켜기';
+  if (musicOn) startBgMusic(); else stopBgMusic();
+}
+function startBgMusic() {
+  audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  // 우주적 분위기의 앰비언트 음악
+  const notes = [196, 220, 246.94, 261.63, 293.66, 329.63, 349.23, 392];
+  const melody = [4, 2, 0, 2, 4, 5, 4, 2, 0, 2, 7, 5, 4, 5, 4, 2];
+  function playNote(time, freq, dur, vol = 0.04) {
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    const filter = audioCtx.createBiquadFilter();
+    filter.type = 'lowpass'; filter.frequency.value = 800;
+    osc.connect(filter); filter.connect(gain); gain.connect(audioCtx.destination);
+    osc.type = 'sine'; osc.frequency.value = freq;
+    gain.gain.setValueAtTime(0, time);
+    gain.gain.linearRampToValueAtTime(vol, time + 0.1);
+    gain.gain.linearRampToValueAtTime(0, time + dur);
+    osc.start(time); osc.stop(time + dur + 0.1);
+  }
+  let t = audioCtx.currentTime + 0.1;
+  melody.forEach((n, i) => {
+    playNote(t + i * 0.6, notes[n % 8] * 0.5, 0.55);
+    if (i % 4 === 0) playNote(t + i * 0.6, notes[0] * 0.25, 2.4, 0.02);
+  });
+}
+function stopBgMusic() {
+  if (audioCtx) { audioCtx.close(); audioCtx = null; }
+}
+function playSound(type) {
+  try {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.connect(gain); gain.connect(ctx.destination);
+    if (type === 'correct') {
+      osc.frequency.value = 523.25;
+      gain.gain.setValueAtTime(0.12, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.5);
+    } else if (type === 'wrong') {
+      osc.type = 'sawtooth'; osc.frequency.value = 150;
+      gain.gain.setValueAtTime(0.08, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.3);
+    } else if (type === 'clear') {
+      osc.type = 'sine'; osc.frequency.value = 659.25;
+      gain.gain.setValueAtTime(0.12, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.8);
+    } else if (type === 'best') {
+      osc.frequency.value = 783.99;
+      gain.gain.setValueAtTime(0.12, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 1);
+    }
+    osc.start(); osc.stop(ctx.currentTime + 1);
+  } catch(e) {}
+}
+
+// ===== 파티클 =====
+function spawnParticles(n = 12) {
+  const icons = ['🌟','✨','💫','🌍','🌿','💚','⭐'];
+  for (let i = 0; i < n; i++) {
+    const p = document.createElement('div');
+    p.className = 'particle';
+    p.textContent = icons[Math.floor(Math.random() * icons.length)];
+    p.style.cssText = `left:${40+Math.random()*20}vw;top:40vh;font-size:${1+Math.random()}rem;--dur:${0.8+Math.random()*0.6}s;--dx:${(Math.random()-0.5)*200}px;--dy:${-50-Math.random()*150}px`;
+    document.body.appendChild(p);
+    setTimeout(() => p.remove(), 1500);
+  }
+}
+
+// ===== 스티커 팝업 =====
+function showSticker(icon, text, ms = 1200) {
+  const pop = document.getElementById('stickerPop');
+  document.getElementById('stickerIcon').textContent = icon;
+  document.getElementById('stickerText').textContent = text;
+  pop.style.display = 'block';
+  setTimeout(() => { pop.style.display = 'none'; }, ms);
+}
+
+// ===== 화면 전환 =====
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+function goHome() { showScreen('screen-intro'); }
+
+// ===== 별점 =====
+function calcStars(score, max) {
+  const p = score / max;
+  if (p >= 0.9) return 3;
+  if (p >= 0.6) return 2;
+  if (p > 0) return 1;
+  return 0;
+}
+
+// ===== 미션 잠금 해제 =====
+function unlockMission(n) {
+  const el = document.getElementById('mc' + n);
+  if (!el) return;
+  el.classList.remove('locked');
+  const lock = el.querySelector('.lock-badge');
+  if (lock) lock.remove();
+  const starsEl = document.createElement('div');
+  starsEl.className = 'mission-stars'; starsEl.id = 'ms' + n; starsEl.textContent = '☆☆☆';
+  el.appendChild(starsEl);
+  el.onclick = () => startMission(n);
+}
+function updateStars(n, stars) {
+  const el = document.getElementById('ms' + n);
+  if (el) el.textContent = '★'.repeat(stars) + '☆'.repeat(3 - stars);
+  const mc = document.getElementById('mc' + n);
+  if (mc) mc.classList.add('done');
+}
+
+function startMission(n) {
+  if (n === 1) initM1();
+  else if (n === 2) initM2();
+  else if (n === 3) initM3();
+  else if (n === 4) initM4();
+  showScreen('screen-m' + n);
+}
+
+// ========================================
+// ===== 미션 1: 기후 퀴즈 (8문제 × 3난이도) =====
+// ========================================
+const quizBank = {
+  easy: [
+    { q: "지구 온도를 높이는 '온실가스'가 아닌 것은?", opts: ['이산화탄소(CO₂)', '메테인(CH₄)', '수증기(H₂O)', '산소(O₂)'], ans: 3, hint: '온실가스는 대기 중에서 지구의 열을 가두는 기체예요. 생물이 숨쉬는 데 필요한 기체를 생각해보세요.', exp: '산소(O₂)는 온실가스가 아니에요! 이산화탄소, 메테인, 수증기, 아산화질소 등이 주요 온실가스입니다.' },
+    { q: "세계자연기금(WWF)이 주관하는 기후 캠페인으로, 매년 3월 마지막 주 토요일 1시간 동안 전등을 끄는 것은?", opts: ['지구의 날', '어스아워', '세계 환경의 날', '탄소중립의 날'], ans: 1, hint: '영어로 Earth(지구) + Hour(시간)의 합성어예요.', exp: '어스아워(Earth Hour)는 매년 3월 마지막 주 토요일 오후 8:30~9:30에 전 세계가 함께 전등을 끄는 기후 캠페인이에요!' },
+    { q: "지구 평균 기온이 높아지는 현상을 무엇이라고 할까요?", opts: ['오존층 파괴', '지구 온난화', '산성비', '미세먼지'], ans: 1, hint: '온실가스가 대기 중에 쌓여 지구 온도가 올라가는 현상이에요.', exp: '지구 온난화(Global Warming)는 온실가스 증가로 인해 지구 평균 기온이 지속적으로 상승하는 현상이에요!' },
+    { q: "탄소 발자국(Carbon Footprint)이란?", opts: ['탄소가 발에 닿는 느낌', '개인이나 단체가 배출하는 이산화탄소 총량', '탄소 소재로 만든 신발', '탄소가 땅에 쌓이는 현상'], ans: 1, hint: '우리가 일상에서 이동하고, 먹고, 사용하는 물건들이 만들어내는 탄소 흔적이에요.', exp: '탄소 발자국은 개인, 기업, 국가가 직간접적으로 발생시키는 이산화탄소 총량이에요. 줄이는 게 중요하죠!' },
+    { q: "식물이 이산화탄소를 흡수하는 과정은?", opts: ['증산', '광합성', '호흡', '분해'], ans: 1, hint: '햇빛 + 물 + 이산화탄소 → 포도당 + 산소', exp: '광합성(Photosynthesis)은 식물이 햇빛을 이용해 이산화탄소와 물로 포도당을 만들고 산소를 방출하는 과정이에요!' },
+    { q: "재생에너지에 해당하지 않는 것은?", opts: ['태양광', '풍력', '석탄', '수력'], ans: 2, hint: '무한히 다시 만들어지는 에너지를 재생에너지라고 해요.', exp: '석탄은 화석연료로 재생에너지가 아니에요! 태양광, 풍력, 수력, 지열 등이 재생에너지예요.' },
+    { q: "기후 변화로 인해 극지방의 빙하가 녹으면?", opts: ['해수면이 내려간다', '해수면이 올라간다', '바다가 얕아진다', '기온이 낮아진다'], ans: 1, hint: '얼음이 물로 변하면 부피가 어떻게 될까요?', exp: '빙하가 녹으면 바닷물이 늘어나 해수면이 상승해요! 이로 인해 해안 저지대가 침수될 수 있어요.' },
+    { q: "2015년 전 세계 195개국이 체결한 기후 협약은?", opts: ['교토의정서', '파리협정', '몬트리올의정서', '스톡홀름협약'], ans: 1, hint: '프랑스 수도 이름이 들어간 협약이에요.', exp: '파리협정(Paris Agreement, 2015)은 지구 온도 상승을 산업화 이전 대비 1.5℃ 이내로 억제하기 위한 국제 협약이에요!' },
+  ],
+  medium: [
+    { q: "탄소중립(Net-Zero)의 정확한 의미는?", opts: ['탄소를 전혀 배출하지 않는 것', '탄소 배출량과 흡수량을 같게 만드는 것', '탄소세를 내는 것', '탄소를 수출하는 것'], ans: 1, hint: '배출하는 탄소를 나무 심기, 기술 등으로 상쇄(帳消し)하는 개념이에요.', exp: '탄소중립은 CO₂ 배출량 = 흡수량이 되도록 만드는 것이에요! 한국은 2050년까지 탄소중립 달성을 목표로 하고 있어요.' },
+    { q: "기후 변화가 생물 다양성에 미치는 영향으로 가장 옳은 것은?", opts: ['모든 생물이 더 번성한다', '일부 종은 멸종위기에 처한다', '새로운 종이 무한히 생겨난다', '생물 다양성이 증가한다'], ans: 1, hint: '기온 변화로 서식 환경이 바뀌면 적응 못하는 생물은 어떻게 될까요?', exp: '기후 변화로 서식환경이 변하면 적응하지 못한 생물 종이 멸종위기에 처해요! 현재 약 100만 종이 위기 상황이에요.' },
+    { q: "'그린워싱(Greenwashing)'이란?", opts: ['친환경 건물 도색하기', '실제로는 환경에 해롭지만 친환경인 척 홍보하는 것', '녹색 에너지로만 공장 운영', '숲을 세탁하는 행위'], ans: 1, hint: '그린(Green=친환경) + 세탁하다(Washing)의 합성어예요.', exp: '그린워싱은 기업이 실제 친환경 활동 없이 마케팅만 친환경으로 포장하는 기만적 행위예요. 비판적으로 볼 수 있어야 해요!' },
+    { q: "다음 중 탄소 발자국을 줄이는 방법이 아닌 것은?", opts: ['대중교통 이용', '채식 위주 식단', '항공편 자주 이용하기', '에너지 절약'], ans: 2, hint: '이동 수단 중 탄소를 가장 많이 배출하는 것을 생각해보세요.', exp: '항공기는 탄소 배출이 매우 많아요. 비행 1회가 자동차로 수천 km를 가는 것과 비슷한 탄소를 배출해요!' },
+    { q: "기후 변화로 인해 한반도에서 나타나는 변화로 가장 옳은 것은?", opts: ['한라산에 눈이 더 많이 온다', '제주도에서 열대 과일 재배가 증가한다', '동해 수온이 낮아진다', '봄이 늦게 찾아온다'], ans: 1, hint: '기온이 올라가면 어떤 작물이 자랄 수 있을까요?', exp: '한반도 기온 상승으로 제주도에서 망고, 바나나 등 열대 과일 재배가 늘고 있어요! 실제로 재배에 성공한 농가도 있어요.' },
+    { q: "기후 위기에서 가장 취약한 집단은?", opts: ['선진국 주민', '저소득 국가 주민, 노약자, 농어촌 주민', '대기업 임원', '선진국 어린이'], ans: 1, hint: '기후 변화의 피해는 불평등하게 분배돼요.', exp: '기후 불평등! 온실가스를 적게 배출한 저소득 국가와 취약 계층이 기후 피해를 더 크게 받아요. 기후 정의가 중요한 이유예요.' },
+    { q: "지구 온도 상승을 1.5℃로 제한해야 하는 이유는?", opts: ['기후가 완전히 멈추므로', '생태계 임계점을 넘으면 돌이키기 어렵기 때문에', '온도가 낮아지기 때문에', '경제가 성장하기 때문에'], ans: 1, hint: '한번 넘으면 되돌아오기 어려운 선(티핑포인트)의 개념이에요.', exp: '1.5℃를 넘으면 산호초 소멸, 극지방 빙하 붕괴 등 티핑포인트를 지나 기후 시스템이 걷잡을 수 없어질 수 있어요!' },
+    { q: "탄소세(Carbon Tax)란?", opts: ['나무를 심으면 주는 세금 혜택', '탄소를 배출할수록 내는 세금', '탄소 소재 제품에 붙는 부가세', '외국에서 탄소를 수입할 때 내는 세금'], ans: 1, hint: '오염시킨 만큼 비용을 지불하게 하는 경제적 수단이에요.', exp: '탄소세는 온실가스를 많이 배출할수록 더 많은 세금을 내게 해 기업과 개인이 탄소 줄이도록 유도하는 정책이에요!' },
+  ],
+  hard: [
+    { q: "IPCC(기후변화에 관한 정부간 협의체)의 6차 보고서에서 제시한 기후 변화 위기 시나리오 중 가장 위험한 것은?", opts: ['SSP1-1.9', 'SSP2-4.5', 'SSP3-7.0', 'SSP5-8.5'], ans: 3, hint: '숫자가 클수록 더 심각한 시나리오예요. 화석연료를 무제한으로 사용하는 경우를 상정한 시나리오예요.', exp: 'SSP5-8.5는 화석연료를 그대로 사용할 경우로 2100년 기온이 4.4℃ 상승 예상! SSP1-1.9는 탄소중립 달성 최선 시나리오예요.' },
+    { q: "기후 변화와 관련된 '생태계 서비스'에 포함되지 않는 것은?", opts: ['탄소 흡수', '수질 정화', '주식 시세 제공', '식물 수분(授粉)'], ans: 2, hint: '생태계가 인간에게 주는 혜택을 생각해보세요.', exp: '생태계 서비스는 인간이 생태계에서 얻는 혜택으로 탄소 흡수, 수질 정화, 수분 매개 등이 포함돼요. 주식 시세는 금융 시스템이죠!' },
+    { q: "기후 변화로 인한 '기후 난민'이 국제법상 보호받지 못하는 주요 이유는?", opts: ['숫자가 적어서', '1951년 난민협약이 기후를 난민 사유로 규정하지 않아서', '기후 변화가 없어서', '난민 신청을 안 해서'], ans: 1, hint: '현행 국제 난민 협약이 만들어진 시대를 생각해보세요.', exp: '1951년 난민협약은 전쟁, 박해 등만 난민 사유로 인정해요. 기후 난민은 법적 보호의 사각지대에 있어 국제 법제도 개선이 필요해요!' },
+    { q: "탄소 포집·저장(CCS)기술이란?", opts: ['탄소를 식물에 심는 기술', '공기 중 CO₂를 포집해 지하에 저장하는 기술', '탄소를 태워 에너지를 얻는 기술', '탄소 세금을 걷는 행정 기술'], ans: 1, hint: 'Carbon Capture and Storage의 약자예요.', exp: 'CCS는 발전소나 공장에서 배출되는 CO₂를 포집해 지하 암반층 등에 저장하는 기술이에요. 탄소중립 달성의 핵심 기술 중 하나예요!' },
+    { q: "해양이 기후 조절에서 담당하는 역할로 옳지 않은 것은?", opts: ['CO₂의 약 30% 흡수', '지구 열에너지의 90% 이상 흡수', '산소 100% 생성', '기상 패턴 조절'], ans: 2, hint: '지구 산소의 절반 이상은 해양에서 오지만, 전부는 아니에요.', exp: '해양은 CO₂ 약 30%, 열의 90% 이상 흡수하지만, 산소는 전체의 약 50~80%를 생산해요. 나머지는 육상 식물이 담당해요!' },
+    { q: "기후 변화와 감염병의 관계로 가장 옳은 것은?", opts: ['기후 변화는 감염병과 무관하다', '기온 상승으로 모기 등 매개체 서식지가 확대된다', '추운 지역에서만 감염병이 증가한다', '기후 변화로 모든 바이러스가 사라진다'], ans: 1, hint: '모기가 살 수 있는 지역이 넓어지면 어떻게 될까요?', exp: '기온 상승으로 말라리아·뎅기열을 옮기는 모기 서식 지역이 확대돼요! 기후 변화는 감염병 확산에도 영향을 줘요.' },
+    { q: "그린 수소(Green Hydrogen)와 그레이 수소(Grey Hydrogen)의 차이는?", opts: ['색깔 차이', '그린: 재생에너지로 생산, 그레이: 화석연료로 생산', '그린: 해외 생산, 그레이: 국내 생산', '가격 차이만 있다'], ans: 1, hint: '그린(Green)은 환경 친화적이라는 뜻이에요.', exp: '그린 수소는 재생에너지 전력으로 물을 전기분해해 생산(CO₂ 없음), 그레이 수소는 천연가스 개질로 생산(CO₂ 발생)해요!' },
+    { q: "생물다양성 협약(CBD)에서 2030년까지 목표로 하는 '30×30'이란?", opts: ['2030년까지 탄소 30% 감축', '2030년까지 육지와 바다의 30%를 보호구역으로 지정', '30개국이 30년간 협력하는 것', '30가지 멸종위기종 보호'], ans: 1, hint: '지구 면적의 비율과 연도를 생각해보세요.', exp: '30×30은 2030년까지 지구 육지와 해양의 각 30%를 보호구역으로 지정해 생물다양성을 보전하자는 국제 목표예요!' },
+  ]
+};
+
+let m1Diff = 'easy', m1List = [], m1Idx = 0, m1Score = 0, m1HintShown = false;
+
+function initM1() {
+  m1Score = 0; m1Idx = 0; m1HintShown = false;
+  document.getElementById('m1Score').textContent = '0';
+  setQ1Diff('easy');
+}
+
+function setQ1Diff(d) {
+  m1Diff = d;
+  document.querySelectorAll('.diff-btn').forEach(b => b.classList.remove('active'));
+  document.querySelector('.diff-btn.' + d).classList.add('active');
+  m1List = [...quizBank[d]].sort(() => Math.random() - 0.5);
+  m1Idx = 0; m1Score = 0;
+  document.getElementById('m1Score').textContent = '0';
+  renderM1();
+}
+
+function renderM1() {
+  if (m1Idx >= m1List.length) { finishM1(); return; }
+  const q = m1List[m1Idx];
+  document.getElementById('m1Counter').textContent = (m1Idx + 1) + ' / ' + m1List.length + ' 문제';
+  document.getElementById('m1Prog').textContent = m1Idx + '/' + m1List.length;
+  document.getElementById('m1Bar').style.width = (m1Idx / m1List.length * 100) + '%';
+  document.getElementById('m1Q').textContent = q.q;
+  document.getElementById('m1Hint').style.display = 'none';
+  document.getElementById('m1Hint').textContent = '💡 ' + q.hint;
+  document.getElementById('m1Fb').className = 'fb-box';
+  document.getElementById('m1NextWrap').style.display = 'none';
+  document.getElementById('m1Char').textContent = '🤖';
+  document.getElementById('m1Msg').textContent = '문제를 잘 읽고 정답을 골라보세요!';
+  m1HintShown = false;
+  const optsEl = document.getElementById('m1Opts');
+  optsEl.innerHTML = '';
+  q.opts.forEach((opt, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'opt-btn';
+    btn.textContent = ['①', '②', '③', '④'][i] + ' ' + opt;
+    btn.onclick = () => answerM1(i, q.ans, q.exp, btn);
+    optsEl.appendChild(btn);
+  });
+}
+
+function toggleHint(id) {
+  const hintEl = document.getElementById(id + 'Hint');
+  hintEl.style.display = hintEl.style.display === 'block' ? 'none' : 'block';
+}
+
+function answerM1(idx, ans, exp, btn) {
+  document.querySelectorAll('#m1Opts .opt-btn').forEach(b => b.disabled = true);
+  document.querySelectorAll('#m1Opts .opt-btn')[ans].classList.add('correct');
+  const fb = document.getElementById('m1Fb');
+  if (idx === ans) {
+    btn.classList.add('correct');
+    const pts = m1Diff === 'easy' ? 8 : m1Diff === 'medium' ? 12 : 16;
+    m1Score += pts;
+    document.getElementById('m1Score').textContent = m1Score;
+    fb.className = 'fb-box show ok';
+    fb.innerHTML = '✅ 정답! +' + pts + '점<br><strong>해설:</strong> ' + exp;
+    document.getElementById('m1Char').textContent = '😄';
+    document.getElementById('m1Msg').textContent = '정확해요! 잘했어요 👍';
+    playSound('correct');
+    spawnParticles(6);
+    showSticker(['🌟', '✨', '💫', '🌍'][Math.floor(Math.random() * 4)], '+' + pts + '점! 훌륭해요!', 900);
+  } else {
+    btn.classList.add('wrong');
+    fb.className = 'fb-box show ng';
+    fb.innerHTML = '❌ 아쉽지만 틀렸어요! 도전한 것 자체가 훌륭해요! 💪<br><strong>정답 해설:</strong> ' + exp;
+    document.getElementById('m1Char').textContent = '😅';
+    document.getElementById('m1Msg').textContent = '틀렸지만 괜찮아요! 해설을 읽어보세요.';
+    playSound('wrong');
+    showSticker('🌱', '다음엔 맞출 수 있어요!', 900);
+  }
+  document.getElementById('m1NextWrap').style.display = 'block';
+}
+
+function nextM1() { m1Idx++; renderM1(); }
+
+function finishM1() {
+  const maxMap = { easy: 64, medium: 96, hard: 128 };
+  const max = maxMap[m1Diff];
+  G.scores[0] = m1Score;
+  G.stars[0] = calcStars(m1Score, max);
+  G.done[0] = true;
+  updateStars(1, G.stars[0]);
+  unlockMission(2);
+  playSound('clear');
+  spawnParticles(16);
+  showSticker('🏆', '미션 1 완료! ' + m1Score + '점', 1500);
+  setTimeout(() => goHome(), 1800);
+}
+
+// ========================================
+// ===== 미션 2: 텍스트 읽기 (국어+과학) =====
+// ========================================
+const textSets = [
+  {
+    title: '📰 [지문 1] 어스아워의 의미',
+    text: `매년 3월 마지막 주 토요일, 전 세계 수억 명이 동시에 전등을 끈다. 세계자연기금(WWF)이 주관하는 '어스아워(Earth Hour)'다. 2007년 호주 시드니에서 시작된 이 캠페인은 현재 190여 개국이 참여하는 지구 최대의 기후 행동이 되었다.
+
+어스아워의 진정한 목적은 단순히 전기를 아끼는 것이 아니다. 기후 위기에 대한 전 세계 시민의 연대를 보여주고, 정부와 기업에 기후 행동을 촉구하는 '상징적 메시지'를 전달하는 것이다. 실제로 어스아워 이후 여러 나라에서 기후 관련 법안이 통과되는 효과가 나타났다.`,
+    question: '이 글에서 어스아워의 가장 중요한 목적으로 제시된 것은?',
+    opts: ['전기 요금 절약', '기후 위기에 대한 전 세계 연대 메시지 전달', '새로운 나라 발견', '전등 기술 개발'],
+    ans: 1,
+    hint: '지문에서 "진정한 목적은"이라는 표현 다음을 찾아보세요.',
+    exp: '지문에서 어스아워의 진정한 목적은 전기 절약이 아닌 기후 위기에 대한 전 세계 시민의 연대를 보여주는 상징적 메시지 전달이라고 나와 있어요!',
+    pts: 20
+  },
+  {
+    title: '📰 [지문 2] 한반도 기후 변화 현실',
+    text: `기상청 자료에 따르면, 한반도 연평균 기온은 지난 100년간 약 1.8℃ 상승했다. 이는 전 세계 평균 상승폭(1.1℃)보다 높은 수치다. 봄꽃 개화 시기는 2주 이상 앞당겨졌고, 여름은 길어지고 겨울은 짧아지는 추세가 뚜렷하다.
+
+특히 충청북도 충주 등 내륙 지역도 열섬 현상과 집중호우 빈도 증가를 경험하고 있다. 전문가들은 이 추세가 계속될 경우 2100년까지 한반도 기온이 최대 7℃까지 상승할 수 있다고 경고한다. 지금 바로 행동하지 않으면 돌이킬 수 없다는 것이 전문가들의 공통된 의견이다.`,
+    question: '이 글에서 한반도 기온 상승폭이 전 세계 평균보다 높다는 근거로 제시된 수치는?',
+    opts: ['한반도 1.1℃ vs 전 세계 1.8℃', '한반도 1.8℃ vs 전 세계 1.1℃', '한반도 2.0℃ vs 전 세계 0.5℃', '한반도 7℃ vs 전 세계 3.5℃'],
+    ans: 1,
+    hint: '지문에서 구체적인 숫자를 찾아 비교해보세요.',
+    exp: '지문에 따르면 한반도는 100년간 약 1.8℃ 상승해 전 세계 평균인 1.1℃보다 높아요! 한반도가 더 빠르게 온난화되고 있어요.',
+    pts: 25
+  },
+  {
+    title: '📰 [지문 3] 기후 위기와 진로',
+    text: `기후 위기는 위협이지만 동시에 새로운 기회다. 유엔환경계획(UNEP)은 탄소중립 경제로 전환 과정에서 2030년까지 전 세계에 약 2,400만 개의 새로운 일자리가 창출될 것이라 예측했다.
+
+국내에서도 탄소 감축 전문가, 기후 데이터 분석가, 재생에너지 엔지니어, ESG(환경·사회·지배구조) 컨설턴트 등 기후 관련 직업의 수요가 폭발적으로 증가하고 있다. 지금 중학생들이 고등학교·대학교를 마칠 즈음에는 기후 관련 직업이 우리 사회의 핵심 분야가 될 것이다. 기후 위기를 이해하는 사람이 미래를 이끌 것이다.`,
+    question: '이 글에서 기후 위기를 어떤 관점으로도 바라보고 있는가?',
+    opts: ['오직 위협으로만', '위협이자 새로운 기회', '관계없는 문제', '오직 과학적 현상'],
+    ans: 1,
+    hint: '지문 첫 문장을 주의 깊게 읽어보세요.',
+    exp: '지문 첫 문장 "기후 위기는 위협이지만 동시에 새로운 기회다"에서 위협과 기회 양면을 모두 제시하고 있어요!',
+    pts: 20
+  }
+];
+
+let m2Idx = 0, m2Score = 0;
+function initM2() {
+  m2Idx = 0; m2Score = 0;
+  document.getElementById('m2Score').textContent = '0';
+  renderM2();
+}
+function renderM2() {
+  if (m2Idx >= textSets.length) { finishM2(); return; }
+  document.getElementById('m2Prog').textContent = m2Idx + '/' + textSets.length;
+  document.getElementById('m2Bar').style.width = (m2Idx / textSets.length * 100) + '%';
+  const ts = textSets[m2Idx];
+  const card = document.getElementById('m2Card');
+  card.innerHTML = `
+    <div style="font-family:'Jua';font-size:0.95rem;color:var(--neon-blue);margin-bottom:12px;">${ts.title}</div>
+    <div style="background:rgba(13,27,62,0.7);border:1px solid rgba(79,195,247,0.15);border-radius:12px;padding:14px;margin-bottom:16px;font-size:0.85rem;line-height:1.8;color:rgba(232,244,255,0.85);">${ts.text.replace(/\n\n/g,'</p><p style="margin-top:10px;">').replace(/^/,'<p>').replace(/$/,'</p>')}</div>
+    <div style="font-family:'Jua';font-size:0.95rem;color:var(--white);margin-bottom:12px;">❓ ${ts.question}</div>
+    <button class="hint-btn" onclick="toggleHintM2()">💡 힌트 보기</button>
+    <div class="hint-box" id="m2HintBox">💡 ${ts.hint}</div>
+    <div class="opts-grid" id="m2Opts"></div>
+    <div class="fb-box" id="m2Fb"></div>
+    <div id="m2NextWrap" style="text-align:center;margin-top:14px;display:none;">
+      <button class="btn btn-neon" onclick="nextM2()">다음 지문 →</button>
+    </div>
+  `;
+  ts.opts.forEach((opt, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'opt-btn'; btn.textContent = ['①','②','③','④'][i] + ' ' + opt;
+    btn.onclick = () => answerM2(i, ts.ans, ts.exp, ts.pts, btn);
+    document.getElementById('m2Opts').appendChild(btn);
+  });
+}
+function toggleHintM2() {
+  const h = document.getElementById('m2HintBox');
+  h.style.display = h.style.display === 'block' ? 'none' : 'block';
+}
+function answerM2(idx, ans, exp, pts, btn) {
+  document.querySelectorAll('#m2Opts .opt-btn').forEach(b => b.disabled = true);
+  document.querySelectorAll('#m2Opts .opt-btn')[ans].classList.add('correct');
+  const fb = document.getElementById('m2Fb');
+  if (idx === ans) {
+    btn.classList.add('correct');
+    m2Score += pts; document.getElementById('m2Score').textContent = m2Score;
+    fb.className = 'fb-box show ok';
+    fb.innerHTML = '✅ 정답! +' + pts + '점<br><strong>해설:</strong> ' + exp;
+    document.getElementById('m2Char').textContent = '😄';
+    playSound('correct'); spawnParticles(5);
+    showSticker('📖', '독해 능력 완벽!', 900);
+  } else {
+    btn.classList.add('wrong');
+    fb.className = 'fb-box show ng';
+    fb.innerHTML = '❌ 지문을 다시 읽어봐요! 도전 자체가 훌륭해요! 📚<br><strong>해설:</strong> ' + exp;
+    playSound('wrong');
+    showSticker('📝', '지문을 다시 읽어봐요!', 900);
+  }
+  document.getElementById('m2NextWrap').style.display = 'block';
+}
+function nextM2() { m2Idx++; renderM2(); }
+function finishM2() {
+  G.scores[1] = m2Score; G.stars[1] = calcStars(m2Score, 65);
+  G.done[1] = true; updateStars(2, G.stars[1]);
+  unlockMission(3); playSound('clear'); spawnParticles(14);
+  showSticker('🌍', '미션 2 완료! ' + m2Score + '점', 1500);
+  setTimeout(() => goHome(), 1900);
+}
+
+// ========================================
+// ===== 미션 3: 시나리오 선택 (멀티엔딩) =====
+// ========================================
+const scenarios = [
+  {
+    icon: '🏫',
+    title: '학교 전기 절약의 날, 우리 반은 어떻게 할까요?',
+    context: '학교에서 에너지 절약 주간을 맞아 각 반이 전기 사용을 줄이는 방법을 제안해야 해요. 여러분이 학급 대표라면?',
+    opts: [
+      { text: '🌱 점심시간에 교실 전등과 에어컨을 모두 끄고, 복도 창가에 모여 이야기한다', grade: 'best', score: 25, fb: '최고의 선택! 직접 행동으로 에너지를 절약하면서 친구들과 소통도 할 수 있어요. 이런 작은 습관이 기후 변화를 막아요! 🌟' },
+      { text: '💡 에너지 절약 포스터를 만들어 학교에 붙인다', grade: 'good', score: 15, fb: '좋은 선택이에요! 인식 개선도 중요하지만, 직접 행동과 병행하면 더 좋아요! ✨' },
+      { text: '😐 귀찮으니까 그냥 평소처럼 지낸다', grade: 'meh', score: 0, fb: '이해해요. 하지만 우리의 작은 행동이 모이면 큰 변화를 만들어요. 다음엔 한 가지만 실천해봐요! 💪' },
+    ]
+  },
+  {
+    icon: '🛒',
+    title: '마트에서 음료수를 살 때 어떻게 할까요?',
+    context: '더운 날 마트에서 음료를 사야 해요. 기후를 생각한다면 어떤 선택이 가장 좋을까요?',
+    opts: [
+      { text: '♻️ 텀블러를 가져와 리필 가능한 음료를 담는다', grade: 'best', score: 25, fb: '완벽한 기후 행동! 일회용 플라스틱 사용을 줄이는 게 탄소 발자국 감소의 핵심이에요! 🌿' },
+      { text: '🥤 유리병에 든 음료를 사고 분리수거한다', grade: 'good', score: 18, fb: '좋아요! 유리는 재활용률이 높아요. 텀블러 사용보다는 탄소가 더 발생하지만 좋은 선택이에요! 👍' },
+      { text: '🗑️ 편하게 일회용 플라스틱 컵에 든 음료를 산다', grade: 'meh', score: 3, fb: '플라스틱은 분해까지 수백 년이 걸려요. 다음엔 텀블러를 챙겨봐요! 작은 습관이 지구를 구해요 🌍' },
+    ]
+  },
+  {
+    icon: '🚶',
+    title: '가까운 학원까지 어떻게 이동할까요?',
+    context: '집에서 학원까지 걸어서 20분, 버스로 7분, 부모님 차로 5분 거리예요. 기후 관점에서 최선의 선택은?',
+    opts: [
+      { text: '🚶 걸어간다 (오늘 날씨도 좋고 운동도 될 것 같다)', grade: 'best', score: 25, fb: '탄소 제로 이동! 걷기는 탄소를 전혀 배출하지 않고, 건강에도 좋아요. 지구와 내 몸 모두 건강해지는 선택이에요! 🌍' },
+      { text: '🚌 버스를 타고 간다', grade: 'good', score: 18, fb: '훌륭한 선택! 대중교통은 1인당 탄소 배출량이 자가용보다 훨씬 적어요! 👍' },
+      { text: '🚗 부모님 차를 타고 간다', grade: 'meh', score: 5, fb: '가끔은 어쩔 수 없지만, 가능하면 걷거나 대중교통을 이용해봐요! 자동차는 1회 이동당 탄소 배출이 커요. 💨' },
+    ]
+  },
+  {
+    icon: '🍱',
+    title: '급식 메뉴가 아직 남아있을 때 어떻게 할까요?',
+    context: '오늘 급식 시간, 음식이 많이 남았어요. 잔반을 어떻게 처리할까요?',
+    opts: [
+      { text: '🌱 내 그릇의 음식을 최대한 다 먹고, 잔반 없애기 캠페인을 친구들에게 제안한다', grade: 'best', score: 25, fb: '최고의 기후 행동! 음식물 쓰레기는 메테인(CH₄)을 발생시켜 기후 변화를 심화해요. 잔반 줄이기가 중요한 이유예요! 🌟' },
+      { text: '💚 내 그릇만 깨끗이 비운다', grade: 'good', score: 15, fb: '잘했어요! 내 음식을 다 먹는 것만으로도 음식물 쓰레기를 줄이는 데 기여해요! 👍' },
+      { text: '🗑️ 싫어하는 반찬은 그냥 버린다', grade: 'meh', score: 0, fb: '음식을 버리면 그 음식을 만드는 데 쓰인 에너지와 자원이 낭비돼요. 조금이라도 먹어보는 건 어떨까요? 🌍' },
+    ]
+  }
+];
+
+let m3Idx = 0, m3Score = 0, m3Choices = [];
+function initM3() {
+  m3Idx = 0; m3Score = 0; m3Choices = [];
+  document.getElementById('m3Score').textContent = '0';
+  renderM3();
+}
+function renderM3() {
+  if (m3Idx >= scenarios.length) { finishM3(); return; }
+  document.getElementById('m3Prog').textContent = m3Idx + '/' + scenarios.length;
+  document.getElementById('m3Bar').style.width = (m3Idx / scenarios.length * 100) + '%';
+  const sc = scenarios[m3Idx];
+  const cont = document.getElementById('m3Content');
+  cont.innerHTML = `
+    <div class="card">
+      <div style="text-align:center;font-size:2.5rem;margin-bottom:8px;">${sc.icon}</div>
+      <div style="font-family:'Jua';font-size:1rem;color:var(--neon-blue);margin-bottom:10px;line-height:1.5;">${sc.title}</div>
+      <div style="background:rgba(13,27,62,0.6);border:1px solid rgba(79,195,247,0.15);border-radius:10px;padding:12px;margin-bottom:14px;font-size:0.85rem;color:rgba(232,244,255,0.8);line-height:1.6;">${sc.context}</div>
+      <div class="scenario-opts" id="sOpts"></div>
+      <div class="fb-box" id="m3Fb"></div>
+      <div id="m3NextWrap" style="text-align:center;margin-top:14px;display:none;">
+        <button class="btn btn-green" onclick="nextM3()">다음 상황 →</button>
+      </div>
+    </div>
+  `;
+  sc.opts.forEach((opt, i) => {
+    const btn = document.createElement('button');
+    btn.className = 's-opt'; btn.textContent = opt.text;
+    btn.onclick = () => pickScenario(opt, btn);
+    document.getElementById('sOpts').appendChild(btn);
+  });
+}
+function pickScenario(opt, btn) {
+  document.querySelectorAll('#sOpts .s-opt').forEach(b => { b.disabled = true; b.style.opacity = '0.5'; });
+  btn.classList.add(opt.grade); btn.style.opacity = '1';
+  m3Score += opt.score; document.getElementById('m3Score').textContent = m3Score;
+  m3Choices.push(opt.grade);
+  const fb = document.getElementById('m3Fb');
+  const icon = opt.grade === 'best' ? '🌟' : opt.grade === 'good' ? '👍' : '💪';
+  fb.className = 'fb-box show ' + (opt.grade === 'meh' ? 'ng' : 'ok');
+  fb.innerHTML = icon + ' ' + opt.fb + (opt.score > 0 ? '<br><strong>+' + opt.score + '점</strong>' : '');
+  document.getElementById('m3Char').textContent = opt.grade === 'best' ? '😄' : opt.grade === 'good' ? '😊' : '😅';
+  if (opt.grade !== 'meh') { playSound('correct'); spawnParticles(opt.grade === 'best' ? 10 : 5); }
+  else playSound('wrong');
+  document.getElementById('m3NextWrap').style.display = 'block';
+}
+function nextM3() { m3Idx++; renderM3(); }
+function finishM3() {
+  // 멀티 엔딩
+  const bestCount = m3Choices.filter(c => c === 'best').length;
+  let ending = '', endingBadge = '';
+  if (bestCount === 4) { ending = '🏆 완벽한 기후 챔피언! 모든 상황에서 최선의 기후 행동을 선택했어요. 당신은 진정한 지구 기후 구조대장입니다!'; endingBadge = '🏆'; }
+  else if (bestCount >= 3) { ending = '🌟 훌륭한 기후 히어로! 대부분의 상황에서 올바른 선택을 했어요. 조금만 더 노력하면 완벽해요!'; endingBadge = '🌟'; }
+  else if (bestCount >= 2) { ending = '🌿 성장하는 기후 시민! 기후 행동의 의미를 알기 시작했어요. 계속 실천하면 더 좋아질 거예요!'; endingBadge = '🌿'; }
+  else { ending = '💪 도전하는 기후 새내기! 완벽하지 않아도 괜찮아요. 한 가지 행동부터 실천해봐요. 작은 변화가 큰 차이를 만들어요!'; endingBadge = '💪'; }
+  G.scores[2] = m3Score; G.stars[2] = calcStars(m3Score, 100);
+  G.done[2] = true; updateStars(3, G.stars[2]);
+  unlockMission(4); playSound('clear'); spawnParticles(16);
+  const cont = document.getElementById('m3Content');
+  cont.innerHTML = `
+    <div class="card" style="text-align:center;padding:30px 20px;">
+      <div style="font-size:4rem;margin-bottom:12px;">${endingBadge}</div>
+      <div style="font-family:'Jua';font-size:1.3rem;color:var(--neon-green);margin-bottom:12px;">미션 3 완료!</div>
+      <div style="font-size:0.9rem;line-height:1.7;color:rgba(232,244,255,0.8);background:rgba(13,27,62,0.6);border-radius:12px;padding:16px;">${ending}</div>
+      <div style="margin-top:16px;font-family:'Jua';font-size:1.2rem;color:var(--neon-yellow);">${m3Score}점 획득 🌟</div>
+    </div>
+  `;
+  showSticker(endingBadge, '미션 3 완료! ' + m3Score + '점', 1800);
+  setTimeout(() => goHome(), 2200);
+}
+
+// ========================================
+// ===== 미션 4: 미래 기후 진로 탐색 =====
+// ========================================
+const careers = [
+  { emoji: '🛰️', name: '기후 데이터 과학자', desc: 'AI로 기후 빅데이터 분석', subjects: ['수학', '정보', '과학'], detail: '위성, 센서, 기상 관측 데이터를 AI와 빅데이터 기술로 분석해 기후 변화 패턴을 예측하는 직업이에요. 2030년까지 전 세계 수요가 3배 이상 증가 예상! 관련 교과: 수학·정보(코딩)·과학' },
+  { emoji: '☀️', name: '재생에너지 엔지니어', desc: '태양광·풍력 시스템 설계', subjects: ['물리', '기술', '수학'], detail: '태양광, 풍력, 수력 등 재생에너지 발전 시스템을 설계하고 유지하는 엔지니어예요. 국내 탄소중립 정책으로 일자리가 매년 15% 이상 증가하고 있어요! 관련 교과: 물리·수학·기술가정' },
+  { emoji: '🌊', name: '해양 기후 연구원', desc: '바다와 기후 상호작용 연구', subjects: ['과학', '사회', '영어'], detail: '해양이 기후에 미치는 영향, 해수면 상승, 산호초 보호 등을 연구하는 과학자예요. 해외 연구기관과 협력이 많아 영어 실력도 중요해요! 관련 교과: 과학·지구과학·영어' },
+  { emoji: '🏙️', name: '탄소중립 도시 설계사', desc: '친환경 스마트시티 계획', subjects: ['사회', '기술', '미술'], detail: '탄소 배출을 최소화하는 스마트시티와 친환경 건축물을 설계하는 전문가예요. 한국의 스마트시티 정책으로 국내 수요가 크게 늘고 있어요! 관련 교과: 사회·미술·기술가정' },
+  { emoji: '🌾', name: '기후 스마트 농업 전문가', desc: '기후 변화 적응 농법 개발', subjects: ['과학', '사회', '생물'], detail: '기후 변화에 적응하는 농업 기술(스마트팜, 수직농장 등)을 개발하고 보급하는 전문가예요. 식량 안보가 중요해지면서 전 세계적으로 주목받고 있어요! 관련 교과: 생물·화학·기술가정' },
+  { emoji: '⚖️', name: 'ESG 컨설턴트', desc: '기업 지속가능 경영 조언', subjects: ['사회', '국어', '경제'], detail: '기업이 환경(E)·사회(S)·지배구조(G) 기준을 충족하도록 전략을 조언하는 전문가예요. 2025년부터 대기업 ESG 공시 의무화로 수요가 폭발적으로 증가했어요! 관련 교과: 사회·경제·국어' },
+  { emoji: '🌿', name: '탄소 감축 전문가', desc: '기업/지자체 탄소 줄이기 설계', subjects: ['과학', '경제', '법'], detail: '기업과 지방자치단체의 탄소 배출량을 측정하고 감축 계획을 수립하는 전문가예요. 탄소세·탄소 시장 확대로 2030년 전후 핵심 직업이 될 것으로 예상돼요! 관련 교과: 과학·경제·법' },
+  { emoji: '📡', name: '기후 커뮤니케이터', desc: '기후 과학을 대중에게 전달', subjects: ['국어', '사회', '과학'], detail: '복잡한 기후 과학 정보를 쉽고 설득력 있게 대중에게 전달하는 전문가예요(방송, 유튜브, SNS 등). 기후 리터러시가 중요해지면서 새로운 직업으로 부상하고 있어요! 관련 교과: 국어·사회·과학' },
+];
+
+const careerQuiz = [
+  { q: '"지구 온도 1.5℃ 제한" 국제 협약 달성에 가장 직접 기여하는 직업은?', opts: ['탄소 감축 전문가', '영화 감독', '요리사', '건축가'], ans: 0, exp: '탄소 감축 전문가는 기업과 기관의 탄소 배출을 직접 줄이는 역할로 파리협정 목표 달성에 핵심적이에요!' },
+  { q: '해양 기후 연구원이 하는 일과 가장 관련 없는 교과는?', opts: ['지구과학', '영어', '음악', '과학'], ans: 2, exp: '음악은 해양 기후 연구와 직접 관련이 없어요. 지구과학·과학·영어(국제 협력)가 핵심 교과예요!' },
+  { q: 'AI와 빅데이터를 활용해 기후 패턴을 예측하는 직업은?', opts: ['ESG 컨설턴트', '기후 데이터 과학자', '탄소중립 도시 설계사', '기후 커뮤니케이터'], ans: 1, exp: '기후 데이터 과학자는 AI와 빅데이터 기술을 활용해 기후 변화 패턴을 분석하고 예측해요!' },
+  { q: '기후 관련 직업을 준비하기 위해 중학교에서 가장 중요한 것은?', opts: ['게임 많이 하기', '기후·환경에 관심 갖고 다양한 교과를 융합적으로 공부하기', '친구 사귀지 않기', '잠 많이 자기'], ans: 1, exp: '기후 직업은 과학·사회·국어·수학·정보 등 다양한 교과 역량이 융합돼야 해요! 지금부터 관심을 가지는 것이 중요해요!' },
+];
+
+let m4SelIdx = -1, m4QuizIdx = 0, m4QuizScore = 0, m4CareersShown = 0;
+
+function initM4() {
+  m4SelIdx = -1; m4QuizIdx = 0; m4QuizScore = 0; m4CareersShown = 0;
+  document.getElementById('m4Score').textContent = '0';
+  document.getElementById('m4Quiz').style.display = 'none';
+  const grid = document.getElementById('careerGrid');
+  grid.innerHTML = '';
+  careers.forEach((c, i) => {
+    const el = document.createElement('div');
+    el.className = 'career-card';
+    el.innerHTML = `<span class="career-emoji">${c.emoji}</span><div class="career-name">${c.name}</div><div class="career-desc">${c.desc}</div><div style="display:flex;gap:4px;justify-content:center;flex-wrap:wrap;margin-top:6px;">${c.subjects.map(s=>`<span class="s-tag">${s}</span>`).join('')}</div>`;
+    el.onclick = () => selectCareer(i, el);
+    grid.appendChild(el);
+  });
+  document.getElementById('careerDetail').style.display = 'none';
+}
+
+function selectCareer(idx, el) {
+  document.querySelectorAll('.career-card').forEach(c => c.classList.remove('selected'));
+  el.classList.add('selected');
+  m4SelIdx = idx;
+  const c = careers[idx];
+  const det = document.getElementById('careerDetail');
+  det.style.display = 'block';
+  det.innerHTML = `
+    <div class="career-detail-title">${c.emoji} ${c.name}</div>
+    <div class="career-fact">${c.detail}</div>
+    <div style="font-size:0.8rem;color:rgba(232,244,255,0.5);margin-bottom:6px;">관련 교과:</div>
+    <div class="career-link-tags">${c.subjects.map(s=>`<span class="c-tag">📚 ${s}</span>`).join('')}</div>
+  `;
+  m4CareersShown++;
+  const score = Math.min(m4CareersShown, 4) * 5;
+  document.getElementById('m4Score').textContent = score + m4QuizScore;
+  if (m4CareersShown >= 3 && document.getElementById('m4Quiz').style.display === 'none') {
+    setTimeout(() => {
+      document.getElementById('m4Quiz').style.display = 'block';
+      renderM4Quiz();
+    }, 500);
+  }
+}
+
+function renderM4Quiz() {
+  if (m4QuizIdx >= careerQuiz.length) { finishM4(); return; }
+  const q = careerQuiz[m4QuizIdx];
+  document.getElementById('m4Q').textContent = 'Q' + (m4QuizIdx + 1) + '. ' + q.q;
+  document.getElementById('m4Fb').className = 'fb-box';
+  document.getElementById('m4NextWrap').style.display = 'none';
+  const optsEl = document.getElementById('m4Opts');
+  optsEl.innerHTML = '';
+  q.opts.forEach((opt, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'opt-btn'; btn.textContent = ['①','②','③','④'][i] + ' ' + opt;
+    btn.onclick = () => answerM4(i, q.ans, q.exp, btn);
+    optsEl.appendChild(btn);
+  });
+}
+function answerM4(idx, ans, exp, btn) {
+  document.querySelectorAll('#m4Opts .opt-btn').forEach(b => b.disabled = true);
+  document.querySelectorAll('#m4Opts .opt-btn')[ans].classList.add('correct');
+  const fb = document.getElementById('m4Fb');
+  if (idx === ans) {
+    btn.classList.add('correct');
+    m4QuizScore += 10;
+    const totalScore = Math.min(m4CareersShown, 4) * 5 + m4QuizScore;
+    document.getElementById('m4Score').textContent = totalScore;
+    fb.className = 'fb-box show ok';
+    fb.innerHTML = '✅ 정답! +10점<br><strong>해설:</strong> ' + exp;
+    playSound('correct'); spawnParticles(5);
+  } else {
+    btn.classList.add('wrong');
+    fb.className = 'fb-box show ng';
+    fb.innerHTML = '❌ 틀렸어요! 도전 자체가 대단해요! 💪<br><strong>해설:</strong> ' + exp;
+    playSound('wrong');
+    showSticker('💪', '틀려도 괜찮아요! 대단해요!', 900);
+  }
+  document.getElementById('m4NextWrap').style.display = 'block';
+}
+function nextM4() { m4QuizIdx++; renderM4Quiz(); }
+function finishM4() {
+  const totalScore = Math.min(m4CareersShown, 4) * 5 + m4QuizScore;
+  G.scores[3] = totalScore; G.stars[3] = calcStars(totalScore, 60);
+  G.done[3] = true; updateStars(4, G.stars[3]);
+  playSound('best'); spawnParticles(20);
+  showSticker('🔭', '미션 4 완료! 진로 탐색 완성!', 1800);
+  setTimeout(() => showResult(), 2000);
+}
+
+// ========================================
+// ===== 결과 ===== 
+// ========================================
+function showResult() {
+  const total = G.scores.reduce((a, b) => a + b, 0);
+  const totalStars = G.stars.reduce((a, b) => a + b, 0);
+
+  let badge = '🌱', title = '기후 새내기';
+  if (totalStars >= 11) { badge = '🏆'; title = '지구 기후 구조대장'; }
+  else if (totalStars >= 8) { badge = '🌟'; title = '기후 영웅'; }
+  else if (totalStars >= 5) { badge = '🌍'; title = '기후 탐정'; }
+  else if (totalStars >= 3) { badge = '🌿'; title = '기후 견습생'; }
+
+  document.getElementById('resBadge').textContent = badge;
+  document.getElementById('resTitle').textContent = '지구 기후 구조대 수료!';
+  document.getElementById('resRank').textContent = '칭호: ' + title;
+
+  const mNames = ['🧠 기후 퀴즈', '📖 텍스트 읽기', '🌐 시나리오', '🔭 진로 탐색'];
+  const grid = document.getElementById('scoreGrid');
+  grid.innerHTML = '';
+  G.scores.forEach((sc, i) => {
+    const div = document.createElement('div');
+    div.className = 'score-item';
+    div.innerHTML = `<div class="score-item-icon">${['🧠','📖','🌐','🔭'][i]}</div><div class="score-item-name">${['기후 퀴즈','텍스트 읽기','시나리오','진로 탐색'][i]}</div><div class="score-item-pts">${sc}점</div><div class="score-item-stars">${'★'.repeat(G.stars[i])}${'☆'.repeat(3-G.stars[i])}</div>`;
+    grid.appendChild(div);
+  });
+
+  document.getElementById('totalNum').textContent = total;
+
+  const msgs = [
+    '처음이지만 도전한 것 자체가 대단해요! 기후 위기 해결사의 첫 발을 내디뎠어요. 다시 도전해봐요! 💪',
+    '좋아요! 기후에 대한 이해가 쑥쑥 늘고 있어요. 지속적인 관심이 미래를 바꿔요! 🌿',
+    '훌륭해요! 기후 지식과 진로 탐색을 잘 수행했어요. 기후 히어로 자질 충분! 🌍',
+    '대단해요! 기후 위기 해결에 필요한 지식과 태도를 모두 갖추었어요. 진정한 구조대원! 🏆',
+    '완벽해요! 지구 기후 구조대장 등극! 미래 기후 전문가로 성장할 잠재력이 가득해요! ⭐'
+  ];
+  const msgIdx = Math.min(Math.floor(totalStars / 3), 4);
+  document.getElementById('resMsg').innerHTML = '<strong style="color:var(--neon-green)">💬 클라이마의 평가:</strong><br>' + msgs[msgIdx];
+
+  // LocalStorage 점수 저장
+  try {
+    const existing = JSON.parse(localStorage.getItem('milab_climate_scores') || '[]');
+    existing.push({ score: total, stars: totalStars, date: new Date().toLocaleDateString('ko-KR'), title });
+    existing.sort((a, b) => b.score - a.score);
+    localStorage.setItem('milab_climate_scores', JSON.stringify(existing.slice(0, 10)));
+  } catch(e) {}
+
+  showScreen('screen-result');
+  spawnParticles(20);
+}
+
+function resetGame() {
+  G.scores = [0,0,0,0]; G.stars = [0,0,0,0]; G.done = [false,false,false,false];
+  ['mc2','mc3','mc4'].forEach(id => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.className = 'mission-card locked';
+    el.onclick = null;
+    const s = el.querySelector('.mission-stars'); if (s) s.remove();
+    if (!el.querySelector('.lock-badge')) {
+      const lb = document.createElement('div'); lb.className = 'lock-badge'; lb.textContent = '🔒';
+      el.appendChild(lb);
+    }
+  });
+  document.getElementById('mc1').className = 'mission-card';
+  document.getElementById('mc1').onclick = () => startMission(1);
+  document.getElementById('ms1').textContent = '☆☆☆';
+  goHome();
+}
+
+// ===== 초기화 =====
+initBg();
+
+// ============================================================
+// ===== 순수 JS QR코드 생성기 (외부 라이브러리 없음) =====
+// ============================================================
+// QR 버전 3 (29×29), 에러 보정 M 수준으로 짧은 URL 인코딩
+// 단순화된 구현 — URL을 Data Matrix 스타일로 Canvas에 직접 렌더링
+(function() {
+  const URL_TEXT = 'https://milab2019.github.io/main/climate_career_ms.html';
+
+  // --- Reed-Solomon & QR 핵심 로직 (최소 구현) ---
+  function drawQR(canvasId, text, size, darkColor, lightColor) {
+    const canvas = document.getElementById(canvasId);
+    if (!canvas) return;
+    canvas.width = size; canvas.height = size;
+    const ctx = canvas.getContext('2d');
+
+    // QR 데이터 매트릭스: qrcodegen 알고리즘 간소화 버전
+    // 외부 의존 없이 동작하는 QR 세그먼트 생성
+    try {
+      const qr = makeQR(text);
+      renderQR(ctx, qr, size, darkColor, lightColor);
+    } catch(e) {
+      // 폴백: URL 텍스트를 단순 표시
+      ctx.fillStyle = lightColor;
+      ctx.fillRect(0, 0, size, size);
+      ctx.fillStyle = darkColor;
+      ctx.font = `${size/14}px monospace`;
+      ctx.textAlign = 'center';
+      ctx.fillText('QR ERROR', size/2, size/2);
+    }
+  }
+
+  // ---- 최소 QR 생성 엔진 ----
+  // GF(256) 덧셈 = XOR
+  const GF_EXP = new Uint8Array(512);
+  const GF_LOG = new Uint8Array(256);
+  (function initGF() {
+    let x = 1;
+    for (let i = 0; i < 255; i++) {
+      GF_EXP[i] = x; GF_LOG[x] = i;
+      x <<= 1; if (x & 0x100) x ^= 0x11d;
+    }
+    for (let i = 255; i < 512; i++) GF_EXP[i] = GF_EXP[i - 255];
+  })();
+  function gfMul(a, b) { return (a && b) ? GF_EXP[GF_LOG[a] + GF_LOG[b]] : 0; }
+  function gfPoly(e) {
+    let p = [1];
+    for (let i = 0; i < e; i++) {
+      const q = [1, GF_EXP[i]];
+      const r = new Uint8Array(p.length + 1);
+      for (let j = 0; j < p.length; j++) { r[j] ^= gfMul(p[j], q[0]); r[j+1] ^= gfMul(p[j], q[1]); }
+      p = Array.from(r);
+    }
+    return p;
+  }
+  function rsEncode(data, nec) {
+    const gen = gfPoly(nec);
+    const res = new Uint8Array(nec);
+    for (const b of data) {
+      const c = b ^ res[0];
+      for (let i = 0; i < nec - 1; i++) res[i] = res[i+1] ^ gfMul(c, gen[gen.length-1-(i+1)]);
+      res[nec-1] = gfMul(c, gen[gen.length-1-nec+1] || gen[0]);
+    }
+    return res;
+  }
+
+  // 버전 자동 선택 (1~10)
+  const VERSION_CAP = [
+    [41,25,17,10],[77,47,32,20],[127,77,53,32],[187,114,78,48],
+    [255,154,106,65],[322,195,134,82],[370,224,154,95],[461,279,192,118],
+    [552,335,230,141],[652,395,271,167]
+  ];
+  function chooseVersion(len) {
+    for (let v = 0; v < 10; v++) if (VERSION_CAP[v][1] >= len) return v + 1;
+    return 10;
+  }
+
+  function makeQR(text) {
+    const bytes = new TextEncoder().encode(text);
+    const v = chooseVersion(bytes.length);
+    const size = v * 4 + 17;
+    const module = Array.from({length: size}, () => new Uint8Array(size)); // 0=light,1=dark
+    const isFunc = Array.from({length: size}, () => new Uint8Array(size));
+
+    // 패인더 패턴
+    function addFinder(r, c) {
+      for (let dr = -1; dr <= 7; dr++) for (let dc = -1; dc <= 7; dc++) {
+        const row = r + dr, col = c + dc;
+        if (row < 0 || row >= size || col < 0 || col >= size) continue;
+        const dark = (dr >= 0 && dr <= 6 && (dc === 0 || dc === 6)) ||
+                     (dc >= 0 && dc <= 6 && (dr === 0 || dr === 6)) ||
+                     (dr >= 2 && dr <= 4 && dc >= 2 && dc <= 4);
+        module[row][col] = dark ? 1 : 0; isFunc[row][col] = 1;
+      }
+    }
+    addFinder(0, 0); addFinder(0, size - 7); addFinder(size - 7, 0);
+
+    // 타이밍 패턴
+    for (let i = 6; i < size - 6; i++) {
+      module[6][i] = module[i][6] = (i % 2 === 0) ? 1 : 0;
+      isFunc[6][i] = isFunc[i][6] = 1;
+    }
+
+    // 다크 모듈
+    module[4*v+9][8] = 1; isFunc[4*v+9][8] = 1;
+
+    // 얼라인먼트 패턴 (v>=2)
+    const ALIGN = [[],[],[6,18],[6,22],[6,26],[6,30],[6,34],[6,22,38],[6,24,42],[6,28,46]];
+    if (v >= 2) {
+      const pos = ALIGN[v-1];
+      for (const r of pos) for (const c of pos) {
+        if (isFunc[r][c]) continue;
+        for (let dr = -2; dr <= 2; dr++) for (let dc = -2; dc <= 2; dc++) {
+          module[r+dr][c+dc] = (Math.abs(dr)===2||Math.abs(dc)===2||(!dr&&!dc)) ? 1 : 0;
+          isFunc[r+dr][c+dc] = 1;
+        }
+      }
+    }
+
+    // 포맷 정보 (마스크 패턴 0, ECC M)
+    const FORMAT = [0x5412,0x5125,0x5e7c,0x5b4b,0x45f9,0x40ce,0x4f97,0x4aa0];
+    const fmt = FORMAT[0]; // mask 0
+    for (let i = 0; i <= 5; i++) { module[8][i] = (fmt>>i)&1; isFunc[8][i]=1; }
+    module[8][7] = (fmt>>6)&1; isFunc[8][7]=1;
+    module[8][8] = (fmt>>7)&1; isFunc[8][8]=1;
+    module[7][8] = (fmt>>8)&1; isFunc[7][8]=1;
+    for (let i = 9; i <= 14; i++) { module[14-i][8] = (fmt>>i)&1; isFunc[14-i][8]=1; }
+    for (let i = 0; i <= 7; i++) { module[size-1-i][8] = (fmt>>i)&1; isFunc[size-1-i][8]=1; }
+    for (let i = 8; i <= 14; i++) { module[8][size-15+i] = (fmt>>i)&1; isFunc[8][size-15+i]=1; }
+
+    // 데이터 인코딩 (바이트 모드)
+    const EC_CODEWORDS = [0,7,10,15,20,26,18,20,24,30,18];
+    const nec = EC_CODEWORDS[v] || 10;
+    const totalBytes = Math.floor((size * size - isFunc.flat().filter(Boolean).length) / 8);
+    const dataLen = Math.min(bytes.length, totalBytes - nec - 3);
+
+    // 비트스트림 구성
+    const bits = [];
+    const push = (val, len) => { for (let i = len-1; i >= 0; i--) bits.push((val>>i)&1); };
+    push(0b0100, 4);           // 바이트 모드
+    push(dataLen, 8);          // 문자 수
+    for (let i = 0; i < dataLen; i++) push(bytes[i], 8);
+    push(0, Math.min(4, totalBytes*8 - bits.length));
+    while (bits.length % 8) bits.push(0);
+    const dataBytes = [];
+    for (let i = 0; i < bits.length; i += 8) {
+      dataBytes.push(bits.slice(i,i+8).reduce((a,b,j)=>a|(b<<(7-j)),0));
+    }
+    while (dataBytes.length < totalBytes - nec) {
+      dataBytes.push(dataBytes.length % 2 === 0 ? 0xec : 0x11);
+    }
+    const ecBytes = Array.from(rsEncode(dataBytes, nec));
+    const allBytes = [...dataBytes, ...ecBytes];
+
+    // 모듈 배치 (지그재그)
+    let bi = 0;
+    for (let right = size-1; right >= 1; right -= 2) {
+      if (right === 6) right--;
+      for (let vert = 0; vert < size; vert++) {
+        for (let j = 0; j < 2; j++) {
+          const upward = ((size - right - 1) / 2 & 1) === 0;
+          const row = upward ? size - 1 - vert : vert;
+          const col = right - j;
+          if (isFunc[row][col]) continue;
+          const bit = bi < allBytes.length * 8 ? (allBytes[bi>>3] >> (7-(bi&7))) & 1 : 0;
+          bi++;
+          // 마스크 0: (row+col) % 2 === 0
+          module[row][col] = (row + col) % 2 === 0 ? bit ^ 1 : bit;
+        }
+      }
+    }
+
+    return { module, size };
+  }
+
+  function renderQR(ctx, qr, canvasSize, darkColor, lightColor) {
+    const { module, size } = qr;
+    const cell = canvasSize / size;
+    ctx.fillStyle = lightColor;
+    ctx.fillRect(0, 0, canvasSize, canvasSize);
+    ctx.fillStyle = darkColor;
+    for (let r = 0; r < size; r++) {
+      for (let c = 0; c < size; c++) {
+        if (module[r][c]) {
+          ctx.fillRect(Math.floor(c * cell), Math.floor(r * cell),
+                       Math.ceil(cell), Math.ceil(cell));
+        }
+      }
+    }
+  }
+
+  // 페이지 로드 후 두 캔버스 모두 렌더링
+  function renderAll() {
+    drawQR('introQrCode',  URL_TEXT, 150, '#0a3a5a', '#ffffff');
+    drawQR('qrCode',       URL_TEXT, 130, '#0a3a5a', '#ffffff');
+  }
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', renderAll);
+  } else {
+    renderAll();
+  }
+})();
+</script>
+</body>
+</html>
