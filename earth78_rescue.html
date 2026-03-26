@@ -1,0 +1,1306 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>🌍 지구 구조대 - 미랩 교육 게임</title>
+<!-- QR Code 라이브러리 -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Jua&family=Nanum+Pen+Script&display=swap');
+
+:root {
+  --sky1:#1a6fb5; --sky2:#2d9fd8; --sky3:#87d0f5;
+  --earth1:#3d8c40; --earth2:#5aae5e; --earth3:#8fd17a;
+  --sun:#FFD600; --moon:#ffe082;
+  --red:#f44336; --orange:#FF9800; --pink:#f8bbd0;
+  --white:#fffde7; --card:#ffffffee;
+  --shadow:0 8px 32px rgba(0,0,0,0.18);
+  --radius:24px;
+  --big:2rem; --mid:1.5rem; --sm:1rem;
+  --touch:90px;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+html,body{width:100%;height:100%;overflow:hidden;}
+body{
+  font-family:'Jua',sans-serif;
+  background:linear-gradient(180deg,var(--sky1) 0%,var(--sky2) 55%,var(--earth1) 100%);
+  min-height:100vh; position:relative; overflow:hidden;
+  touch-action:manipulation;
+}
+
+/* ── 배경 ── */
+#bgLayer{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden;}
+.cloud{position:absolute;background:rgba(255,255,255,0.85);border-radius:50px;animation:cloudMove linear infinite;}
+@keyframes cloudMove{from{transform:translateX(-200px);}to{transform:translateX(110vw);}}
+.star-bg{position:absolute;width:6px;height:6px;background:#fff;border-radius:50%;opacity:0;animation:twinkle 3s ease-in-out infinite;}
+@keyframes twinkle{0%,100%{opacity:0;}50%{opacity:.7;}}
+
+/* ── 앱 래퍼 ── */
+#app{
+  position:relative;z-index:10;
+  max-width:600px;margin:0 auto;
+  height:100vh;overflow-y:auto;overflow-x:hidden;
+  padding:12px 12px 24px;
+  scrollbar-width:none;
+}
+#app::-webkit-scrollbar{display:none;}
+
+/* ── 화면 전환 ── */
+.screen{display:none;animation:popIn .45s cubic-bezier(.34,1.56,.64,1);}
+.screen.active{display:flex;flex-direction:column;align-items:center;}
+@keyframes popIn{from{opacity:0;transform:scale(.88);}to{opacity:1;transform:scale(1);}}
+
+/* ── 인트로 ── */
+#screen-intro{text-align:center;padding-top:8px;gap:10px;}
+.earth-hero{
+  font-size:5.5rem;
+  animation:earthSpin 6s linear infinite;
+  filter:drop-shadow(0 0 18px rgba(255,214,0,.5));
+  display:block;margin:4px auto;
+}
+@keyframes earthSpin{0%{transform:rotateY(0);}50%{transform:rotateY(180deg);}100%{transform:rotateY(360deg);}}
+.title-badge{
+  background:linear-gradient(135deg,var(--sun),#ffb300);
+  color:#1a3a00;font-size:2.2rem;
+  padding:10px 28px;border-radius:50px;
+  box-shadow:0 4px 20px rgba(255,214,0,.5);
+  display:inline-block;margin:4px 0;
+  animation:titlePulse 2.5s ease-in-out infinite;
+}
+@keyframes titlePulse{0%,100%{box-shadow:0 4px 20px rgba(255,214,0,.5);}50%{box-shadow:0 4px 40px rgba(255,214,0,.9);}}
+.intro-sub{color:var(--white);font-size:1rem;margin:2px 0;text-shadow:0 1px 4px rgba(0,0,0,.4);}
+.story-box{
+  background:rgba(255,255,255,.12);border:3px solid rgba(255,255,255,.4);
+  border-radius:20px;padding:16px;margin:8px 0;
+  color:var(--white);font-size:1.1rem;line-height:1.9;
+  width:100%;text-align:left;backdrop-filter:blur(6px);
+}
+.story-box b{color:var(--sun);}
+
+/* ── 미션 그리드 ── */
+.mission-grid{
+  display:grid;grid-template-columns:1fr 1fr;
+  gap:12px;width:100%;margin:6px 0;
+}
+.mission-card{
+  background:var(--card);border-radius:var(--radius);
+  padding:18px 10px;text-align:center;
+  border:3px solid transparent;
+  box-shadow:var(--shadow);cursor:pointer;
+  transition:all .2s;
+  min-height:var(--touch);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;
+}
+.mission-card:not(.locked):hover,.mission-card:not(.locked):active{
+  transform:scale(1.05);border-color:var(--sun);
+  box-shadow:0 0 24px rgba(255,214,0,.5);
+}
+.mission-card.locked{opacity:.42;cursor:default;}
+.mission-card.done{border-color:var(--sun);background:linear-gradient(135deg,#fffde7,#fff9c4);}
+.m-icon{font-size:2.4rem;}
+.m-name{font-size:1.05rem;color:#2d5a3d;}
+.m-stars{color:var(--sun);font-size:1.1rem;letter-spacing:2px;}
+.lock-icon{font-size:1.6rem;}
+
+/* ── 공통 헤더 ── */
+.game-hdr{
+  width:100%;display:flex;align-items:center;justify-content:space-between;
+  background:rgba(0,0,0,.35);border:2px solid rgba(255,255,255,.35);
+  border-radius:16px;padding:10px 14px;margin-bottom:10px;color:#fff;
+  backdrop-filter:blur(8px);
+}
+.hdr-title{font-size:1.05rem;color:var(--sun);}
+.hdr-score{
+  background:var(--sun);color:#1a3a00;
+  padding:5px 14px;border-radius:20px;font-size:.95rem;font-weight:900;
+}
+
+/* ── 캐릭터 말풍선 ── */
+.char-row{display:flex;align-items:flex-end;gap:10px;width:100%;margin-bottom:10px;}
+.mascot{
+  font-size:3rem;flex-shrink:0;
+  animation:mascotBob 2s ease-in-out infinite;
+  filter:drop-shadow(0 4px 8px rgba(0,0,0,.2));
+}
+@keyframes mascotBob{0%,100%{transform:translateY(0);}50%{transform:translateY(-8px);}}
+.mascot.happy{animation:mascotHappy .4s ease-in-out 3;}
+@keyframes mascotHappy{0%,100%{transform:scale(1)rotate(0);}50%{transform:scale(1.2)rotate(10deg);}}
+.mascot.sad{animation:mascotSad .3s ease-in-out 3;}
+@keyframes mascotSad{0%,100%{transform:translateX(0);}33%{transform:translateX(-8px);}66%{transform:translateX(8px);}}
+.bubble{
+  background:#fff;border-radius:16px 16px 16px 4px;
+  padding:12px 16px;font-size:1.05rem;color:#2d3a00;
+  line-height:1.7;flex:1;box-shadow:0 4px 12px rgba(0,0,0,.12);
+  border:2px solid #e8f5e9;
+}
+.bubble-name{font-size:.72rem;color:#4a8c5c;font-weight:900;margin-bottom:4px;}
+
+/* ── 카드 공통 ── */
+.card{
+  background:var(--card);border-radius:var(--radius);
+  padding:20px;box-shadow:var(--shadow);
+  border:2px solid rgba(255,255,255,.7);width:100%;
+  margin-bottom:10px;
+}
+
+/* ── 버튼 ── */
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;
+  gap:8px;padding:14px 28px;border:none;border-radius:50px;
+  cursor:pointer;font-family:'Jua',sans-serif;font-size:1.15rem;
+  transition:all .2s;min-height:var(--touch);
+}
+.btn-primary{
+  background:linear-gradient(135deg,#43a047,#66bb6a);
+  color:#fff;box-shadow:0 4px 16px rgba(67,160,71,.45);
+}
+.btn-primary:hover,.btn-primary:active{transform:scale(1.04);box-shadow:0 6px 24px rgba(67,160,71,.6);}
+.btn-yellow{
+  background:linear-gradient(135deg,var(--sun),#ffb300);
+  color:#1a3a00;box-shadow:0 4px 16px rgba(255,214,0,.5);
+}
+.btn-yellow:hover,.btn-yellow:active{transform:scale(1.04);}
+.btn-ghost{
+  background:rgba(255,255,255,.18);color:#fff;
+  border:2px solid rgba(255,255,255,.4);
+}
+.btn-block{width:100%;}
+.btn-sm{min-height:54px;padding:10px 20px;font-size:1rem;}
+
+/* ── 진행바 ── */
+.prog-wrap{width:100%;margin-bottom:10px;}
+.prog-label{display:flex;justify-content:space-between;color:rgba(255,255,255,.85);font-size:.82rem;margin-bottom:4px;}
+.prog-bar{height:12px;background:rgba(255,255,255,.2);border-radius:10px;overflow:hidden;}
+.prog-fill{height:100%;background:linear-gradient(90deg,var(--earth2),var(--sun));border-radius:10px;transition:width .6s ease;}
+
+/* ── 미션1: 그림 매칭 ── */
+.match-grid{
+  display:grid;grid-template-columns:repeat(2,1fr);gap:14px;width:100%;
+}
+.match-card{
+  aspect-ratio:1;border-radius:20px;border:4px solid #e0e0e0;
+  background:#f9fbe7;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;
+  cursor:pointer;transition:all .25s;
+  font-size:3.2rem;gap:6px;
+  box-shadow:0 4px 12px rgba(0,0,0,.1);
+  min-height:var(--touch);
+}
+.match-card:hover:not(.done-card):not(.disabled-card){
+  transform:scale(1.06);border-color:var(--sun);
+  box-shadow:0 0 20px rgba(255,214,0,.5);
+}
+.match-card.selected{border-color:#2196F3;background:#e3f2fd;transform:scale(1.06);}
+.match-card.matched{border-color:#4caf50;background:#e8f5e9;cursor:default;animation:matchAnim .4s ease;}
+.match-card.wrong{border-color:var(--red);background:#ffebee;animation:wrongAnim .35s ease;}
+.match-card .card-word{font-size:.85rem;color:#555;font-family:'Jua',sans-serif;}
+@keyframes matchAnim{0%{transform:scale(1);}50%{transform:scale(1.15);}100%{transform:scale(1);}}
+@keyframes wrongAnim{0%,100%{transform:translateX(0);}25%{transform:translateX(-8px);}75%{transform:translateX(8px);}}
+
+/* ── 미션2: 퀴즈 ── */
+.quiz-opt{
+  width:100%;padding:18px;border-radius:16px;
+  border:3px solid #c8e6c9;background:#fff;
+  font-family:'Jua',sans-serif;font-size:1.15rem;
+  color:#2d4a00;cursor:pointer;transition:all .2s;
+  text-align:left;display:flex;align-items:center;gap:12px;
+  min-height:var(--touch);margin-bottom:10px;
+  box-shadow:0 2px 8px rgba(0,0,0,.07);
+}
+.quiz-opt:hover:not(:disabled){border-color:var(--sun);background:#fffde7;transform:translateX(5px);}
+.quiz-opt.correct{border-color:#4caf50;background:#e8f5e9;color:#1b5e20;}
+.quiz-opt.wrong{border-color:var(--red);background:#ffebee;color:#b71c1c;}
+.quiz-opt .opt-icon{font-size:1.6rem;flex-shrink:0;}
+.diff-tabs{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;}
+.diff-tab{
+  padding:10px 18px;border-radius:50px;border:2px solid;
+  font-family:'Jua',sans-serif;font-size:.9rem;cursor:pointer;
+  transition:all .2s;min-height:48px;
+}
+.diff-tab.easy{border-color:#4caf50;color:#4caf50;background:#fff;}
+.diff-tab.easy.active{background:#4caf50;color:#fff;}
+.diff-tab.medium{border-color:#ff9800;color:#ff9800;background:#fff;}
+.diff-tab.medium.active{background:#ff9800;color:#fff;}
+.diff-tab.hard{border-color:#f44336;color:#f44336;background:#fff;}
+.diff-tab.hard.active{background:#f44336;color:#fff;}
+.feedback{
+  border-radius:16px;padding:14px 16px;font-size:1rem;
+  line-height:1.7;display:none;margin-top:10px;
+}
+.feedback.show{display:block;animation:popIn .3s ease;}
+.feedback.ok{background:#e8f5e9;border:2px solid #4caf50;color:#1b5e20;}
+.feedback.ng{background:#ffebee;border:2px solid #ef9a9a;color:#b71c1c;}
+
+/* ── 미션3: 드래그 순서 ── */
+.sort-list{display:flex;flex-direction:column;gap:10px;width:100%;}
+.sort-item{
+  display:flex;align-items:center;gap:12px;
+  padding:14px 16px;border-radius:16px;
+  background:#fff;border:3px solid #c8e6c9;
+  cursor:grab;user-select:none;transition:all .2s;
+  min-height:var(--touch);
+  box-shadow:0 2px 8px rgba(0,0,0,.08);
+}
+.sort-item:active{cursor:grabbing;opacity:.75;transform:scale(1.03);}
+.sort-item.dragging{opacity:.4;border-style:dashed;}
+.sort-item.drag-over{border-color:var(--sun);background:#fffde7;transform:scale(1.02);}
+.sort-item.ok-item{border-color:#4caf50;background:#e8f5e9;}
+.sort-item.ng-item{border-color:#f44336;background:#ffebee;}
+.sort-num{
+  width:38px;height:38px;border-radius:50%;
+  background:linear-gradient(135deg,var(--earth1),var(--earth2));
+  color:#fff;display:flex;align-items:center;justify-content:center;
+  font-size:1rem;font-weight:900;flex-shrink:0;
+}
+.sort-icon{font-size:1.8rem;flex-shrink:0;}
+.sort-text{font-size:.95rem;color:#2d4a00;flex:1;}
+
+/* ── 미션4: 데이터 ── */
+.chart-wrap{
+  background:#fff;border-radius:16px;padding:16px;
+  border:2px solid #c8e6c9;margin-bottom:14px;overflow:hidden;
+}
+.chart-title{font-size:1rem;color:#1b5e20;text-align:center;margin-bottom:12px;}
+.bar-row{display:flex;align-items:flex-end;gap:10px;height:110px;padding:0 4px;}
+.bar-col{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;}
+.bar-fill-el{width:100%;border-radius:8px 8px 0 0;transition:height .9s ease;min-width:28px;}
+.bar-lbl{font-size:.72rem;font-weight:900;color:#555;text-align:center;line-height:1.2;}
+.bar-val{font-size:.7rem;color:#222;font-weight:900;}
+.data-q-box{background:#f1f8e9;border-radius:14px;padding:14px;border:2px solid #c8e6c9;margin-bottom:12px;}
+.data-q-text{font-size:.95rem;color:#2d4a00;margin-bottom:10px;font-weight:900;}
+.data-opts{display:flex;gap:8px;flex-wrap:wrap;}
+.data-opt-btn{
+  padding:10px 18px;border-radius:50px;
+  border:2px solid #a5d6a7;background:#fff;
+  font-family:'Jua',sans-serif;font-size:.95rem;
+  color:#2d4a00;cursor:pointer;transition:all .2s;
+  min-height:52px;
+}
+.data-opt-btn:hover:not(:disabled){border-color:var(--sun);background:#fffde7;}
+.data-opt-btn.correct{background:#e8f5e9;border-color:#4caf50;color:#1b5e20;}
+.data-opt-btn.wrong{background:#ffebee;border-color:#ef9a9a;color:#b71c1c;}
+
+/* ── 스티커/뱃지 팝업 ── */
+.sticker-pop{
+  position:fixed;inset:0;z-index:900;
+  display:none;flex-direction:column;
+  align-items:center;justify-content:center;
+  background:rgba(0,0,0,.5);backdrop-filter:blur(4px);
+}
+.sticker-pop.show{display:flex;animation:popIn .4s ease;}
+.sticker-box{
+  background:linear-gradient(135deg,#fffde7,#fff9c4);
+  border:5px solid var(--sun);border-radius:32px;
+  padding:32px 28px;text-align:center;
+  box-shadow:0 0 60px rgba(255,214,0,.5);
+  max-width:320px;width:90%;
+}
+.sticker-icon{font-size:5rem;animation:badgePop .5s cubic-bezier(.175,.885,.32,1.275);}
+@keyframes badgePop{from{transform:scale(0)rotate(-20deg);}to{transform:scale(1)rotate(0);}}
+.sticker-title{font-size:1.8rem;color:#1b5e20;margin:10px 0 6px;}
+.sticker-sub{font-size:1rem;color:#555;margin-bottom:18px;}
+
+/* ── 결과 화면 ── */
+#screen-result{gap:12px;padding-bottom:30px;}
+.result-badge{
+  background:linear-gradient(135deg,#1b5e20,#388e3c);
+  border:4px solid var(--sun);border-radius:28px;
+  padding:28px;text-align:center;width:100%;
+  box-shadow:0 0 50px rgba(255,214,0,.35);
+}
+.rb-emoji{font-size:5rem;animation:badgePop .5s cubic-bezier(.175,.885,.32,1.275);}
+.rb-title{font-size:1.9rem;color:var(--sun);margin:10px 0 6px;}
+.rb-sub{color:rgba(255,255,255,.8);font-size:1rem;}
+.score-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;width:100%;}
+.score-item{
+  background:rgba(255,255,255,.12);border:2px solid rgba(255,255,255,.3);
+  border-radius:18px;padding:14px;text-align:center;color:#fff;
+}
+.si-icon{font-size:1.8rem;}
+.si-name{font-size:.78rem;color:var(--sun);margin:4px 0;}
+.si-score{font-size:1.2rem;font-weight:900;}
+.si-stars{color:var(--sun);font-size:1rem;}
+.total-box{
+  background:var(--sun);border-radius:20px;padding:16px;
+  text-align:center;width:100%;
+}
+.t-label{font-size:1.1rem;color:#1b5e20;}
+.t-num{font-size:3.5rem;color:#1b5e20;line-height:1;font-weight:900;}
+.end-msg{
+  background:rgba(255,255,255,.15);border:2px solid rgba(255,255,255,.3);
+  border-radius:16px;padding:16px;width:100%;
+  color:#fff;font-size:.95rem;line-height:1.8;
+}
+
+/* ── QR ── */
+.qr-section{
+  background:#fff;border-radius:20px;padding:18px;
+  text-align:center;width:100%;
+  box-shadow:var(--shadow);
+}
+.qr-title{font-size:1rem;color:#1b5e20;margin-bottom:10px;}
+#qrcode{display:inline-block;}
+#qrcode canvas,#qrcode img{border-radius:8px;}
+
+/* ── 파티클 ── */
+.particle{
+  position:fixed;pointer-events:none;z-index:800;
+  font-size:1.4rem;animation:ptAnim 1.2s ease-out forwards;
+}
+@keyframes ptAnim{
+  0%{opacity:1;transform:translate(0,0)scale(1);}
+  100%{opacity:0;transform:translate(var(--px),var(--py))scale(.3);}
+}
+
+/* ── 음악 ── */
+.music-btn{
+  position:fixed;top:14px;right:14px;z-index:200;
+  background:rgba(0,0,0,.4);border:2px solid rgba(255,255,255,.5);
+  color:#fff;padding:8px 14px;border-radius:20px;
+  font-family:'Jua',sans-serif;font-size:.85rem;cursor:pointer;
+  backdrop-filter:blur(6px);
+}
+
+/* ── 반응형 ── */
+@media(max-width:400px){
+  .match-grid{gap:8px;}
+  .match-card{font-size:2.5rem;}
+  .title-badge{font-size:1.7rem;padding:8px 18px;}
+}
+</style>
+</head>
+<body>
+
+<!-- 배경 -->
+<div id="bgLayer"></div>
+<!-- 음악 -->
+<button class="music-btn" id="musicBtn" onclick="toggleMusic()">🎵 음악</button>
+<!-- 스티커 팝업 -->
+<div class="sticker-pop" id="stickerPop">
+  <div class="sticker-box">
+    <div class="sticker-icon" id="stickerIcon">🌟</div>
+    <div class="sticker-title" id="stickerTitle">훌륭해요!</div>
+    <div class="sticker-sub" id="stickerSub">정말 잘 했어요!</div>
+    <button class="btn btn-yellow btn-sm" style="margin-top:6px;" onclick="closeStickerPop()">계속하기 →</button>
+  </div>
+</div>
+
+<div id="app">
+
+<!-- ======== 인트로 ======== -->
+<div id="screen-intro" class="screen active">
+  <span class="earth-hero">🌍</span>
+  <div class="title-badge">지구 구조대</div>
+  <div class="intro-sub">🌱 지구의 날 × 과학의 날 특별 교육 게임</div>
+  <div class="intro-sub" style="font-size:.82rem;color:rgba(255,255,255,.65);">미랩(MILAB) 충주 진로체험 교육</div>
+
+  <div class="story-box">
+    <b>🌏 도움이 필요해요!</b><br>
+    지구별에 쓰레기가 너무 많아졌어요.<br>
+    강이 더러워지고 꽃이 시들고 있어요.<br>
+    <b style="color:var(--sun);">지구 구조대</b>가 되어서 지구를 구해주세요!<br>
+    4가지 미션을 모두 완성하면<br>
+    🏅 지구 구조대 배지를 받을 수 있어요!
+  </div>
+
+  <div style="color:#fff;font-size:1.1rem;margin:4px 0 8px;width:100%;text-align:left;">📋 미션 목록</div>
+  <div class="mission-grid" id="missionGrid">
+    <div class="mission-card" id="mc1" onclick="startMission(1)">
+      <div class="m-icon">🖼️</div>
+      <div class="m-name">미션 1<br>그림 짝 맞추기</div>
+      <div class="m-stars" id="ms1">☆☆☆</div>
+    </div>
+    <div class="mission-card locked" id="mc2">
+      <div class="m-icon">❓</div>
+      <div class="m-name">미션 2<br>퀴즈 도전</div>
+      <div class="lock-icon">🔒</div>
+    </div>
+    <div class="mission-card locked" id="mc3">
+      <div class="m-icon">🔢</div>
+      <div class="m-name">미션 3<br>순서 정리</div>
+      <div class="lock-icon">🔒</div>
+    </div>
+    <div class="mission-card locked" id="mc4">
+      <div class="m-icon">📊</div>
+      <div class="m-name">미션 4<br>그래프 읽기</div>
+      <div class="lock-icon">🔒</div>
+    </div>
+  </div>
+</div>
+
+<!-- ======== 미션1: 그림 짝 맞추기 (국어 - 낱말 이해) ======== -->
+<div id="screen-m1" class="screen">
+  <div class="game-hdr" style="width:100%;">
+    <div>
+      <div class="hdr-title">🖼️ 미션 1 — 그림 짝 맞추기</div>
+      <div style="font-size:.72rem;color:rgba(255,255,255,.6)">국어·슬기로운생활 연계</div>
+    </div>
+    <div class="hdr-score">⭐ <span id="m1Sc">0</span></div>
+  </div>
+  <div class="prog-wrap" style="width:100%;">
+    <div class="prog-label"><span>진행</span><span id="m1Prog">0/6</span></div>
+    <div class="prog-bar"><div class="prog-fill" id="m1PBar" style="width:0%"></div></div>
+  </div>
+  <div class="char-row">
+    <div class="mascot" id="m1mascot">🐢</div>
+    <div class="bubble">
+      <div class="bubble-name">지구 친구 거북이</div>
+      <span id="m1Msg">같은 뜻의 그림 카드를 찾아 눌러봐요!</span>
+    </div>
+  </div>
+  <div class="card">
+    <div style="font-family:'Jua';font-size:1.1rem;color:#1b5e20;margin-bottom:14px;text-align:center;" id="m1Q">환경을 지키는 행동은 어느 것일까요?</div>
+    <div class="match-grid" id="matchGrid"></div>
+  </div>
+  <button class="btn btn-ghost btn-sm" onclick="goHome()" style="margin-top:4px;">← 목록</button>
+</div>
+
+<!-- ======== 미션2: 퀴즈 (슬기로운 생활·국어) ======== -->
+<div id="screen-m2" class="screen">
+  <div class="game-hdr" style="width:100%;">
+    <div>
+      <div class="hdr-title">❓ 미션 2 — 퀴즈 도전</div>
+      <div style="font-size:.72rem;color:rgba(255,255,255,.6)">슬기로운생활·국어 연계</div>
+    </div>
+    <div class="hdr-score">⭐ <span id="m2Sc">0</span></div>
+  </div>
+  <div class="prog-wrap" style="width:100%;">
+    <div class="prog-label"><span>진행</span><span id="m2Prog">0/8</span></div>
+    <div class="prog-bar"><div class="prog-fill" id="m2PBar" style="width:0%"></div></div>
+  </div>
+  <div class="char-row">
+    <div class="mascot" id="m2mascot">🦋</div>
+    <div class="bubble">
+      <div class="bubble-name">지구 친구 나비</div>
+      <span id="m2Msg">난이도를 골라서 퀴즈에 도전해봐요!</span>
+    </div>
+  </div>
+  <div class="card">
+    <div class="diff-tabs">
+      <button class="diff-tab easy active" onclick="setDiff('easy')">🌱 쉬움</button>
+      <button class="diff-tab medium" onclick="setDiff('medium')">🌿 보통</button>
+      <button class="diff-tab hard" onclick="setDiff('hard')">🌳 어려움</button>
+    </div>
+    <div style="font-size:.82rem;color:#888;text-align:right;margin-bottom:8px;" id="qCounter">1 / 8</div>
+    <div style="font-family:'Jua';font-size:1.2rem;color:#1b5e20;text-align:center;margin-bottom:18px;line-height:1.6;" id="quizQ">문제 준비 중...</div>
+    <div id="quizOpts"></div>
+    <div class="feedback" id="quizFB"></div>
+    <div id="quizNextWrap" style="text-align:center;margin-top:14px;display:none;">
+      <button class="btn btn-primary btn-sm" onclick="nextQuiz()">다음 문제 →</button>
+    </div>
+  </div>
+  <button class="btn btn-ghost btn-sm" onclick="goHome()">← 목록</button>
+</div>
+
+<!-- ======== 미션3: 순서 정리 (수학·슬기로운생활) ======== -->
+<div id="screen-m3" class="screen">
+  <div class="game-hdr" style="width:100%;">
+    <div>
+      <div class="hdr-title">🔢 미션 3 — 순서 정리</div>
+      <div style="font-size:.72rem;color:rgba(255,255,255,.6)">수학·슬기로운생활 연계</div>
+    </div>
+    <div class="hdr-score">⭐ <span id="m3Sc">0</span></div>
+  </div>
+  <div class="char-row">
+    <div class="mascot" id="m3mascot">🐝</div>
+    <div class="bubble">
+      <div class="bubble-name">지구 친구 꿀벌</div>
+      <span id="m3Msg">카드를 끌어다 놓아서 순서를 맞춰봐요!</span>
+    </div>
+  </div>
+  <div class="card">
+    <div style="font-family:'Jua';font-size:1.05rem;color:#1b5e20;margin-bottom:6px;" id="m3Title">🌱 나무 심기 순서</div>
+    <div style="font-size:.78rem;color:#888;margin-bottom:12px;">드래그해서 순서를 맞춰보세요</div>
+    <div class="sort-list" id="sortList"></div>
+    <div style="text-align:right;font-size:.8rem;color:#888;margin-top:8px;">라운드 <span id="m3Round">1</span>/3</div>
+    <div style="text-align:center;margin-top:14px;">
+      <button class="btn btn-primary btn-sm" onclick="checkSort()">✅ 확인하기</button>
+    </div>
+    <div class="feedback" id="sortFB"></div>
+  </div>
+  <button class="btn btn-ghost btn-sm" onclick="goHome()">← 목록</button>
+</div>
+
+<!-- ======== 미션4: 그래프 읽기 (수학·슬기로운생활) ======== -->
+<div id="screen-m4" class="screen">
+  <div class="game-hdr" style="width:100%;">
+    <div>
+      <div class="hdr-title">📊 미션 4 — 그래프 읽기</div>
+      <div style="font-size:.72rem;color:rgba(255,255,255,.6)">수학·슬기로운생활 연계</div>
+    </div>
+    <div class="hdr-score">⭐ <span id="m4Sc">0</span></div>
+  </div>
+  <div class="char-row">
+    <div class="mascot">🦅</div>
+    <div class="bubble">
+      <div class="bubble-name">지구 친구 독수리</div>
+      <span id="m4Msg">그래프를 보고 질문에 답해봐요!</span>
+    </div>
+  </div>
+  <div class="card">
+    <div class="chart-wrap">
+      <div class="chart-title" id="chartTtl">우리 마을 나무 수 변화</div>
+      <div class="bar-row" id="barChart"></div>
+    </div>
+    <div id="dataQs"></div>
+    <div id="dataNextWrap" style="text-align:center;margin-top:14px;display:none;">
+      <button class="btn btn-primary btn-sm" onclick="nextDataSet()">다음 그래프 →</button>
+    </div>
+  </div>
+  <button class="btn btn-ghost btn-sm" onclick="goHome()">← 목록</button>
+</div>
+
+<!-- ======== 결과 ======== -->
+<div id="screen-result" class="screen">
+  <div class="result-badge">
+    <div class="rb-emoji" id="rbEmoji">🏅</div>
+    <div class="rb-title" id="rbTitle">지구 구조대 수료!</div>
+    <div class="rb-sub">미랩(MILAB) 지구 구조대 인증</div>
+  </div>
+  <div class="score-grid" id="scoreGrid"></div>
+  <div class="total-box">
+    <div class="t-label">🌟 총 점수</div>
+    <div class="t-num" id="totalNum">0</div>
+    <div style="font-size:.85rem;color:#1b5e20;margin-top:2px;">/ 100점</div>
+  </div>
+  <div class="end-msg" id="endMsg"></div>
+
+  <!-- QR -->
+  <div class="qr-section">
+    <div class="qr-title">📱 이 게임 QR코드로 공유하기</div>
+    <div id="qrcode"></div>
+    <div style="font-size:.78rem;color:#888;margin-top:8px;">미랩 포트폴리오에서 확인하세요!</div>
+  </div>
+
+  <button class="btn btn-yellow btn-block" onclick="resetGame()">🔄 다시 도전하기</button>
+</div>
+
+</div><!-- #app -->
+
+<script>
+// ─────────────────────────────
+// 게임 상태
+// ─────────────────────────────
+const G = {
+  done: [false,false,false,false],
+  scores: [0,0,0,0],
+  stars: [0,0,0,0]
+};
+
+// ─────────────────────────────
+// 배경 생성
+// ─────────────────────────────
+(function initBg(){
+  const bg = document.getElementById('bgLayer');
+  // 구름
+  const cSizes = [[80,24],[120,30],[100,26],[60,20]];
+  cSizes.forEach((s,i)=>{
+    const c = document.createElement('div');
+    c.className = 'cloud';
+    c.style.cssText = `width:${s[0]}px;height:${s[1]}px;top:${8+i*12}%;
+      animation-duration:${18+i*7}s;animation-delay:${-i*5}s;opacity:${.6+i*.08};`;
+    bg.appendChild(c);
+  });
+  // 별
+  for(let i=0;i<12;i++){
+    const s = document.createElement('div');
+    s.className='star-bg';
+    s.style.cssText=`left:${Math.random()*100}%;top:${Math.random()*45}%;
+      animation-delay:${Math.random()*3}s;animation-duration:${2+Math.random()*2}s;`;
+    bg.appendChild(s);
+  }
+})();
+
+// ─────────────────────────────
+// 음악 (Web Audio API)
+// ─────────────────────────────
+let audioCtx=null, musicOn=false;
+function toggleMusic(){
+  musicOn=!musicOn;
+  document.getElementById('musicBtn').textContent = musicOn ? '🎵 끄기':'🎵 음악';
+  if(musicOn) playBg(); else stopBg();
+}
+function getCtx(){
+  if(!audioCtx) audioCtx = new (window.AudioContext||window.webkitAudioContext)();
+  return audioCtx;
+}
+function playBg(){
+  const ctx = getCtx();
+  // 밝고 따뜻한 C장조 멜로디 - 도레미파솔라시
+  const scale = [261.63,293.66,329.63,349.23,392,440,493.88,523.25];
+  const mel   = [0,2,4,5,4,2,0,  2,4,7,5,4,  2,0,4,7, 5,4,2,0];
+  let t = ctx.currentTime;
+  mel.forEach((n,i)=>{
+    const osc = ctx.createOscillator();
+    const gn  = ctx.createGain();
+    osc.connect(gn); gn.connect(ctx.destination);
+    osc.type='sine'; osc.frequency.value=scale[n%scale.length]*0.5;
+    gn.gain.setValueAtTime(0,t);
+    gn.gain.linearRampToValueAtTime(0.05,t+0.05);
+    gn.gain.linearRampToValueAtTime(0,t+0.4);
+    osc.start(t); osc.stop(t+0.5);
+    t+=0.5;
+  });
+}
+function stopBg(){ if(audioCtx){audioCtx.close();audioCtx=null;} }
+function sfx(type){
+  try{
+    const ctx=getCtx();
+    const o=ctx.createOscillator(), g=ctx.createGain();
+    o.connect(g);g.connect(ctx.destination);
+    if(type==='ok'){
+      o.type='sine';o.frequency.value=523;
+      g.gain.setValueAtTime(0.12,ctx.currentTime);
+      g.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+0.5);
+    } else if(type==='ng'){
+      o.type='sawtooth';o.frequency.value=150;
+      g.gain.setValueAtTime(0.1,ctx.currentTime);
+      g.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+0.3);
+    } else if(type==='clear'){
+      // 팡파레
+      [523,659,783].forEach((f,i)=>{
+        const os=ctx.createOscillator(), gs=ctx.createGain();
+        os.connect(gs);gs.connect(ctx.destination);
+        os.type='sine';os.frequency.value=f;
+        gs.gain.setValueAtTime(0,ctx.currentTime+i*0.15);
+        gs.gain.linearRampToValueAtTime(0.12,ctx.currentTime+i*0.15+0.05);
+        gs.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+i*0.15+0.4);
+        os.start(ctx.currentTime+i*0.15);os.stop(ctx.currentTime+i*0.15+0.5);
+      });return;
+    }
+    o.start();o.stop(ctx.currentTime+0.5);
+  }catch(e){}
+}
+
+// ─────────────────────────────
+// 파티클
+// ─────────────────────────────
+function burst(x,y,ok){
+  const icons = ok ? ['⭐','✨','🌟','💛','🎉']:['💙','🌀','💜'];
+  for(let i=0;i<6;i++){
+    const el=document.createElement('div');
+    el.className='particle';
+    el.textContent=icons[Math.floor(Math.random()*icons.length)];
+    el.style.cssText=`left:${x}px;top:${y}px;
+      --px:${(Math.random()-0.5)*120}px;--py:${-60-Math.random()*80}px;`;
+    document.body.appendChild(el);
+    el.addEventListener('animationend',()=>el.remove());
+  }
+}
+
+// ─────────────────────────────
+// 화면 전환
+// ─────────────────────────────
+function showScreen(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  const el = document.getElementById(id);
+  el.classList.add('active');
+  document.getElementById('app').scrollTo(0,0);
+}
+function goHome(){ showScreen('screen-intro'); }
+
+// ─────────────────────────────
+// 미션 잠금/해제
+// ─────────────────────────────
+function unlock(n){
+  const el=document.getElementById('mc'+n);
+  if(!el) return;
+  el.classList.remove('locked');
+  el.querySelector('.lock-icon')?.remove();
+  const sd=document.createElement('div');
+  sd.className='m-stars';sd.id='ms'+n;sd.textContent='☆☆☆';
+  el.appendChild(sd);
+  el.onclick=()=>startMission(n);
+}
+function setStars(n,s){
+  const el=document.getElementById('ms'+n);
+  if(el) el.textContent='★'.repeat(s)+'☆'.repeat(3-s);
+  document.getElementById('mc'+n)?.classList.add('done');
+}
+function calcStars(sc,max){ const p=sc/max; return p>=.9?3:p>=.6?2:p>0?1:0; }
+
+// ─────────────────────────────
+// 스티커 팝업
+// ─────────────────────────────
+function showSticker(icon,title,sub,cb){
+  document.getElementById('stickerIcon').textContent=icon;
+  document.getElementById('stickerTitle').textContent=title;
+  document.getElementById('stickerSub').textContent=sub;
+  document.getElementById('stickerPop').classList.add('show');
+  window._stickerCb=cb||null;
+}
+function closeStickerPop(){
+  document.getElementById('stickerPop').classList.remove('show');
+  if(window._stickerCb){ window._stickerCb(); window._stickerCb=null; }
+}
+
+// ─────────────────────────────
+// 미션 시작
+// ─────────────────────────────
+function startMission(n){
+  if(n===1) initM1();
+  else if(n===2) initM2();
+  else if(n===3) initM3();
+  else initM4();
+  showScreen('screen-m'+n);
+}
+
+// ══════════════════════════════════════
+// 미션1: 그림 짝 맞추기 (국어 낱말·슬생)
+// ══════════════════════════════════════
+// 환경 관련 그림+낱말 카드 8쌍 → 랜덤 6쌍 출제
+const pairBank = [
+  {icon:'🌳',word:'나무',pair:'tree'},
+  {icon:'♻️',word:'재활용',pair:'recycle'},
+  {icon:'💧',word:'물 절약',pair:'water'},
+  {icon:'🌻',word:'꽃',pair:'flower'},
+  {icon:'🚲',word:'자전거',pair:'bike'},
+  {icon:'🛍️',word:'장바구니',pair:'bag'},
+  {icon:'☀️',word:'태양에너지',pair:'sun'},
+  {icon:'🌱',word:'새싹',pair:'sprout'},
+];
+// 라운드별로 2쌍씩 → 총 3라운드
+let m1Round=0, m1Score=0, m1Selected=null, m1Pairs=[], m1MatchedCount=0;
+
+function initM1(){
+  m1Round=0; m1Score=0;
+  document.getElementById('m1Sc').textContent='0';
+  renderM1();
+}
+
+function renderM1(){
+  if(m1Round>=3){ finishM1(); return; }
+  // 2쌍 선택
+  const pool=[...pairBank].sort(()=>Math.random()-.5).slice(0,2);
+  m1Pairs=pool;
+  m1MatchedCount=0; m1Selected=null;
+
+  document.getElementById('m1Prog').textContent=(m1Round)+'/3 라운드';
+  document.getElementById('m1PBar').style.width=(m1Round/3*100)+'%';
+  document.getElementById('m1Msg').textContent='같은 것끼리 짝을 맞춰봐요!';
+  setMascot('m1mascot','😊');
+
+  // 카드 4장 (이모지 2장 + 글자 2장) 섞기
+  const cards = [
+    ...pool.map(p=>({type:'emoji',icon:p.icon,pair:p.pair})),
+    ...pool.map(p=>({type:'word', icon:p.word, pair:p.pair})),
+  ].sort(()=>Math.random()-.5);
+
+  const grid=document.getElementById('matchGrid');
+  grid.innerHTML='';
+  cards.forEach((c,i)=>{
+    const el=document.createElement('div');
+    el.className='match-card';
+    el.dataset.pair=c.pair;
+    el.dataset.idx=i;
+    el.innerHTML=`<span>${c.icon}</span>${c.type==='word'?'<span class="card-word">글자카드</span>':''}`;
+    el.onclick=()=>selectCard(el);
+    grid.appendChild(el);
+  });
+}
+
+function selectCard(el){
+  if(el.classList.contains('matched')) return;
+  if(el.classList.contains('selected')){
+    el.classList.remove('selected'); m1Selected=null; return;
+  }
+  el.classList.add('selected');
+  if(!m1Selected){ m1Selected=el; return; }
+
+  const prev=m1Selected; m1Selected=null;
+  // 매칭 확인
+  if(prev.dataset.pair===el.dataset.pair && prev!==el){
+    prev.classList.remove('selected'); el.classList.remove('selected');
+    prev.classList.add('matched'); el.classList.add('matched');
+    prev.onclick=null; el.onclick=null;
+    m1Score+=15; document.getElementById('m1Sc').textContent=m1Score;
+    sfx('ok');
+    const r=el.getBoundingClientRect();
+    burst(r.left+r.width/2,r.top+r.height/2,true);
+    setMascot('m1mascot','happy');
+    document.getElementById('m1Msg').textContent='🎉 맞았어요! 정말 잘 했어요!';
+    m1MatchedCount++;
+    if(m1MatchedCount>=m1Pairs.length){
+      setTimeout(()=>{ m1Round++; renderM1(); },1200);
+    }
+  } else {
+    prev.classList.add('wrong'); el.classList.add('wrong');
+    sfx('ng'); setMascot('m1mascot','sad');
+    document.getElementById('m1Msg').textContent='💙 다시 해봐요! 할 수 있어요!';
+    setTimeout(()=>{
+      prev.classList.remove('wrong','selected');
+      el.classList.remove('wrong','selected');
+    },700);
+  }
+}
+
+function finishM1(){
+  G.scores[0]=m1Score; G.stars[0]=calcStars(m1Score,90);
+  G.done[0]=true; setStars(1,G.stars[0]); unlock(2);
+  sfx('clear');
+  document.getElementById('m1PBar').style.width='100%';
+  document.getElementById('m1Prog').textContent='3/3 라운드';
+  showSticker('🌟','대단해요!','그림 짝 맞추기 성공! 스티커 획득!',goHome);
+  saveLS();
+}
+
+// ══════════════════════════════════════
+// 미션2: 퀴즈 (슬기로운생활·국어)
+// ══════════════════════════════════════
+const qBank = {
+  easy:[
+    {q:'🌳 나무가 해주는 일은 무엇일까요?',icon:'🌳',
+     opts:[{t:'맑은 공기를 만들어요',icon:'💚'},{t:'음식을 팔아요',icon:'🍔'},{t:'전기를 켜요',icon:'💡'},{t:'운전을 해요',icon:'🚗'}],
+     ans:0,exp:'나무는 광합성으로 깨끗한 공기(산소)를 만들어요! 🌿'},
+    {q:'♻️ 재활용할 수 있는 것은?',icon:'♻️',
+     opts:[{t:'빈 페트병',icon:'🍶'},{t:'음식 찌꺼기',icon:'🍖'},{t:'더러운 휴지',icon:'🧻'},{t:'깨진 유리',icon:'🪟'}],
+     ans:0,exp:'빈 페트병은 씻어서 재활용할 수 있어요! ♻️'},
+    {q:'💧 물을 아끼는 방법은?',icon:'💧',
+     opts:[{t:'양치할 때 물 잠그기',icon:'🚿'},{t:'욕조 가득 채우기',icon:'🛁'},{t:'수도 틀어두기',icon:'🚰'},{t:'물로 놀기',icon:'💦'}],
+     ans:0,exp:'양치할 때 물을 잠그면 물을 많이 아낄 수 있어요! 💧'},
+    {q:'🌱 지구를 도와주는 행동은?',icon:'🌱',
+     opts:[{t:'나무 심기',icon:'🌱'},{t:'쓰레기 버리기',icon:'🗑️'},{t:'연기 뿜기',icon:'💨'},{t:'물 낭비하기',icon:'💦'}],
+     ans:0,exp:'나무를 심으면 지구를 건강하게 해줄 수 있어요! 🌱'},
+  ],
+  medium:[
+    {q:'🐝 꿀벌이 줄어들면 어떻게 될까요?',icon:'🐝',
+     opts:[{t:'꽃이 열매를 맺기 어려워요',icon:'🌸'},{t:'비가 더 많이 와요',icon:'🌧️'},{t:'바람이 더 세져요',icon:'💨'},{t:'해가 더 빛나요',icon:'☀️'}],
+     ans:0,exp:'꿀벌은 꽃의 꽃가루를 옮겨줘서 열매가 맺히도록 도와줘요! 🐝'},
+    {q:'🌡️ 지구가 점점 따뜻해지는 이유는?',icon:'🌡️',
+     opts:[{t:'자동차 연기가 많아져서',icon:'🚗'},{t:'나무가 더 많아져서',icon:'🌳'},{t:'비가 많이 와서',icon:'🌧️'},{t:'꽃이 예뻐서',icon:'🌸'}],
+     ans:0,exp:'자동차와 공장 연기가 지구를 따뜻하게 만들어요. 그래서 걷거나 자전거를 타는 게 좋아요! 🚲'},
+    {q:'🗑️ 쓰레기를 줄이는 방법은?',icon:'🗑️',
+     opts:[{t:'장바구니 사용하기',icon:'🛍️'},{t:'비닐봉지 많이 쓰기',icon:'🛒'},{t:'포장지 더하기',icon:'📦'},{t:'음식 남기기',icon:'🍽️'}],
+     ans:0,exp:'장바구니를 쓰면 비닐봉지를 줄여서 지구를 도울 수 있어요! 🛍️'},
+    {q:'☀️ 태양에너지는 어디서 오나요?',icon:'☀️',
+     opts:[{t:'해(태양)',icon:'☀️'},{t:'땅',icon:'🌍'},{t:'바다',icon:'🌊'},{t:'공기',icon:'💨'}],
+     ans:0,exp:'태양에너지는 해(태양)에서 빛으로 전달돼요! 깨끗한 에너지예요! ☀️'},
+  ],
+  hard:[
+    {q:'🌊 바다 쓰레기가 위험한 이유는?',icon:'🌊',
+     opts:[{t:'물고기가 먹고 다칠 수 있어요',icon:'🐟'},{t:'파도가 높아져요',icon:'🌊'},{t:'바다가 더 파래져요',icon:'💙'},{t:'배가 빨라져요',icon:'⛵'}],
+     ans:0,exp:'바다 쓰레기를 물고기가 먹으면 위험해요! 우리가 쓰레기를 줄여야 해요. 🐟'},
+    {q:'🌲 숲이 사라지면 어떻게 될까요?',icon:'🌲',
+     opts:[{t:'동물들이 집을 잃어요',icon:'🦊'},{t:'비가 안 와요',icon:'🌧️'},{t:'꽃이 더 많이 펴요',icon:'🌸'},{t:'강이 더 깨끗해져요',icon:'💧'}],
+     ans:0,exp:'숲이 없어지면 많은 동물들이 살 곳을 잃어요! 나무를 심어서 숲을 지켜요! 🌳'},
+    {q:'🏭 공기를 오염시키지 않는 에너지는?',icon:'🏭',
+     opts:[{t:'풍력(바람)에너지',icon:'💨'},{t:'석탄',icon:'⛏️'},{t:'기름',icon:'🛢️'},{t:'가스',icon:'🔥'}],
+     ans:0,exp:'풍력 에너지는 바람을 이용해서 전기를 만들어요. 연기가 나지 않아요! 💨'},
+    {q:'🌏 지구의 날은 언제인가요?',icon:'🌏',
+     opts:[{t:'4월 22일',icon:'📅'},{t:'12월 25일',icon:'🎄'},{t:'1월 1일',icon:'🎉'},{t:'5월 5일',icon:'🎈'}],
+     ans:0,exp:'지구의 날은 매년 4월 22일이에요! 지구를 사랑하는 마음을 담아요. 🌍'},
+  ]
+};
+
+let curDiff='easy', qList=[], qIdx=0, m2Score=0;
+function initM2(){
+  m2Score=0; qIdx=0;
+  document.getElementById('m2Sc').textContent='0';
+  setDiff('easy');
+}
+function setDiff(d){
+  curDiff=d;
+  document.querySelectorAll('.diff-tab').forEach(b=>b.classList.remove('active'));
+  document.querySelector('.diff-tab.'+d).classList.add('active');
+  qList=[...qBank[d]].sort(()=>Math.random()-.5);
+  qIdx=0; m2Score=0;
+  document.getElementById('m2Sc').textContent='0';
+  renderQuiz();
+}
+function renderQuiz(){
+  if(qIdx>=qList.length){ finishM2(); return; }
+  const q=qList[qIdx];
+  document.getElementById('qCounter').textContent=(qIdx+1)+' / '+qList.length;
+  document.getElementById('m2Prog').textContent=(qIdx)+'/'+qList.length;
+  document.getElementById('m2PBar').style.width=(qIdx/qList.length*100)+'%';
+  document.getElementById('quizQ').innerHTML=q.q;
+  document.getElementById('quizFB').className='feedback';
+  document.getElementById('quizNextWrap').style.display='none';
+  setMascot('m2mascot','😊');
+  document.getElementById('m2Msg').textContent='정답을 골라봐요!';
+
+  const optsEl=document.getElementById('quizOpts');
+  optsEl.innerHTML='';
+  q.opts.forEach((opt,i)=>{
+    const btn=document.createElement('button');
+    btn.className='quiz-opt';
+    btn.innerHTML=`<span class="opt-icon">${opt.icon}</span>${opt.t}`;
+    btn.onclick=()=>selectOpt(i,q.ans,q.exp,btn,q.opts[q.ans].icon);
+    optsEl.appendChild(btn);
+  });
+}
+function selectOpt(i,ans,exp,btn,ansIcon){
+  document.querySelectorAll('.quiz-opt').forEach(b=>b.disabled=true);
+  document.querySelectorAll('.quiz-opt')[ans].classList.add('correct');
+  const fb=document.getElementById('quizFB');
+  const pts=curDiff==='easy'?10:curDiff==='medium'?15:20;
+  if(i===ans){
+    btn.classList.add('correct');
+    m2Score+=pts; document.getElementById('m2Sc').textContent=m2Score;
+    fb.className='feedback ok show';
+    fb.innerHTML=`✅ 정답! +${pts}점<br><b>왜 그럴까요?</b> ${exp}`;
+    sfx('ok'); setMascot('m2mascot','happy');
+    document.getElementById('m2Msg').textContent='🌟 맞았어요! 최고예요!';
+    const r=btn.getBoundingClientRect();
+    burst(r.left+r.width/2,r.top,true);
+  } else {
+    btn.classList.add('wrong');
+    fb.className='feedback ng show';
+    fb.innerHTML=`💙 괜찮아요! 다음엔 할 수 있어요!<br><b>정답:</b> ${ansIcon}<br>${exp}`;
+    sfx('ng'); setMascot('m2mascot','sad');
+    document.getElementById('m2Msg').textContent='💙 잘 했어요! 다음엔 맞출 거예요!';
+  }
+  document.getElementById('quizNextWrap').style.display='block';
+}
+function nextQuiz(){ qIdx++; renderQuiz(); }
+function finishM2(){
+  const max=curDiff==='easy'?40:curDiff==='medium'?60:80;
+  G.scores[1]=m2Score; G.stars[1]=calcStars(m2Score,max);
+  G.done[1]=true; setStars(2,G.stars[1]); unlock(3);
+  sfx('clear');
+  showSticker('🦋','퀴즈 완료!','환경 퀴즈 마스터! 스티커 획득!',goHome);
+  saveLS();
+}
+
+// ══════════════════════════════════════
+// 미션3: 순서 정리 (수학·슬생)
+// ══════════════════════════════════════
+const sortData = [
+  {
+    title:'🌱 씨앗을 심는 순서',
+    steps:[
+      {icon:'🪣',text:'화분에 흙을 담아요'},
+      {icon:'🌱',text:'씨앗을 흙 위에 올려요'},
+      {icon:'🖐️',text:'씨앗을 살짝 덮어요'},
+      {icon:'💧',text:'물을 조금 줘요'},
+      {icon:'☀️',text:'햇빛이 드는 곳에 놓아요'},
+    ]
+  },
+  {
+    title:'♻️ 분리수거 하는 순서',
+    steps:[
+      {icon:'🗑️',text:'쓰레기를 종류별로 골라요'},
+      {icon:'🚿',text:'깨끗이 씻어요'},
+      {icon:'📦',text:'분리수거 통에 넣어요'},
+      {icon:'🏠',text:'수거함 앞에 내놓아요'},
+      {icon:'♻️',text:'재활용 완성!'},
+    ]
+  },
+  {
+    title:'💧 손을 씻는 순서',
+    steps:[
+      {icon:'🚿',text:'물을 틀어요'},
+      {icon:'🧼',text:'비누를 묻혀요'},
+      {icon:'🙌',text:'손을 20초 문질러요'},
+      {icon:'💧',text:'물로 깨끗이 헹궈요'},
+      {icon:'🧻',text:'수건으로 닦아요'},
+    ]
+  }
+];
+let sortRound=0, m3Score=0, dragSrc=null;
+function initM3(){
+  sortRound=0; m3Score=0;
+  document.getElementById('m3Sc').textContent='0';
+  renderM3();
+}
+function renderM3(){
+  if(sortRound>=sortData.length){ finishM3(); return; }
+  const ex=sortData[sortRound];
+  document.getElementById('m3Title').textContent=ex.title;
+  document.getElementById('m3Round').textContent=sortRound+1;
+  document.getElementById('sortFB').className='feedback';
+  document.getElementById('m3Msg').textContent='카드를 끌어다 순서를 맞춰봐요!';
+  setMascot('m3mascot','😊');
+
+  const shuffled=[...ex.steps].sort(()=>Math.random()-.5);
+  const container=document.getElementById('sortList');
+  container.innerHTML='';
+  shuffled.forEach((step,i)=>{
+    const el=document.createElement('div');
+    el.className='sort-item'; el.draggable=true;
+    el.dataset.orig=ex.steps.indexOf(step);
+    el.innerHTML=`<span class="sort-num">${i+1}</span><span class="sort-icon">${step.icon}</span><span class="sort-text">${step.text}</span>`;
+    el.addEventListener('dragstart',()=>{dragSrc=el;el.classList.add('dragging');});
+    el.addEventListener('dragend',()=>{el.classList.remove('dragging');document.querySelectorAll('.sort-item').forEach(s=>s.classList.remove('drag-over'));updateNums();});
+    el.addEventListener('dragover',e=>{e.preventDefault();el.classList.add('drag-over');});
+    el.addEventListener('dragleave',()=>el.classList.remove('drag-over'));
+    el.addEventListener('drop',e=>{e.preventDefault();if(dragSrc&&dragSrc!==el){container.insertBefore(dragSrc,el);}el.classList.remove('drag-over');});
+    container.appendChild(el);
+  });
+}
+function updateNums(){
+  document.querySelectorAll('.sort-num').forEach((n,i)=>n.textContent=i+1);
+}
+function checkSort(){
+  const items=document.querySelectorAll('.sort-item');
+  const ex=sortData[sortRound];
+  let ok=true;
+  items.forEach((el,i)=>{ if(parseInt(el.dataset.orig)!==i) ok=false; });
+  const fb=document.getElementById('sortFB');
+  if(ok){
+    m3Score+=30; document.getElementById('m3Sc').textContent=m3Score;
+    items.forEach(el=>el.classList.add('ok-item'));
+    fb.className='feedback ok show';
+    fb.innerHTML='✅ 순서가 딱 맞아요! +30점 🌟';
+    sfx('ok'); setMascot('m3mascot','happy');
+    const r=document.getElementById('sortList').getBoundingClientRect();
+    burst(r.left+r.width/2,r.top+50,true);
+  } else {
+    items.forEach(el=>el.classList.add('ng-item'));
+    fb.className='feedback ng show';
+    fb.innerHTML='💙 아쉬워요! 정답 순서를 확인해봐요!';
+    sfx('ng'); setMascot('m3mascot','sad');
+    setTimeout(()=>{
+      const container=document.getElementById('sortList');
+      container.innerHTML='';
+      ex.steps.forEach((step,i)=>{
+        const el=document.createElement('div');
+        el.className='sort-item ok-item';
+        el.innerHTML=`<span class="sort-num">${i+1}</span><span class="sort-icon">${step.icon}</span><span class="sort-text">${step.text}</span>`;
+        container.appendChild(el);
+      });
+    },400);
+  }
+  setTimeout(()=>{ sortRound++; renderM3(); },2200);
+}
+function finishM3(){
+  G.scores[2]=m3Score; G.stars[2]=calcStars(m3Score,90);
+  G.done[2]=true; setStars(3,G.stars[2]); unlock(4);
+  sfx('clear');
+  showSticker('🐝','순서 완성!','정리 달인! 스티커 획득!',goHome);
+  saveLS();
+}
+
+// ══════════════════════════════════════
+// 미션4: 그래프 읽기 (수학·슬생)
+// ══════════════════════════════════════
+const dataSets = [
+  {
+    title:'🌳 우리 마을 나무 수 (그루)',
+    bars:[
+      {label:'2021년',value:80,color:'#66bb6a'},
+      {label:'2022년',value:65,color:'#ffa726'},
+      {label:'2023년',value:50,color:'#ef5350'},
+      {label:'2024년',value:70,color:'#42a5f5'},
+      {label:'2025년',value:90,color:'#26a69a'},
+    ],
+    qs:[
+      {q:'🌳 나무가 가장 많은 해는?',opts:['2021년','2023년','2025년','2022년'],ans:2,exp:'2025년에 90그루로 가장 많아요!'},
+      {q:'🌲 나무가 가장 적었던 해는?',opts:['2021년','2022년','2023년','2024년'],ans:2,exp:'2023년에 50그루로 가장 적었어요!'},
+      {q:'🔢 2021년 나무 수와 2023년 나무 수 중 어느 쪽이 더 많나요?',opts:['2021년 (80그루)','2023년 (50그루)','똑같아요','모르겠어요'],ans:0,exp:'2021년이 80그루로 더 많아요! 80 > 50이에요.'},
+    ]
+  },
+  {
+    title:'🦋 우리 마을 나비 수 (마리)',
+    bars:[
+      {label:'봄',value:90,color:'#ec407a'},
+      {label:'여름',value:70,color:'#ff7043'},
+      {label:'가을',value:40,color:'#ffca28'},
+      {label:'겨울',value:5,color:'#42a5f5'},
+    ],
+    qs:[
+      {q:'🦋 나비가 가장 많은 계절은?',opts:['봄','여름','가을','겨울'],ans:0,exp:'봄에 90마리로 가장 많아요!'},
+      {q:'❄️ 나비가 가장 적은 계절은?',opts:['봄','여름','가을','겨울'],ans:3,exp:'겨울에 5마리로 가장 적어요! 나비는 추운 겨울엔 잘 안 보여요.'},
+      {q:'🌸 봄과 가을, 어느 계절에 나비가 더 많나요?',opts:['봄 (90마리)','가을 (40마리)','똑같아요','모르겠어요'],ans:0,exp:'봄이 90마리로 더 많아요! 90 > 40이에요.'},
+    ]
+  }
+];
+let dsIdx=0, m4Score=0, dataAnswered=0;
+function initM4(){
+  dsIdx=0; m4Score=0;
+  document.getElementById('m4Sc').textContent='0';
+  renderDS();
+}
+function renderDS(){
+  if(dsIdx>=dataSets.length){ finishM4(); return; }
+  const ds=dataSets[dsIdx];
+  document.getElementById('chartTtl').textContent=ds.title;
+  const maxV=Math.max(...ds.bars.map(b=>b.value));
+  const chart=document.getElementById('barChart');
+  chart.innerHTML='';
+  ds.bars.forEach(bar=>{
+    const col=document.createElement('div');
+    col.className='bar-col';
+    const val=document.createElement('div'); val.className='bar-val'; val.textContent=bar.value;
+    const fill=document.createElement('div'); fill.className='bar-fill-el';
+    fill.style.cssText=`height:0;background:${bar.color};`;
+    const lbl=document.createElement('div'); lbl.className='bar-lbl'; lbl.textContent=bar.label;
+    col.append(val,fill,lbl); chart.appendChild(col);
+    setTimeout(()=>fill.style.height=(bar.value/maxV*95)+'px',80);
+  });
+  dataAnswered=0;
+  document.getElementById('dataNextWrap').style.display='none';
+  const qEl=document.getElementById('dataQs');
+  qEl.innerHTML='';
+  ds.qs.forEach((q,qi)=>{
+    const box=document.createElement('div');
+    box.className='data-q-box'; box.id='dqb'+qi;
+    box.innerHTML=`<div class="data-q-text">Q${qi+1}. ${q.q}</div><div class="data-opts" id="dopts${qi}"></div><div class="feedback" id="dfb${qi}"></div>`;
+    qEl.appendChild(box);
+    q.opts.forEach((opt,oi)=>{
+      const btn=document.createElement('button');
+      btn.className='data-opt-btn'; btn.textContent=opt;
+      btn.onclick=()=>selectDataOpt(qi,oi,q.ans,q.exp,btn);
+      document.getElementById('dopts'+qi).appendChild(btn);
+    });
+  });
+}
+function selectDataOpt(qi,oi,ans,exp,btn){
+  document.querySelectorAll('#dopts'+qi+' .data-opt-btn').forEach(b=>b.disabled=true);
+  document.querySelectorAll('#dopts'+qi+' .data-opt-btn')[ans].classList.add('correct');
+  const fb=document.getElementById('dfb'+qi);
+  if(oi===ans){
+    btn.classList.add('correct');
+    m4Score+=10; document.getElementById('m4Sc').textContent=m4Score;
+    fb.className='feedback ok show'; fb.innerHTML='✅ 정답! +10점  '+exp;
+    sfx('ok');
+  } else {
+    btn.classList.add('wrong');
+    fb.className='feedback ng show'; fb.innerHTML='💙 괜찮아요! '+exp;
+    sfx('ng');
+  }
+  dataAnswered++;
+  if(dataAnswered>=dataSets[dsIdx].qs.length){
+    document.getElementById('dataNextWrap').style.display='block';
+  }
+}
+function nextDataSet(){ dsIdx++; renderDS(); }
+function finishM4(){
+  G.scores[3]=m4Score; G.stars[3]=calcStars(m4Score,60);
+  G.done[3]=true; setStars(4,G.stars[3]);
+  sfx('clear'); saveLS(); showResult();
+}
+
+// ══════════════════════════════════════
+// 결과 화면
+// ══════════════════════════════════════
+function showResult(){
+  const total=G.scores.reduce((a,b)=>a+b,0);
+  const ts=G.stars.reduce((a,b)=>a+b,0);
+  let badge='🌱',title='지구 친구';
+  if(ts>=10){badge='🏆';title='지구 영웅 대장!';}
+  else if(ts>=7){badge='🌍';title='지구 구조대 대원!';}
+  else if(ts>=5){badge='🏅';title='지구 수호자!';}
+  else if(ts>=3){badge='⭐';title='지구 친구!';}
+
+  document.getElementById('rbEmoji').textContent=badge;
+  document.getElementById('rbTitle').textContent=title;
+
+  const icons=['🖼️','❓','🔢','📊'];
+  const names=['그림 짝','퀴즈','순서 정리','그래프'];
+  const sg=document.getElementById('scoreGrid');
+  sg.innerHTML='';
+  G.scores.forEach((sc,i)=>{
+    const d=document.createElement('div');
+    d.className='score-item';
+    d.innerHTML=`<div class="si-icon">${icons[i]}</div><div class="si-name">${names[i]}</div><div class="si-score">${sc}점</div><div class="si-stars">${'★'.repeat(G.stars[i])}${'☆'.repeat(3-G.stars[i])}</div>`;
+    sg.appendChild(d);
+  });
+  document.getElementById('totalNum').textContent=total;
+
+  const msgs=[
+    '도전한 것만으로도 최고예요! 다시 해봐요! 💪',
+    '조금씩 더 잘할 수 있어요! 함께 지구를 지켜요! 🌱',
+    '지구를 사랑하는 마음이 느껴져요! 🌍',
+    '정말 훌륭한 지구 구조대원이에요! 🏅',
+    '완벽해요! 진정한 지구 영웅이에요! 🏆'
+  ];
+  document.getElementById('endMsg').innerHTML='<b>💬 대원 평가:</b><br>'+msgs[Math.min(Math.floor(ts/3),4)];
+
+  // QR 코드 생성
+  setTimeout(()=>{
+    const qrEl=document.getElementById('qrcode');
+    qrEl.innerHTML='';
+    try{
+      new QRCode(qrEl,{
+        text:'https://milab2019.github.io/main/milab_portfolio.html',
+        width:140,height:140,colorDark:'#1b5e20',colorLight:'#ffffff',
+        correctLevel:QRCode.CorrectLevel.M
+      });
+    }catch(e){}
+  },300);
+
+  showScreen('screen-result');
+}
+
+// ══════════════════════════════════════
+// 리셋
+// ══════════════════════════════════════
+function resetGame(){
+  G.done=[false,false,false,false];
+  G.scores=[0,0,0,0]; G.stars=[0,0,0,0];
+  ['mc2','mc3','mc4'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el){
+      el.className='mission-card locked'; el.onclick=null;
+      el.querySelector('.m-stars')?.remove();
+      if(!el.querySelector('.lock-icon')){
+        const lk=document.createElement('div'); lk.className='lock-icon'; lk.textContent='🔒';
+        el.appendChild(lk);
+      }
+    }
+  });
+  document.getElementById('mc1').className='mission-card';
+  document.getElementById('mc1').onclick=()=>startMission(1);
+  document.getElementById('ms1').textContent='☆☆☆';
+  showScreen('screen-intro');
+}
+
+// ══════════════════════════════════════
+// 마스코트 감정
+// ══════════════════════════════════════
+function setMascot(id,emotion){
+  const el=document.getElementById(id);
+  if(!el) return;
+  el.classList.remove('happy','sad');
+  if(emotion==='happy') el.classList.add('happy');
+  else if(emotion==='sad') el.classList.add('sad');
+}
+
+// ══════════════════════════════════════
+// LocalStorage
+// ══════════════════════════════════════
+function saveLS(){
+  try{ localStorage.setItem('milab_earth_rescue_013', JSON.stringify({scores:G.scores,stars:G.stars,done:G.done})); }catch(e){}
+}
+function loadLS(){
+  try{
+    const d=JSON.parse(localStorage.getItem('milab_earth_rescue_013'));
+    if(d){
+      G.scores=d.scores; G.stars=d.stars; G.done=d.done;
+      G.done.forEach((ok,i)=>{ if(ok){ setStars(i+1,G.stars[i]); if(i<3) unlock(i+2); } });
+    }
+  }catch(e){}
+}
+
+// ──────────────────────────────────────
+// 초기화
+// ──────────────────────────────────────
+loadLS();
+</script>
+
+<!-- ── 미랩 포트폴리오 JSON 데이터 (주석) ──
+포트폴리오 업데이트 시 아래 JSON을 milab_portfolio.html의 게임 목록에 추가하세요:
+
+{
+  "id": "013",
+  "title": "🌍 지구 구조대",
+  "subtitle": "지구의 날 × 과학의 날 교과 융합 게임",
+  "target": "특수학교 (발달장애·느린학습자)",
+  "grade": "유치~초등 저학년 수준",
+  "subjects": ["국어", "수학", "슬기로운 생활"],
+  "skills": ["낱말 이해", "자연관찰", "수 비교", "순서 추론"],
+  "missions": 4,
+  "theme": "지구 환경 보호 / 지구의 날(4.22) / 과학의 달(4월)",
+  "features": ["이모지 100%", "90px+ 터치버튼", "파티클 효과", "스티커 팝업", "3단계 난이도", "LocalStorage 점수저장", "QR코드 자동생성", "Web Audio API 배경음"],
+  "file": "earth_rescue.html",
+  "category": "특수",
+  "tags": ["특수교육", "발달장애", "환경", "지구의날", "과학의달"],
+  "created": "2026-03-26",
+  "institution": "미랩(MILAB) 충주"
+}
+──────────────────────────────────── -->
+
+</body>
+</html>
