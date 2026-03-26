@@ -353,6 +353,47 @@
     font-size: 0.85rem; cursor: pointer; font-family: 'Nanum Gothic', sans-serif;
   }
 
+  /* 타이머 */
+  .timer-wrap {
+    display: flex; align-items: center; gap: 8px;
+    background: rgba(26,58,42,0.9); border: 2px solid var(--forest-bright);
+    border-radius: 12px; padding: 6px 14px; margin-bottom: 10px;
+    color: var(--white); font-family: 'Jua', sans-serif;
+  }
+  .timer-num {
+    font-size: 1.4rem; min-width: 36px; text-align: center;
+    color: var(--sun-yellow); transition: color 0.3s;
+  }
+  .timer-num.danger { color: var(--danger-red); animation: timerPulse 0.5s ease infinite alternate; }
+  @keyframes timerPulse { from { transform: scale(1); } to { transform: scale(1.15); } }
+  .timer-bar { flex: 1; height: 8px; background: rgba(255,255,255,0.15); border-radius: 8px; overflow: hidden; }
+  .timer-fill { height: 100%; background: linear-gradient(90deg, var(--forest-bright), var(--sun-yellow)); border-radius: 8px; transition: width 1s linear, background 0.3s; }
+  .timer-fill.danger { background: linear-gradient(90deg, var(--warning-orange), var(--danger-red)); }
+
+  /* 리더보드 */
+  .leaderboard {
+    background: rgba(26,58,42,0.9); border: 2px solid var(--sun-yellow);
+    border-radius: 16px; padding: 16px; margin: 12px 0; color: var(--white);
+  }
+  .lb-title { font-family: 'Jua', sans-serif; color: var(--sun-yellow); font-size: 1rem; margin-bottom: 10px; text-align: center; }
+  .lb-row {
+    display: flex; align-items: center; gap: 10px;
+    padding: 7px 10px; border-radius: 8px; font-size: 0.85rem;
+    margin-bottom: 4px; background: rgba(255,255,255,0.05);
+  }
+  .lb-row.me { background: rgba(240,192,64,0.2); border: 1px solid var(--sun-yellow); }
+  .lb-rank { font-family: 'Jua', sans-serif; font-size: 1rem; min-width: 28px; text-align: center; }
+  .lb-name { flex: 1; font-weight: 700; }
+  .lb-score { color: var(--sun-yellow); font-weight: 800; }
+
+  /* QR코드 영역 */
+  .qr-wrap {
+    background: white; border-radius: 14px; padding: 14px;
+    display: inline-block; margin: 10px auto;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+  }
+  .qr-label { font-size: 0.75rem; color: #666; text-align: center; margin-top: 6px; }
+
   /* 반응형 */
   @media (max-width: 500px) {
     .mission-list { grid-template-columns: 1fr 1fr; }
@@ -424,6 +465,11 @@
       </div>
       <div class="score-badge">⭐ <span id="m1Score">0</span></div>
     </div>
+    <div class="timer-wrap">
+      <span>⏱️</span>
+      <div class="timer-bar"><div class="timer-fill" id="m1TimerBar" style="width:100%"></div></div>
+      <div class="timer-num" id="m1TimerNum">60</div>
+    </div>
     <div class="progress-wrap">
       <div class="progress-label"><span>진행</span><span id="m1Prog">0/5</span></div>
       <div class="progress-bar"><div class="progress-fill" id="m1ProgBar" style="width:0%"></div></div>
@@ -457,6 +503,11 @@
         <div style="font-size:0.75rem; color:rgba(255,255,255,0.6)">과학·사회 연계</div>
       </div>
       <div class="score-badge">⭐ <span id="m2Score">0</span></div>
+    </div>
+    <div class="timer-wrap">
+      <span>⏱️</span>
+      <div class="timer-bar"><div class="timer-fill" id="m2TimerBar" style="width:100%"></div></div>
+      <div class="timer-num" id="m2TimerNum">30</div>
     </div>
     <div class="progress-wrap">
       <div class="progress-label"><span>진행</span><span id="m2Prog">0/8</span></div>
@@ -549,6 +600,13 @@
   <!-- ===== 결과 화면 ===== -->
   <div id="screen-result" class="screen">
     <div style="text-align:center; padding-top:10px;">
+      <!-- 이름 입력 -->
+      <div id="nameInputWrap" style="margin:12px 0;">
+        <input id="playerNameInput" type="text" maxlength="8" placeholder="이름을 입력하세요 (최대 8자)"
+          style="width:100%;padding:12px 16px;border-radius:12px;border:2px solid var(--forest-bright);font-family:'Jua',sans-serif;font-size:1rem;text-align:center;outline:none;">
+        <button class="btn btn-primary" style="margin-top:8px;width:100%;" onclick="saveScore()">🏅 점수 등록하기</button>
+      </div>
+
       <div class="badge-container">
         <div class="badge-emoji">🏅</div>
         <div class="badge-title">환경 탐정 수료!</div>
@@ -568,6 +626,22 @@
       </div>
 
       <button class="btn btn-primary btn-block" style="margin-top:8px;" onclick="resetGame()">🔄 처음부터 다시하기</button>
+
+      <!-- 리더보드 -->
+      <div class="leaderboard" id="leaderboardWrap">
+        <div class="lb-title">🏆 환경 탐정단 명예의 전당</div>
+        <div id="lbRows"></div>
+      </div>
+
+      <!-- QR코드 -->
+      <div style="text-align:center; margin-top:10px;">
+        <div style="color:var(--leaf-green);font-family:'Jua',sans-serif;font-size:0.9rem;margin-bottom:6px;">📱 친구에게 공유하기</div>
+        <div class="qr-wrap">
+          <canvas id="qrCanvas"></canvas>
+          <div class="qr-label">카메라로 스캔하세요</div>
+        </div>
+      </div>
+
     </div>
   </div>
 
@@ -580,6 +654,87 @@ const state = {
   scores: [0, 0, 0, 0],
   stars: [0, 0, 0, 0]
 };
+
+// ===== 타이머 =====
+let timerInterval = null, timerSec = 0, timerMax = 60;
+function startTimer(sec, numId, barId, onExpire) {
+  clearInterval(timerInterval);
+  timerSec = sec; timerMax = sec;
+  const numEl = document.getElementById(numId);
+  const barEl = document.getElementById(barId);
+  function tick() {
+    if(!numEl) return;
+    numEl.textContent = timerSec;
+    barEl.style.width = (timerSec / timerMax * 100) + '%';
+    if(timerSec <= 10) {
+      numEl.classList.add('danger');
+      barEl.classList.add('danger');
+    } else {
+      numEl.classList.remove('danger');
+      barEl.classList.remove('danger');
+    }
+    if(timerSec <= 0) { clearInterval(timerInterval); onExpire(); return; }
+    timerSec--;
+  }
+  tick();
+  timerInterval = setInterval(tick, 1000);
+}
+function stopTimer() { clearInterval(timerInterval); }
+
+// ===== LocalStorage 리더보드 =====
+const LB_KEY = 'milab_env_detective_lb';
+function getLeaderboard() {
+  try { return JSON.parse(localStorage.getItem(LB_KEY)) || []; } catch(e) { return []; }
+}
+function saveScore() {
+  const name = document.getElementById('playerNameInput').value.trim() || '탐정';
+  const total = state.scores.reduce((a,b)=>a+b,0);
+  const lb = getLeaderboard();
+  lb.push({ name, score: total, date: new Date().toLocaleDateString('ko-KR') });
+  lb.sort((a,b)=>b.score-a.score);
+  const top = lb.slice(0,10);
+  localStorage.setItem(LB_KEY, JSON.stringify(top));
+  document.getElementById('nameInputWrap').innerHTML = '<div style="color:var(--leaf-green);font-family:\'Jua\',sans-serif;padding:8px;">✅ '+name+' 님의 점수가 등록되었습니다!</div>';
+  renderLeaderboard(name, total);
+}
+function renderLeaderboard(myName, myScore) {
+  const lb = getLeaderboard();
+  const medals = ['🥇','🥈','🥉','4️⃣','5️⃣','6️⃣','7️⃣','8️⃣','9️⃣','🔟'];
+  const el = document.getElementById('lbRows');
+  if(!lb.length) { el.innerHTML='<div style="text-align:center;color:rgba(255,255,255,0.5);font-size:0.85rem;">아직 기록이 없어요</div>'; return; }
+  el.innerHTML = lb.slice(0,5).map((r,i)=>
+    `<div class="lb-row ${r.name===myName&&r.score===myScore?'me':''}">
+      <span class="lb-rank">${medals[i]||i+1}</span>
+      <span class="lb-name">${r.name}</span>
+      <span style="font-size:0.75rem;color:rgba(255,255,255,0.4);">${r.date}</span>
+      <span class="lb-score">${r.score}점</span>
+    </div>`
+  ).join('');
+}
+
+// ===== QR코드 생성 (순수 JS, 라이브러리 없음) =====
+function generateQR(url) {
+  const canvas = document.getElementById('qrCanvas');
+  if(!canvas) return;
+  // qrcode.js 방식 대신 간단한 URL 표시 + data URI 방식
+  canvas.width = 140; canvas.height = 140;
+  const ctx = canvas.getContext('2d');
+  ctx.fillStyle = '#ffffff';
+  ctx.fillRect(0,0,140,140);
+  // QR API 이미지 로드
+  const img = new Image();
+  img.crossOrigin = 'anonymous';
+  img.onload = () => ctx.drawImage(img, 0, 0, 140, 140);
+  img.onerror = () => {
+    // fallback: 텍스트로 URL 표시
+    ctx.fillStyle = '#1a3a2a';
+    ctx.font = 'bold 10px sans-serif';
+    ctx.textAlign = 'center';
+    const words = url.replace('https://','').split('/');
+    words.forEach((w,i) => ctx.fillText(w, 70, 50+i*18));
+  };
+  img.src = 'https://api.qrserver.com/v1/create-qr-code/?size=140x140&data='+encodeURIComponent(url);
+}
 
 // ===== 배경 꾸미기 =====
 function initBg() {
@@ -749,6 +904,10 @@ let mapIdx=0, mapScore=0;
 function initMap() {
   mapIdx=0; mapScore=0;
   document.getElementById('m1Score').textContent='0';
+  startTimer(60, 'm1TimerNum', 'm1TimerBar', ()=>{
+    document.getElementById('m1Msg').innerHTML='⏰ 시간 초과! 미션을 완료할게요.';
+    finishMission1();
+  });
   renderMap();
 }
 function renderMap() {
@@ -794,6 +953,7 @@ function selectCell(el, isAnswer, idx) {
   },1800);
 }
 function finishMission1() {
+  stopTimer();
   state.scores[0]=mapScore;
   const stars=calcStars(mapScore,100);
   state.stars[0]=stars;
@@ -829,24 +989,31 @@ const quizBank = {
     {q:"환경부에서 정한 멸종위기 야생동물 중 우리나라 산림에 사는 것은?",opts:["펭귄","반달가슴곰","기린","캥거루"],ans:1,exp:"반달가슴곰은 우리나라 지리산에 살며 멸종위기 1급 동물이에요!"},
   ]
 };
-let currentDiff='easy', quizList=[], quizIdx=0, quizScore=0;
+let currentDiff='easy', quizList=[], quizIdx=0, quizScore=0, quizStarted=false;
 function initQuiz() {
-  quizScore=0; quizIdx=0;
+  quizScore=0; quizIdx=0; quizStarted=false;
   document.getElementById('m2Score').textContent='0';
   setDiff('easy');
 }
 function setDiff(d) {
+  // 버그 수정: 퀴즈 진행 중 난이도 변경 방지
+  if(quizStarted && quizIdx>0) {
+    document.getElementById('m2Msg').textContent='⚠️ 퀴즈 진행 중에는 난이도를 바꿀 수 없어요!';
+    return;
+  }
   currentDiff=d;
   document.querySelectorAll('.diff-btn').forEach(b=>b.classList.remove('active'));
   document.querySelector('.diff-btn.'+d).classList.add('active');
   quizList=[...quizBank[d]].sort(()=>Math.random()-0.5);
-  quizIdx=0; quizScore=0;
+  quizIdx=0; quizScore=0; quizStarted=false;
   document.getElementById('m2Score').textContent='0';
+  stopTimer();
   renderQuiz();
 }
 function renderQuiz() {
   if(quizIdx>=quizList.length){ finishMission2(); return; }
   const q=quizList[quizIdx];
+  quizStarted=true;
   document.getElementById('quizCounter').textContent=(quizIdx+1)+' / '+quizList.length+' 문제';
   document.getElementById('m2Prog').textContent=(quizIdx)+'/'+quizList.length;
   document.getElementById('m2ProgBar').style.width=(quizIdx/quizList.length*100)+'%';
@@ -863,8 +1030,22 @@ function renderQuiz() {
   document.getElementById('quizNextWrap').style.display='none';
   document.getElementById('m2Char').textContent='🦉';
   document.getElementById('m2Msg').textContent='문제를 잘 읽고 정답을 골라보세요!';
+  // 문제당 타이머 30초
+  startTimer(30, 'm2TimerNum', 'm2TimerBar', ()=>{
+    // 시간 초과 시 자동 오답 처리
+    document.querySelectorAll('.quiz-option').forEach(b=>b.disabled=true);
+    const opts=document.querySelectorAll('.quiz-option');
+    opts[q.ans].classList.add('correct');
+    const fb=document.getElementById('quizFeedback');
+    fb.className='feedback-box show wrong-fb';
+    fb.innerHTML='⏰ 시간 초과!<br><strong>해설:</strong> '+q.exp;
+    document.getElementById('m2Char').textContent='😢';
+    playSound('wrong');
+    document.getElementById('quizNextWrap').style.display='block';
+  });
 }
 function selectQuizOpt(idx, ans, exp, btn) {
+  stopTimer();
   document.querySelectorAll('.quiz-option').forEach(b=>b.disabled=true);
   const opts=document.querySelectorAll('.quiz-option');
   opts[ans].classList.add('correct');
@@ -892,6 +1073,7 @@ function nextQuiz() {
   renderQuiz();
 }
 function finishMission2() {
+  stopTimer();
   const max=currentDiff==='easy'?40:currentDiff==='medium'?60:80;
   state.scores[1]=quizScore;
   const stars=calcStars(quizScore,max);
@@ -1182,9 +1364,22 @@ function showResult() {
   document.getElementById('resultMsg').innerHTML='<strong style="color:var(--forest-mid)">💬 탐정단 평가:</strong><br>'+msgs[msgIdx];
 
   showScreen('screen-result');
+
+  // 이름 입력창 초기화
+  const niw = document.getElementById('nameInputWrap');
+  niw.innerHTML = `<input id="playerNameInput" type="text" maxlength="8" placeholder="이름을 입력하세요 (최대 8자)"
+    style="width:100%;padding:12px 16px;border-radius:12px;border:2px solid var(--forest-bright);font-family:'Jua',sans-serif;font-size:1rem;text-align:center;outline:none;">
+    <button class="btn btn-primary" style="margin-top:8px;width:100%;" onclick="saveScore()">🏅 점수 등록하기</button>`;
+
+  // 기존 리더보드 렌더
+  renderLeaderboard('', -1);
+
+  // QR코드 생성
+  generateQR(location.href);
 }
 
 function resetGame() {
+  stopTimer();
   state.missionDone=[false,false,false,false];
   state.scores=[0,0,0,0];
   state.stars=[0,0,0,0];
