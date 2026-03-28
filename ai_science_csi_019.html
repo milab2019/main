@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>AI 과학수사대 CSI — MILAB #019</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<style>
+:root{
+  --navy:#0a1628;--deep:#0f2040;--panel:#13294b;--card:#1a3660;
+  --blue:#1e88e5;--cyan:#00e5ff;--green:#00ff88;--yellow:#ffe600;
+  --red:#ff4d6d;--white:#e8f4ff;--muted:#7aa3cc;--r:14px;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+html,body{min-height:100vh;background:var(--navy);color:var(--white);font-family:'Segoe UI','Apple SD Gothic Neo',sans-serif;overflow-x:hidden;}
+body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(0,229,255,.04)1px,transparent 1px),linear-gradient(90deg,rgba(0,229,255,.04)1px,transparent 1px);background-size:40px 40px;pointer-events:none;z-index:0;}
+#musicBtn{position:fixed;top:14px;right:16px;z-index:999;background:var(--panel);border:1px solid var(--cyan);color:var(--cyan);font-size:20px;width:48px;height:48px;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background .2s;}
+#musicBtn:hover{background:var(--card);}
+.screen{position:relative;z-index:1;min-height:100vh;padding:20px 16px 60px;display:none;flex-direction:column;align-items:center;gap:14px;}
+.screen.active{display:flex;animation:fadeUp .4s ease;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+/* title */
+#titleScreen{justify-content:center;text-align:center;}
+.title-badge{display:inline-block;background:linear-gradient(135deg,var(--cyan),var(--blue));color:var(--navy);font-size:13px;font-weight:800;padding:4px 14px;border-radius:20px;letter-spacing:1px;}
+.title-main{font-size:clamp(28px,7vw,48px);font-weight:900;line-height:1.15;background:linear-gradient(135deg,var(--cyan),var(--green));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.title-story{background:var(--panel);border-left:4px solid var(--cyan);border-radius:0 var(--r) var(--r) 0;padding:16px 18px;text-align:left;font-size:15px;line-height:1.7;max-width:500px;width:100%;}
+/* mascot */
+.mascot-wrap{position:relative;width:140px;height:160px;animation:float 3s ease-in-out infinite;}
+.mascot-wrap.happy{animation:happyBounce .6s ease-in-out 3;}
+.mascot-wrap.sad{animation:sadShake .4s ease-in-out 3;}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+@keyframes happyBounce{0%,100%{transform:translateY(0)rotate(0)}25%{transform:translateY(-12px)rotate(-5deg)}75%{transform:translateY(-12px)rotate(5deg)}}
+@keyframes sadShake{0%,100%{transform:translateX(0)}25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
+/* buttons */
+.btn{background:linear-gradient(135deg,var(--blue),var(--cyan));color:var(--navy);font-size:18px;font-weight:800;border:none;border-radius:var(--r);padding:16px 40px;cursor:pointer;min-height:56px;transition:transform .15s,box-shadow .15s;width:100%;max-width:320px;}
+.btn:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(0,229,255,.3);}
+.btn.secondary{background:var(--panel);color:var(--cyan);border:2px solid var(--cyan);}
+.btn.green-btn{background:linear-gradient(135deg,#00c853,var(--green));}
+/* progress */
+.progress-bar{width:100%;max-width:500px;background:var(--panel);border-radius:99px;height:10px;overflow:hidden;}
+.progress-fill{height:100%;border-radius:99px;background:linear-gradient(90deg,var(--blue),var(--cyan));transition:width .5s;}
+.mission-label{font-size:13px;color:var(--muted);letter-spacing:1px;text-align:center;}
+.mission-title{font-size:22px;font-weight:800;color:var(--cyan);text-align:center;}
+.mission-desc{font-size:15px;color:var(--muted);text-align:center;line-height:1.6;max-width:520px;}
+/* timer */
+.timer-display{font-size:36px;font-weight:900;color:var(--cyan);font-variant-numeric:tabular-nums;transition:color .3s;}
+.timer-display.danger{color:var(--red);animation:dangerBlink .5s ease-in-out infinite;}
+@keyframes dangerBlink{0%,100%{opacity:1}50%{opacity:.3}}
+/* panel */
+.panel{background:var(--panel);border:1px solid rgba(0,229,255,.2);border-radius:var(--r);padding:18px;width:100%;max-width:520px;}
+.panel-title{font-size:16px;font-weight:700;color:var(--cyan);margin-bottom:10px;}
+/* mission1 evidence */
+.evidence-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;width:100%;max-width:520px;}
+@media(min-width:600px){.evidence-grid{grid-template-columns:repeat(4,1fr);}}
+.evidence-item{background:var(--card);border:2px solid var(--card);border-radius:10px;padding:14px 10px;cursor:pointer;text-align:center;transition:border-color .2s,transform .15s;font-size:14px;font-weight:600;display:flex;flex-direction:column;align-items:center;gap:6px;min-height:90px;}
+.evidence-item:hover{border-color:var(--cyan);transform:scale(1.02);}
+.evidence-item.selected{border-color:var(--cyan);background:rgba(0,229,255,.1);}
+.evidence-item.correct{border-color:var(--green)!important;background:rgba(0,255,136,.1)!important;}
+.evidence-item.wrong{border-color:var(--red)!important;background:rgba(255,77,109,.1)!important;}
+.evidence-item.disabled{pointer-events:none;}
+.ev-emoji{font-size:28px;}
+/* mission2 quiz */
+.diff-tabs{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;width:100%;max-width:520px;}
+.diff-tab{padding:8px 20px;border-radius:99px;font-size:14px;font-weight:700;border:2px solid var(--muted);color:var(--muted);cursor:pointer;transition:.2s;background:transparent;min-height:44px;}
+.diff-tab.active{border-color:var(--cyan);color:var(--cyan);background:rgba(0,229,255,.1);}
+.diff-tab.done{border-color:var(--green);color:var(--green);}
+.diff-tab:disabled{opacity:.4;cursor:default;}
+.question-box{background:var(--card);border-radius:var(--r);padding:18px;width:100%;max-width:520px;font-size:17px;font-weight:600;line-height:1.6;}
+.options-list{display:flex;flex-direction:column;gap:10px;width:100%;max-width:520px;}
+.option-btn{background:var(--card);border:2px solid var(--card);color:var(--white);font-size:15px;font-weight:600;border-radius:10px;padding:14px 16px;cursor:pointer;text-align:left;transition:.2s;min-height:54px;width:100%;}
+.option-btn:hover:not(:disabled){border-color:var(--cyan);}
+.option-btn.correct{border-color:var(--green)!important;background:rgba(0,255,136,.1)!important;}
+.option-btn.wrong{border-color:var(--red)!important;background:rgba(255,77,109,.1)!important;}
+.score-badge{background:var(--panel);border:1px solid var(--cyan);border-radius:8px;padding:6px 14px;font-size:14px;font-weight:700;color:var(--cyan);}
+/* mission3 sort */
+.sort-list{display:flex;flex-direction:column;gap:8px;width:100%;max-width:520px;}
+.sort-item{background:var(--card);border:2px solid var(--card);border-radius:10px;padding:14px 16px;cursor:grab;font-size:15px;font-weight:600;display:flex;align-items:center;gap:10px;transition:border-color .2s,box-shadow .2s;user-select:none;-webkit-user-select:none;min-height:56px;}
+.sort-item:hover{border-color:var(--cyan);}
+.sort-item.dragging{opacity:.5;border-color:var(--yellow);box-shadow:0 4px 20px rgba(255,230,0,.3);}
+.sort-item.drag-over{border-color:var(--green);background:rgba(0,255,136,.08);}
+.step-num{background:var(--blue);color:var(--white);width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;flex-shrink:0;}
+.drag-handle{color:var(--muted);margin-left:auto;font-size:20px;}
+/* mission4 chart */
+.chart-wrap{width:100%;max-width:520px;background:var(--card);border-radius:var(--r);padding:18px;overflow-x:auto;}
+.bar-chart{display:flex;align-items:flex-end;gap:10px;height:160px;padding-bottom:30px;min-width:260px;}
+.bar-col{display:flex;flex-direction:column;align-items:center;gap:4px;flex:1;}
+.bar{width:100%;border-radius:6px 6px 0 0;background:linear-gradient(180deg,var(--cyan),var(--blue));display:flex;align-items:flex-start;justify-content:center;padding-top:4px;font-size:12px;font-weight:800;color:var(--navy);min-width:36px;}
+.bar-label{font-size:12px;color:var(--muted);text-align:center;line-height:1.3;}
+/* bubble */
+.bubble{background:var(--panel);border:2px solid var(--cyan);border-radius:var(--r);padding:14px 16px;font-size:15px;line-height:1.6;width:100%;max-width:520px;}
+.bubble.praise{border-color:var(--green);}
+.source{font-size:12px;color:var(--muted);display:block;margin-top:6px;}
+/* hint */
+.hint-row{display:flex;gap:10px;align-items:center;width:100%;max-width:520px;}
+.hint-btn{background:transparent;border:1px solid var(--yellow);color:var(--yellow);font-size:14px;font-weight:700;border-radius:8px;padding:8px 14px;cursor:pointer;min-height:44px;flex-shrink:0;}
+.hint-btn:disabled{opacity:.4;cursor:default;}
+.hint-text{font-size:14px;color:var(--yellow);flex:1;}
+/* result */
+#resultScreen{text-align:center;}
+.result-score{font-size:64px;font-weight:900;background:linear-gradient(135deg,var(--cyan),var(--green));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.ending-box{background:var(--panel);border:2px solid var(--cyan);border-radius:var(--r);padding:20px;max-width:480px;width:100%;text-align:left;}
+.ending-rank{font-size:20px;font-weight:800;color:var(--cyan);margin-bottom:8px;}
+.ending-msg{font-size:15px;line-height:1.7;}
+.lb-table{width:100%;border-collapse:collapse;}
+.lb-table th,.lb-table td{padding:10px 14px;text-align:left;border-bottom:1px solid rgba(0,229,255,.1);font-size:14px;}
+.lb-table th{color:var(--muted);font-weight:700;}
+.lb-table .lb-score{text-align:right;font-weight:700;color:var(--cyan);}
+.lb-top{color:var(--yellow)!important;}
+.name-input{background:var(--card);border:2px solid var(--cyan);color:var(--white);font-size:17px;border-radius:10px;padding:12px 16px;width:100%;max-width:320px;outline:none;}
+#qrWrap{background:#fff;border-radius:var(--r);padding:12px;display:inline-block;}
+.quiz-prog{font-size:13px;color:var(--muted);}
+.stars{font-size:26px;letter-spacing:3px;}
+</style>
+</head>
+<body>
+<button id="musicBtn" onclick="toggleMusic()">🎵</button>
+
+<!-- ■ 타이틀 -->
+<div id="titleScreen" class="screen active">
+  <div class="title-badge">MILAB #019 · 초등 5~6학년 · 과학의 달</div>
+  <div class="mascot-wrap" id="titleMascot">
+    <svg viewBox="0 0 150 170" xmlns="http://www.w3.org/2000/svg">
+      <rect x="35" y="85" width="80" height="65" rx="14" fill="#1a3660" stroke="#00e5ff" stroke-width="2"/>
+      <rect x="52" y="100" width="46" height="26" rx="6" fill="#0a1628"/>
+      <text x="75" y="118" text-anchor="middle" fill="#00e5ff" font-size="11" font-weight="800">CSI</text>
+      <rect x="13" y="90" width="22" height="10" rx="5" fill="#1a3660" stroke="#00e5ff" stroke-width="1.5"/>
+      <rect x="115" y="90" width="22" height="10" rx="5" fill="#1a3660" stroke="#00e5ff" stroke-width="1.5"/>
+      <rect x="50" y="148" width="18" height="18" rx="6" fill="#1a3660" stroke="#00e5ff" stroke-width="1.5"/>
+      <rect x="82" y="148" width="18" height="18" rx="6" fill="#1a3660" stroke="#00e5ff" stroke-width="1.5"/>
+      <rect x="28" y="16" width="94" height="74" rx="18" fill="#1a3660" stroke="#00e5ff" stroke-width="2.5"/>
+      <line x1="75" y1="16" x2="75" y2="4" stroke="#00e5ff" stroke-width="2"/>
+      <circle cx="75" cy="3" r="4" fill="#00ff88"/>
+      <ellipse cx="56" cy="50" rx="12" ry="10" fill="#0a1628" stroke="#00e5ff" stroke-width="1.5"/>
+      <ellipse cx="94" cy="50" rx="12" ry="10" fill="#0a1628" stroke="#00e5ff" stroke-width="1.5"/>
+      <circle cx="56" cy="50" r="5" fill="#00e5ff"/>
+      <circle cx="94" cy="50" r="5" fill="#00e5ff"/>
+      <circle cx="58" cy="48" r="2" fill="white"/>
+      <circle cx="96" cy="48" r="2" fill="white"/>
+      <path d="M57 72 Q75 85 93 72" stroke="#00e5ff" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+    </svg>
+  </div>
+  <div class="title-main">🔬 AI 과학수사대</div>
+  <div style="font-size:20px;font-weight:700;color:var(--green);">CSI: Science Lab</div>
+  <div style="font-size:14px;color:var(--muted);">2026 과학의 달(4월) 특별 미션 · 교과 융합: 과학·사회·국어·실과</div>
+  <div class="title-story">
+    🚨 <strong>긴급 신고!</strong><br>
+    도시 곳곳에서 이상한 사건이 발생했어요!<br>
+    과학 증거가 사라지고, AI의 판단이 틀렸다는 제보가 쏟아지고 있어요.<br><br>
+    너는 지금부터 <strong style="color:var(--cyan);">AI 과학수사대(CSI)</strong> 요원!<br>
+    과학 지식과 데이터 분석으로 <strong style="color:var(--green);">4개의 사건</strong>을 해결해줘! 🔍
+  </div>
+  <button class="btn" onclick="showScreen('nameScreen')">🕵️ 수사 시작!</button>
+</div>
+
+<!-- ■ 이름 입력 -->
+<div id="nameScreen" class="screen" style="justify-content:center;text-align:center;">
+  <div style="font-size:22px;font-weight:800;">요원 이름을 입력하세요</div>
+  <input type="text" id="agentName" class="name-input" placeholder="예: 홍길동" maxlength="8">
+  <button class="btn" onclick="startGame()">🔬 수사 개시!</button>
+</div>
+
+<!-- ■ 미션1 -->
+<div id="mission1Screen" class="screen">
+  <div class="mission-label">미션 1 / 4 · 과학</div>
+  <div class="progress-bar"><div class="progress-fill" style="width:25%"></div></div>
+  <div class="mission-title">🔎 사건 현장 — 증거 분류</div>
+  <div class="mission-desc">
+    화학 변화(새로운 물질이 생기는 변화)에 해당하는 증거를 <strong style="color:var(--cyan);">모두</strong> 골라라!<br>
+    <span style="font-size:13px;">※ 정답 5개 · 60초 제한</span>
+  </div>
+  <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;justify-content:center;">
+    <div id="mascot1" class="mascot-wrap" style="width:80px;height:90px;">
+      <svg viewBox="0 0 150 170" xmlns="http://www.w3.org/2000/svg">
+        <rect x="35" y="85" width="80" height="65" rx="14" fill="#1a3660" stroke="#00e5ff" stroke-width="2"/>
+        <rect x="52" y="100" width="46" height="26" rx="6" fill="#0a1628"/>
+        <text x="75" y="118" text-anchor="middle" fill="#00e5ff" font-size="11" font-weight="800">CSI</text>
+        <rect x="13" y="90" width="22" height="10" rx="5" fill="#1a3660" stroke="#00e5ff" stroke-width="1.5"/>
+        <rect x="115" y="90" width="22" height="10" rx="5" fill="#1a3660" stroke="#00e5ff" stroke-width="1.5"/>
+        <rect x="50" y="148" width="18" height="18" rx="6" fill="#1a3660" stroke="#00e5ff" stroke-width="1.5"/>
+        <rect x="82" y="148" width="18" height="18" rx="6" fill="#1a3660" stroke="#00e5ff" stroke-width="1.5"/>
+        <rect x="28" y="16" width="94" height="74" rx="18" fill="#1a3660" stroke="#00e5ff" stroke-width="2.5"/>
+        <line x1="75" y1="16" x2="75" y2="4" stroke="#00e5ff" stroke-width="2"/>
+        <circle cx="75" cy="3" r="4" fill="#00ff88"/>
+        <ellipse cx="56" cy="50" rx="12" ry="10" fill="#0a1628" stroke="#00e5ff" stroke-width="1.5"/>
+        <ellipse cx="94" cy="50" rx="12" ry="10" fill="#0a1628" stroke="#00e5ff" stroke-width="1.5"/>
+        <circle cx="56" cy="50" r="5" fill="#00e5ff"/>
+        <circle cx="94" cy="50" r="5" fill="#00e5ff"/>
+        <circle cx="58" cy="48" r="2" fill="white"/>
+        <circle cx="96" cy="48" r="2" fill="white"/>
+        <path id="m1mouth" d="M57 72 Q75 85 93 72" stroke="#00e5ff" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+      </svg>
+    </div>
+    <div style="text-align:center;">
+      <div class="timer-display" id="timer1">60</div>
+      <div style="font-size:12px;color:var(--muted);">남은 시간(초)</div>
+    </div>
+  </div>
+  <div class="hint-row">
+    <button class="hint-btn" id="hint1Btn" onclick="useHint(1)">💡 힌트 (1회)</button>
+    <span class="hint-text" id="hint1Text"></span>
+  </div>
+  <div class="evidence-grid" id="evidenceGrid"></div>
+  <button class="btn secondary" id="m1Submit" onclick="submitEvidence()">✅ 선택 완료!</button>
+  <div class="bubble" id="feedback1" style="display:none;"></div>
+  <button class="btn" id="m1Next" style="display:none;" onclick="goMission2()">다음 미션 →</button>
+</div>
+
+<!-- ■ 미션2 -->
+<div id="mission2Screen" class="screen">
+  <div class="mission-label">미션 2 / 4 · AI 융합 퀴즈</div>
+  <div class="progress-bar"><div class="progress-fill" style="width:50%"></div></div>
+  <div class="mission-title">🤖 AI 원리 해독 퀴즈</div>
+  <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;justify-content:center;">
+    <div id="mascot2" class="mascot-wrap" style="width:70px;height:80px;">
+      <svg viewBox="0 0 150 170" xmlns="http://www.w3.org/2000/svg">
+        <rect x="35" y="85" width="80" height="65" rx="14" fill="#1a3660" stroke="#00e5ff" stroke-width="2"/>
+        <rect x="52" y="100" width="46" height="26" rx="6" fill="#0a1628"/>
+        <text x="75" y="118" text-anchor="middle" fill="#00e5ff" font-size="11" font-weight="800">CSI</text>
+        <rect x="13" y="90" width="22" height="10" rx="5" fill="#1a3660" stroke="#00e5ff" stroke-width="1.5"/>
+        <rect x="115" y="90" width="22" height="10" rx="5" fill="#1a3660" stroke="#00e5ff" stroke-width="1.5"/>
+        <rect x="50" y="148" width="18" height="18" rx="6" fill="#1a3660" stroke="#00e5ff" stroke-width="1.5"/>
+        <rect x="82" y="148" width="18" height="18" rx="6" fill="#1a3660" stroke="#00e5ff" stroke-width="1.5"/>
+        <rect x="28" y="16" width="94" height="74" rx="18" fill="#1a3660" stroke="#00e5ff" stroke-width="2.5"/>
+        <line x1="75" y1="16" x2="75" y2="4" stroke="#00e5ff" stroke-width="2"/>
+        <circle cx="75" cy="3" r="4" fill="#00ff88"/>
+        <ellipse cx="56" cy="50" rx="12" ry="10" fill="#0a1628" stroke="#00e5ff" stroke-width="1.5"/>
+        <ellipse cx="94" cy="50" rx="12" ry="10" fill="#0a1628" stroke="#00e5ff" stroke-width="1.5"/>
+        <circle cx="56" cy="50" r="5" fill="#00e5ff"/>
+        <circle cx="94" cy="50" r="5" fill="#00e5ff"/>
+        <circle cx="58" cy="48" r="2" fill="white"/>
+        <circle cx="96" cy="48" r="2" fill="white"/>
+        <path id="m2mouth" d="M57 72 Q75 85 93 72" stroke="#00e5ff" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+      </svg>
+    </div>
+    <div style="text-align:center;">
+      <div class="timer-display" id="timer2">30</div>
+      <div style="font-size:12px;color:var(--muted);">문제당 제한시간</div>
+    </div>
+    <div class="score-badge" id="q2Score">0점</div>
+  </div>
+  <div class="diff-tabs" id="diffTabs">
+    <button class="diff-tab active" id="tab-easy" onclick="setDiff('easy')">🟢 쉬움</button>
+    <button class="diff-tab" id="tab-normal" onclick="setDiff('normal')" disabled>🟡 보통</button>
+    <button class="diff-tab" id="tab-hard" onclick="setDiff('hard')" disabled>🔴 도전</button>
+  </div>
+  <div class="hint-row">
+    <button class="hint-btn" id="hint2Btn" onclick="useHint(2)">💡 힌트 (1회)</button>
+    <span class="hint-text" id="hint2Text"></span>
+  </div>
+  <div class="question-box" id="questionBox">로딩 중...</div>
+  <div class="options-list" id="optionsList"></div>
+  <div class="bubble" id="feedback2" style="display:none;"></div>
+  <div class="quiz-prog" id="quizProg"></div>
+  <button class="btn" id="m2Next" style="display:none;" onclick="goMission3()">다음 미션 →</button>
+</div>
+
+<!-- ■ 미션3 -->
+<div id="mission3Screen" class="screen">
+  <div class="mission-label">미션 3 / 4 · 실험 탐구</div>
+  <div class="progress-bar"><div class="progress-fill" style="width:75%"></div></div>
+  <div class="mission-title">🧪 실험 순서 정렬</div>
+  <div class="mission-desc">
+    지문 채취 실험 단계를 올바른 순서로 <strong style="color:var(--yellow);">드래그</strong>해서 정렬하세요!
+  </div>
+  <div id="mascot3" class="mascot-wrap" style="width:80px;height:90px;">
+    <svg viewBox="0 0 150 170" xmlns="http://www.w3.org/2000/svg">
+      <rect x="35" y="85" width="80" height="65" rx="14" fill="#1a3660" stroke="#00e5ff" stroke-width="2"/>
+      <rect x="52" y="100" width="46" height="26" rx="6" fill="#0a1628"/>
+      <text x="75" y="118" text-anchor="middle" fill="#00e5ff" font-size="11" font-weight="800">CSI</text>
+      <rect x="13" y="90" width="22" height="10" rx="5" fill="#1a3660" stroke="#00e5ff" stroke-width="1.5"/>
+      <rect x="115" y="90" width="22" height="10" rx="5" fill="#1a3660" stroke="#00e5ff" stroke-width="1.5"/>
+      <rect x="50" y="148" width="18" height="18" rx="6" fill="#1a3660" stroke="#00e5ff" stroke-width="1.5"/>
+      <rect x="82" y="148" width="18" height="18" rx="6" fill="#1a3660" stroke="#00e5ff" stroke-width="1.5"/>
+      <rect x="28" y="16" width="94" height="74" rx="18" fill="#1a3660" stroke="#00e5ff" stroke-width="2.5"/>
+      <line x1="75" y1="16" x2="75" y2="4" stroke="#00e5ff" stroke-width="2"/>
+      <circle cx="75" cy="3" r="4" fill="#00ff88"/>
+      <ellipse cx="56" cy="50" rx="12" ry="10" fill="#0a1628" stroke="#00e5ff" stroke-width="1.5"/>
+      <ellipse cx="94" cy="50" rx="12" ry="10" fill="#0a1628" stroke="#00e5ff" stroke-width="1.5"/>
+      <circle cx="56" cy="50" r="5" fill="#00e5ff"/>
+      <circle cx="94" cy="50" r="5" fill="#00e5ff"/>
+      <circle cx="58" cy="48" r="2" fill="white"/>
+      <circle cx="96" cy="48" r="2" fill="white"/>
+      <path id="m3mouth" d="M57 72 Q75 85 93 72" stroke="#00e5ff" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+    </svg>
+  </div>
+  <div class="hint-row">
+    <button class="hint-btn" id="hint3Btn" onclick="useHint(3)">💡 힌트 (1회)</button>
+    <span class="hint-text" id="hint3Text"></span>
+  </div>
+  <div class="sort-list" id="sortList"></div>
+  <div class="bubble" id="feedback3" style="display:none;"></div>
+  <div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center;width:100%;max-width:520px;">
+    <button class="btn secondary" onclick="checkSort()" style="flex:1;min-width:130px;">✅ 순서 확인!</button>
+    <button class="btn" id="m3Next" style="display:none;flex:1;min-width:130px;" onclick="goMission4()">다음 미션 →</button>
+  </div>
+</div>
+
+<!-- ■ 미션4 -->
+<div id="mission4Screen" class="screen">
+  <div class="mission-label">미션 4 / 4 · 데이터 분석</div>
+  <div class="progress-bar"><div class="progress-fill" style="width:100%"></div></div>
+  <div class="mission-title">📊 범죄 현장 데이터 분석</div>
+  <div class="mission-desc">아래 막대그래프를 보고 3가지 질문에 답하세요.</div>
+  <div class="chart-wrap">
+    <div style="font-size:13px;color:var(--muted);margin-bottom:8px;">
+      📌 미랩시 구역별 쓰레기 불법 투기 신고 건수 (2026년 1분기)<br>
+      <span style="font-size:11px;">출처: 미랩시 환경부 가상 데이터 (교육 목적)</span>
+    </div>
+    <div class="bar-chart" id="barChart"></div>
+  </div>
+  <div id="mascot4" class="mascot-wrap" style="width:70px;height:80px;">
+    <svg viewBox="0 0 150 170" xmlns="http://www.w3.org/2000/svg">
+      <rect x="35" y="85" width="80" height="65" rx="14" fill="#1a3660" stroke="#00e5ff" stroke-width="2"/>
+      <rect x="52" y="100" width="46" height="26" rx="6" fill="#0a1628"/>
+      <text x="75" y="118" text-anchor="middle" fill="#00e5ff" font-size="11" font-weight="800">CSI</text>
+      <rect x="13" y="90" width="22" height="10" rx="5" fill="#1a3660" stroke="#00e5ff" stroke-width="1.5"/>
+      <rect x="115" y="90" width="22" height="10" rx="5" fill="#1a3660" stroke="#00e5ff" stroke-width="1.5"/>
+      <rect x="50" y="148" width="18" height="18" rx="6" fill="#1a3660" stroke="#00e5ff" stroke-width="1.5"/>
+      <rect x="82" y="148" width="18" height="18" rx="6" fill="#1a3660" stroke="#00e5ff" stroke-width="1.5"/>
+      <rect x="28" y="16" width="94" height="74" rx="18" fill="#1a3660" stroke="#00e5ff" stroke-width="2.5"/>
+      <line x1="75" y1="16" x2="75" y2="4" stroke="#00e5ff" stroke-width="2"/>
+      <circle cx="75" cy="3" r="4" fill="#00ff88"/>
+      <ellipse cx="56" cy="50" rx="12" ry="10" fill="#0a1628" stroke="#00e5ff" stroke-width="1.5"/>
+      <ellipse cx="94" cy="50" rx="12" ry="10" fill="#0a1628" stroke="#00e5ff" stroke-width="1.5"/>
+      <circle cx="56" cy="50" r="5" fill="#00e5ff"/>
+      <circle cx="94" cy="50" r="5" fill="#00e5ff"/>
+      <circle cx="58" cy="48" r="2" fill="white"/>
+      <circle cx="96" cy="48" r="2" fill="white"/>
+      <path id="m4mouth" d="M57 72 Q75 85 93 72" stroke="#00e5ff" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+    </svg>
+  </div>
+  <div class="hint-row">
+    <button class="hint-btn" id="hint4Btn" onclick="useHint(4)">💡 힌트 (1회)</button>
+    <span class="hint-text" id="hint4Text"></span>
+  </div>
+  <div id="dataQuestions"></div>
+  <div class="bubble" id="feedback4" style="display:none;"></div>
+  <button class="btn green-btn" id="m4Submit" onclick="submitMission4()">🏁 수사 완료! 결과 보기</button>
+</div>
+
+<!-- ■ 결과 -->
+<div id="resultScreen" class="screen">
+  <div class="title-badge">수사 완료 — 최종 결과</div>
+  <div id="resultMascot" class="mascot-wrap" style="width:120px;height:140px;">
+    <svg viewBox="0 0 150 170" xmlns="http://www.w3.org/2000/svg">
+      <rect x="35" y="85" width="80" height="65" rx="14" fill="#1a3660" stroke="#00e5ff" stroke-width="2"/>
+      <rect x="52" y="100" width="46" height="26" rx="6" fill="#0a1628"/>
+      <text x="75" y="118" text-anchor="middle" fill="#00e5ff" font-size="11" font-weight="800">CSI</text>
+      <rect x="13" y="90" width="22" height="10" rx="5" fill="#1a3660" stroke="#00e5ff" stroke-width="1.5"/>
+      <rect x="115" y="90" width="22" height="10" rx="5" fill="#1a3660" stroke="#00e5ff" stroke-width="1.5"/>
+      <rect x="50" y="148" width="18" height="18" rx="6" fill="#1a3660" stroke="#00e5ff" stroke-width="1.5"/>
+      <rect x="82" y="148" width="18" height="18" rx="6" fill="#1a3660" stroke="#00e5ff" stroke-width="1.5"/>
+      <rect x="28" y="16" width="94" height="74" rx="18" fill="#1a3660" stroke="#00e5ff" stroke-width="2.5"/>
+      <line x1="75" y1="16" x2="75" y2="4" stroke="#00e5ff" stroke-width="2"/>
+      <circle cx="75" cy="3" r="4" fill="#00ff88"/>
+      <ellipse cx="56" cy="50" rx="12" ry="10" fill="#0a1628" stroke="#00e5ff" stroke-width="1.5"/>
+      <ellipse cx="94" cy="50" rx="12" ry="10" fill="#0a1628" stroke="#00e5ff" stroke-width="1.5"/>
+      <circle cx="56" cy="50" r="5" fill="#00e5ff"/>
+      <circle cx="94" cy="50" r="5" fill="#00e5ff"/>
+      <circle cx="58" cy="48" r="2" fill="white"/>
+      <circle cx="96" cy="48" r="2" fill="white"/>
+      <path id="resultMouth" d="M57 72 Q75 85 93 72" stroke="#00e5ff" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+    </svg>
+  </div>
+  <div style="font-size:22px;font-weight:800;" id="resultTitle">수사 완료!</div>
+  <div class="result-score" id="resultScore">0점</div>
+  <div class="stars" id="resultStars"></div>
+  <div class="ending-box">
+    <div class="ending-rank" id="endingRank"></div>
+    <div class="ending-msg" id="endingMsg"></div>
+  </div>
+  <div class="panel" style="max-width:480px;">
+    <div class="panel-title">🏆 명예의 전당 (TOP 5)</div>
+    <table class="lb-table" id="lbTable"></table>
+    <div style="display:flex;gap:10px;margin-top:12px;flex-wrap:wrap;">
+      <input type="text" id="lbName" class="name-input" placeholder="이름 입력" maxlength="8" style="flex:1;">
+      <button class="btn" style="flex:0 0 auto;padding:12px 18px;font-size:15px;" onclick="saveScore()">등록</button>
+    </div>
+  </div>
+  <div>
+    <div style="font-size:14px;color:var(--muted);margin-bottom:8px;">📱 친구에게 공유 (QR)</div>
+    <div id="qrWrap"></div>
+  </div>
+  <button class="btn secondary" onclick="restartGame()">🔄 다시 수사하기</button>
+</div>
+
+<script>
+// ── 포트폴리오 로그 ──
+const portfolioEntry={id:"milab_019",title:"AI 과학수사대 CSI",subtitle:"과학의 달(4월)×AI 탐구 교과 융합 웹앱",target:"초등 5~6학년",subjects:["과학","사회","국어","실과(AI)"],theme:"과학의 달(4.21)×AI 원리 탐구×과학 수사",missions:["증거 분류(60s)","AI 퀴즈 3단계","실험 순서 정렬","데이터 막대그래프 분석"],date:"2026-03-29",url:"https://milab2019.github.io/main/ai_science_csi.html"};
+console.log("portfolioEntry:",JSON.stringify(portfolioEntry,null,2));
+
+// ── 전역 상태 ──
+let agentName="요원",totalScore=0,m1s=0,m2s=0,m3s=0,m4s=0;
+let badges={m1:0,m2:0,m3:0,m4:0};
+let hintUsed={1:false,2:false,3:false,4:false};
+let timerInt=null,musicOn=true,audioCtx=null,musicLoop=null;
+
+// ── 오디오 ──
+function getACtx(){if(!audioCtx)audioCtx=new(window.AudioContext||window.webkitAudioContext)();return audioCtx;}
+function playTone(f,d,t='sine',v=0.14){try{const c=getACtx(),o=c.createOscillator(),g=c.createGain();o.connect(g);g.connect(c.destination);o.type=t;o.frequency.value=f;g.gain.setValueAtTime(v,c.currentTime);g.gain.exponentialRampToValueAtTime(0.001,c.currentTime+d);o.start();o.stop(c.currentTime+d);}catch(e){}}
+function sfx(t){if(!musicOn)return;if(t==='ok'){playTone(660,.08);setTimeout(()=>playTone(880,.1),90);setTimeout(()=>playTone(1100,.15),200);}else if(t==='ng'){playTone(220,.3,'sawtooth',.09);}else if(t==='win'){[523,659,784,1047].forEach((f,i)=>setTimeout(()=>playTone(f,.3),i*120));}}
+function startBGM(){if(!musicOn)return;const ns=[261,329,392,329,261,329,392,523,440,392,329,261];let i=0;function nx(){if(!musicOn)return;playTone(ns[i%ns.length],.42,'triangle',.055);i++;musicLoop=setTimeout(nx,500);}clearTimeout(musicLoop);nx();}
+function toggleMusic(){musicOn=!musicOn;document.getElementById('musicBtn').textContent=musicOn?'🎵':'🔇';if(musicOn)startBGM();else clearTimeout(musicLoop);}
+
+// ── 화면 ──
+function showScreen(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active');window.scrollTo(0,0);}
+function startGame(){agentName=document.getElementById('agentName').value.trim()||'요원';totalScore=0;m1s=0;m2s=0;m3s=0;m4s=0;badges={m1:0,m2:0,m3:0,m4:0};hintUsed={1:false,2:false,3:false,4:false};startBGM();initM1();showScreen('mission1Screen');}
+
+// ── 마스코트 ──
+function mascot(id,e){const el=document.getElementById(id);if(!el)return;el.className='mascot-wrap '+e;setTimeout(()=>el.className='mascot-wrap',2000);}
+
+// ── 힌트 ──
+const HINTS={1:"화학 변화는 새로운 물질이 생기는 변화예요! 타거나, 썩거나, 녹슬거나, 발효되면 화학 변화! 🔥",2:"AI는 엄청난 양의 데이터(정보)를 보면서 스스로 패턴을 찾아내요. 사람처럼 '생각'하는 것이 아니에요! 🤖",3:"실험은 항상 준비 → 계획 → 실행 → 기록 → 결론 순서로 해요! 🧪",4:"평균 = 전체 합 ÷ 개수! 막대가 가장 높은 곳 = 가장 많은 곳이에요. 📊"};
+function useHint(n){if(hintUsed[n])return;hintUsed[n]=true;document.getElementById(`hint${n}Text`).textContent=HINTS[n];const b=document.getElementById(`hint${n}Btn`);b.disabled=true;b.textContent='💡 힌트 사용됨';}
+
+// ══════════════════════════════
+// 미션 1 — 증거 분류
+// ══════════════════════════════
+const EVS=[
+  {em:'🕯️',nm:'양초가 타다',ch:true},
+  {em:'🍎',nm:'사과가 썩다',ch:true},
+  {em:'🧊',nm:'얼음이 녹다',ch:false},
+  {em:'🔥',nm:'종이가 타다',ch:true},
+  {em:'🌊',nm:'물이 끓다',ch:false},
+  {em:'🦀',nm:'쇠가 녹슬다',ch:true},
+  {em:'🪞',nm:'유리가 깨지다',ch:false},
+  {em:'🧪',nm:'베이킹파우더+식초',ch:true},
+];
+let sel=new Set(),m1done=false,tv=60;
+
+function initM1(){m1done=false;sel.clear();const g=document.getElementById('evidenceGrid');g.innerHTML='';EVS.forEach((e,i)=>{const d=document.createElement('div');d.className='evidence-item';d.innerHTML=`<span class="ev-emoji">${e.em}</span><span>${e.nm}</span>`;d.onclick=()=>{if(m1done)return;sel.has(i)?(sel.delete(i),d.classList.remove('selected')):(sel.add(i),d.classList.add('selected'));};d.dataset.i=i;g.appendChild(d);});document.getElementById('feedback1').style.display='none';document.getElementById('m1Next').style.display='none';document.getElementById('m1Submit').style.display='block';startT1();}
+
+function startT1(){tv=60;const el=document.getElementById('timer1');el.textContent=tv;el.className='timer-display';clearInterval(timerInt);timerInt=setInterval(()=>{tv--;el.textContent=tv;if(tv<=10)el.className='timer-display danger';if(tv<=0){clearInterval(timerInt);submitEvidence();}},1000);}
+
+function submitEvidence(){if(m1done)return;m1done=true;clearInterval(timerInt);document.getElementById('m1Submit').style.display='none';
+  let ok=0,ng=0;
+  document.querySelectorAll('#evidenceGrid .evidence-item').forEach((d,i)=>{d.classList.add('disabled');if(EVS[i].ch)d.classList.add('correct');if(sel.has(i)&&!EVS[i].ch)d.classList.add('wrong');if(sel.has(i)&&EVS[i].ch)ok++;if(sel.has(i)&&!EVS[i].ch)ng++;});
+  const tot=EVS.filter(e=>e.ch).length;// 5
+  const score=Math.max(0,Math.round((ok/tot)*(hintUsed[1]?25:30)));
+  m1s=score;totalScore+=score;badges.m1=ok===tot&&ng===0?3:ok>=3?2:1;
+  const fb=document.getElementById('feedback1');fb.style.display='block';
+  if(ok===tot&&ng===0){mascot('mascot1','happy');sfx('win');fb.className='bubble praise';fb.innerHTML=`🎉 완벽해요! +${score}점<br><strong>화학 변화 5개</strong> 모두 정확히 찾았어요!<br>화학 변화 = 양초 연소, 사과 부패, 종이 연소, 쇠 산화, 베이킹파우더+식초 반응<br><span class="source">출처: 초등과학 5-2 물질과 변화 단원, 2022 개정 교육과정</span>`;}
+  else{mascot('mascot1','sad');sfx('ng');fb.className='bubble praise';fb.innerHTML=`괜찮아요! ${ok}개 맞혔어요! 💪 틀려도 배우는 중이에요!<br><strong>화학 변화</strong>: 양초·종이 연소 🔥, 사과 부패 🍎, 쇠 산화 🦀, 베이킹파우더+식초 🧪<br><strong>물리 변화</strong>: 얼음 녹음 🧊, 물 끓음 🌊, 유리 깨짐 🪞 (물질은 그대로!)<br><span class="source">출처: 초등과학 5-2 물질과 변화 단원</span>`;}
+  document.getElementById('m1Next').style.display='block';}
+
+function goMission2(){sfx('win');initM2();showScreen('mission2Screen');}
+
+// ══════════════════════════════
+// 미션 2 — AI 퀴즈
+// ══════════════════════════════
+const QD={
+  easy:[
+    {q:"AI(인공지능)가 학습할 때 가장 필요한 것은?",o:["많은 양의 데이터(정보)","특별한 마법 주문","아주 오래된 컴퓨터","사람의 감정"],a:0,exp:"AI는 엄청나게 많은 데이터를 통해 패턴을 학습해요! 사진, 글, 숫자 등 수많은 예시에서 규칙을 찾아내요.",src:"교육부 AI교육 가이드라인(2024)"},
+    {q:"챗봇이 질문에 답할 수 있는 이유는?",o:["인터넷을 실시간 검색하니까","수많은 대화 데이터를 학습했으니까","사람이 숨어서 대신 답하니까","마음이 있어서 생각하니까"],a:1,exp:"챗봇은 엄청난 양의 대화 예시를 학습해서 패턴을 익혔어요. 실시간 검색이 아니랍니다!",src:"정보통신산업진흥원 AI 개념 자료(2025)"},
+  ],
+  normal:[
+    {q:"AI가 사진에서 고양이를 구분하는 원리는?\n[고양이 사진 10만장 학습 → 정확도 95%]",o:["고양이 냄새를 맡아서","귀·털·눈 모양 패턴을 수천만 장 사진에서 학습해서","프로그래머가 규칙을 직접 입력해서","AI가 고양이를 좋아해서"],a:1,exp:"AI는 수많은 고양이 사진에서 귀·털·눈 모양 특징을 스스로 학습해요. 이것이 딥러닝(깊은 학습)이에요!",src:"AI 기초 개념 — 교육부 AI교육 자료집(2025)"},
+    {q:"AI가 틀린 답을 낼 수 있는 이유로 가장 적절한 것은?",o:["AI가 거짓말을 좋아해서","학습 데이터에 오류나 편향이 있을 수 있어서","AI는 항상 100% 정확함","전원이 부족해서"],a:1,exp:"AI는 완벽하지 않아요! 학습 데이터에 오류나 편견(편향)이 있으면 틀린 결론을 낼 수 있어요.",src:"AI 윤리 가이드 — 한국정보화진흥원(2025)"},
+  ],
+  hard:[
+    {q:"지도 학습과 비지도 학습 중 올바른 설명은?\n[지도 학습: 정답 있는 데이터로 학습 / 비지도 학습: 정답 없이 패턴 발견]",o:["스팸 메일 분류는 비지도 학습이다","음악 장르 분류는 비지도 학습이다","시험 채점과 지도 학습은 유사하다 (정답지와 비교)","AI는 항상 지도 학습만 사용한다"],a:2,exp:"지도 학습 = 정답(label)이 있는 데이터로 학습! 시험지에 정답을 비교하는 것과 유사해요. 스팸 분류도 '스팸/아님' 정답을 사용하므로 지도 학습이에요.",src:"머신러닝 개념 — 정보통신기획평가원(2026)"},
+    {q:"AI 판사(법적 판단 AI)의 가장 큰 문제점은?",o:["AI는 계산이 너무 빠르다","편향된 데이터로 학습하면 불공정한 판단이 생길 수 있다","AI는 항상 인간보다 정확하다","AI가 너무 비싸다"],a:1,exp:"AI가 과거의 편향된 데이터로 학습하면 특정 집단에 불공정한 판단을 내릴 수 있어요. AI 윤리의 핵심 문제예요!",src:"AI 윤리 원칙 — 과학기술정보통신부(2024)"},
+  ]
+};
+const DORD=['easy','normal','hard'];
+const DPTS={easy:10,normal:15,hard:20};
+let curD='easy',qIdx={easy:0,normal:0,hard:0},dDone={easy:false,normal:false,hard:false};
+let qTimer=null,qTv=30;
+
+function initM2(){m2s=0;curD='easy';qIdx={easy:0,normal:0,hard:0};dDone={easy:false,normal:false,hard:false};['normal','hard'].forEach(d=>{const t=document.getElementById('tab-'+d);t.disabled=true;t.className='diff-tab';});document.getElementById('tab-easy').className='diff-tab active';document.getElementById('feedback2').style.display='none';document.getElementById('m2Next').style.display='none';renderQ();}
+function setDiff(d){if(document.getElementById('tab-'+d).disabled||dDone[d])return;curD=d;DORD.forEach(x=>{const t=document.getElementById('tab-'+x);if(!t.disabled)t.className=dDone[x]?'diff-tab done':(x===d?'diff-tab active':'diff-tab');});renderQ();}
+function renderQ(){clearInterval(qTimer);const qs=QD[curD],idx=qIdx[curD];if(idx>=qs.length){compDiff(curD);return;}
+  const q=qs[idx];document.getElementById('questionBox').innerHTML=q.q.replace(/\n/g,'<br>');
+  const ol=document.getElementById('optionsList');ol.innerHTML='';
+  q.o.forEach((opt,i)=>{const b=document.createElement('button');b.className='option-btn';b.textContent=['①','②','③','④'][i]+' '+opt;b.onclick=()=>answerQ(i,q,b,ol);ol.appendChild(b);});
+  document.getElementById('feedback2').style.display='none';
+  document.getElementById('quizProg').textContent=`${curD==='easy'?'🟢쉬움':curD==='normal'?'🟡보통':'🔴도전'} — ${idx+1}/${qs.length}문제`;
+  qTv=30;const tel=document.getElementById('timer2');tel.textContent=qTv;tel.className='timer-display';
+  qTimer=setInterval(()=>{qTv--;tel.textContent=qTv;if(qTv<=10)tel.className='timer-display danger';if(qTv<=0){clearInterval(qTimer);timeoutQ(q,ol);}},1000);}
+function answerQ(i,q,btn,ol){clearInterval(qTimer);ol.querySelectorAll('.option-btn').forEach(b=>b.disabled=true);
+  const ok=i===q.a;btn.classList.add(ok?'correct':'wrong');ol.children[q.a].classList.add('correct');
+  const pts=ok?Math.round(DPTS[curD]*(hintUsed[2]?.5:1)):0;m2s+=pts;totalScore+=pts;
+  document.getElementById('q2Score').textContent=m2s+'점';
+  const fb=document.getElementById('feedback2');fb.style.display='block';
+  if(ok){mascot('mascot2','happy');sfx('ok');fb.className='bubble praise';fb.innerHTML=`✅ 정답! +${pts}점<br>${q.exp}<br><span class="source">출처: ${q.src}</span>`;}
+  else{mascot('mascot2','sad');sfx('ng');fb.className='bubble praise';fb.innerHTML=`틀려도 괜찮아요! 💪 한 번 더 도전!<br>정답: ${['①','②','③','④'][q.a]} ${q.o[q.a]}<br>${q.exp}<br><span class="source">출처: ${q.src}</span>`;}
+  qIdx[curD]++;setTimeout(()=>{fb.style.display='none';renderQ();},2800);}
+function timeoutQ(q,ol){ol.querySelectorAll('.option-btn').forEach(b=>b.disabled=true);ol.children[q.a].classList.add('correct');
+  const fb=document.getElementById('feedback2');fb.style.display='block';fb.className='bubble praise';
+  fb.innerHTML=`⏰ 시간 초과! 괜찮아요!<br>정답: ${['①','②','③','④'][q.a]} ${q.o[q.a]}<br>${q.exp}`;
+  qIdx[curD]++;setTimeout(()=>{fb.style.display='none';renderQ();},2800);}
+function compDiff(d){dDone[d]=true;document.getElementById('tab-'+d).className='diff-tab done';
+  const ni=DORD.indexOf(d)+1;
+  if(ni<DORD.length){const nd=DORD[ni];const nt=document.getElementById('tab-'+nd);nt.disabled=false;nt.className='diff-tab';sfx('ok');
+    const fb=document.getElementById('feedback2');fb.style.display='block';fb.className='bubble praise';
+    fb.innerHTML=`🎉 ${d==='easy'?'쉬움':d==='normal'?'보통':'도전'} 완료! 다음 단계로! ⬆️`;
+    setTimeout(()=>setDiff(nd),1800);}
+  else{badges.m2=m2s>=60?3:m2s>=35?2:1;sfx('win');document.getElementById('m2Next').style.display='block';
+    const fb=document.getElementById('feedback2');fb.style.display='block';fb.className='bubble praise';
+    fb.innerHTML=`🏆 AI 퀴즈 완료! 총 ${m2s}점 획득!`;}}
+function goMission3(){sfx('win');initM3();showScreen('mission3Screen');}
+
+// ══════════════════════════════
+// 미션 3 — 드래그 정렬
+// ══════════════════════════════
+const STEPS=[
+  {txt:'🔬 돋보기와 분말 키트 등 도구를 준비한다',ord:1},
+  {txt:'🎯 지문을 채취할 증거물(물체)을 선택한다',ord:2},
+  {txt:'🖌️ 분말을 붓으로 살살 물체에 바른다',ord:3},
+  {txt:'📸 나타난 지문을 투명 테이프로 채취한다',ord:4},
+  {txt:'📋 채취한 지문을 흰 종이에 붙이고 기록한다',ord:5},
+  {txt:'🔍 결과를 분석하고 실험 보고서를 작성한다',ord:6},
+];
+let dragSrc=null;
+function initM3(){const sh=[...STEPS].sort(()=>Math.random()-.5);const list=document.getElementById('sortList');list.innerHTML='';
+  sh.forEach((s,i)=>{const d=document.createElement('div');d.className='sort-item';d.draggable=true;d.dataset.ord=s.ord;
+    d.innerHTML=`<span class="step-num">${i+1}</span><span>${s.txt}</span><span class="drag-handle">⠿</span>`;
+    d.addEventListener('dragstart',e=>{dragSrc=d;d.classList.add('dragging');e.dataTransfer.effectAllowed='move';});
+    d.addEventListener('dragend',()=>{d.classList.remove('dragging');list.querySelectorAll('.sort-item').forEach(s=>s.classList.remove('drag-over'));updNums();});
+    d.addEventListener('dragover',e=>{e.preventDefault();d.classList.add('drag-over');});
+    d.addEventListener('dragleave',()=>d.classList.remove('drag-over'));
+    d.addEventListener('drop',e=>{e.preventDefault();if(dragSrc!==d)list.insertBefore(dragSrc,d);d.classList.remove('drag-over');updNums();});
+    addTouch(d,list);list.appendChild(d);});
+  document.getElementById('feedback3').style.display='none';document.getElementById('m3Next').style.display='none';}
+function addTouch(el,list){let clone,lastOver;
+  el.addEventListener('touchstart',e=>{dragSrc=el;clone=el.cloneNode(true);const r=el.getBoundingClientRect();clone.style.cssText=`position:fixed;opacity:.7;pointer-events:none;z-index:9999;width:${el.offsetWidth}px;left:${r.left}px;top:${r.top}px;`;document.body.appendChild(clone);el.style.opacity='.3';},{passive:true});
+  el.addEventListener('touchmove',e=>{e.preventDefault();const t=e.touches[0];clone.style.top=(t.clientY-28)+'px';const u=document.elementFromPoint(t.clientX,t.clientY),ov=u?u.closest('.sort-item'):null;if(lastOver)lastOver.classList.remove('drag-over');if(ov&&ov!==el){ov.classList.add('drag-over');lastOver=ov;}else lastOver=null;},{passive:false});
+  el.addEventListener('touchend',e=>{const t=e.changedTouches[0],u=document.elementFromPoint(t.clientX,t.clientY),ov=u?u.closest('.sort-item'):null;if(ov&&ov!==el)list.insertBefore(el,ov);el.style.opacity='1';clone.remove();if(lastOver)lastOver.classList.remove('drag-over');updNums();});}
+function updNums(){document.querySelectorAll('#sortList .sort-item').forEach((el,i)=>el.querySelector('.step-num').textContent=i+1);}
+function checkSort(){const items=[...document.querySelectorAll('#sortList .sort-item')];const ords=items.map(el=>+el.dataset.ord);const ok=ords.every((v,i)=>v===i+1);const cnt=ords.filter((v,i)=>v===i+1).length;
+  const score=ok?(hintUsed[3]?20:25):Math.round((cnt/6)*(hintUsed[3]?15:20));
+  m3s=score;totalScore+=score;badges.m3=ok?3:cnt>=4?2:1;
+  const fb=document.getElementById('feedback3');fb.style.display='block';
+  if(ok){mascot('mascot3','happy');sfx('win');fb.className='bubble praise';fb.innerHTML=`🎉 완벽해요! +${score}점<br>준비→증거물선택→분말 바르기→지문 채취→기록→보고서 작성 ✅<br><span class="source">출처: 초등과학 탐구 실험 절차, 2022 개정 교육과정</span>`;}
+  else{mascot('mascot3','sad');sfx('ng');fb.className='bubble praise';fb.innerHTML=`괜찮아요! ${cnt}단계 맞췄어요! 💪<br>올바른 순서: 준비→증거물 선택→분말 바르기→지문 채취→기록→보고서<br><span class="source">출처: 초등과학 탐구 실험 절차</span>`;}
+  document.getElementById('m3Next').style.display='block';}
+function goMission4(){sfx('win');initM4();showScreen('mission4Screen');}
+
+// ══════════════════════════════
+// 미션 4 — 데이터 분석
+// ══════════════════════════════
+const CD=[{a:'가 구역',v:45},{a:'나 구역',v:72},{a:'다 구역',v:38},{a:'라 구역',v:91},{a:'마 구역',v:54}];
+const DQS=[
+  {q:"불법 투기 신고 건수가 가장 많은 구역은?",o:["가 구역","나 구역","다 구역","라 구역"],a:3,pts:10,exp:"라 구역 91건으로 가장 많아요! 막대가 가장 높은 곳을 찾으면 돼요."},
+  {q:"5개 구역의 평균 신고 건수는?",o:["55건","60건","58건","70건"],a:1,pts:15,exp:"(45+72+38+91+54)÷5 = 300÷5 = 60건! 평균 = 합계 ÷ 개수 공식이에요."},
+  {q:"나 구역은 평균보다 몇 건 더 많나요?",o:["10건","12건","14건","8건"],a:1,pts:20,exp:"나 구역(72건) - 평균(60건) = 12건! 비교 분석이 데이터 해석의 핵심이에요."},
+];
+let dAnss={};
+function initM4(){dAnss={};const mx=Math.max(...CD.map(d=>d.v));const chart=document.getElementById('barChart');chart.innerHTML='';
+  CD.forEach(d=>{const c=document.createElement('div');c.className='bar-col';const h=Math.round((d.v/mx)*130);c.innerHTML=`<div class="bar" style="height:${h}px;">${d.v}</div><div class="bar-label">${d.a}</div>`;chart.appendChild(c);});
+  const qw=document.getElementById('dataQuestions');qw.innerHTML='';
+  DQS.forEach((q,qi)=>{const d=document.createElement('div');d.className='panel';d.style.cssText='margin-top:12px;max-width:520px;width:100%;';
+    const nums=['①','②','③','④'];
+    const optHtml=q.o.map((opt,oi)=>'<button class="option-btn" id="dq_'+qi+'_'+oi+'" onclick="ansD('+qi+','+oi+')">'+nums[oi]+' '+opt+'</button>').join('');
+    d.innerHTML='<div class="panel-title">Q'+(qi+1)+'. '+q.q+' <span style="color:var(--muted);font-weight:400;">('+q.pts+'점)</span></div>'
+      +'<div style="display:flex;flex-direction:column;gap:8px;">'+optHtml+'</div>'
+      +'<div id="dfb_'+qi+'" style="display:none;margin-top:8px;font-size:14px;"></div>';
+    qw.appendChild(d);});}
+function ansD(qi,oi){if(dAnss[qi]!==undefined)return;dAnss[qi]=oi;const q=DQS[qi];const ok=oi===q.a;const pts=ok?Math.round(q.pts*(hintUsed[4]?.5:1)):0;m4s+=pts;totalScore+=pts;
+  document.querySelectorAll(`[id^="dq_${qi}_"]`).forEach(b=>b.disabled=true);document.getElementById(`dq_${qi}_${oi}`).classList.add(ok?'correct':'wrong');document.getElementById(`dq_${qi}_${q.a}`).classList.add('correct');
+  const fb=document.getElementById(`dfb_${qi}`);fb.style.display='block';
+  if(ok){mascot('mascot4','happy');sfx('ok');fb.innerHTML=`✅ 정답! +${pts}점 — ${q.exp}`;fb.style.color='var(--green)';}
+  else{mascot('mascot4','sad');sfx('ng');fb.innerHTML=`💪 틀려도 괜찮아요! 정답: ${['①','②','③','④'][q.a]} — ${q.exp}`;fb.style.color='var(--yellow)';}}
+function submitMission4(){DQS.forEach((_,qi)=>{if(dAnss[qi]===undefined)dAnss[qi]=-1;});badges.m4=m4s>=35?3:m4s>=20?2:1;sfx('win');showResult();}
+
+// ══════════════════════════════
+// 결과
+// ══════════════════════════════
+function showResult(){
+  const pct=Math.min(100,Math.round((totalScore/100)*100));
+  const ENDS=[
+    {min:80,rank:'🏅 레전드 요원',msg:`완벽한 수사야, ${agentName} 요원! AI 과학수사대의 에이스예요. 과학 지식과 데이터 분석 능력이 최고 수준이에요! 미래의 AI 과학자로서 무한한 가능성을 보여줬어요! 🔬✨`},
+    {min:60,rank:'🕵️ 전문 요원',msg:`훌륭한 수사 실력이에요, ${agentName} 요원! 과학과 AI에 대한 이해도가 높아요. 조금 더 연습하면 레전드 요원이 될 수 있어요! 💪`},
+    {min:40,rank:'🔍 탐험 요원',msg:`${agentName} 요원, 잘 하고 있어요! 처음이라 어려웠겠지만 도전한 것만으로도 멋져요. 다시 도전하면 분명 더 잘할 수 있어요! 🌟`},
+    {min:0,rank:'🌱 견습 요원',msg:`${agentName} 요원, 첫 수사를 완료했어요! 틀려도 괜찮아요. 배우는 과정이 바로 성장이에요. 다시 도전해 보세요! 💫`},
+  ];
+  const end=ENDS.find(e=>pct>=e.min);
+  const stars=badges.m1+badges.m2+badges.m3+badges.m4;
+  document.getElementById('resultTitle').textContent=`${agentName} 요원의 수사 결과`;
+  document.getElementById('resultScore').textContent=totalScore+'점';
+  document.getElementById('resultStars').textContent='⭐'.repeat(Math.min(stars,12));
+  document.getElementById('endingRank').textContent=end.rank;
+  document.getElementById('endingMsg').textContent=end.msg;
+  if(pct>=60)document.getElementById('resultMouth').setAttribute('d','M55 74 Q75 92 95 74');
+  document.getElementById('lbName').value=agentName;
+  renderLB();
+  const qr=document.getElementById('qrWrap');qr.innerHTML='';
+  try{new QRCode(qr,{text:location.href,width:120,height:120,colorDark:"#0a1628",colorLight:"#ffffff"});}catch(e){qr.textContent=location.href;}
+  showScreen('resultScreen');sfx('win');}
+function renderLB(){const k='milab_game_019_lb';let lb=JSON.parse(localStorage.getItem(k)||'[]');lb.sort((a,b)=>b.score-a.score);lb=lb.slice(0,5);
+  const t=document.getElementById('lbTable');t.innerHTML='<tr><th>순위</th><th>이름</th><th class="lb-score">점수</th></tr>';
+  lb.forEach((e,i)=>t.innerHTML+=`<tr><td>${['🥇','🥈','🥉','4위','5위'][i]}</td><td class="${i===0?'lb-top':''}">${e.name}</td><td class="lb-score">${e.score}점</td></tr>`);}
+function saveScore(){const name=document.getElementById('lbName').value.trim()||agentName;const k='milab_game_019_lb';let lb=JSON.parse(localStorage.getItem(k)||'[]');lb.push({name,score:totalScore,date:new Date().toLocaleDateString('ko-KR')});lb.sort((a,b)=>b.score-a.score);localStorage.setItem(k,JSON.stringify(lb.slice(0,5)));renderLB();sfx('ok');}
+function restartGame(){totalScore=0;m1s=0;m2s=0;m3s=0;m4s=0;badges={m1:0,m2:0,m3:0,m4:0};hintUsed={1:false,2:false,3:false,4:false};showScreen('titleScreen');}
+</script>
+</body>
+</html>
