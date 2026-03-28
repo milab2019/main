@@ -1,0 +1,1323 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>🚀 2050 미래 직업 신호등 | MILAB #018</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<style>
+  :root {
+    --bg-deep: #050d1a;
+    --bg-card: #0a1628;
+    --bg-panel: #0f1f36;
+    --accent-cyan: #00d4ff;
+    --accent-green: #00ff9d;
+    --accent-yellow: #ffd700;
+    --accent-red: #ff4d6d;
+    --accent-purple: #a855f7;
+    --text-main: #e2f0ff;
+    --text-sub: #7a9ab8;
+    --border: rgba(0,212,255,0.18);
+    --glow-cyan: 0 0 20px rgba(0,212,255,0.35);
+    --glow-green: 0 0 20px rgba(0,255,157,0.35);
+    --radius: 16px;
+    --font-main: 'Noto Sans KR', 'Apple SD Gothic Neo', sans-serif;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  body {
+    background: var(--bg-deep);
+    color: var(--text-main);
+    font-family: var(--font-main);
+    min-height: 100vh;
+    overflow-x: hidden;
+    position: relative;
+  }
+  /* 배경 애니메이션 */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background:
+      radial-gradient(ellipse 800px 600px at 20% 10%, rgba(0,100,200,0.08) 0%, transparent 70%),
+      radial-gradient(ellipse 600px 400px at 80% 80%, rgba(100,0,200,0.06) 0%, transparent 70%),
+      radial-gradient(ellipse 400px 300px at 50% 50%, rgba(0,200,150,0.04) 0%, transparent 70%);
+    pointer-events: none;
+    z-index: 0;
+  }
+  /* 별 파티클 */
+  .stars { position:fixed; inset:0; pointer-events:none; z-index:0; }
+  .star {
+    position:absolute; width:2px; height:2px; border-radius:50%;
+    background:#fff; animation: twinkle var(--dur,3s) ease-in-out infinite;
+    animation-delay: var(--delay,0s);
+    opacity:0;
+  }
+  @keyframes twinkle { 0%,100%{opacity:0} 50%{opacity:var(--op,0.6)} }
+
+  #app { position:relative; z-index:1; max-width:760px; margin:0 auto; padding:16px; }
+
+  /* 헤더 */
+  .game-header {
+    text-align:center; padding:28px 16px 20px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 20px;
+  }
+  .game-title {
+    font-size: clamp(1.4rem, 5vw, 2rem);
+    font-weight: 900;
+    background: linear-gradient(135deg, var(--accent-cyan), var(--accent-green), var(--accent-yellow));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    line-height: 1.2; margin-bottom: 6px;
+  }
+  .game-subtitle { color: var(--text-sub); font-size:0.85rem; }
+  .music-btn {
+    position:fixed; top:12px; right:12px; z-index:100;
+    background: rgba(0,212,255,0.12); border:1px solid var(--border);
+    color: var(--accent-cyan); padding:8px 14px; border-radius:30px;
+    cursor:pointer; font-size:0.8rem; font-family:var(--font-main);
+    backdrop-filter:blur(10px);
+    transition: all 0.3s;
+  }
+  .music-btn:hover { background: rgba(0,212,255,0.25); }
+
+  /* 카드 공통 */
+  .card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px;
+    margin-bottom: 16px;
+    position: relative;
+    overflow: hidden;
+    animation: fadeIn 0.5s ease both;
+  }
+  @keyframes fadeIn { from{opacity:0;transform:translateY(16px)} to{opacity:1;transform:none} }
+  .card::before {
+    content:''; position:absolute; top:0; left:0; right:0; height:2px;
+    background: linear-gradient(90deg, transparent, var(--accent-cyan), transparent);
+    opacity:0.5;
+  }
+
+  /* 캐릭터 마스코트 */
+  .mascot-wrap { text-align:center; margin-bottom:16px; }
+  .mascot-svg { width:80px; height:80px; display:inline-block; transition: transform 0.3s; }
+  .mascot-bubble {
+    background: var(--bg-panel); border: 1px solid var(--border);
+    border-radius:12px; padding:10px 16px;
+    font-size:0.88rem; color:var(--text-main);
+    position:relative; display:inline-block; max-width:90%;
+    margin-top:8px; text-align:left; line-height:1.5;
+  }
+  .mascot-bubble::before {
+    content:'▲'; color:var(--bg-panel); position:absolute;
+    top:-12px; left:50%; transform:translateX(-50%);
+    font-size:0.7rem;
+    filter: drop-shadow(0 -1px 0 rgba(0,212,255,0.18));
+  }
+  .mascot-name {
+    font-size:0.72rem; color:var(--accent-cyan);
+    margin-bottom:4px; font-weight:700; letter-spacing:0.05em;
+  }
+
+  /* 미션 진행 바 */
+  .mission-nav {
+    display:flex; gap:8px; margin-bottom:20px;
+    justify-content:center; flex-wrap:wrap;
+  }
+  .mission-dot {
+    width:32px; height:32px; border-radius:50%;
+    border: 2px solid var(--border);
+    display:flex; align-items:center; justify-content:center;
+    font-size:0.75rem; font-weight:700; color:var(--text-sub);
+    transition: all 0.4s; cursor:default; user-select:none;
+  }
+  .mission-dot.active {
+    border-color: var(--accent-cyan); color:var(--accent-cyan);
+    box-shadow: var(--glow-cyan);
+    background: rgba(0,212,255,0.08);
+  }
+  .mission-dot.done {
+    border-color: var(--accent-green); color:var(--accent-green);
+    background: rgba(0,255,157,0.08);
+  }
+  .mission-dot-label { font-size:0.68rem; color:var(--text-sub); text-align:center; margin-top:2px; }
+
+  /* 점수 표시 */
+  .score-bar {
+    display:flex; justify-content:space-between; align-items:center;
+    background:var(--bg-panel); border-radius:10px; padding:10px 16px;
+    margin-bottom:16px; border:1px solid var(--border);
+  }
+  .score-item { text-align:center; }
+  .score-label { font-size:0.68rem; color:var(--text-sub); margin-bottom:2px; }
+  .score-val { font-size:1.1rem; font-weight:900; color:var(--accent-cyan); }
+
+  /* 타이머 */
+  .timer-wrap { text-align:center; margin-bottom:12px; }
+  .timer-bar-bg { height:6px; background:rgba(255,255,255,0.08); border-radius:3px; overflow:hidden; }
+  .timer-bar { height:100%; background:linear-gradient(90deg, var(--accent-cyan), var(--accent-green)); transition:width 0.1s linear; border-radius:3px; }
+  .timer-val { font-size:1rem; font-weight:700; color:var(--accent-cyan); margin-bottom:6px; }
+  .timer-val.danger { color:var(--accent-red); animation:blink 0.4s ease-in-out infinite; }
+  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+  /* 질문 카드 */
+  .question-area { margin-bottom:16px; }
+  .question-badge {
+    display:inline-block; font-size:0.7rem; font-weight:700;
+    padding:3px 10px; border-radius:20px; margin-bottom:10px;
+    letter-spacing:0.05em;
+  }
+  .badge-easy { background:rgba(0,255,157,0.15); color:var(--accent-green); border:1px solid rgba(0,255,157,0.3); }
+  .badge-normal { background:rgba(0,212,255,0.15); color:var(--accent-cyan); border:1px solid rgba(0,212,255,0.3); }
+  .badge-hard { background:rgba(255,77,109,0.15); color:var(--accent-red); border:1px solid rgba(255,77,109,0.3); }
+  .question-text {
+    font-size:clamp(0.95rem, 2.5vw, 1.08rem);
+    line-height:1.7; color:var(--text-main); font-weight:500;
+    margin-bottom:6px;
+  }
+  .question-data {
+    background:rgba(0,212,255,0.05); border-left:3px solid var(--accent-cyan);
+    border-radius:0 8px 8px 0; padding:10px 14px;
+    font-size:0.85rem; color:var(--text-sub); margin-bottom:14px;
+    line-height:1.6;
+  }
+  .question-data strong { color:var(--accent-cyan); }
+
+  /* 선택지 버튼 */
+  .choices { display:flex; flex-direction:column; gap:10px; }
+  .choice-btn {
+    background: var(--bg-panel);
+    border: 1.5px solid var(--border);
+    border-radius:12px; padding:14px 18px;
+    color:var(--text-main); font-size:0.9rem; font-family:var(--font-main);
+    text-align:left; cursor:pointer; transition:all 0.25s;
+    min-height:52px; line-height:1.4;
+  }
+  .choice-btn:hover:not(:disabled) {
+    border-color:var(--accent-cyan); background:rgba(0,212,255,0.08);
+    transform:translateX(4px);
+  }
+  .choice-btn.correct { border-color:var(--accent-green); background:rgba(0,255,157,0.12); color:var(--accent-green); }
+  .choice-btn.wrong { border-color:var(--accent-red); background:rgba(255,77,109,0.1); color:var(--accent-red); }
+  .choice-btn:disabled { cursor:default; }
+
+  /* 힌트 버튼 */
+  .hint-btn {
+    background:rgba(255,215,0,0.08); border:1px solid rgba(255,215,0,0.25);
+    color:var(--accent-yellow); border-radius:8px; padding:8px 16px;
+    font-size:0.8rem; cursor:pointer; font-family:var(--font-main);
+    transition:all 0.2s; margin-bottom:12px;
+  }
+  .hint-btn:hover:not(:disabled) { background:rgba(255,215,0,0.16); }
+  .hint-btn:disabled { opacity:0.4; cursor:not-allowed; }
+  .hint-box {
+    background:rgba(255,215,0,0.06); border:1px solid rgba(255,215,0,0.2);
+    border-radius:8px; padding:10px 14px; font-size:0.82rem;
+    color:var(--accent-yellow); margin-bottom:12px; line-height:1.6;
+    display:none;
+  }
+
+  /* 피드백 */
+  .feedback-box {
+    border-radius:12px; padding:14px 16px;
+    margin-bottom:12px; line-height:1.6; font-size:0.88rem;
+    display:none;
+  }
+  .feedback-box.correct { background:rgba(0,255,157,0.08); border:1px solid rgba(0,255,157,0.25); color:var(--accent-green); }
+  .feedback-box.wrong { background:rgba(255,77,109,0.08); border:1px solid rgba(255,77,109,0.25); color:var(--text-main); }
+
+  /* 스티커 팝업 */
+  .sticker-popup {
+    position:fixed; inset:0; z-index:200;
+    display:flex; align-items:center; justify-content:center;
+    pointer-events:none; opacity:0;
+    transition: opacity 0.3s;
+  }
+  .sticker-popup.show { opacity:1; }
+  .sticker-inner {
+    background:var(--bg-card); border:2px solid var(--accent-green);
+    border-radius:20px; padding:28px 36px; text-align:center;
+    box-shadow: var(--glow-green), 0 20px 60px rgba(0,0,0,0.5);
+    animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  }
+  .sticker-inner.wrong-sticker { border-color:var(--accent-cyan); box-shadow:var(--glow-cyan), 0 20px 60px rgba(0,0,0,0.5); }
+  @keyframes popIn { from{transform:scale(0.5)} to{transform:scale(1)} }
+  .sticker-emoji { font-size:3.5rem; display:block; margin-bottom:8px; }
+  .sticker-text { font-size:1.1rem; font-weight:700; color:var(--text-main); }
+
+  /* 다음 버튼 */
+  .next-btn {
+    width:100%; padding:16px; border-radius:12px;
+    background:linear-gradient(135deg, var(--accent-cyan), rgba(0,212,255,0.7));
+    border:none; color:#000; font-size:1rem; font-weight:700;
+    font-family:var(--font-main); cursor:pointer;
+    transition: all 0.3s; display:none;
+    box-shadow: var(--glow-cyan);
+  }
+  .next-btn:hover { transform:translateY(-2px); box-shadow: 0 0 30px rgba(0,212,255,0.5); }
+  .next-btn.show { display:block; animation:fadeIn 0.4s ease; }
+
+  /* 미션3 AI 체험 */
+  .ai-mission { }
+  .data-cards { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:16px; }
+  .data-card {
+    background:var(--bg-panel); border:1.5px solid var(--border);
+    border-radius:12px; padding:12px; text-align:center; cursor:pointer;
+    transition:all 0.25s; user-select:none;
+    min-height:70px; display:flex; flex-direction:column;
+    justify-content:center; align-items:center; gap:4px;
+  }
+  .data-card:hover { border-color:var(--accent-purple); background:rgba(168,85,247,0.08); }
+  .data-card.selected-a { border-color:var(--accent-cyan); background:rgba(0,212,255,0.12); }
+  .data-card.selected-b { border-color:var(--accent-yellow); background:rgba(255,215,0,0.1); }
+  .data-card.classified-correct { border-color:var(--accent-green); background:rgba(0,255,157,0.12); }
+  .data-card.classified-wrong { border-color:var(--accent-red); background:rgba(255,77,109,0.1); }
+  .data-card-icon { font-size:1.8rem; }
+  .data-card-text { font-size:0.78rem; color:var(--text-sub); }
+
+  .classify-labels { display:flex; gap:10px; margin-bottom:12px; }
+  .classify-label {
+    flex:1; padding:10px; border-radius:10px; text-align:center;
+    font-size:0.82rem; font-weight:700; cursor:pointer;
+    transition:all 0.2s; border:2px solid;
+  }
+  .label-a { border-color:var(--accent-cyan); color:var(--accent-cyan); background:rgba(0,212,255,0.06); }
+  .label-a.active-label { background:rgba(0,212,255,0.2); }
+  .label-b { border-color:var(--accent-yellow); color:var(--accent-yellow); background:rgba(255,215,0,0.06); }
+  .label-b.active-label { background:rgba(255,215,0,0.18); }
+
+  /* 미션4 시나리오 */
+  .scenario-box {
+    background:rgba(0,212,255,0.04); border:1px solid var(--border);
+    border-radius:12px; padding:16px; margin-bottom:16px;
+    font-size:0.9rem; line-height:1.7; color:var(--text-main);
+  }
+  .scenario-box .scene-title {
+    color:var(--accent-cyan); font-weight:700; font-size:0.8rem;
+    text-transform:uppercase; letter-spacing:0.08em;
+    margin-bottom:8px;
+  }
+
+  /* 결과 화면 */
+  .result-section { text-align:center; }
+  .result-grade-badge {
+    display:inline-block; font-size:4rem; margin:16px 0;
+    animation: floatAnim 3s ease-in-out infinite;
+  }
+  @keyframes floatAnim { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-12px)} }
+  .result-title {
+    font-size:clamp(1.3rem, 4vw, 1.8rem); font-weight:900;
+    background:linear-gradient(135deg, var(--accent-cyan), var(--accent-green));
+    -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+    margin-bottom:8px;
+  }
+  .result-subtitle { color:var(--text-sub); font-size:0.88rem; margin-bottom:20px; }
+  .result-career {
+    background:var(--bg-panel); border:1px solid var(--border);
+    border-radius:14px; padding:18px; margin-bottom:16px; text-align:left;
+  }
+  .result-career-title { color:var(--accent-yellow); font-weight:700; font-size:0.85rem; margin-bottom:8px; }
+  .result-career-content { font-size:0.9rem; line-height:1.7; color:var(--text-main); }
+  .score-breakdown {
+    display:grid; grid-template-columns:repeat(4,1fr); gap:8px;
+    margin-bottom:16px;
+  }
+  .score-cell { background:var(--bg-panel); border-radius:10px; padding:10px; text-align:center; }
+  .score-cell-label { font-size:0.68rem; color:var(--text-sub); margin-bottom:4px; }
+  .score-cell-val { font-size:1rem; font-weight:700; color:var(--accent-cyan); }
+
+  /* 닉네임 & 리더보드 */
+  .nickname-input {
+    background:var(--bg-panel); border:1.5px solid var(--border);
+    border-radius:10px; padding:12px 16px; color:var(--text-main);
+    font-family:var(--font-main); font-size:0.95rem; width:100%;
+    margin-bottom:10px;
+  }
+  .nickname-input:focus { outline:none; border-color:var(--accent-cyan); }
+  .submit-score-btn {
+    width:100%; padding:14px; border-radius:10px;
+    background:rgba(0,212,255,0.1); border:1.5px solid var(--accent-cyan);
+    color:var(--accent-cyan); font-size:0.95rem; font-weight:700;
+    font-family:var(--font-main); cursor:pointer; transition:all 0.2s;
+    margin-bottom:14px;
+  }
+  .submit-score-btn:hover { background:rgba(0,212,255,0.2); }
+
+  .leaderboard { margin-bottom:16px; }
+  .lb-title { font-size:0.8rem; color:var(--text-sub); margin-bottom:8px; font-weight:700; }
+  .lb-row {
+    display:flex; justify-content:space-between; align-items:center;
+    padding:8px 12px; border-radius:8px; margin-bottom:4px;
+    background:var(--bg-panel); font-size:0.85rem;
+  }
+  .lb-rank { color:var(--accent-yellow); font-weight:700; min-width:24px; }
+  .lb-name { color:var(--text-main); flex:1; margin:0 10px; }
+  .lb-score { color:var(--accent-cyan); font-weight:700; }
+
+  /* QR */
+  .qr-section { text-align:center; padding-top:10px; }
+  .qr-label { font-size:0.75rem; color:var(--text-sub); margin-bottom:10px; }
+  #qrcode { display:inline-block; background:#fff; padding:8px; border-radius:10px; }
+
+  /* 뱃지 */
+  .badge-row { display:flex; justify-content:center; gap:12px; margin-bottom:16px; flex-wrap:wrap; }
+  .badge-item { text-align:center; }
+  .badge-star { font-size:0.9rem; }
+  .badge-label { font-size:0.65rem; color:var(--text-sub); }
+
+  /* 시작 화면 */
+  .start-screen { text-align:center; padding:20px 0; }
+  .start-hero { font-size:5rem; margin-bottom:16px; display:block; animation: floatAnim 3s ease-in-out infinite; }
+  .start-desc { font-size:0.9rem; color:var(--text-sub); line-height:1.8; margin-bottom:24px; max-width:520px; margin-left:auto; margin-right:auto; }
+  .start-info-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:24px; max-width:520px; margin-left:auto; margin-right:auto; }
+  .start-info-cell { background:var(--bg-panel); border-radius:10px; padding:12px; text-align:center; }
+  .start-info-icon { font-size:1.5rem; margin-bottom:4px; }
+  .start-info-text { font-size:0.75rem; color:var(--text-sub); }
+  .start-btn {
+    display:inline-block; padding:16px 48px; border-radius:50px;
+    background:linear-gradient(135deg, var(--accent-cyan), var(--accent-green));
+    border:none; color:#000; font-size:1.05rem; font-weight:900;
+    font-family:var(--font-main); cursor:pointer; transition:all 0.3s;
+    box-shadow: var(--glow-cyan);
+  }
+  .start-btn:hover { transform:scale(1.06); box-shadow:0 0 40px rgba(0,212,255,0.5); }
+  .source-note { font-size:0.7rem; color:var(--text-sub); margin-top:8px; opacity:0.7; }
+
+  /* 난이도 탭 */
+  .diff-tabs { display:flex; gap:8px; margin-bottom:16px; }
+  .diff-tab {
+    flex:1; padding:10px; border-radius:10px; text-align:center;
+    font-size:0.82rem; font-weight:700; cursor:pointer;
+    border:1.5px solid var(--border); color:var(--text-sub);
+    transition:all 0.2s; font-family:var(--font-main); background:transparent;
+  }
+  .diff-tab.active-easy { border-color:var(--accent-green); color:var(--accent-green); background:rgba(0,255,157,0.08); }
+  .diff-tab.active-normal { border-color:var(--accent-cyan); color:var(--accent-cyan); background:rgba(0,212,255,0.08); }
+  .diff-tab.active-hard { border-color:var(--accent-red); color:var(--accent-red); background:rgba(255,77,109,0.08); }
+
+  /* 알고리즘 정렬 미션 */
+  .algo-steps { display:flex; flex-direction:column; gap:8px; margin-bottom:16px; }
+  .algo-step {
+    background:var(--bg-panel); border:1.5px solid var(--border);
+    border-radius:10px; padding:12px 16px; cursor:grab;
+    display:flex; align-items:center; gap:10px;
+    transition:all 0.2s; user-select:none;
+  }
+  .algo-step:hover { border-color:var(--accent-purple); }
+  .algo-step.dragging { opacity:0.4; border-color:var(--accent-cyan); }
+  .algo-step-num {
+    width:26px; height:26px; border-radius:50%;
+    background:rgba(0,212,255,0.15); color:var(--accent-cyan);
+    font-size:0.8rem; font-weight:700; display:flex;
+    align-items:center; justify-content:center; flex-shrink:0;
+  }
+  .algo-step-text { font-size:0.85rem; color:var(--text-main); line-height:1.4; }
+  .algo-confirm-btn {
+    width:100%; padding:13px; border-radius:10px;
+    background:rgba(168,85,247,0.1); border:1.5px solid var(--accent-purple);
+    color:var(--accent-purple); font-size:0.9rem; font-weight:700;
+    font-family:var(--font-main); cursor:pointer; transition:all 0.2s;
+  }
+  .algo-confirm-btn:hover { background:rgba(168,85,247,0.2); }
+
+  .section-title {
+    font-size:0.75rem; color:var(--accent-cyan);
+    text-transform:uppercase; letter-spacing:0.1em;
+    font-weight:700; margin-bottom:12px;
+    display:flex; align-items:center; gap:6px;
+  }
+  .section-title::after { content:''; flex:1; height:1px; background:var(--border); }
+
+  /* 미션 완료 배너 */
+  .mission-clear {
+    text-align:center; padding:20px;
+    background:rgba(0,255,157,0.05); border:1px solid rgba(0,255,157,0.2);
+    border-radius:14px; margin-bottom:16px;
+  }
+  .mission-clear-title { font-size:1.3rem; font-weight:900; color:var(--accent-green); margin-bottom:4px; }
+  .mission-clear-pts { font-size:0.9rem; color:var(--text-sub); }
+</style>
+</head>
+<body>
+<div class="stars" id="stars"></div>
+<button class="music-btn" id="musicBtn" onclick="toggleMusic()">🎵 음악 ON</button>
+<div id="app">
+  <div class="game-header">
+    <div class="game-title">🚀 2050 미래 직업 신호등</div>
+    <div class="game-subtitle">MILAB #018 | 중학교 1학년 | 자유학기제 연계 AI 진로 탐색 게임</div>
+  </div>
+  <div id="main-content"></div>
+</div>
+
+<!-- 스티커 팝업 -->
+<div class="sticker-popup" id="stickerPopup">
+  <div class="sticker-inner" id="stickerInner">
+    <span class="sticker-emoji" id="stickerEmoji">⭐</span>
+    <div class="sticker-text" id="stickerText">정답!</div>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════
+// 포트폴리오 메타데이터
+// ═══════════════════════════════════════════════
+const portfolioEntry = {
+  id: "milab_018",
+  number: "#018",
+  title: "2050 미래 직업 신호등",
+  subtitle: "AI 시대 나의 진로를 찾아라!",
+  target: "중학교 1학년",
+  grade: "중등",
+  subjects: ["국어(매체·읽기)", "사회(직업과 진로)", "정보(AI 원리·데이터)", "도덕(디지털 윤리)"],
+  aiFeature: true,
+  aiFeatureDesc: "머신러닝 데이터 분류 체험 + 알고리즘 순서 맞추기 (미션3)",
+  theme: "AI 시대 미래 직업 탐색 / 자유학기제 진로 탐색 / 2026 정보교과 AI 의무화 연계",
+  freeSemesterLink: true,
+  difficulty: ["쉬움(10점)", "보통(15점)", "도전(20점)"],
+  missions: 4,
+  endings: 4,
+  date: "2026-03-29",
+  url: "https://milab2019.github.io/main/future_job_explorer_018.html",
+  fileName: "future_job_explorer_018.html"
+};
+console.log("📦 MILAB Portfolio Entry:", JSON.stringify(portfolioEntry, null, 2));
+
+// ═══════════════════════════════════════════════
+// 별 생성
+// ═══════════════════════════════════════════════
+(function createStars() {
+  const container = document.getElementById('stars');
+  for (let i = 0; i < 80; i++) {
+    const s = document.createElement('div');
+    s.className = 'star';
+    s.style.cssText = `left:${Math.random()*100}%;top:${Math.random()*100}%;--dur:${2+Math.random()*4}s;--delay:${Math.random()*5}s;--op:${0.3+Math.random()*0.7};`;
+    container.appendChild(s);
+  }
+})();
+
+// ═══════════════════════════════════════════════
+// Web Audio API 배경음악
+// ═══════════════════════════════════════════════
+let audioCtx = null, musicPlaying = false, musicNodes = [];
+function getAudioCtx() {
+  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  return audioCtx;
+}
+function playNote(freq, start, dur, gain=0.08, type='sine') {
+  const ctx = getAudioCtx();
+  const osc = ctx.createOscillator();
+  const gainNode = ctx.createGain();
+  osc.connect(gainNode); gainNode.connect(ctx.destination);
+  osc.type = type; osc.frequency.value = freq;
+  gainNode.gain.setValueAtTime(0, ctx.currentTime + start);
+  gainNode.gain.linearRampToValueAtTime(gain, ctx.currentTime + start + 0.05);
+  gainNode.gain.linearRampToValueAtTime(0, ctx.currentTime + start + dur - 0.05);
+  osc.start(ctx.currentTime + start);
+  osc.stop(ctx.currentTime + start + dur);
+  musicNodes.push(osc);
+  return osc;
+}
+let musicInterval = null;
+function startMusic() {
+  const scale = [261.63,293.66,329.63,349.23,392,440,493.88,523.25];
+  const pattern = [0,2,4,7,4,2,0,5,7,9,7,5,4,2,7,4];
+  let beat = 0;
+  function playBeat() {
+    if (!musicPlaying) return;
+    const note = scale[pattern[beat % pattern.length]];
+    playNote(note, 0, 0.45, 0.07, 'triangle');
+    if (beat % 4 === 0) playNote(note/2, 0, 0.8, 0.04, 'sine');
+    beat++;
+  }
+  musicInterval = setInterval(playBeat, 550);
+  playBeat();
+}
+function stopMusic() {
+  if (musicInterval) clearInterval(musicInterval);
+  musicNodes.forEach(n => { try { n.stop(); } catch(e){} });
+  musicNodes = [];
+}
+function toggleMusic() {
+  const btn = document.getElementById('musicBtn');
+  if (musicPlaying) { musicPlaying = false; stopMusic(); btn.textContent = '🔇 음악 OFF'; }
+  else { musicPlaying = true; getAudioCtx().resume(); startMusic(); btn.textContent = '🎵 음악 ON'; }
+}
+function playSfx(type) {
+  try {
+    const ctx = getAudioCtx(); ctx.resume();
+    if (type === 'correct') { playNote(523,0,0.12,0.15,'sine'); playNote(659,0.1,0.15,0.15,'sine'); playNote(784,0.22,0.25,0.12,'sine'); }
+    else if (type === 'wrong') { playNote(200,0,0.15,0.12,'sawtooth'); playNote(150,0.15,0.2,0.1,'sawtooth'); }
+    else if (type === 'clear') {
+      [523,659,784,1047].forEach((f,i) => playNote(f, i*0.12, 0.3, 0.12, 'triangle'));
+    }
+  } catch(e){}
+}
+
+// ═══════════════════════════════════════════════
+// 게임 상태
+// ═══════════════════════════════════════════════
+const state = {
+  screen: 'start',
+  currentMission: 0,
+  scores: [0,0,0,0],
+  badges: [0,0,0,0],
+  totalScore: 0,
+  m2Difficulty: 'easy',
+  m2QuestionIdx: 0,
+  hintsUsed: [false, false, false],
+  nickname: '',
+  m3Phase: 0,
+  m3Correct: 0,
+  m4Choice: null,
+  m4Step: 0,
+  algoOrder: null,
+  algoSubmitted: false,
+};
+
+// ═══════════════════════════════════════════════
+// 콘텐츠 데이터
+// ═══════════════════════════════════════════════
+
+// 미션1 뉴스 카드
+const mission1News = [
+  {
+    title: "📰 AI가 바꾸는 직업 세계 — 2030 한국 보고서",
+    body: `<strong>출처: 한국고용정보원 (2025)</strong>에 따르면, 2030년까지 현존 직업의 약 <strong>47%</strong>가 AI·자동화의 영향을 받을 것으로 예측됩니다. 반면 <strong>AI 데이터 분석가, 디지털 윤리 전문가, AI 튜터</strong> 등 새로운 직업이 약 <strong>160만 개</strong> 창출될 전망입니다.\n\n특히 <strong>정보 교과 68시간 의무화(2026~)</strong>로 데이터 리터러시가 중학생 필수 역량이 되었습니다.`,
+    questions: [
+      { text: "한국고용정보원 보고서에 따르면, 2030년까지 영향을 받을 현존 직업의 비율은?", options:["약 25%","약 47%","약 63%","약 80%"], answer:1 },
+      { text: "2026년부터 중학교 정보 교과는 몇 시간 이상 의무 편성되나요?", options:["34시간","51시간","68시간","102시간"], answer:2 },
+      { text: "보고서에서 새롭게 창출될 직업으로 언급되지 않은 것은?", options:["AI 데이터 분석가","디지털 윤리 전문가","AI 튜터","전통 제조 기술자"], answer:3 },
+    ]
+  }
+];
+
+// 미션2 교과융합 퀴즈
+const mission2Questions = {
+  easy: [
+    { subject:"🌐 사회", q:"자유학기제 기간 동안 학교에서 진행되는 주요 활동 유형이 아닌 것은?", opts:["진로탐색 활동","예술·체육 활동","동아리 활동","정기 기말고사"], ans:3, hint:"자유학기제는 시험 없는 학기예요!", exp:"자유학기제는 시험 없이 진로탐색·주제선택·예술체육·동아리 4가지 활동으로 구성됩니다. (교육부, 2023)", subject_tag:"사회" },
+    { subject:"📖 국어", q:"디지털 매체에서 정보를 비판적으로 읽는 올바른 자세는?", opts:["재미있으면 바로 공유한다","출처를 확인하고 사실 여부를 검토한다","조회수가 높으면 믿는다","AI가 만든 정보는 항상 정확하다"], ans:1, hint:"출처 확인이 핵심이에요!", exp:"매체 리터러시의 핵심은 출처 확인과 비판적 사고입니다. 국어 교과 2022 개정 교육과정 매체 단원에서 강조됩니다.", subject_tag:"국어" },
+    { subject:"⚙️ 기술", q:"AI(인공지능)가 학습하는 방법을 무엇이라 부르나요?", opts:["소프트웨어 업데이트","머신러닝(기계학습)","프로그래밍","데이터 삭제"], ans:1, hint:"기계가 '학습'한다는 의미예요!", exp:"머신러닝(Machine Learning)은 AI가 데이터를 통해 스스로 학습하는 방법입니다. 정보 교과 2022 개정 교육과정 AI 단원 핵심 개념입니다.", subject_tag:"정보" },
+  ],
+  normal: [
+    { subject:"🌐 사회", q:"다음 상황 중 '디지털 시민성'을 올바르게 실천한 사례는?", opts:["친구 허락 없이 사진을 SNS에 올렸다","AI가 만든 가짜 뉴스임을 알고 공유하지 않았다","온라인 게임에서 욕설을 사용했다","개인정보를 요구하는 사이트에 가입했다"], ans:1, hint:"다른 사람의 권리와 정보를 존중하는 것이 핵심이에요!", exp:"디지털 시민성이란 온라인에서 타인의 권리를 존중하고 책임감 있게 행동하는 능력입니다. 도덕·사회 교과 연계 개념입니다.", subject_tag:"도덕·사회" },
+    { subject:"📊 정보", q:"AI 모델이 편향된 결과를 만들어내는 주요 원인은 무엇인가요?", opts:["전기가 부족해서","학습 데이터 자체가 편향되어 있어서","컴퓨터 속도가 느려서","사람이 AI를 잘 모르기 때문에"], ans:1, hint:"'쓰레기를 넣으면 쓰레기가 나온다(GIGO)'는 원칙을 생각해 보세요!", exp:"AI 편향은 주로 학습 데이터의 편향에서 발생합니다. 2026 정보 교과 AI 윤리 단원의 핵심 내용입니다. (GIGO: Garbage In, Garbage Out)", subject_tag:"정보" },
+    { subject:"📖 국어", q:"뉴스 기사를 읽을 때 '사실'과 '의견'을 구분하는 방법으로 가장 적절한 것은?", opts:["글쓴이 이름을 확인한다","검증 가능한 수치·사실과 주관적 판단을 구분한다","기사 길이가 길면 사실이다","유명 언론사 기사는 모두 사실이다"], ans:1, hint:"'~라고 생각한다', '~인 것 같다'는 표현에 주목하세요!", exp:"사실은 검증 가능한 정보, 의견은 주관적 판단입니다. 국어 매체 리터러시 단원의 핵심 학습 내용입니다.", subject_tag:"국어" },
+  ],
+  hard: [
+    { subject:"⚖️ AI 윤리", q:"AI 채용 시스템이 특정 집단을 차별하는 것으로 드러났습니다. 가장 근본적인 원인과 해결 방향을 바르게 연결한 것은?", opts:["원인: 서버 오류 / 해결: 서버 업그레이드","원인: 편향된 학습 데이터 / 해결: 다양한 데이터 포함 및 윤리 감사","원인: 인터넷 속도 / 해결: 5G 도입","원인: 사람의 실수 / 해결: AI 전면 대체"], ans:1, hint:"AI는 학습 데이터를 통해 세상을 배워요. 데이터에 문제가 있다면 결과도 달라질 수 있어요.", exp:"AI 차별 문제의 근본 원인은 편향 데이터입니다. 해결을 위해 데이터 다양성 확보 + 알고리즘 감사(audit)가 필요합니다. AI 윤리·도덕 연계 심화 개념입니다.", subject_tag:"AI 윤리·정보" },
+    { subject:"🌐 사회·정보", q:"개인정보 보호법에 따르면, 청소년의 개인정보를 수집할 때 반드시 필요한 조건은?", opts:["학교 선생님의 동의","부모 또는 법정대리인의 동의","친구의 동의","본인이 직접 클릭하면 충분하다"], ans:1, hint:"만 14세 미만은 법적 보호를 받아요!", exp:"개인정보 보호법에 따르면 만 14세 미만 아동의 개인정보 수집 시 법정대리인 동의가 필수입니다. 디지털 시민성 핵심 법률 지식입니다.", subject_tag:"사회·도덕" },
+    { subject:"🤖 AI 리터러시", q:"'딥페이크(Deepfake)'가 사회적으로 문제가 되는 주된 이유는?", opts:["동영상 용량이 너무 커서 인터넷이 느려진다","실제처럼 보이는 허위 정보를 만들어 사람들을 속일 수 있기 때문이다","AI 기술이 너무 빠르게 발전하기 때문이다","유료 소프트웨어를 무료로 사용하기 때문이다"], ans:1, hint:"'진짜처럼 만든 가짜' — 여기서 발생할 수 있는 피해를 생각해 봐요!", exp:"딥페이크는 AI로 만든 합성 영상·사진으로, 가짜 뉴스 생성·범죄 악용 등이 사회 문제입니다. AI 리터러시·도덕 교과 핵심 이슈입니다.", subject_tag:"AI 윤리·국어" },
+  ]
+};
+
+// 미션3 AI 체험 (데이터 분류)
+const mission3Data = {
+  title: "🤖 머신러닝 데이터 분류 체험",
+  intro: "AI는 데이터를 분류하며 학습합니다! 아래 데이터 카드를 '미래 유망 직업 관련 기술'과 '기존 단순 반복 업무'로 분류해 보세요.",
+  labelA: "💡 미래 유망 기술",
+  labelB: "🔄 단순 반복 업무",
+  cards: [
+    { icon:"🧠", text:"머신러닝 모델 설계", answer:'A' },
+    { icon:"📦", text:"단순 포장 작업", answer:'B' },
+    { icon:"🎨", text:"AI 아트 디렉팅", answer:'A' },
+    { icon:"📋", text:"정해진 양식 반복 입력", answer:'B' },
+    { icon:"🔒", text:"사이버 보안 분석", answer:'A' },
+    { icon:"🏭", text:"컨베이어 벨트 부품 조립", answer:'B' },
+  ]
+};
+
+// 미션3 알고리즘 순서 맞추기
+const algoMission = {
+  title: "⚙️ AI 학습 알고리즘 순서 맞추기",
+  desc: "머신러닝 모델이 학습하는 올바른 순서로 드래그하거나 탭하여 순서를 정해보세요!",
+  correctOrder: [2, 0, 3, 1, 4],
+  steps: [
+    { text: "② 데이터를 정제·전처리한다 (불필요한 정보 제거)", correctIdx: 1 },
+    { text: "④ 모델을 평가하고 성능을 개선한다", correctIdx: 3 },
+    { text: "① 목표를 정하고 관련 데이터를 수집한다", correctIdx: 0 },
+    { text: "③ 학습 알고리즘으로 모델을 훈련시킨다", correctIdx: 2 },
+    { text: "⑤ 실제 환경에 모델을 배포한다", correctIdx: 4 },
+  ]
+};
+
+// 미션4 진로 시나리오
+const mission4Scenarios = [
+  {
+    scene: "📡 시나리오 1 — AI 추천 딜레마",
+    story: `2050년, 직업 AI 'LUMOS'가 네 친구에게 "당신에게 맞는 직업은 회계사 0%입니다"라고 통보했습니다. 친구는 어릴 때부터 숫자를 좋아했는데요.\n\n🎙️ "AI가 틀릴 수도 있다고 생각해? 넌 어떻게 할 것 같아?"`,
+    choices: [
+      { text: "🤖 AI 결과를 무조건 따른다 — AI가 가장 정확하니까", value:'A' },
+      { text: "🔍 AI 결과를 참고하되, 직업 체험도 해보고 스스로 판단한다", value:'B' },
+      { text: "📚 AI 결과를 무시하고 원하는 것을 무조건 한다", value:'C' },
+      { text: "🤝 선생님과 부모님에게 상담을 요청한다", value:'D' },
+    ],
+    best: 'B',
+    feedback: {
+      'A': "⚠️ AI는 훌륭한 도구지만, 개인의 열정과 노력은 예측할 수 없어요! AI의 결과를 참고하되 비판적으로 바라보는 것이 중요해요.",
+      'B': "✅ 훌륭한 선택이에요! AI를 도구로 활용하면서 직접 체험하고 스스로 판단하는 것이 진로 탐색의 핵심입니다. 비판적 AI 활용 능력이 미래 역량이에요!",
+      'C': "🤔 자신의 의지도 중요하지만, AI가 제공하는 데이터를 전혀 고려하지 않으면 소중한 정보를 놓칠 수 있어요. 균형이 필요해요!",
+      'D': "💙 상담을 구하는 것은 매우 좋은 선택이에요! 선생님과 함께 AI 결과의 의미를 해석하고 진로를 탐색해 보세요."
+    }
+  },
+  {
+    scene: "🌐 시나리오 2 — 디지털 윤리 판단",
+    story: `온라인 커뮤니티에서 AI가 생성한 허위 정보가 빠르게 퍼지고 있습니다. 친구들이 아무 생각 없이 공유하고 있는데, 너도 재미있는 내용이라 공유하고 싶어졌어요.\n\n🎙️ "이 상황에서 가장 올바른 행동은 무엇일까요?"`,
+    choices: [
+      { text: "🚀 재미있으니까 그냥 공유한다", value:'A' },
+      { text: "🔎 출처와 사실 여부를 먼저 확인한다", value:'B' },
+      { text: "🙈 관심이 없어서 그냥 넘어간다", value:'C' },
+      { text: "📢 허위 정보임을 알리고 올바른 정보를 공유한다", value:'D' },
+    ],
+    best: 'D',
+    feedback: {
+      'A': "⚠️ 허위 정보를 공유하면 피해자가 생길 수 있어요. 공유 전에 항상 사실 확인이 필요합니다! 디지털 시민으로서의 책임이 있어요.",
+      'B': "✅ 출처 확인은 매우 중요해요! 한 걸음 더 나아가 주변에도 올바른 정보를 알려주면 더욱 좋아요.",
+      'C': "🤔 무관심도 허위 정보 확산을 막지 못해요. 디지털 시민성은 능동적인 참여를 요구합니다.",
+      'D': "🌟 완벽해요! 허위 정보를 알리고 올바른 정보를 전파하는 것이 최고의 디지털 시민 행동입니다. 당신은 미래 사회의 리더 감이에요!"
+    }
+  }
+];
+
+// 멀티 엔딩
+const endings = {
+  S: { grade:'S', emoji:'🏆', title:'AI 시대의 개척자', career:'🤖 AI 윤리 전문가 / 🔬 데이터 사이언티스트 적성 발견!', desc:'모든 미션을 완벽하게 수행했어요! AI 원리를 이해하고 윤리적 판단까지 탁월합니다. 2050년 AI 직업연구소의 수석 연구원이 될 잠재력이 충분해요. 정보·사회·국어 분야 통합적 사고력이 뛰어납니다.', color:'var(--accent-yellow)' },
+  A: { grade:'A', emoji:'🚀', title:'디지털 탐험가', career:'💡 AI 제품 기획자 / 🌐 디지털 시민 교육가 적성 발견!', desc:'훌륭해요! AI와 디지털 세계에 대한 이해가 높고, 사회적 판단력도 좋습니다. 조금 더 AI 원리를 깊이 공부하면 미래 직업 세계에서 빛날 수 있어요!', color:'var(--accent-cyan)' },
+  B: { grade:'B', emoji:'⭐', title:'가능성의 씨앗', career:'📚 AI 교육 콘텐츠 크리에이터 / 🔎 미디어 리터러시 전문가 적성 발견!', desc:'좋은 출발이에요! 꾸준히 도전하면 더 성장할 수 있어요. AI 시대에는 끊임없이 배우는 자세가 가장 중요한 능력입니다. 자유학기제 활동으로 다양한 진로를 탐색해 보세요!', color:'var(--accent-green)' },
+  C: { grade:'C', emoji:'🌱', title:'성장 중인 탐험가', career:'🎨 디지털 아트 크리에이터 / 🤝 AI 사용자 경험 연구자 적성 발견!', desc:'괜찮아요! 모든 위대한 여정은 작은 한 걸음에서 시작돼요. AI 세계는 탐험할 것이 무궁무진합니다. 지금 경험한 내용을 바탕으로 다시 도전해 보세요!', color:'var(--accent-purple)' },
+};
+
+// ═══════════════════════════════════════════════
+// 헬퍼
+// ═══════════════════════════════════════════════
+function showSticker(correct, msg='') {
+  const popup = document.getElementById('stickerPopup');
+  const inner = document.getElementById('stickerInner');
+  const emoji = document.getElementById('stickerEmoji');
+  const text = document.getElementById('stickerText');
+  if (correct) {
+    emoji.textContent = ['🎉','⭐','🌟','✨','💫'][Math.floor(Math.random()*5)];
+    text.textContent = msg || '정답이에요!';
+    inner.className = 'sticker-inner';
+  } else {
+    emoji.textContent = ['💙','🤔','💪','🌈','👍'][Math.floor(Math.random()*5)];
+    text.textContent = msg || '좋은 시도야! 이런 생각도 있어:';
+    inner.className = 'sticker-inner wrong-sticker';
+  }
+  popup.className = 'sticker-popup show';
+  setTimeout(() => { popup.className = 'sticker-popup'; }, 1800);
+}
+
+function calcBadge(pts, max) {
+  if (pts >= max * 0.8) return 3;
+  if (pts >= max * 0.5) return 2;
+  if (pts > 0) return 1;
+  return 0;
+}
+
+function getEndingGrade() {
+  const total = state.scores.reduce((a,b)=>a+b,0);
+  if (total >= 80) return 'S';
+  if (total >= 60) return 'A';
+  if (total >= 40) return 'B';
+  return 'C';
+}
+
+function render(html) {
+  document.getElementById('main-content').innerHTML = html;
+}
+
+function missionNav() {
+  const labels = ['미션1','미션2','미션3','미션4'];
+  return `<div class="mission-nav">
+    ${labels.map((l,i)=>`<div style="text-align:center">
+      <div class="mission-dot ${state.currentMission===i?'active':state.currentMission>i?'done':''}">${state.currentMission>i?'✓':i+1}</div>
+      <div class="mission-dot-label">${l}</div>
+    </div>`).join('')}
+  </div>`;
+}
+
+function scoreBar() {
+  return `<div class="score-bar">
+    <div class="score-item"><div class="score-label">미션1</div><div class="score-val">${state.scores[0]}pt</div></div>
+    <div class="score-item"><div class="score-label">미션2</div><div class="score-val">${state.scores[1]}pt</div></div>
+    <div class="score-item"><div class="score-label">미션3</div><div class="score-val">${state.scores[2]}pt</div></div>
+    <div class="score-item"><div class="score-label">미션4</div><div class="score-val">${state.scores[3]}pt</div></div>
+    <div class="score-item"><div class="score-label">총점</div><div class="score-val" style="color:var(--accent-yellow)">${state.scores.reduce((a,b)=>a+b,0)}pt</div></div>
+  </div>`;
+}
+
+function mascot(mood='normal', msg='') {
+  const faces = {
+    normal: `<svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">
+      <rect x="15" y="8" width="50" height="55" rx="12" fill="#0a1628" stroke="#00d4ff" stroke-width="2"/>
+      <rect x="25" y="20" width="12" height="10" rx="3" fill="#00d4ff" opacity="0.9"/>
+      <rect x="43" y="20" width="12" height="10" rx="3" fill="#00d4ff" opacity="0.9"/>
+      <path d="M28 42 Q40 50 52 42" fill="none" stroke="#00ff9d" stroke-width="2.5" stroke-linecap="round"/>
+      <rect x="8" y="30" width="7" height="18" rx="3" fill="#0a1628" stroke="#00d4ff" stroke-width="1.5"/>
+      <rect x="65" y="30" width="7" height="18" rx="3" fill="#0a1628" stroke="#00d4ff" stroke-width="1.5"/>
+      <rect x="28" y="63" width="8" height="14" rx="3" fill="#0a1628" stroke="#00d4ff" stroke-width="1.5"/>
+      <rect x="44" y="63" width="8" height="14" rx="3" fill="#0a1628" stroke="#00d4ff" stroke-width="1.5"/>
+      <circle cx="40" cy="8" r="5" fill="#00d4ff" opacity="0.7"/>
+    </svg>`,
+    happy: `<svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">
+      <rect x="15" y="8" width="50" height="55" rx="12" fill="#0a1628" stroke="#00ff9d" stroke-width="2.5"/>
+      <rect x="25" y="19" width="12" height="11" rx="3" fill="#00ff9d" opacity="0.9"/>
+      <rect x="43" y="19" width="12" height="11" rx="3" fill="#00ff9d" opacity="0.9"/>
+      <path d="M25 40 Q40 56 55 40" fill="#00ff9d" opacity="0.3" stroke="#00ff9d" stroke-width="2.5" stroke-linecap="round"/>
+      <rect x="8" y="28" width="7" height="20" rx="3" fill="#0a1628" stroke="#00ff9d" stroke-width="1.5"/>
+      <rect x="65" y="28" width="7" height="20" rx="3" fill="#0a1628" stroke="#00ff9d" stroke-width="1.5"/>
+      <rect x="28" y="63" width="8" height="14" rx="3" fill="#0a1628" stroke="#00ff9d" stroke-width="1.5"/>
+      <rect x="44" y="63" width="8" height="14" rx="3" fill="#0a1628" stroke="#00ff9d" stroke-width="1.5"/>
+      <text x="20" y="10" font-size="10" fill="#ffd700">★</text>
+      <text x="50" y="10" font-size="10" fill="#ffd700">★</text>
+      <circle cx="40" cy="8" r="5" fill="#00ff9d" opacity="0.8"/>
+    </svg>`,
+    think: `<svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">
+      <rect x="15" y="8" width="50" height="55" rx="12" fill="#0a1628" stroke="#a855f7" stroke-width="2"/>
+      <rect x="25" y="22" width="12" height="8" rx="3" fill="#a855f7" opacity="0.9"/>
+      <rect x="43" y="22" width="12" height="8" rx="3" fill="#a855f7" opacity="0.9"/>
+      <path d="M30 44 Q40 40 50 44" fill="none" stroke="#7a9ab8" stroke-width="2" stroke-linecap="round"/>
+      <rect x="8" y="30" width="7" height="18" rx="3" fill="#0a1628" stroke="#a855f7" stroke-width="1.5"/>
+      <rect x="65" y="30" width="7" height="18" rx="3" fill="#0a1628" stroke="#a855f7" stroke-width="1.5"/>
+      <rect x="28" y="63" width="8" height="14" rx="3" fill="#0a1628" stroke="#a855f7" stroke-width="1.5"/>
+      <rect x="44" y="63" width="8" height="14" rx="3" fill="#0a1628" stroke="#a855f7" stroke-width="1.5"/>
+      <text x="56" y="15" font-size="14" fill="#a855f7">?</text>
+      <circle cx="40" cy="8" r="5" fill="#a855f7" opacity="0.6"/>
+    </svg>`
+  };
+  if (!msg) return '';
+  return `<div class="mascot-wrap">
+    <div class="mascot-svg">${faces[mood]||faces.normal}</div>
+    <div class="mascot-bubble">
+      <div class="mascot-name">🤖 루미(LUMI) — AI 튜터</div>
+      ${msg}
+    </div>
+  </div>`;
+}
+
+// ═══════════════════════════════════════════════
+// 화면 렌더링
+// ═══════════════════════════════════════════════
+function showStart() {
+  state.screen = 'start';
+  render(`<div class="card start-screen">
+    <span class="start-hero">🚀</span>
+    <div class="game-title" style="font-size:clamp(1.2rem,4vw,1.7rem);margin-bottom:10px;">2050 미래 직업 신호등</div>
+    <div class="start-desc">
+      2050년, AI 직업연구소 MILAB에 인턴으로 입사했어요!<br>
+      4개의 미션을 완수하고 <strong style="color:var(--accent-cyan)">나만의 미래 직업 신호등</strong>을 켜보세요.<br>
+      <span style="color:var(--accent-yellow)">자유학기제 진로 탐색 + AI 리터러시 입문</span> 게임입니다.
+    </div>
+    <div class="start-info-grid">
+      <div class="start-info-cell"><div class="start-info-icon">📰</div><div class="start-info-text">미션1<br>뉴스 읽기</div></div>
+      <div class="start-info-cell"><div class="start-info-icon">❓</div><div class="start-info-text">미션2<br>교과 융합 퀴즈</div></div>
+      <div class="start-info-cell"><div class="start-info-icon">🤖</div><div class="start-info-text">미션3<br>AI 체험</div></div>
+      <div class="start-info-cell"><div class="start-info-icon">🌟</div><div class="start-info-text">미션4<br>진로 판단</div></div>
+    </div>
+    ${mascot('normal','안녕하세요! 저는 AI 튜터 루미예요. 함께 2050년의 직업 세계를 탐험해요! 총점에 따라 4가지 미래 직업 적성을 발견할 수 있어요. 준비됐나요? 🚀')}
+    <div class="source-note">📌 정보 교과 AI 68시간 의무화 반영 | 자유학기제 진로 탐색 연계 | 출처: 한국고용정보원(2025), 교육부(2023~2026)</div>
+    <br>
+    <button class="start-btn" onclick="startGame()">🚀 게임 시작하기</button>
+  </div>`);
+}
+
+function startGame() {
+  playSfx('clear');
+  state.currentMission = 0;
+  state.scores = [0,0,0,0];
+  state.badges = [0,0,0,0];
+  showMission1();
+}
+
+// ═══ 미션1: 뉴스 읽기 ═══
+let m1Timer, m1TimeLeft, m1Answered, m1Score, m1QIdx;
+
+function showMission1() {
+  state.screen = 'mission1';
+  m1TimeLeft = 60; m1Answered = 0; m1Score = 0; m1QIdx = 0;
+  const news = mission1News[0];
+  render(`${missionNav()}${scoreBar()}<div class="card">
+    <div class="section-title">🎯 미션 1 — 뉴스 읽기 탐색</div>
+    ${mascot('normal','뉴스 기사를 읽고 핵심 정보를 찾아보세요! 총 60초 안에 3문제를 풀어야 해요. 비판적으로 읽는 것이 중요해요! 📰')}
+    <div class="timer-wrap">
+      <div class="timer-val" id="m1timer">⏱ 60초</div>
+      <div class="timer-bar-bg"><div class="timer-bar" id="m1timerBar" style="width:100%"></div></div>
+    </div>
+    <div class="question-data" style="margin-bottom:14px;white-space:pre-line">${news.body}</div>
+    <div id="m1QuestionArea"></div>
+  </div>`);
+  renderM1Question();
+  m1Timer = setInterval(()=>{
+    m1TimeLeft--;
+    const el = document.getElementById('m1timer');
+    const bar = document.getElementById('m1timerBar');
+    if (el) { el.textContent = `⏱ ${m1TimeLeft}초`; el.className = m1TimeLeft<=10?'timer-val danger':'timer-val'; }
+    if (bar) bar.style.width = (m1TimeLeft/60*100)+'%';
+    if (m1TimeLeft <= 0) { clearInterval(m1Timer); endMission1(); }
+  }, 1000);
+}
+
+function renderM1Question() {
+  const news = mission1News[0];
+  if (m1QIdx >= news.questions.length) { clearInterval(m1Timer); endMission1(); return; }
+  const q = news.questions[m1QIdx];
+  const area = document.getElementById('m1QuestionArea');
+  if (!area) return;
+  area.innerHTML = `<div class="question-area">
+    <span class="question-badge badge-easy">📰 뉴스 읽기 (${m1QIdx+1}/${news.questions.length})</span>
+    <div class="question-text">${q.text}</div>
+    <div class="choices">${q.options.map((o,i)=>`<button class="choice-btn" onclick="answerM1(${i})">${o}</button>`).join('')}</div>
+  </div>`;
+}
+
+function answerM1(idx) {
+  const q = mission1News[0].questions[m1QIdx];
+  const btns = document.querySelectorAll('.choice-btn');
+  btns.forEach(b=>b.disabled=true);
+  const correct = idx === q.answer;
+  btns[idx].className = 'choice-btn ' + (correct?'correct':'wrong');
+  if (correct) { m1Score += 10; showSticker(true); playSfx('correct'); }
+  else { btns[q.answer].className = 'choice-btn correct'; showSticker(false,'좋은 시도야! 기사를 다시 읽어보면 힌트가 있어요 📖'); playSfx('wrong'); }
+  m1QIdx++;
+  setTimeout(()=>renderM1Question(), 1400);
+}
+
+function endMission1() {
+  clearInterval(m1Timer);
+  state.scores[0] = m1Score;
+  state.badges[0] = calcBadge(m1Score, 30);
+  playSfx('clear');
+  const area = document.getElementById('m1QuestionArea');
+  if (area) area.innerHTML = `<div class="mission-clear">
+    <div class="mission-clear-title">✅ 미션1 완료!</div>
+    <div class="mission-clear-pts">획득 점수: ${m1Score}점 / 30점 | 뱃지: ${'★'.repeat(state.badges[0])}${'☆'.repeat(3-state.badges[0])}</div>
+    ${mascot(m1Score>=20?'happy':'think', m1Score>=20?'뉴스 읽기 완벽해요! 비판적 매체 읽기 능력이 훌륭합니다. 미션2로 GO! 🚀':'괜찮아요! 기사에서 숫자와 키워드에 집중하면 더 잘 할 수 있어요. 다음 미션도 파이팅! 💪')}
+    <button class="next-btn show" onclick="showMission2()">➡️ 미션2 교과 융합 퀴즈로</button>
+  </div>`;
+  const timer = document.getElementById('m1timer');
+  if (timer) timer.textContent = '⏱ 종료';
+}
+
+// ═══ 미션2: 교과 융합 퀴즈 ═══
+let m2Timer, m2TimeLeft;
+
+function showMission2() {
+  state.screen = 'mission2';
+  state.m2Difficulty = 'easy';
+  state.m2QuestionIdx = 0;
+  state.hintsUsed = [false, false, false];
+  renderMission2();
+}
+
+function renderMission2() {
+  render(`${missionNav()}${scoreBar()}<div class="card">
+    <div class="section-title">🎯 미션 2 — 교과 융합 퀴즈</div>
+    ${mascot('normal','3가지 난이도 중 하나를 선택해서 각 3문제씩 풀어보세요! 어려울수록 더 높은 점수를 받아요. 힌트를 쓰면 30% 차감됩니다. 📚')}
+    <div class="diff-tabs">
+      <button class="diff-tab ${state.m2Difficulty==='easy'?'active-easy':''}" onclick="setDiff('easy')">😊 쉬움<br><small>10점</small></button>
+      <button class="diff-tab ${state.m2Difficulty==='normal'?'active-normal':''}" onclick="setDiff('normal')">🤔 보통<br><small>15점</small></button>
+      <button class="diff-tab ${state.m2Difficulty==='hard'?'active-hard':''}" onclick="setDiff('hard')">🔥 도전<br><small>20점</small></button>
+    </div>
+    <div id="m2QArea"></div>
+  </div>`);
+  renderM2Question();
+}
+
+function setDiff(d) {
+  state.m2Difficulty = d;
+  state.m2QuestionIdx = 0;
+  state.hintsUsed = [false,false,false];
+  state.scores[1] = 0;
+  renderMission2();
+}
+
+function renderM2Question() {
+  const qs = mission2Questions[state.m2Difficulty];
+  const qIdx = state.m2QuestionIdx;
+  if (qIdx >= qs.length) { endMission2(); return; }
+  const q = qs[qIdx];
+  const pts = state.m2Difficulty==='easy'?10:state.m2Difficulty==='normal'?15:20;
+  const badgeClass = state.m2Difficulty==='easy'?'badge-easy':state.m2Difficulty==='normal'?'badge-normal':'badge-hard';
+  const badgeText = state.m2Difficulty==='easy'?'😊 쉬움':state.m2Difficulty==='normal'?'🤔 보통':'🔥 도전';
+  clearInterval(m2Timer);
+  let timeLimit = state.m2Difficulty==='easy'?30:45;
+  m2TimeLeft = timeLimit;
+  const hintUsed = state.hintsUsed[qIdx];
+  const area = document.getElementById('m2QArea');
+  if (!area) return;
+  area.innerHTML = `
+    <div class="question-area">
+      <span class="question-badge ${badgeClass}">${badgeText} | ${q.subject} | ${qIdx+1}/${qs.length}</span>
+      <div class="timer-wrap">
+        <div class="timer-val" id="m2timerEl">⏱ ${timeLimit}초</div>
+        <div class="timer-bar-bg"><div class="timer-bar" id="m2timerBar" style="width:100%"></div></div>
+      </div>
+      <div class="question-text">${q.q}</div>
+      <button class="hint-btn" id="m2hintBtn" onclick="showM2Hint()" ${hintUsed?'disabled':''}>
+        💡 힌트 보기 ${hintUsed?'(사용됨)':'(배점 30% 차감)'}
+      </button>
+      <div class="hint-box" id="m2hintBox">${q.hint}</div>
+      <div class="choices">${q.opts.map((o,i)=>`<button class="choice-btn" onclick="answerM2(${i})">${o}</button>`).join('')}</div>
+      <div class="feedback-box" id="m2feedback"></div>
+    </div>`;
+  startM2Timer(timeLimit, qIdx);
+}
+
+function startM2Timer(limit, qIdx) {
+  m2Timer = setInterval(()=>{
+    m2TimeLeft--;
+    const el = document.getElementById('m2timerEl');
+    const bar = document.getElementById('m2timerBar');
+    if (el) { el.textContent = `⏱ ${m2TimeLeft}초`; el.className = m2TimeLeft<=10?'timer-val danger':'timer-val'; }
+    if (bar) bar.style.width = (m2TimeLeft/limit*100)+'%';
+    if (m2TimeLeft <= 0) {
+      clearInterval(m2Timer);
+      const qs = mission2Questions[state.m2Difficulty];
+      const q = qs[qIdx];
+      autoWrongM2(q, qIdx);
+    }
+  }, 1000);
+}
+
+function showM2Hint() {
+  state.hintsUsed[state.m2QuestionIdx] = true;
+  const btn = document.getElementById('m2hintBtn');
+  const box = document.getElementById('m2hintBox');
+  if (btn) { btn.disabled = true; btn.textContent = '💡 힌트 보기 (사용됨)'; }
+  if (box) box.style.display = 'block';
+}
+
+function answerM2(idx) {
+  clearInterval(m2Timer);
+  const qs = mission2Questions[state.m2Difficulty];
+  const q = qs[state.m2QuestionIdx];
+  const btns = document.querySelectorAll('.choice-btn');
+  btns.forEach(b=>b.disabled=true);
+  const pts = state.m2Difficulty==='easy'?10:state.m2Difficulty==='normal'?15:20;
+  const correct = idx === q.ans;
+  btns[idx].className = 'choice-btn ' + (correct?'correct':'wrong');
+  const fb = document.getElementById('m2feedback');
+  if (correct) {
+    const earned = state.hintsUsed[state.m2QuestionIdx] ? Math.round(pts*0.7) : pts;
+    state.scores[1] += earned;
+    if (fb) { fb.className='feedback-box correct'; fb.style.display='block'; fb.innerHTML = `✅ 정답! +${earned}점 | 📚 ${q.exp}`; }
+    showSticker(true, `정답! +${earned}점 🎉`);
+    playSfx('correct');
+  } else {
+    btns[q.ans].className = 'choice-btn correct';
+    if (fb) { fb.className='feedback-box wrong'; fb.style.display='block'; fb.innerHTML = `💙 좋은 시도야! 이런 생각도 있어:<br>📚 ${q.exp}`; }
+    showSticker(false);
+    playSfx('wrong');
+  }
+  state.m2QuestionIdx++;
+  const nextBtn = document.createElement('button');
+  nextBtn.className = 'next-btn show';
+  nextBtn.textContent = state.m2QuestionIdx >= qs.length ? '✅ 미션2 완료' : '➡️ 다음 문제';
+  nextBtn.onclick = () => { if (state.m2QuestionIdx >= qs.length) endMission2(); else renderM2Question(); };
+  if (fb) fb.parentElement.appendChild(nextBtn);
+}
+
+function autoWrongM2(q, qIdx) {
+  const btns = document.querySelectorAll('.choice-btn');
+  btns.forEach(b=>b.disabled=true);
+  if (btns[q.ans]) btns[q.ans].className = 'choice-btn correct';
+  const fb = document.getElementById('m2feedback');
+  if (fb) { fb.className='feedback-box wrong'; fb.style.display='block'; fb.innerHTML = `⏰ 시간 초과! 정답은 "${q.opts[q.ans]}"<br>📚 ${q.exp}`; }
+  state.m2QuestionIdx++;
+  const nextBtn = document.createElement('button');
+  nextBtn.className = 'next-btn show';
+  nextBtn.textContent = state.m2QuestionIdx >= mission2Questions[state.m2Difficulty].length ? '✅ 미션2 완료' : '➡️ 다음 문제';
+  nextBtn.onclick = () => { if (state.m2QuestionIdx >= mission2Questions[state.m2Difficulty].length) endMission2(); else renderM2Question(); };
+  if (fb) fb.parentElement.appendChild(nextBtn);
+}
+
+function endMission2() {
+  clearInterval(m2Timer);
+  state.badges[1] = calcBadge(state.scores[1], state.m2Difficulty==='easy'?30:state.m2Difficulty==='normal'?45:60);
+  playSfx('clear');
+  const maxPts = state.m2Difficulty==='easy'?30:state.m2Difficulty==='normal'?45:60;
+  render(`${missionNav()}${scoreBar()}<div class="card">
+    <div class="mission-clear">
+      <div class="mission-clear-title">✅ 미션2 완료!</div>
+      <div class="mission-clear-pts">획득 점수: ${state.scores[1]}점 / ${maxPts}점 | 뱃지: ${'★'.repeat(state.badges[1])}${'☆'.repeat(3-state.badges[1])}</div>
+    </div>
+    ${mascot(state.scores[1]>maxPts*0.6?'happy':'think', state.scores[1]>maxPts*0.6?'교과 융합 지식이 훌륭해요! 다음은 AI 직접 체험 미션이에요. 가장 재미있는 미션이 기다리고 있어요! 🤖':'이번엔 아쉬웠지만, 경험이 쌓이고 있어요! AI 체험 미션에서 만회해 보세요! 💪')}
+    <button class="next-btn show" onclick="showMission3()">➡️ 미션3 AI 체험으로</button>
+  </div>`);
+}
+
+// ═══ 미션3: AI 체험 ═══
+let m3ClassifyCount, m3AlgoOrder, m3AlgoPhase;
+
+function showMission3() {
+  state.screen = 'mission3';
+  state.m3Phase = 0;
+  state.m3Correct = 0;
+  m3ClassifyCount = 0;
+  renderMission3Classify();
+}
+
+function renderMission3Classify() {
+  const dm = mission3Data;
+  render(`${missionNav()}${scoreBar()}<div class="card">
+    <div class="section-title">🎯 미션 3 — AI 체험: 데이터 분류</div>
+    ${mascot('normal','AI는 데이터를 분류하며 학습해요! 각 직업 관련 데이터를 올바른 카테고리로 분류해 보세요. 2050년에도 살아남을 직업은 어떤 것일까요? 🤖')}
+    <div class="question-text" style="margin-bottom:12px">${dm.intro}</div>
+    <div class="classify-labels">
+      <div class="classify-label label-a" id="labelA">${dm.labelA}</div>
+      <div class="classify-label label-b" id="labelB">${dm.labelB}</div>
+    </div>
+    <div class="data-cards" id="dataCards">
+      ${dm.cards.map((c,i)=>`<div class="data-card" id="dc${i}" onclick="classifyCard(${i})">
+        <div class="data-card-icon">${c.icon}</div>
+        <div class="data-card-text">${c.text}</div>
+      </div>`).join('')}
+    </div>
+    <div id="m3feedback" style="margin-top:12px;"></div>
+    <div class="source-note">※ 분류 기준: 창의·판단·사회적 상호작용이 필요한 업무 vs 반복·예측 가능한 단순 업무 (한국고용정보원, 2025)</div>
+  </div>`);
+  let selectedIdx = null;
+  let selectedLabel = null;
+  window.classifyCard = function(idx) {
+    if (document.getElementById('dc'+idx).classList.contains('classified-correct') ||
+        document.getElementById('dc'+idx).classList.contains('classified-wrong')) return;
+    if (selectedIdx === idx) { document.getElementById('dc'+idx).className = 'data-card'; selectedIdx = null; return; }
+    if (selectedLabel === null) { alert('먼저 위 카테고리 중 하나를 선택한 후 데이터 카드를 클릭하세요!'); return; }
+    const card = mission3Data.cards[idx];
+    const correct = (selectedLabel === 'A' && card.answer === 'A') || (selectedLabel === 'B' && card.answer === 'B');
+    document.getElementById('dc'+idx).className = 'data-card ' + (correct?'classified-correct':'classified-wrong');
+    m3ClassifyCount++;
+    if (correct) { state.m3Correct = (state.m3Correct||0) + 1; playSfx('correct'); }
+    else playSfx('wrong');
+    if (m3ClassifyCount >= mission3Data.cards.length) {
+      setTimeout(()=>{
+        const score = Math.round((state.m3Correct / mission3Data.cards.length) * 20);
+        const fb = document.getElementById('m3feedback');
+        if (fb) fb.innerHTML = `<div class="mission-clear" style="margin-top:10px">
+          <div class="mission-clear-title">📊 분류 완료! ${state.m3Correct}/${mission3Data.cards.length} 정답</div>
+          <button class="next-btn show" onclick="renderMission3Algo()" style="margin-top:12px">➡️ 알고리즘 순서 맞추기</button>
+        </div>`;
+      }, 500);
+    }
+  };
+  document.querySelectorAll('.classify-label').forEach(el=>{
+    el.addEventListener('click', function() {
+      document.querySelectorAll('.classify-label').forEach(e=>e.classList.remove('active-label'));
+      this.classList.add('active-label');
+      selectedLabel = this.id === 'labelA' ? 'A' : 'B';
+    });
+  });
+}
+
+function renderMission3Algo() {
+  const algo = algoMission;
+  const shuffled = [...algo.steps].sort(()=>Math.random()-0.5);
+  state.algoOrder = shuffled.map((s,i)=>i);
+  state.algoSubmitted = false;
+  let currentOrder = shuffled.map((s,i)=>i);
+  let selected = null;
+
+  render(`${missionNav()}${scoreBar()}<div class="card">
+    <div class="section-title">🎯 미션 3 — AI 체험: 알고리즘 순서 맞추기</div>
+    ${mascot('think','머신러닝 모델이 학습하는 단계를 올바른 순서로 맞춰보세요! 두 개를 탭하면 위치가 바뀌어요. ⚙️')}
+    <div class="question-text" style="margin-bottom:12px">${algo.desc}</div>
+    <div class="algo-steps" id="algoSteps">
+      ${shuffled.map((step,i)=>`<div class="algo-step" id="astep${i}" onclick="selectAlgoStep(${i})">
+        <div class="algo-step-num">${i+1}</div>
+        <div class="algo-step-text">${step.text}</div>
+      </div>`).join('')}
+    </div>
+    <button class="algo-confirm-btn" onclick="submitAlgo()">⚡ 순서 확인하기</button>
+    <div id="algoFeedback" style="margin-top:12px"></div>
+    <div class="source-note">※ 머신러닝 학습 5단계: 데이터수집 → 전처리 → 모델훈련 → 평가 → 배포 (정보 교과 AI 단원, 2022 개정 교육과정)</div>
+  </div>`);
+
+  window.selectAlgoStep = function(idx) {
+    if (state.algoSubmitted) return;
+    const stepEl = document.getElementById('astep'+idx);
+    if (selected === null) {
+      selected = idx; stepEl.style.borderColor = 'var(--accent-cyan)'; stepEl.style.background = 'rgba(0,212,255,0.12)';
+    } else if (selected === idx) {
+      selected = null; stepEl.style.borderColor=''; stepEl.style.background='';
+    } else {
+      // swap
+      const stepsEl = document.getElementById('algoSteps');
+      const steps = Array.from(stepsEl.children);
+      const a = steps[selected], b = steps[idx];
+      const tempA = a.innerHTML, tempB = b.innerHTML;
+      a.innerHTML = tempB; b.innerHTML = tempA;
+      a.style.borderColor=''; a.style.background='';
+      b.style.borderColor=''; b.style.background='';
+      // reassign click
+      a.onclick = ()=>selectAlgoStep(selected);
+      b.onclick = ()=>selectAlgoStep(idx);
+      // rebuild step number
+      Array.from(stepsEl.children).forEach((el,i)=>{
+        el.querySelector('.algo-step-num').textContent = i+1;
+        el.id = 'astep'+i;
+        el.onclick = (()=>{const x=i;return()=>selectAlgoStep(x);})();
+      });
+      selected = null;
+    }
+  };
+
+  window.submitAlgo = function() {
+    if (state.algoSubmitted) return;
+    state.algoSubmitted = true;
+    const stepsEl = document.getElementById('algoSteps');
+    const currentTexts = Array.from(stepsEl.children).map(el=>el.querySelector('.algo-step-text').textContent.trim());
+    const correctTexts = algo.steps.sort((a,b)=>a.correctIdx-b.correctIdx).map(s=>s.text.trim());
+    let correctCount = 0;
+    currentTexts.forEach((t,i)=>{ if(t===correctTexts[i]) correctCount++; });
+    const algoScore = Math.round((correctCount/algo.steps.length)*20);
+    const classifyScore = Math.round(((state.m3Correct||0)/mission3Data.cards.length)*20);
+    state.scores[2] = Math.min(40, classifyScore + algoScore);
+    state.badges[2] = calcBadge(state.scores[2], 40);
+    playSfx(correctCount>=4?'correct':'wrong');
+    const fb = document.getElementById('algoFeedback');
+    if (fb) fb.innerHTML = `<div class="mission-clear">
+      <div class="mission-clear-title">${correctCount>=4?'✅ 훌륭해요!':'💙 좋은 시도!'} 알고리즘 ${correctCount}/${algo.steps.length} 정답</div>
+      <div class="mission-clear-pts">미션3 총점: ${state.scores[2]}점 / 40점</div>
+      <div style="margin:10px 0;font-size:0.8rem;color:var(--text-sub)">정답 순서: ① 데이터 수집 → ② 데이터 전처리 → ③ 모델 훈련 → ④ 평가·개선 → ⑤ 배포</div>
+      ${mascot(correctCount>=4?'happy':'think', correctCount>=4?'알고리즘 이해 완벽해요! 머신러닝의 흐름을 잘 알고 있어요. 마지막 미션으로! 🚀':'괜찮아요! 머신러닝의 핵심은 데이터 수집 → 전처리 → 훈련 → 평가 → 배포예요. 다음 미션 파이팅! 💪')}
+      <button class="next-btn show" onclick="showMission4()">➡️ 미션4 진로 판단으로</button>
+    </div>`;
+  };
+}
+
+// ═══ 미션4: 진로 판단 시나리오 ═══
+function showMission4() {
+  state.screen = 'mission4';
+  state.m4Step = 0;
+  state.m4Choice = null;
+  renderMission4(0);
+}
+
+function renderMission4(sceneIdx) {
+  if (sceneIdx >= mission4Scenarios.length) { endMission4(); return; }
+  const sc = mission4Scenarios[sceneIdx];
+  render(`${missionNav()}${scoreBar()}<div class="card">
+    <div class="section-title">🎯 미션 4 — 진로 판단: 시나리오 선택</div>
+    ${mascot('think','이 미션은 타이머가 없어요! 천천히 생각하고 가장 바람직한 선택을 해주세요. 정답보다 깊이 생각하는 것이 더 중요해요 💭')}
+    <div class="scenario-box">
+      <div class="scene-title">${sc.scene}</div>
+      <div style="white-space:pre-line;font-size:0.9rem;line-height:1.8">${sc.story}</div>
+    </div>
+    <div class="choices">${sc.choices.map((c,i)=>`<button class="choice-btn" onclick="chooseM4('${c.value}', ${sceneIdx})">${c.text}</button>`).join('')}</div>
+    <div id="m4feedback"></div>
+  </div>`);
+}
+
+function chooseM4(val, sceneIdx) {
+  const sc = mission4Scenarios[sceneIdx];
+  const btns = document.querySelectorAll('.choice-btn');
+  btns.forEach(b=>b.disabled=true);
+  const best = val === sc.best;
+  if (best) { playSfx('correct'); showSticker(true,'최선의 선택이에요! 🌟'); }
+  else { playSfx('wrong'); showSticker(false); }
+  const fb = document.getElementById('m4feedback');
+  if (fb) {
+    fb.innerHTML = `<div class="feedback-box ${best?'correct':'wrong'}" style="display:block">
+      ${sc.feedback[val]}
+    </div>
+    <button class="next-btn show" onclick="renderMission4(${sceneIdx+1})" style="margin-top:10px">
+      ${sceneIdx+1 < mission4Scenarios.length ? '➡️ 다음 시나리오' : '🏁 결과 확인'}
+    </button>`;
+  }
+  if (best) state.scores[3] += 20;
+}
+
+function endMission4() {
+  state.badges[3] = calcBadge(state.scores[3], 40);
+  playSfx('clear');
+  showResult();
+}
+
+// ═══ 결과 화면 ═══
+function showResult() {
+  const total = state.scores.reduce((a,b)=>a+b,0);
+  const gradeKey = getEndingGrade();
+  const ending = endings[gradeKey];
+  render(`${missionNav()}<div class="card result-section">
+    <div class="result-grade-badge">${ending.emoji}</div>
+    <div class="result-title" style="color:${ending.color}">[${ending.grade}등급] ${ending.title}</div>
+    <div class="result-subtitle">총점: ${total}점 / 110점</div>
+    <div class="score-breakdown">
+      ${['뉴스읽기','교과퀴즈','AI체험','진로판단'].map((l,i)=>`<div class="score-cell">
+        <div class="score-cell-label">${l}</div>
+        <div class="score-cell-val">${state.scores[i]}pt</div>
+      </div>`).join('')}
+    </div>
+    <div class="badge-row">
+      ${['미션1','미션2','미션3','미션4'].map((l,i)=>`<div class="badge-item">
+        <div class="badge-star">${'★'.repeat(state.badges[i])}${'☆'.repeat(3-state.badges[i])}</div>
+        <div class="badge-label">${l}</div>
+      </div>`).join('')}
+    </div>
+    <div class="result-career">
+      <div class="result-career-title">🎯 발견된 진로 적성</div>
+      <div style="font-size:1rem;font-weight:700;color:var(--accent-yellow);margin-bottom:8px">${ending.career}</div>
+      <div class="result-career-content">${ending.desc}</div>
+    </div>
+    ${mascot('happy','정말 수고했어요! 🎉 자유학기제 진로 탐색 활동에서 오늘 경험한 AI·디지털 세계를 더 탐험해 보세요. 2050년의 주인공은 바로 여러분이에요! 🚀')}
+    <div class="section-title">🏆 명예의 전당</div>
+    <input class="nickname-input" id="nicknameInput" placeholder="닉네임을 입력하세요 (예: 미래탐험가)" maxlength="12">
+    <button class="submit-score-btn" onclick="submitScore()">🏅 점수 등록하기</button>
+    <div class="leaderboard" id="leaderboard"></div>
+    <div class="qr-section">
+      <div class="qr-label">📱 QR 코드로 친구에게 공유하세요 | 자유학기제 발표 활용 가능</div>
+      <div id="qrcode"></div>
+    </div>
+    <div class="source-note" style="margin-top:16px;text-align:center">
+      📌 출처: 한국고용정보원(2025) | 교육부 2022 개정 교육과정 | 정보교과 AI 68시간 의무화(2026)<br>
+      MILAB #018 | 충주 4차 산업 진로체험 교육기관 | milab2019.github.io
+    </div>
+    <br>
+    <button class="next-btn show" onclick="showStart()" style="background:linear-gradient(135deg,var(--accent-purple),var(--accent-cyan))">🔄 다시 도전하기</button>
+  </div>`);
+  loadLeaderboard();
+  setTimeout(()=>{
+    try {
+      new QRCode(document.getElementById('qrcode'), {
+        text: portfolioEntry.url,
+        width:120, height:120,
+        colorDark:"#000", colorLight:"#fff"
+      });
+    } catch(e) {}
+  }, 300);
+}
+
+// ═══ 리더보드 ═══
+const LB_KEY = 'milab_m1_018_lb';
+function loadLeaderboard() {
+  const lb = JSON.parse(localStorage.getItem(LB_KEY)||'[]');
+  const el = document.getElementById('leaderboard');
+  if (!el || lb.length === 0) { if(el) el.innerHTML=''; return; }
+  const sorted = lb.sort((a,b)=>b.score-a.score).slice(0,5);
+  el.innerHTML = `<div class="lb-title">🏆 명예의 전당 TOP 5</div>
+    ${sorted.map((r,i)=>`<div class="lb-row">
+      <div class="lb-rank">${['🥇','🥈','🥉','4️⃣','5️⃣'][i]}</div>
+      <div class="lb-name">${r.name}</div>
+      <div class="lb-score">${r.score}pt</div>
+    </div>`).join('')}`;
+}
+function submitScore() {
+  const name = document.getElementById('nicknameInput').value.trim();
+  if (!name) { alert('닉네임을 입력해주세요!'); return; }
+  const total = state.scores.reduce((a,b)=>a+b,0);
+  const lb = JSON.parse(localStorage.getItem(LB_KEY)||'[]');
+  lb.push({ name, score: total, grade: getEndingGrade() });
+  localStorage.setItem(LB_KEY, JSON.stringify(lb));
+  loadLeaderboard();
+  document.getElementById('nicknameInput').disabled = true;
+  document.querySelector('.submit-score-btn').disabled = true;
+  document.querySelector('.submit-score-btn').textContent = '✅ 등록 완료!';
+}
+
+// ═══ 초기화 ═══
+document.addEventListener('DOMContentLoaded', function() {
+  showStart();
+});
+</script>
+</body>
+</html>
