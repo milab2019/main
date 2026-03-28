@@ -1,0 +1,1182 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>🌸 토순이랑 봄꽃 찾기 - 미랩 씨앗반</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Jua&display=swap');
+
+  :root {
+    --bg: #FFF0F5;
+    --pink: #FF8FB1;
+    --pink-light: #FFD6E7;
+    --pink-dark: #D45F8A;
+    --yellow: #FFE066;
+    --green: #A8E6CF;
+    --sky: #B3E5FC;
+    --white: #FFFFFF;
+    --text: #5A3040;
+    --card-radius: 28px;
+    --btn-min: 90px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; user-select: none; }
+
+  body {
+    font-family: 'Jua', sans-serif;
+    background: var(--bg);
+    min-height: 100vh;
+    overflow: hidden;
+    position: relative;
+    touch-action: manipulation;
+  }
+
+  /* ── 벚꽃 배경 파티클 ── */
+  .petal {
+    position: fixed;
+    font-size: 1.4rem;
+    animation: petalFall linear infinite;
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0.7;
+  }
+  @keyframes petalFall {
+    0%   { transform: translateY(-40px) rotate(0deg); opacity: 0.7; }
+    100% { transform: translateY(110vh) rotate(360deg); opacity: 0; }
+  }
+
+  /* ── 메인 래퍼 ── */
+  #app {
+    position: relative; z-index: 10;
+    max-width: 480px; margin: 0 auto;
+    height: 100vh;
+    display: flex; flex-direction: column;
+    padding: 0 12px;
+    overflow: hidden;
+  }
+
+  /* ── 화면 전환 ── */
+  .screen { display: none; flex-direction: column; height: 100%; }
+  .screen.active { display: flex; animation: fadeUp 0.4s ease; }
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: translateY(0); } }
+
+  /* ── 타이틀 화면 ── */
+  #screen-title {
+    align-items: center; justify-content: center; gap: 12px;
+    text-align: center;
+  }
+  .title-logo { font-size: 5rem; animation: logoBounce 2s ease-in-out infinite; }
+  @keyframes logoBounce { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-14px)} }
+  .title-main {
+    font-size: 2.4rem; color: var(--pink-dark);
+    text-shadow: 0 3px 0 var(--pink-light);
+    line-height: 1.2;
+  }
+  .title-sub { font-size: 1.1rem; color: #C06080; margin-top: 4px; }
+  .title-milab { font-size: 0.85rem; color: #B08090; margin-top: 2px; }
+  .start-btn {
+    margin-top: 20px;
+    background: var(--pink);
+    color: white;
+    border: none;
+    border-radius: 50px;
+    padding: 22px 60px;
+    font-family: 'Jua', sans-serif;
+    font-size: 1.6rem;
+    cursor: pointer;
+    box-shadow: 0 6px 0 var(--pink-dark);
+    transition: transform 0.1s, box-shadow 0.1s;
+    min-height: var(--btn-min);
+    min-width: 200px;
+  }
+  .start-btn:active { transform: translateY(4px); box-shadow: 0 2px 0 var(--pink-dark); }
+
+  /* ── 공통 헤더 ── */
+  .game-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 10px 4px; flex-shrink: 0;
+  }
+  .activity-label {
+    background: var(--pink); color: white;
+    border-radius: 20px; padding: 6px 16px;
+    font-size: 1rem;
+  }
+  .sticker-row { display: flex; gap: 6px; font-size: 1.6rem; }
+
+  /* ── 캐릭터 (CSS 토끼) ── */
+  .char-wrap {
+    display: flex; justify-content: center; align-items: flex-end;
+    flex-shrink: 0; margin: 2px 0;
+    position: relative;
+  }
+  .char-svg {
+    width: 100px; height: 110px;
+    cursor: pointer;
+    transition: transform 0.2s;
+  }
+  .char-svg:active { transform: scale(1.12); }
+  .char-svg.jump { animation: charJump 0.5s ease; }
+  @keyframes charJump { 0%,100%{transform:translateY(0)} 40%{transform:translateY(-28px)} }
+  .char-svg.shake { animation: charShake 0.5s ease; }
+  @keyframes charShake { 0%,100%{transform:translateX(0)} 20%,60%{transform:translateX(-10px)} 40%,80%{transform:translateX(10px)} }
+
+  /* 말풍선 */
+  .speech-bubble {
+    position: absolute;
+    right: calc(50% - 50px - 130px);
+    bottom: 30px;
+    background: white;
+    border: 3px solid var(--pink);
+    border-radius: 20px 20px 4px 20px;
+    padding: 10px 16px;
+    font-size: 1.3rem;
+    color: var(--text);
+    white-space: nowrap;
+    box-shadow: 0 4px 12px rgba(255,143,177,0.3);
+    animation: bubblePop 0.3s ease;
+    max-width: 180px;
+    white-space: normal;
+    text-align: center;
+    right: auto;
+    left: calc(50% + 46px);
+  }
+  @keyframes bubblePop { from{transform:scale(0.7)} to{transform:scale(1)} }
+
+  /* ── 질문 카드 ── */
+  .question-card {
+    background: white;
+    border-radius: var(--card-radius);
+    padding: 16px 20px;
+    text-align: center;
+    font-size: 1.4rem;
+    color: var(--text);
+    box-shadow: 0 4px 16px rgba(255,143,177,0.2);
+    border: 3px solid var(--pink-light);
+    flex-shrink: 0;
+    line-height: 1.5;
+  }
+
+  /* ── 선택지 영역 ── */
+  .choices-2 {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 14px; flex: 1; max-height: 280px;
+    margin-top: 10px;
+  }
+  .choices-3 {
+    display: grid; grid-template-columns: 1fr 1fr 1fr;
+    gap: 10px; flex: 1; max-height: 260px;
+    margin-top: 10px;
+  }
+  .choice-card {
+    background: white;
+    border-radius: 24px;
+    border: 4px solid var(--pink-light);
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    cursor: pointer;
+    transition: transform 0.15s, border-color 0.15s;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    min-height: 110px;
+    font-size: 3.2rem;
+    padding: 8px;
+    position: relative;
+    overflow: hidden;
+  }
+  .choice-card:active { transform: scale(0.94); }
+  .choice-card .card-label { font-size: 0.9rem; color: #C06080; margin-top: 6px; }
+  .choice-card.correct-glow {
+    border-color: #4CAF50;
+    background: #E8F5E9;
+    animation: correctPop 0.4s ease;
+  }
+  @keyframes correctPop { 0%{transform:scale(1)} 50%{transform:scale(1.08)} 100%{transform:scale(1)} }
+  .choice-card.wrong-hint {
+    border-color: var(--pink);
+    animation: hintPulse 0.6s ease 3;
+  }
+  @keyframes hintPulse { 0%,100%{box-shadow:none} 50%{box-shadow:0 0 20px var(--pink)} }
+  .choice-card.disabled { pointer-events: none; opacity: 0.6; }
+
+  /* ── 진행 도트 ── */
+  .progress-dots {
+    display: flex; justify-content: center; gap: 10px;
+    margin: 8px 0; flex-shrink: 0;
+  }
+  .dot {
+    width: 14px; height: 14px; border-radius: 50%;
+    background: var(--pink-light);
+    transition: background 0.3s;
+  }
+  .dot.done { background: var(--pink); }
+  .dot.current { background: var(--pink-dark); transform: scale(1.3); }
+
+  /* ── 정답 폭죽 오버레이 ── */
+  #feedbackOverlay {
+    position: fixed; inset: 0; z-index: 200;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+  #feedbackOverlay.show { opacity: 1; pointer-events: auto; }
+  .feedback-emoji { font-size: 7rem; animation: emojiBig 0.5s cubic-bezier(0.175,0.885,0.32,1.275); }
+  @keyframes emojiBig { from{transform:scale(0)} to{transform:scale(1)} }
+  .feedback-text {
+    font-size: 2.4rem; color: white;
+    text-shadow: 0 3px 8px rgba(0,0,0,0.3);
+    margin-top: 12px;
+    background: var(--pink-dark);
+    border-radius: 40px;
+    padding: 12px 40px;
+  }
+  /* 폭죽 파티클 */
+  .confetti-piece {
+    position: fixed;
+    width: 12px; height: 12px;
+    border-radius: 3px;
+    animation: confettiFall 1.2s ease forwards;
+    pointer-events: none;
+    z-index: 201;
+  }
+  @keyframes confettiFall {
+    0% { transform: translateY(0) rotate(0deg); opacity: 1; }
+    100% { transform: translateY(80vh) rotate(720deg); opacity: 0; }
+  }
+
+  /* ── 활동 완료 화면 ── */
+  .activity-done {
+    background: white;
+    border-radius: 30px;
+    padding: 20px;
+    text-align: center;
+    border: 4px solid var(--pink-light);
+    box-shadow: 0 8px 24px rgba(255,143,177,0.25);
+    flex: 1; display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    gap: 10px;
+  }
+  .done-emoji { font-size: 4rem; animation: logoBounce 1.5s infinite; }
+  .done-title { font-size: 2rem; color: var(--pink-dark); }
+  .done-stickers { font-size: 2.4rem; letter-spacing: 8px; }
+  .next-btn {
+    background: var(--pink);
+    color: white;
+    border: none;
+    border-radius: 50px;
+    padding: 18px 50px;
+    font-family: 'Jua', sans-serif;
+    font-size: 1.4rem;
+    cursor: pointer;
+    box-shadow: 0 5px 0 var(--pink-dark);
+    transition: transform 0.1s, box-shadow 0.1s;
+    min-height: 80px;
+  }
+  .next-btn:active { transform: translateY(3px); box-shadow: 0 2px 0 var(--pink-dark); }
+
+  /* ── 최종 결과 화면 ── */
+  #screen-result {
+    align-items: center; justify-content: center; gap: 14px;
+    text-align: center;
+  }
+  .result-badge { font-size: 5rem; animation: logoBounce 2s infinite; }
+  .result-title { font-size: 2.2rem; color: var(--pink-dark); line-height: 1.3; }
+  .result-stickers { font-size: 2.8rem; letter-spacing: 10px; }
+  .result-msg {
+    background: var(--pink-light);
+    border-radius: 20px;
+    padding: 14px 20px;
+    font-size: 1.1rem;
+    color: var(--text);
+    line-height: 1.7;
+  }
+  #qrcode { margin: 0 auto; }
+  .qr-label { font-size: 0.8rem; color: #B08090; margin-top: 4px; }
+  .restart-btn {
+    background: var(--green);
+    color: var(--text);
+    border: none;
+    border-radius: 50px;
+    padding: 16px 44px;
+    font-family: 'Jua', sans-serif;
+    font-size: 1.2rem;
+    cursor: pointer;
+    box-shadow: 0 4px 0 #7EC6A8;
+    min-height: 80px;
+  }
+
+  /* ── 교사모드 버튼 (숨김) ── */
+  #teacherTrigger {
+    position: fixed; bottom: 0; left: 0;
+    width: 60px; height: 60px;
+    background: transparent;
+    border: none; cursor: pointer;
+    z-index: 300;
+  }
+  #teacherPanel {
+    display: none;
+    position: fixed; bottom: 70px; left: 10px;
+    background: rgba(30,30,30,0.92);
+    border-radius: 16px; padding: 14px 18px;
+    color: white; font-family: 'Jua', sans-serif;
+    font-size: 1rem; z-index: 300;
+    gap: 10px; flex-direction: column;
+  }
+  #teacherPanel.open { display: flex; }
+  .t-btn {
+    background: rgba(255,255,255,0.15);
+    border: 1px solid rgba(255,255,255,0.3);
+    color: white;
+    border-radius: 10px;
+    padding: 8px 14px;
+    font-family: 'Jua', sans-serif;
+    font-size: 0.95rem;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+  .t-btn:hover { background: rgba(255,255,255,0.25); }
+
+  /* ── 반응형 높이 조정 ── */
+  @media (max-height: 680px) {
+    .char-svg { width: 80px; height: 88px; }
+    .question-card { font-size: 1.2rem; padding: 12px 14px; }
+    .choice-card { min-height: 88px; font-size: 2.6rem; }
+    .title-main { font-size: 2rem; }
+  }
+</style>
+</head>
+<body>
+
+<!-- 배경 벚꽃 -->
+<div id="petals"></div>
+
+<!-- 피드백 오버레이 -->
+<div id="feedbackOverlay">
+  <div class="feedback-emoji" id="fbEmoji">🎉</div>
+  <div class="feedback-text" id="fbText">잘 했어요!</div>
+</div>
+
+<div id="app">
+
+  <!-- ══ 타이틀 화면 ══ -->
+  <div id="screen-title" class="screen active">
+    <div class="title-logo">🐰</div>
+    <div class="title-main">토순이랑<br>봄꽃 찾기</div>
+    <div class="title-sub">🌸 봄이 왔어요!</div>
+    <div class="title-milab">미랩(MILAB) 씨앗반 · 특수학급</div>
+    <button class="start-btn" onclick="startGame()">시작해요 🌸</button>
+  </div>
+
+  <!-- ══ 활동1: 큰 그림 보고 탭하기 ══ -->
+  <div id="screen-a1" class="screen">
+    <div class="game-header">
+      <div class="activity-label">활동 1 🌸</div>
+      <div class="sticker-row" id="stickerA1"></div>
+    </div>
+    <div class="char-wrap" id="charWrapA1">
+      <svg class="char-svg" id="charA1" onclick="charTap('A1')" viewBox="0 0 100 110" xmlns="http://www.w3.org/2000/svg">
+        <!-- 귀 -->
+        <ellipse cx="32" cy="22" rx="11" ry="22" fill="#FFCCE0"/>
+        <ellipse cx="32" cy="22" rx="6" ry="16" fill="#FF8FB1"/>
+        <ellipse cx="68" cy="22" rx="11" ry="22" fill="#FFCCE0"/>
+        <ellipse cx="68" cy="22" rx="6" ry="16" fill="#FF8FB1"/>
+        <!-- 몸 -->
+        <ellipse cx="50" cy="80" rx="30" ry="28" fill="#FFCCE0"/>
+        <!-- 머리 -->
+        <ellipse cx="50" cy="52" rx="26" ry="25" fill="#FFCCE0"/>
+        <!-- 눈 -->
+        <ellipse cx="41" cy="49" rx="5" ry="5.5" fill="#5A3040"/>
+        <ellipse cx="59" cy="49" rx="5" ry="5.5" fill="#5A3040"/>
+        <ellipse cx="43" cy="47" rx="2" ry="2" fill="white"/>
+        <ellipse cx="61" cy="47" rx="2" ry="2" fill="white"/>
+        <!-- 코 -->
+        <ellipse cx="50" cy="57" rx="4" ry="3" fill="#FF8FB1"/>
+        <!-- 입 (기본 미소) -->
+        <path id="mouthA1" d="M43 62 Q50 68 57 62" stroke="#D45F8A" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+        <!-- 볼 -->
+        <ellipse cx="36" cy="58" rx="6" ry="4" fill="#FFB3CF" opacity="0.5"/>
+        <ellipse cx="64" cy="58" rx="6" ry="4" fill="#FFB3CF" opacity="0.5"/>
+        <!-- 꽃 장식 -->
+        <text x="65" y="42" font-size="16">🌸</text>
+      </svg>
+      <div class="speech-bubble" id="bubbleA1">🌸 찾아봐요!</div>
+    </div>
+    <div class="question-card" id="questionA1">찾아봐요!</div>
+    <div class="progress-dots" id="dotsA1"></div>
+    <div class="choices-2" id="choicesA1"></div>
+  </div>
+
+  <!-- ══ 활동1 완료 ══ -->
+  <div id="screen-a1done" class="screen">
+    <div style="flex:1;display:flex;align-items:center;justify-content:center;">
+      <div class="activity-done">
+        <div class="done-emoji">🌸</div>
+        <div class="done-title">활동 1 완료!</div>
+        <div class="done-stickers" id="doneStickersA1"></div>
+        <button class="next-btn" onclick="startA2()">다음 활동 🌼</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ 활동2: 같은 것 찾기 ══ -->
+  <div id="screen-a2" class="screen">
+    <div class="game-header">
+      <div class="activity-label">활동 2 🌼</div>
+      <div class="sticker-row" id="stickerA2"></div>
+    </div>
+    <div class="char-wrap" id="charWrapA2">
+      <svg class="char-svg" id="charA2" onclick="charTap('A2')" viewBox="0 0 100 110" xmlns="http://www.w3.org/2000/svg">
+        <ellipse cx="32" cy="22" rx="11" ry="22" fill="#FFCCE0"/>
+        <ellipse cx="32" cy="22" rx="6" ry="16" fill="#FF8FB1"/>
+        <ellipse cx="68" cy="22" rx="11" ry="22" fill="#FFCCE0"/>
+        <ellipse cx="68" cy="22" rx="6" ry="16" fill="#FF8FB1"/>
+        <ellipse cx="50" cy="80" rx="30" ry="28" fill="#FFCCE0"/>
+        <ellipse cx="50" cy="52" rx="26" ry="25" fill="#FFCCE0"/>
+        <ellipse cx="41" cy="49" rx="5" ry="5.5" fill="#5A3040"/>
+        <ellipse cx="59" cy="49" rx="5" ry="5.5" fill="#5A3040"/>
+        <ellipse cx="43" cy="47" rx="2" ry="2" fill="white"/>
+        <ellipse cx="61" cy="47" rx="2" ry="2" fill="white"/>
+        <ellipse cx="50" cy="57" rx="4" ry="3" fill="#FF8FB1"/>
+        <path id="mouthA2" d="M43 62 Q50 68 57 62" stroke="#D45F8A" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+        <ellipse cx="36" cy="58" rx="6" ry="4" fill="#FFB3CF" opacity="0.5"/>
+        <ellipse cx="64" cy="58" rx="6" ry="4" fill="#FFB3CF" opacity="0.5"/>
+        <text x="65" y="42" font-size="16">🌼</text>
+      </svg>
+      <div class="speech-bubble" id="bubbleA2">🌼 같은 거!</div>
+    </div>
+    <div class="question-card" id="questionA2">같은 걸 찾아요!</div>
+    <div class="progress-dots" id="dotsA2"></div>
+    <div class="choices-3" id="choicesA2"></div>
+  </div>
+
+  <!-- ══ 활동2 완료 ══ -->
+  <div id="screen-a2done" class="screen">
+    <div style="flex:1;display:flex;align-items:center;justify-content:center;">
+      <div class="activity-done">
+        <div class="done-emoji">🌼</div>
+        <div class="done-title">활동 2 완료!</div>
+        <div class="done-stickers" id="doneStickersA2"></div>
+        <button class="next-btn" onclick="startA3()">마지막 활동 🌈</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ 활동3: 소리 듣고 그림 고르기 ══ -->
+  <div id="screen-a3" class="screen">
+    <div class="game-header">
+      <div class="activity-label">활동 3 🌈</div>
+      <div class="sticker-row" id="stickerA3"></div>
+    </div>
+    <div class="char-wrap" id="charWrapA3">
+      <svg class="char-svg" id="charA3" onclick="charTap('A3')" viewBox="0 0 100 110" xmlns="http://www.w3.org/2000/svg">
+        <ellipse cx="32" cy="22" rx="11" ry="22" fill="#FFCCE0"/>
+        <ellipse cx="32" cy="22" rx="6" ry="16" fill="#FF8FB1"/>
+        <ellipse cx="68" cy="22" rx="11" ry="22" fill="#FFCCE0"/>
+        <ellipse cx="68" cy="22" rx="6" ry="16" fill="#FF8FB1"/>
+        <ellipse cx="50" cy="80" rx="30" ry="28" fill="#FFCCE0"/>
+        <ellipse cx="50" cy="52" rx="26" ry="25" fill="#FFCCE0"/>
+        <ellipse cx="41" cy="49" rx="5" ry="5.5" fill="#5A3040"/>
+        <ellipse cx="59" cy="49" rx="5" ry="5.5" fill="#5A3040"/>
+        <ellipse cx="43" cy="47" rx="2" ry="2" fill="white"/>
+        <ellipse cx="61" cy="47" rx="2" ry="2" fill="white"/>
+        <ellipse cx="50" cy="57" rx="4" ry="3" fill="#FF8FB1"/>
+        <path id="mouthA3" d="M43 62 Q50 68 57 62" stroke="#D45F8A" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+        <ellipse cx="36" cy="58" rx="6" ry="4" fill="#FFB3CF" opacity="0.5"/>
+        <ellipse cx="64" cy="58" rx="6" ry="4" fill="#FFB3CF" opacity="0.5"/>
+        <text x="65" y="42" font-size="16">🌈</text>
+      </svg>
+      <div class="speech-bubble" id="bubbleA3">🎵 들어봐요!</div>
+    </div>
+    <div class="question-card" id="questionA3" style="cursor:pointer;" onclick="replaySound()">
+      🔊 소리를 들어봐요!<br><span style="font-size:0.85rem;color:#C06080;">(눌러서 다시 듣기)</span>
+    </div>
+    <div class="progress-dots" id="dotsA3"></div>
+    <div class="choices-2" id="choicesA3"></div>
+  </div>
+
+  <!-- ══ 최종 결과 화면 ══ -->
+  <div id="screen-result" class="screen">
+    <div class="result-badge">🏅</div>
+    <div class="result-title">토순이랑<br>봄꽃 다 찾았어요!</div>
+    <div class="result-stickers" id="resultStickers"></div>
+    <div class="result-msg">
+      🌸 정말 잘 했어요!<br>
+      봄꽃을 모두 찾은<br>
+      <strong>멋진 친구</strong>예요! 🐰
+    </div>
+    <div id="qrcode"></div>
+    <div class="qr-label">미랩(MILAB) 씨앗반 #017</div>
+    <button class="restart-btn" onclick="resetGame()">🔄 다시 해요!</button>
+  </div>
+
+</div><!-- /app -->
+
+<!-- 교사 모드 숨김 버튼 -->
+<button id="teacherTrigger" ontouchstart="startTeacherHold()" ontouchend="cancelTeacherHold()"
+        onmousedown="startTeacherHold()" onmouseup="cancelTeacherHold()"></button>
+<div id="teacherPanel">
+  <div style="font-size:0.8rem;opacity:0.6;margin-bottom:4px;">🔐 교사 모드</div>
+  <button class="t-btn" onclick="toggleBgMusic()">🎵 음악 ON/OFF</button>
+  <button class="t-btn" onclick="toggleSfx()">🔔 효과음 ON/OFF</button>
+  <button class="t-btn" onclick="forceNextActivity()">⏭ 다음 활동 이동</button>
+  <button class="t-btn" onclick="document.getElementById('teacherPanel').classList.remove('open')">✕ 닫기</button>
+</div>
+
+<script>
+// ══════════════════════════════════════════
+// ── 전역 상태
+// ══════════════════════════════════════════
+let bgMusicOn = true, sfxOn = true;
+let audioCtx = null;
+let bgMusicNodes = [];
+let currentActivity = 0;
+let stickersEarned = 0;
+let teacherHoldTimer = null;
+let currentSoundType = null; // 활동3 현재 소리 타입
+
+// 활동별 현재 문항 인덱스 & 오답 재시도 카운트
+const state = {
+  a1: { idx: 0, retries: 0, stickers: 0 },
+  a2: { idx: 0, retries: 0, stickers: 0 },
+  a3: { idx: 0, retries: 0, stickers: 0 },
+};
+
+// ══════════════════════════════════════════
+// ── 데이터: 활동1 (2지선다, 봄꽃 찾기)
+// ══════════════════════════════════════════
+const activityOneData = [
+  { q: "🌸 분홍 꽃을\n찾아봐요!", choices: [{ emoji:'🌸', label:'분홍 꽃', correct:true },{ emoji:'🌿', label:'초록 잎' }] },
+  { q: "🐝 꿀벌을\n찾아봐요!", choices: [{ emoji:'🐝', label:'꿀벌', correct:true },{ emoji:'🦋', label:'나비' }] },
+  { q: "☀️ 해님을\n찾아봐요!", choices: [{ emoji:'🌙', label:'달' },{ emoji:'☀️', label:'해님', correct:true }] },
+  { q: "🐰 토끼를\n찾아봐요!", choices: [{ emoji:'🐰', label:'토끼', correct:true },{ emoji:'🐱', label:'고양이' }] },
+  { q: "🌸 벚꽃을\n찾아봐요!", choices: [{ emoji:'🌻', label:'해바라기' },{ emoji:'🌸', label:'벚꽃', correct:true }] },
+];
+
+// ══════════════════════════════════════════
+// ── 데이터: 활동2 (3지선다 짝 찾기)
+// ══════════════════════════════════════════
+const activityTwoData = [
+  {
+    q: "🌸 벚꽃이랑\n같은 걸 찾아요!",
+    target: '🌸',
+    choices: [
+      { emoji:'🌸', correct:true },
+      { emoji:'🌼', correct:false },
+      { emoji:'🌻', correct:false },
+    ]
+  },
+  {
+    q: "🐝 꿀벌이랑\n같은 걸 찾아요!",
+    target: '🐝',
+    choices: [
+      { emoji:'🦋', correct:false },
+      { emoji:'🐝', correct:true },
+      { emoji:'🐛', correct:false },
+    ]
+  },
+  {
+    q: "🌈 무지개랑\n같은 걸 찾아요!",
+    target: '🌈',
+    choices: [
+      { emoji:'🌈', correct:true },
+      { emoji:'⛅', correct:false },
+      { emoji:'🌧️', correct:false },
+    ]
+  },
+  {
+    q: "🐰 토끼랑\n같은 걸 찾아요!",
+    target: '🐰',
+    choices: [
+      { emoji:'🐱', correct:false },
+      { emoji:'🐶', correct:false },
+      { emoji:'🐰', correct:true },
+    ]
+  },
+  {
+    q: "🍓 딸기랑\n같은 걸 찾아요!",
+    target: '🍓',
+    choices: [
+      { emoji:'🍎', correct:false },
+      { emoji:'🍓', correct:true },
+      { emoji:'🍊', correct:false },
+    ]
+  },
+];
+
+// ══════════════════════════════════════════
+// ── 데이터: 활동3 (소리 듣고 고르기)
+// ══════════════════════════════════════════
+const activityThreeData = [
+  {
+    soundType: 'bird',
+    soundLabel: '🐦 새 소리',
+    choices: [{ emoji:'🐦', label:'새', correct:true },{ emoji:'🐟', label:'물고기' }],
+  },
+  {
+    soundType: 'wind',
+    soundLabel: '🌬️ 바람 소리',
+    choices: [{ emoji:'🌬️', label:'바람', correct:true },{ emoji:'🔥', label:'불' }],
+  },
+  {
+    soundType: 'rain',
+    soundLabel: '🌧️ 빗소리',
+    choices: [{ emoji:'☀️', label:'햇빛' },{ emoji:'🌧️', label:'비', correct:true }],
+  },
+  {
+    soundType: 'bee',
+    soundLabel: '🐝 꿀벌 소리',
+    choices: [{ emoji:'🐝', label:'꿀벌', correct:true },{ emoji:'🦋', label:'나비' }],
+  },
+];
+
+// ══════════════════════════════════════════
+// ── 배경 초기화
+// ══════════════════════════════════════════
+function initPetals() {
+  const wrap = document.getElementById('petals');
+  const emojis = ['🌸','🌸','🌺','🌼'];
+  for(let i=0;i<14;i++){
+    const p = document.createElement('div');
+    p.className = 'petal';
+    p.textContent = emojis[i%4];
+    p.style.left = (Math.random()*100) + '%';
+    p.style.animationDuration = (6+Math.random()*6) + 's';
+    p.style.animationDelay = (Math.random()*8) + 's';
+    p.style.fontSize = (1.2+Math.random()*0.8) + 'rem';
+    wrap.appendChild(p);
+  }
+}
+
+// ══════════════════════════════════════════
+// ── 음악 & 효과음
+// ══════════════════════════════════════════
+function getAudioCtx() {
+  if(!audioCtx) audioCtx = new (window.AudioContext||window.webkitAudioContext)();
+  return audioCtx;
+}
+
+function playBgMusic() {
+  if(!bgMusicOn) return;
+  try {
+    const ctx = getAudioCtx();
+    // 자장가풍 멜로디 (BPM ≈70, 장조)
+    const melody = [523,587,659,698,659,587,523,493,523,587,659,784,740,659,587,523];
+    const dur = 0.7;
+    let t = ctx.currentTime + 0.1;
+    melody.forEach(freq => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.connect(gain); gain.connect(ctx.destination);
+      osc.type = 'sine'; osc.frequency.value = freq * 0.5;
+      gain.gain.setValueAtTime(0, t);
+      gain.gain.linearRampToValueAtTime(0.04, t+0.05);
+      gain.gain.linearRampToValueAtTime(0, t+dur-0.05);
+      osc.start(t); osc.stop(t+dur);
+      bgMusicNodes.push(osc);
+      t += dur;
+    });
+    // 루프
+    setTimeout(playBgMusic, melody.length * dur * 1000 + 200);
+  } catch(e){}
+}
+
+function stopBgMusic() {
+  bgMusicNodes.forEach(n=>{ try{n.stop();}catch(e){} });
+  bgMusicNodes = [];
+}
+
+function playSfx(type) {
+  if(!sfxOn) return;
+  try {
+    const ctx = new (window.AudioContext||window.webkitAudioContext)();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.connect(gain); gain.connect(ctx.destination);
+    gain.gain.setValueAtTime(0, ctx.currentTime);
+    if(type==='correct') {
+      osc.type='sine'; osc.frequency.value=880;
+      gain.gain.linearRampToValueAtTime(0.12, ctx.currentTime+0.05);
+      gain.gain.linearRampToValueAtTime(0, ctx.currentTime+0.6);
+      // 화음
+      const osc2 = ctx.createOscillator();
+      osc2.connect(gain); osc2.type='sine'; osc2.frequency.value=1100;
+      osc2.start(ctx.currentTime+0.15); osc2.stop(ctx.currentTime+0.6);
+    } else if(type==='retry') {
+      osc.type='sine'; osc.frequency.value=440;
+      gain.gain.linearRampToValueAtTime(0.05, ctx.currentTime+0.05);
+      gain.gain.linearRampToValueAtTime(0, ctx.currentTime+0.35);
+    } else if(type==='clear') {
+      osc.type='sine'; osc.frequency.value=660;
+      gain.gain.linearRampToValueAtTime(0.12, ctx.currentTime+0.05);
+      gain.gain.linearRampToValueAtTime(0, ctx.currentTime+1.0);
+      const osc2 = ctx.createOscillator();
+      osc2.connect(gain); osc2.type='sine'; osc2.frequency.value=880;
+      osc2.start(ctx.currentTime+0.3); osc2.stop(ctx.currentTime+1.0);
+      const osc3 = ctx.createOscillator();
+      osc3.connect(gain); osc3.type='sine'; osc3.frequency.value=1100;
+      osc3.start(ctx.currentTime+0.6); osc3.stop(ctx.currentTime+1.0);
+    }
+    osc.start(ctx.currentTime); osc.stop(ctx.currentTime+0.8);
+  } catch(e){}
+}
+
+// 활동3 소리 합성
+function playActivitySound(type) {
+  if(!sfxOn) return;
+  try {
+    const ctx = new (window.AudioContext||window.webkitAudioContext)();
+    const gain = ctx.createGain();
+    gain.connect(ctx.destination);
+    if(type==='bird') {
+      // 새소리: 상승 트릴
+      [600,800,650,900,700,1000].forEach((f,i)=>{
+        const o = ctx.createOscillator();
+        o.connect(gain); o.type='sine'; o.frequency.value=f;
+        gain.gain.setValueAtTime(0.06, ctx.currentTime+i*0.12);
+        gain.gain.linearRampToValueAtTime(0, ctx.currentTime+i*0.12+0.1);
+        o.start(ctx.currentTime+i*0.12); o.stop(ctx.currentTime+i*0.12+0.15);
+      });
+    } else if(type==='wind') {
+      // 바람소리: 노이즈 필터
+      const bufSize = ctx.sampleRate * 1.5;
+      const buf = ctx.createBuffer(1, bufSize, ctx.sampleRate);
+      const data = buf.getChannelData(0);
+      for(let i=0;i<bufSize;i++) data[i] = (Math.random()*2-1)*0.15;
+      const src = ctx.createBufferSource();
+      src.buffer = buf;
+      const filt = ctx.createBiquadFilter();
+      filt.type='bandpass'; filt.frequency.value=400; filt.Q.value=0.5;
+      src.connect(filt); filt.connect(gain);
+      gain.gain.setValueAtTime(0,ctx.currentTime);
+      gain.gain.linearRampToValueAtTime(0.3,ctx.currentTime+0.3);
+      gain.gain.linearRampToValueAtTime(0,ctx.currentTime+1.4);
+      src.start(); src.stop(ctx.currentTime+1.5);
+    } else if(type==='rain') {
+      // 빗소리: 빠른 랜덤 탭
+      for(let i=0;i<30;i++){
+        const o = ctx.createOscillator();
+        o.connect(gain); o.type='sine';
+        o.frequency.value=300+Math.random()*400;
+        const t=ctx.currentTime+Math.random()*1.2;
+        gain.gain.setValueAtTime(0.02,t);
+        gain.gain.linearRampToValueAtTime(0,t+0.05);
+        o.start(t); o.stop(t+0.06);
+      }
+    } else if(type==='bee') {
+      // 꿀벌 윙윙
+      const o = ctx.createOscillator();
+      o.connect(gain); o.type='sawtooth'; o.frequency.value=220;
+      const lfo = ctx.createOscillator();
+      const lfoGain = ctx.createGain();
+      lfo.connect(lfoGain); lfoGain.connect(o.frequency);
+      lfo.frequency.value=8; lfoGain.gain.value=20;
+      gain.gain.setValueAtTime(0.06,ctx.currentTime);
+      gain.gain.linearRampToValueAtTime(0,ctx.currentTime+1.2);
+      lfo.start(); o.start(); lfo.stop(ctx.currentTime+1.2); o.stop(ctx.currentTime+1.2);
+    }
+  } catch(e){}
+}
+
+// ══════════════════════════════════════════
+// ── 화면 전환
+// ══════════════════════════════════════════
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo(0,0);
+}
+
+// ══════════════════════════════════════════
+// ── 진행 도트
+// ══════════════════════════════════════════
+function renderDots(containerId, total, current) {
+  const el = document.getElementById(containerId);
+  el.innerHTML = '';
+  for(let i=0;i<total;i++){
+    const d = document.createElement('div');
+    d.className = 'dot' + (i<current?' done':'') + (i===current?' current':'');
+    el.appendChild(d);
+  }
+}
+
+// ══════════════════════════════════════════
+// ── 스티커 표시
+// ══════════════════════════════════════════
+function addSticker(actId) {
+  const el = document.getElementById('sticker'+actId);
+  if(el) { const s=document.createElement('span'); s.textContent='⭐'; el.appendChild(s); }
+}
+
+// ══════════════════════════════════════════
+// ── 피드백 오버레이 (정답/재시도)
+// ══════════════════════════════════════════
+let feedbackTimeout = null;
+function showFeedback(isCorrect, onDone) {
+  const overlay = document.getElementById('feedbackOverlay');
+  const emoji = document.getElementById('fbEmoji');
+  const text = document.getElementById('fbText');
+
+  if(isCorrect) {
+    emoji.textContent = '🎉';
+    text.textContent = '잘 했어요! 🌸';
+    overlay.style.background = 'rgba(255,200,220,0.88)';
+    spawnConfetti();
+    playSfx('correct');
+  } else {
+    emoji.textContent = '💛';
+    text.textContent = '한 번 더! 💛';
+    overlay.style.background = 'rgba(255,240,200,0.88)';
+    playSfx('retry');
+  }
+
+  overlay.classList.add('show');
+  clearTimeout(feedbackTimeout);
+  feedbackTimeout = setTimeout(()=>{
+    overlay.classList.remove('show');
+    if(onDone) onDone();
+  }, isCorrect ? 1200 : 1800);
+}
+
+function spawnConfetti() {
+  const colors = ['#FF8FB1','#FFE066','#A8E6CF','#B3E5FC','#FFD6E7'];
+  for(let i=0;i<24;i++){
+    const p = document.createElement('div');
+    p.className = 'confetti-piece';
+    p.style.background = colors[i%colors.length];
+    p.style.left = (Math.random()*100)+'vw';
+    p.style.top = '-20px';
+    p.style.animationDelay = (Math.random()*0.4)+'s';
+    p.style.borderRadius = Math.random()>0.5?'50%':'3px';
+    document.body.appendChild(p);
+    setTimeout(()=>p.remove(), 1600);
+  }
+}
+
+// ══════════════════════════════════════════
+// ── 캐릭터 탭 반응
+// ══════════════════════════════════════════
+function charTap(act) {
+  const el = document.getElementById('char'+act);
+  el.classList.remove('jump','shake');
+  void el.offsetWidth;
+  el.classList.add('jump');
+  setTimeout(()=>el.classList.remove('jump'), 600);
+  playSfx('correct');
+}
+
+function charSetJump(act) {
+  const el = document.getElementById('char'+act);
+  el.classList.remove('jump','shake');
+  void el.offsetWidth;
+  el.classList.add('jump');
+  setTimeout(()=>el.classList.remove('jump'), 600);
+}
+function charSetShake(act) {
+  const el = document.getElementById('char'+act);
+  el.classList.remove('jump','shake');
+  void el.offsetWidth;
+  el.classList.add('shake');
+  setTimeout(()=>el.classList.remove('shake'), 600);
+}
+
+function setBubble(act, text) {
+  document.getElementById('bubble'+act).textContent = text;
+}
+
+// ══════════════════════════════════════════
+// ── 게임 시작
+// ══════════════════════════════════════════
+function startGame() {
+  try{ getAudioCtx().resume(); }catch(e){}
+  playBgMusic();
+  startA1();
+}
+
+// ══════════════════════════════════════════
+// ── 활동1
+// ══════════════════════════════════════════
+function startA1() {
+  state.a1.idx = 0; state.a1.retries = 0; state.a1.stickers = 0;
+  document.getElementById('stickerA1').innerHTML='';
+  showScreen('screen-a1');
+  renderA1();
+}
+
+function renderA1() {
+  const data = activityOneData;
+  const idx = state.a1.idx;
+  if(idx >= data.length) { finishA1(); return; }
+  const d = data[idx];
+  renderDots('dotsA1', data.length, idx);
+  document.getElementById('questionA1').textContent = d.q;
+  setBubble('A1', d.choices.find(c=>c.correct).emoji + ' 어디있지?');
+
+  const container = document.getElementById('choicesA1');
+  container.innerHTML = '';
+  d.choices.forEach(ch => {
+    const card = document.createElement('div');
+    card.className = 'choice-card';
+    card.innerHTML = `<span>${ch.emoji}</span><span class="card-label">${ch.label}</span>`;
+    card.onclick = () => handleA1Choice(ch.correct, card, container);
+    container.appendChild(card);
+  });
+}
+
+function handleA1Choice(isCorrect, card, container) {
+  Array.from(container.children).forEach(c=>c.classList.add('disabled'));
+  if(isCorrect) {
+    card.classList.add('correct-glow');
+    state.a1.stickers++;
+    addSticker('A1');
+    charSetJump('A1');
+    setBubble('A1','🎉 잘 했어요!');
+    showFeedback(true, ()=>{
+      state.a1.idx++;
+      state.a1.retries = 0;
+      renderA1();
+    });
+  } else {
+    state.a1.retries++;
+    charSetShake('A1');
+    setBubble('A1','💛 한 번 더!');
+    // 정답에 힌트 (3회 후)
+    if(state.a1.retries >= 3) {
+      const correctCard = Array.from(container.children).find((c,i)=>activityOneData[state.a1.idx].choices[i].correct);
+      if(correctCard) correctCard.classList.add('wrong-hint');
+    }
+    showFeedback(false, ()=>{
+      Array.from(container.children).forEach(c=>c.classList.remove('disabled','correct-glow','wrong-hint'));
+    });
+  }
+}
+
+function finishA1() {
+  document.getElementById('doneStickersA1').textContent = '⭐'.repeat(state.a1.stickers);
+  playSfx('clear');
+  showScreen('screen-a1done');
+}
+
+// ══════════════════════════════════════════
+// ── 활동2
+// ══════════════════════════════════════════
+function startA2() {
+  state.a2.idx = 0; state.a2.retries = 0; state.a2.stickers = 0;
+  document.getElementById('stickerA2').innerHTML='';
+  showScreen('screen-a2');
+  renderA2();
+}
+
+function renderA2() {
+  const data = activityTwoData;
+  const idx = state.a2.idx;
+  if(idx >= data.length) { finishA2(); return; }
+  const d = data[idx];
+  renderDots('dotsA2', data.length, idx);
+  document.getElementById('questionA2').textContent = d.q;
+  setBubble('A2', d.target + ' 짝꿍!');
+
+  const container = document.getElementById('choicesA2');
+  container.innerHTML = '';
+  d.choices.forEach((ch,ci) => {
+    const card = document.createElement('div');
+    card.className = 'choice-card';
+    card.innerHTML = `<span>${ch.emoji}</span>`;
+    card.onclick = () => handleA2Choice(ch.correct, card, container, ci);
+    container.appendChild(card);
+  });
+}
+
+function handleA2Choice(isCorrect, card, container, ci) {
+  Array.from(container.children).forEach(c=>c.classList.add('disabled'));
+  if(isCorrect) {
+    card.classList.add('correct-glow');
+    state.a2.stickers++;
+    addSticker('A2');
+    charSetJump('A2');
+    setBubble('A2','🎉 잘 했어요!');
+    showFeedback(true, ()=>{
+      state.a2.idx++;
+      state.a2.retries = 0;
+      renderA2();
+    });
+  } else {
+    state.a2.retries++;
+    charSetShake('A2');
+    setBubble('A2','💛 한 번 더!');
+    if(state.a2.retries >= 3) {
+      const d = activityTwoData[state.a2.idx];
+      Array.from(container.children).forEach((c,i)=>{ if(d.choices[i].correct) c.classList.add('wrong-hint'); });
+    }
+    showFeedback(false, ()=>{
+      Array.from(container.children).forEach(c=>c.classList.remove('disabled','correct-glow','wrong-hint'));
+    });
+  }
+}
+
+function finishA2() {
+  document.getElementById('doneStickersA2').textContent = '⭐'.repeat(state.a2.stickers);
+  playSfx('clear');
+  showScreen('screen-a2done');
+}
+
+// ══════════════════════════════════════════
+// ── 활동3
+// ══════════════════════════════════════════
+function startA3() {
+  state.a3.idx = 0; state.a3.retries = 0; state.a3.stickers = 0;
+  document.getElementById('stickerA3').innerHTML='';
+  showScreen('screen-a3');
+  renderA3();
+}
+
+function renderA3() {
+  const data = activityThreeData;
+  const idx = state.a3.idx;
+  if(idx >= data.length) { finishA3(); return; }
+  const d = data[idx];
+  currentSoundType = d.soundType;
+  renderDots('dotsA3', data.length, idx);
+  setBubble('A3','🎵 들어봐요!');
+  document.getElementById('questionA3').innerHTML =
+    `🔊 <strong>${d.soundLabel}</strong><br><span style="font-size:0.85rem;color:#C06080;">(눌러서 다시 듣기)</span>`;
+
+  // 자동 소리 재생
+  setTimeout(()=>playActivitySound(d.soundType), 300);
+
+  const container = document.getElementById('choicesA3');
+  container.innerHTML = '';
+  d.choices.forEach(ch => {
+    const card = document.createElement('div');
+    card.className = 'choice-card';
+    card.innerHTML = `<span>${ch.emoji}</span><span class="card-label">${ch.label}</span>`;
+    card.onclick = () => handleA3Choice(ch.correct, card, container);
+    container.appendChild(card);
+  });
+}
+
+function replaySound() {
+  if(currentSoundType) playActivitySound(currentSoundType);
+}
+
+function handleA3Choice(isCorrect, card, container) {
+  Array.from(container.children).forEach(c=>c.classList.add('disabled'));
+  if(isCorrect) {
+    card.classList.add('correct-glow');
+    state.a3.stickers++;
+    addSticker('A3');
+    charSetJump('A3');
+    setBubble('A3','🎉 맞아요!');
+    showFeedback(true, ()=>{
+      state.a3.idx++;
+      state.a3.retries = 0;
+      renderA3();
+    });
+  } else {
+    state.a3.retries++;
+    charSetShake('A3');
+    setBubble('A3','💛 한 번 더!');
+    if(state.a3.retries >= 3) {
+      const d = activityThreeData[state.a3.idx];
+      Array.from(container.children).forEach((c,i)=>{ if(d.choices[i].correct) c.classList.add('wrong-hint'); });
+    }
+    showFeedback(false, ()=>{
+      Array.from(container.children).forEach(c=>c.classList.remove('disabled','correct-glow','wrong-hint'));
+      playActivitySound(currentSoundType);
+    });
+  }
+}
+
+function finishA3() {
+  playSfx('clear');
+  showResult();
+}
+
+// ══════════════════════════════════════════
+// ── 결과 화면
+// ══════════════════════════════════════════
+function showResult() {
+  const total = state.a1.stickers + state.a2.stickers + state.a3.stickers;
+  document.getElementById('resultStickers').textContent = '⭐'.repeat(total);
+  showScreen('screen-result');
+  generateQR();
+
+  const entry = {
+    id: '#017',
+    title: '토순이랑 봄꽃 찾기',
+    target: '특수학급 씨앗반 (발달 나이 4~5세)',
+    level: 'Level A',
+    date: '2026-03-28',
+    theme: '봄/벚꽃/지구의 시간',
+    url: 'https://milab2019.github.io/main/seed_class_a_spring.html'
+  };
+  console.log('portfolioEntry:', JSON.stringify(entry, null, 2));
+}
+
+function generateQR() {
+  const el = document.getElementById('qrcode');
+  el.innerHTML = '';
+  try {
+    new QRCode(el, {
+      text: 'https://milab2019.github.io/main/seed_class_a_spring.html',
+      width: 100, height: 100,
+      colorDark: '#D45F8A', colorLight: '#FFFFFF',
+      correctLevel: QRCode.CorrectLevel.M
+    });
+  } catch(e){}
+}
+
+function resetGame() {
+  Object.assign(state,{
+    a1:{idx:0,retries:0,stickers:0},
+    a2:{idx:0,retries:0,stickers:0},
+    a3:{idx:0,retries:0,stickers:0},
+  });
+  showScreen('screen-title');
+}
+
+// ══════════════════════════════════════════
+// ── 교사 모드
+// ══════════════════════════════════════════
+function startTeacherHold() {
+  teacherHoldTimer = setTimeout(()=>{
+    document.getElementById('teacherPanel').classList.toggle('open');
+  }, 3000);
+}
+function cancelTeacherHold() {
+  clearTimeout(teacherHoldTimer);
+}
+function toggleBgMusic() {
+  bgMusicOn = !bgMusicOn;
+  if(bgMusicOn) playBgMusic(); else stopBgMusic();
+}
+function toggleSfx() { sfxOn = !sfxOn; }
+function forceNextActivity() {
+  const active = document.querySelector('.screen.active');
+  if(!active) return;
+  const id = active.id;
+  document.getElementById('teacherPanel').classList.remove('open');
+  if(id==='screen-a1'||id==='screen-a1done') startA2();
+  else if(id==='screen-a2'||id==='screen-a2done') startA3();
+  else if(id==='screen-a3') showResult();
+}
+
+// ══════════════════════════════════════════
+// ── 가장자리 10px 터치 무시
+// ══════════════════════════════════════════
+document.addEventListener('touchstart', e=>{
+  const t = e.touches[0];
+  if(t.clientX < 10 || t.clientX > window.innerWidth-10 ||
+     t.clientY < 10 || t.clientY > window.innerHeight-10) {
+    if(e.target.id !== 'teacherTrigger') e.preventDefault();
+  }
+}, { passive: false });
+
+// ══════════════════════════════════════════
+// ── 초기화
+// ══════════════════════════════════════════
+initPetals();
+</script>
+</body>
+</html>
