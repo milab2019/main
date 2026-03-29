@@ -1,0 +1,1729 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🌿 미래농업연구소 스마트팜 시뮬레이터</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&family=Orbitron:wght@700;900&display=swap');
+
+:root {
+  --bg-deep: #070f0a;
+  --bg-dark: #0d1a10;
+  --bg-card: #111f15;
+  --bg-card2: #162218;
+  --green-bright: #3dff7a;
+  --green-mid: #1db954;
+  --green-dark: #0d6b34;
+  --green-glow: rgba(61,255,122,0.18);
+  --teal: #00e5b4;
+  --amber: #ffb84d;
+  --amber-dark: #c47d00;
+  --red-warn: #ff4f4f;
+  --blue-data: #4db8ff;
+  --text-primary: #e8f5ec;
+  --text-secondary: #8ab89a;
+  --text-muted: #4a6e54;
+  --border: rgba(61,255,122,0.15);
+  --border-bright: rgba(61,255,122,0.4);
+  --radius: 14px;
+  --radius-lg: 20px;
+}
+
+*{box-sizing:border-box;margin:0;padding:0;}
+
+body {
+  font-family:'Noto Sans KR',sans-serif;
+  background: var(--bg-deep);
+  color: var(--text-primary);
+  min-height:100vh;
+  overflow-x:hidden;
+}
+
+/* ── 배경 파티클 ── */
+#particles-bg {
+  position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:0;
+  background: radial-gradient(ellipse 80% 60% at 50% 0%, rgba(13,107,52,0.25) 0%, transparent 70%);
+}
+.particle {
+  position:absolute;width:2px;height:2px;border-radius:50%;
+  background:var(--green-bright);opacity:0;
+  animation:float var(--dur,8s) var(--delay,0s) infinite ease-in-out;
+}
+@keyframes float {
+  0%{opacity:0;transform:translateY(100vh) scale(0);}
+  10%{opacity:0.6;}
+  90%{opacity:0.3;}
+  100%{opacity:0;transform:translateY(-20px) scale(1.5);}
+}
+
+/* ── 공통 레이아웃 ── */
+#app {position:relative;z-index:1;max-width:780px;margin:0 auto;padding:16px;}
+
+.screen {display:none;animation:fadeIn 0.5s ease;}
+.screen.active{display:block;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(18px);}to{opacity:1;transform:none;}}
+
+/* ── 헤더 ── */
+.game-header {
+  display:flex;align-items:center;justify-content:space-between;
+  padding:14px 20px;margin-bottom:16px;
+  background:var(--bg-card);border:1px solid var(--border);
+  border-radius:var(--radius);
+}
+.header-title {
+  font-family:'Orbitron',sans-serif;font-size:13px;
+  color:var(--green-bright);letter-spacing:1px;
+}
+.header-right {display:flex;align-items:center;gap:12px;}
+.score-badge {
+  background:rgba(61,255,122,0.1);border:1px solid var(--border-bright);
+  border-radius:8px;padding:5px 12px;font-size:13px;color:var(--green-bright);font-weight:700;
+}
+.music-btn {
+  background:none;border:1px solid var(--border);border-radius:8px;
+  padding:5px 10px;color:var(--text-secondary);cursor:pointer;font-size:16px;
+  transition:all 0.2s;
+}
+.music-btn:hover{border-color:var(--green-bright);color:var(--green-bright);}
+
+/* ── 인트로 화면 ── */
+#screen-intro {text-align:center;padding:24px 0;}
+.intro-badge {
+  display:inline-block;background:rgba(61,255,122,0.12);
+  border:1px solid var(--border-bright);border-radius:30px;
+  padding:6px 18px;font-size:12px;color:var(--green-bright);letter-spacing:2px;
+  margin-bottom:24px;
+}
+.intro-title {
+  font-family:'Orbitron',sans-serif;font-size:clamp(22px,5vw,36px);
+  color:var(--green-bright);line-height:1.3;margin-bottom:8px;
+  text-shadow:0 0 30px rgba(61,255,122,0.4);
+}
+.intro-subtitle {font-size:17px;color:var(--text-secondary);margin-bottom:28px;}
+
+/* 파미 캐릭터 */
+.fami-wrap {margin:0 auto 24px;width:120px;height:120px;position:relative;}
+.fami-body {
+  width:120px;height:120px;
+  animation:bob 2.8s ease-in-out infinite;
+}
+@keyframes bob{0%,100%{transform:translateY(0);}50%{transform:translateY(-8px);}}
+
+.fami-speech {
+  background:var(--bg-card2);border:1px solid var(--border-bright);
+  border-radius:var(--radius);padding:14px 18px;
+  font-size:14px;color:var(--text-primary);line-height:1.7;
+  margin:0 0 24px;text-align:left;position:relative;
+}
+.fami-speech::before {
+  content:'';position:absolute;top:-9px;left:50px;
+  width:16px;height:16px;background:var(--bg-card2);
+  border-left:1px solid var(--border-bright);border-top:1px solid var(--border-bright);
+  transform:rotate(45deg);
+}
+.fami-name {
+  font-size:12px;color:var(--green-bright);font-weight:700;
+  margin-bottom:5px;display:flex;align-items:center;gap:6px;
+}
+.fami-name::before{content:'🤖';}
+
+/* 미션 카드들 */
+.mission-overview {
+  display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:28px;
+}
+@media(max-width:480px){.mission-overview{grid-template-columns:1fr;}}
+
+.mission-card {
+  background:var(--bg-card);border:1px solid var(--border);
+  border-radius:var(--radius);padding:14px 16px;text-align:left;
+  transition:border-color 0.2s;
+}
+.mission-card:hover{border-color:var(--border-bright);}
+.mission-card-num {font-size:11px;color:var(--green-mid);font-weight:700;margin-bottom:4px;}
+.mission-card-title {font-size:14px;font-weight:700;margin-bottom:4px;}
+.mission-card-desc {font-size:12px;color:var(--text-secondary);}
+
+.btn-primary {
+  display:inline-block;background:var(--green-mid);color:#000;
+  font-size:17px;font-weight:700;padding:16px 44px;border-radius:var(--radius);
+  border:none;cursor:pointer;transition:all 0.2s;letter-spacing:0.5px;
+  font-family:'Noto Sans KR',sans-serif;
+}
+.btn-primary:hover{background:var(--green-bright);transform:translateY(-2px);box-shadow:0 8px 24px rgba(61,255,122,0.3);}
+.btn-secondary {
+  display:inline-block;background:transparent;color:var(--text-secondary);
+  font-size:14px;padding:12px 24px;border-radius:var(--radius);
+  border:1px solid var(--border);cursor:pointer;transition:all 0.2s;
+  font-family:'Noto Sans KR',sans-serif;
+}
+.btn-secondary:hover{border-color:var(--border-bright);color:var(--text-primary);}
+
+/* ── 미션 화면 공통 ── */
+.mission-header {
+  background:var(--bg-card);border:1px solid var(--border);
+  border-radius:var(--radius);padding:16px 20px;margin-bottom:16px;
+  display:flex;align-items:center;gap:14px;
+}
+.mission-icon {font-size:28px;}
+.mission-info {}
+.mission-tag {font-size:11px;color:var(--green-mid);font-weight:700;letter-spacing:1px;}
+.mission-name {font-size:18px;font-weight:700;margin-top:2px;}
+
+/* 진행 바 */
+.progress-wrap {
+  background:rgba(255,255,255,0.06);border-radius:4px;height:6px;margin-bottom:16px;overflow:hidden;
+}
+.progress-fill {
+  height:100%;background:var(--green-bright);border-radius:4px;
+  transition:width 0.4s ease;box-shadow:0 0 8px rgba(61,255,122,0.5);
+}
+
+/* 타이머 */
+.timer-wrap {
+  display:flex;align-items:center;gap:10px;
+  background:var(--bg-card);border:1px solid var(--border);
+  border-radius:var(--radius);padding:12px 16px;margin-bottom:14px;
+}
+.timer-label{font-size:12px;color:var(--text-secondary);}
+.timer-bar-bg{flex:1;height:8px;background:rgba(255,255,255,0.08);border-radius:4px;overflow:hidden;}
+.timer-bar-fill {
+  height:100%;background:var(--green-bright);border-radius:4px;
+  transition:width 1s linear,background 0.5s;
+}
+.timer-bar-fill.warn{background:var(--red-warn);animation:blink 0.5s infinite;}
+.timer-num {font-size:16px;font-weight:700;color:var(--green-bright);min-width:28px;text-align:right;}
+.timer-num.warn{color:var(--red-warn);}
+@keyframes blink{0%,100%{opacity:1;}50%{opacity:0.4;}}
+
+/* ── 미션1 뉴스 카드 ── */
+.news-card {
+  background:var(--bg-card);border:1px solid var(--border);
+  border-radius:var(--radius);padding:18px;margin-bottom:14px;
+}
+.news-tag {
+  display:inline-block;background:rgba(29,185,84,0.15);
+  border:1px solid rgba(29,185,84,0.3);border-radius:20px;
+  padding:3px 10px;font-size:11px;color:var(--green-mid);font-weight:700;margin-bottom:8px;
+}
+.news-title {font-size:16px;font-weight:700;margin-bottom:10px;line-height:1.5;}
+.news-body {font-size:14px;color:var(--text-secondary);line-height:1.8;}
+.stat-grid {
+  display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:14px;
+}
+@media(max-width:480px){.stat-grid{grid-template-columns:repeat(2,1fr);}}
+.stat-item {
+  background:rgba(255,255,255,0.04);border:1px solid var(--border);
+  border-radius:10px;padding:12px;text-align:center;
+}
+.stat-num {font-size:22px;font-weight:900;color:var(--green-bright);}
+.stat-label {font-size:11px;color:var(--text-secondary);margin-top:3px;}
+.stat-source {font-size:10px;color:var(--text-muted);margin-top:2px;}
+
+/* 미션1 퀴즈 */
+.q-card {
+  background:var(--bg-card);border:1px solid var(--border);
+  border-radius:var(--radius);padding:20px;margin-bottom:14px;
+}
+.q-num {font-size:11px;color:var(--green-mid);font-weight:700;margin-bottom:8px;}
+.q-text {font-size:16px;font-weight:700;line-height:1.6;margin-bottom:16px;}
+.choices {display:flex;flex-direction:column;gap:10px;}
+.choice-btn {
+  display:flex;align-items:center;gap:12px;
+  background:rgba(255,255,255,0.04);border:1px solid var(--border);
+  border-radius:12px;padding:14px 16px;cursor:pointer;
+  text-align:left;font-size:15px;color:var(--text-primary);
+  transition:all 0.2s;font-family:'Noto Sans KR',sans-serif;width:100%;
+}
+.choice-btn:hover{border-color:var(--border-bright);background:rgba(61,255,122,0.06);}
+.choice-btn.correct{border-color:var(--green-bright);background:rgba(61,255,122,0.12);color:var(--green-bright);}
+.choice-btn.wrong{border-color:var(--red-warn);background:rgba(255,79,79,0.1);color:var(--red-warn);}
+.choice-btn:disabled{cursor:default;}
+.choice-letter {
+  width:30px;height:30px;border-radius:50%;
+  background:rgba(255,255,255,0.08);border:1px solid var(--border);
+  display:flex;align-items:center;justify-content:center;
+  font-size:13px;font-weight:700;flex-shrink:0;
+  transition:all 0.2s;
+}
+.choice-btn.correct .choice-letter{background:var(--green-bright);color:#000;border-color:var(--green-bright);}
+.choice-btn.wrong .choice-letter{background:var(--red-warn);color:#fff;border-color:var(--red-warn);}
+
+/* 힌트 버튼 */
+.hint-row {display:flex;align-items:center;gap:10px;margin-bottom:12px;}
+.hint-btn {
+  background:rgba(255,184,77,0.1);border:1px solid rgba(255,184,77,0.3);
+  border-radius:8px;padding:8px 14px;color:var(--amber);font-size:13px;
+  cursor:pointer;transition:all 0.2s;font-family:'Noto Sans KR',sans-serif;
+}
+.hint-btn:hover{background:rgba(255,184,77,0.18);}
+.hint-btn:disabled{opacity:0.4;cursor:default;}
+.hint-box {
+  background:rgba(255,184,77,0.08);border:1px solid rgba(255,184,77,0.2);
+  border-radius:10px;padding:12px 14px;font-size:13px;color:var(--amber);
+  line-height:1.7;margin-bottom:12px;display:none;
+}
+.hint-box.show{display:block;}
+
+/* 피드백 박스 */
+.feedback-box {
+  background:var(--bg-card2);border-radius:var(--radius);padding:16px;
+  margin-top:12px;display:none;border:1px solid var(--border);
+}
+.feedback-box.show{display:block;animation:fadeIn 0.3s ease;}
+.feedback-box.correct-fb{border-color:rgba(61,255,122,0.3);}
+.feedback-box.wrong-fb{border-color:rgba(255,79,79,0.3);}
+.feedback-fami {display:flex;align-items:flex-start;gap:12px;}
+.feedback-fami-img {font-size:28px;flex-shrink:0;}
+.feedback-text {font-size:14px;line-height:1.7;color:var(--text-secondary);}
+.feedback-text strong{color:var(--text-primary);}
+
+/* 난이도 탭 */
+.diff-tabs {
+  display:flex;gap:8px;margin-bottom:16px;
+  background:var(--bg-card);border:1px solid var(--border);
+  border-radius:var(--radius);padding:8px;
+}
+.diff-tab {
+  flex:1;padding:9px;border-radius:10px;border:none;cursor:pointer;
+  font-size:13px;font-weight:700;transition:all 0.2s;
+  font-family:'Noto Sans KR',sans-serif;background:transparent;color:var(--text-muted);
+}
+.diff-tab.active{background:var(--green-dark);color:var(--green-bright);border:1px solid var(--border-bright);}
+.diff-tab:hover:not(.active){color:var(--text-secondary);}
+
+/* ── 미션3 데이터 분류 ── */
+.sensor-cards-row {
+  display:flex;flex-wrap:wrap;gap:10px;margin-bottom:18px;min-height:90px;
+  background:rgba(255,255,255,0.02);border:1px dashed var(--border);
+  border-radius:var(--radius);padding:14px;
+}
+.sensor-card {
+  background:var(--bg-card2);border:1px solid var(--border);
+  border-radius:10px;padding:12px 14px;cursor:grab;
+  transition:all 0.2s;user-select:none;
+  display:flex;flex-direction:column;align-items:center;gap:4px;
+  min-width:90px;
+}
+.sensor-card:hover{border-color:var(--blue-data);box-shadow:0 4px 12px rgba(77,184,255,0.2);}
+.sensor-card.dragging{opacity:0.5;transform:scale(0.95);}
+.sensor-icon{font-size:20px;}
+.sensor-name{font-size:11px;color:var(--text-secondary);}
+.sensor-value{font-size:16px;font-weight:700;color:var(--blue-data);}
+.sensor-unit{font-size:10px;color:var(--text-muted);}
+
+.zone-row {display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:18px;}
+@media(max-width:480px){.zone-row{grid-template-columns:1fr;}}
+.drop-zone {
+  border:2px dashed var(--border);border-radius:var(--radius);
+  padding:14px 10px;text-align:center;min-height:120px;
+  transition:all 0.2s;
+}
+.drop-zone.drag-over{border-color:var(--green-bright);background:rgba(61,255,122,0.06);}
+.zone-title{font-size:13px;font-weight:700;margin-bottom:4px;}
+.zone-range{font-size:11px;color:var(--text-muted);margin-bottom:8px;}
+.zone-items{display:flex;flex-direction:column;gap:6px;}
+.zone-item {
+  background:var(--bg-card);border:1px solid var(--border);
+  border-radius:8px;padding:8px 10px;font-size:12px;
+  display:flex;justify-content:space-between;align-items:center;
+}
+.zone-normal{border-color:rgba(61,255,122,0.3);}
+.zone-warn{border-color:rgba(255,184,77,0.3);}
+.zone-danger{border-color:rgba(255,79,79,0.3);}
+
+/* AI 판단 결과 */
+.ai-decision {
+  background:var(--bg-card);border:1px solid var(--border);
+  border-radius:var(--radius);padding:16px;margin-top:14px;
+}
+.ai-decision-title {font-size:13px;color:var(--blue-data);font-weight:700;margin-bottom:10px;}
+.ai-action-row {display:flex;flex-direction:column;gap:8px;}
+.ai-action {
+  display:flex;align-items:center;gap:10px;
+  background:rgba(255,255,255,0.03);border-radius:8px;padding:10px 12px;font-size:13px;
+}
+.ai-action-icon{font-size:18px;flex-shrink:0;}
+.ai-action-desc{color:var(--text-secondary);line-height:1.5;}
+.ai-action-desc strong{color:var(--text-primary);}
+
+/* ── 미션4 시나리오 ── */
+.scenario-card {
+  background:var(--bg-card);border:1px solid var(--border);
+  border-radius:var(--radius);padding:20px;margin-bottom:14px;
+}
+.scenario-title-lg {font-size:17px;font-weight:700;margin-bottom:10px;line-height:1.5;}
+.scenario-situation {
+  background:rgba(255,255,255,0.03);border-radius:10px;
+  padding:14px;margin-bottom:14px;font-size:14px;color:var(--text-secondary);line-height:1.8;
+}
+.scenario-choices {display:flex;flex-direction:column;gap:10px;}
+.scenario-btn {
+  display:flex;flex-direction:column;align-items:flex-start;
+  background:rgba(255,255,255,0.04);border:1px solid var(--border);
+  border-radius:12px;padding:16px;cursor:pointer;
+  transition:all 0.2s;text-align:left;width:100%;
+  font-family:'Noto Sans KR',sans-serif;
+}
+.scenario-btn:hover{border-color:var(--border-bright);background:rgba(61,255,122,0.06);}
+.scenario-btn-label{font-size:13px;font-weight:700;color:var(--green-mid);margin-bottom:4px;}
+.scenario-btn-text{font-size:14px;color:var(--text-primary);}
+.scenario-btn-sub{font-size:12px;color:var(--text-secondary);margin-top:4px;}
+
+/* ── 결과 화면 ── */
+#screen-result {text-align:center;padding:16px 0;}
+.result-title {
+  font-family:'Orbitron',sans-serif;font-size:clamp(18px,4vw,28px);
+  color:var(--green-bright);margin-bottom:8px;
+  text-shadow:0 0 20px rgba(61,255,122,0.4);
+}
+.result-career {
+  font-size:20px;font-weight:700;color:var(--teal);margin-bottom:16px;line-height:1.4;
+}
+.result-score-big {
+  font-family:'Orbitron',sans-serif;font-size:64px;font-weight:900;
+  color:var(--green-bright);line-height:1;margin:16px 0;
+  text-shadow:0 0 40px rgba(61,255,122,0.5);
+}
+.result-score-label{font-size:14px;color:var(--text-muted);}
+
+.badges-row {display:flex;justify-content:center;gap:16px;margin:20px 0;flex-wrap:wrap;}
+.badge-item {
+  display:flex;flex-direction:column;align-items:center;gap:6px;
+}
+.badge-icon{font-size:32px;}
+.badge-name{font-size:11px;color:var(--text-secondary);}
+.badge-stars{color:var(--amber);font-size:14px;letter-spacing:1px;}
+
+.result-detail {
+  background:var(--bg-card);border:1px solid var(--border);
+  border-radius:var(--radius);padding:18px;margin:16px 0;text-align:left;
+}
+.result-detail-title{font-size:13px;color:var(--text-muted);margin-bottom:12px;}
+.result-mission-row {
+  display:flex;justify-content:space-between;align-items:center;
+  padding:8px 0;border-bottom:1px solid var(--border);font-size:14px;
+}
+.result-mission-row:last-child{border:none;}
+
+/* 닉네임 입력 */
+.nickname-area {
+  background:var(--bg-card);border:1px solid var(--border);
+  border-radius:var(--radius);padding:18px;margin:16px 0;
+}
+.nickname-label {font-size:13px;color:var(--text-secondary);margin-bottom:10px;}
+.nickname-row {display:flex;gap:10px;}
+.nickname-input {
+  flex:1;background:rgba(255,255,255,0.05);border:1px solid var(--border);
+  border-radius:10px;padding:12px 14px;font-size:15px;color:var(--text-primary);
+  font-family:'Noto Sans KR',sans-serif;outline:none;
+  transition:border-color 0.2s;
+}
+.nickname-input:focus{border-color:var(--border-bright);}
+
+/* 리더보드 */
+.leaderboard {
+  background:var(--bg-card);border:1px solid var(--border);
+  border-radius:var(--radius);padding:18px;margin:16px 0;text-align:left;
+}
+.lb-title{font-size:13px;color:var(--text-muted);margin-bottom:12px;display:flex;align-items:center;gap:6px;}
+.lb-row {
+  display:flex;align-items:center;gap:10px;
+  padding:8px 0;border-bottom:1px solid var(--border);font-size:14px;
+}
+.lb-row:last-child{border:none;}
+.lb-rank {width:24px;font-weight:700;color:var(--green-mid);}
+.lb-rank.gold{color:#FFD700;}
+.lb-rank.silver{color:#C0C0C0;}
+.lb-rank.bronze{color:#CD7F32;}
+.lb-name{flex:1;}
+.lb-score{font-weight:700;color:var(--green-bright);}
+
+/* QR */
+.qr-section {
+  background:var(--bg-card);border:1px solid var(--border);
+  border-radius:var(--radius);padding:18px;margin:16px 0;
+}
+.qr-title{font-size:13px;color:var(--text-muted);margin-bottom:12px;}
+#qr-container {
+  display:flex;justify-content:center;margin-bottom:10px;
+}
+#qr-container canvas, #qr-container img {
+  border-radius:10px;border:4px solid #fff;
+}
+.qr-sub{font-size:11px;color:var(--text-muted);}
+
+/* ── 미션 완료 ── */
+.mission-clear {
+  text-align:center;padding:28px;
+  background:var(--bg-card);border:1px solid var(--border-bright);
+  border-radius:var(--radius-lg);margin:16px 0;
+  animation:fadeIn 0.4s ease;
+}
+.mission-clear-title{font-size:22px;font-weight:700;color:var(--green-bright);margin-bottom:8px;}
+.mission-clear-score{font-size:36px;font-weight:900;color:var(--green-bright);margin:8px 0;}
+.mission-clear-stars{font-size:28px;color:var(--amber);margin:8px 0;}
+
+/* next 버튼 */
+.btn-next {
+  background:var(--green-dark);color:var(--green-bright);
+  border:1px solid var(--border-bright);border-radius:var(--radius);
+  padding:15px 36px;font-size:16px;font-weight:700;cursor:pointer;
+  transition:all 0.2s;font-family:'Noto Sans KR',sans-serif;margin-top:14px;
+}
+.btn-next:hover{background:var(--green-mid);color:#000;}
+
+/* ── 미션 간 전환 ── */
+.mission-transition {
+  text-align:center;padding:40px 20px;
+  background:var(--bg-card);border:1px solid var(--border);
+  border-radius:var(--radius-lg);margin:16px 0;
+}
+.transition-num {
+  font-family:'Orbitron',sans-serif;font-size:64px;font-weight:900;
+  color:rgba(61,255,122,0.15);line-height:1;margin-bottom:10px;
+}
+.transition-title{font-size:20px;font-weight:700;margin-bottom:6px;}
+.transition-desc{font-size:14px;color:var(--text-secondary);}
+
+/* 툴팁 */
+.tooltip-wrap{position:relative;display:inline;}
+.tooltip-trigger{
+  border-bottom:1px dashed var(--green-mid);cursor:help;color:var(--green-mid);
+}
+.tooltip-box {
+  display:none;position:absolute;bottom:125%;left:50%;transform:translateX(-50%);
+  background:#1a2e1e;border:1px solid var(--border-bright);border-radius:8px;
+  padding:8px 12px;font-size:12px;color:var(--text-primary);white-space:nowrap;
+  z-index:100;line-height:1.5;
+}
+.tooltip-wrap:hover .tooltip-box{display:block;}
+
+/* 로딩 스크린 */
+#loading-screen {
+  position:fixed;inset:0;background:var(--bg-deep);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  z-index:999;
+}
+.loading-logo {
+  font-family:'Orbitron',sans-serif;font-size:24px;color:var(--green-bright);
+  letter-spacing:4px;margin-bottom:28px;
+}
+.loading-bar-bg{width:240px;height:4px;background:rgba(255,255,255,0.1);border-radius:2px;overflow:hidden;}
+.loading-bar-fill{height:100%;background:var(--green-bright);border-radius:2px;animation:loading 1.8s ease forwards;}
+@keyframes loading{from{width:0%;}to{width:100%;}}
+.loading-sub{font-size:13px;color:var(--text-muted);margin-top:14px;}
+
+/* AI 학습 설명 박스 */
+.ai-explain {
+  background:rgba(77,184,255,0.06);border:1px solid rgba(77,184,255,0.2);
+  border-radius:var(--radius);padding:16px;margin-top:14px;
+}
+.ai-explain-title{font-size:12px;color:var(--blue-data);font-weight:700;margin-bottom:8px;}
+.ai-explain-text{font-size:13px;color:var(--text-secondary);line-height:1.8;}
+
+/* 모바일 최적화 */
+@media(max-width:480px){
+  .diff-tabs{gap:4px;}
+  .diff-tab{font-size:12px;padding:8px 6px;}
+  .stat-grid{grid-template-columns:1fr 1fr;}
+  .mission-overview{grid-template-columns:1fr;}
+}
+</style>
+</head>
+<body>
+
+<!-- 배경 파티클 -->
+<div id="particles-bg"></div>
+
+<!-- 로딩 -->
+<div id="loading-screen">
+  <div class="loading-logo">MILAB</div>
+  <div style="font-size:16px;color:var(--text-secondary);margin-bottom:24px;">스마트팜 시뮬레이터 로딩 중...</div>
+  <div class="loading-bar-bg"><div class="loading-bar-fill"></div></div>
+  <div class="loading-sub">미래농업연구소 접속 준비 중</div>
+</div>
+
+<div id="app">
+  <!-- 헤더 -->
+  <div class="game-header" id="main-header" style="display:none;">
+    <div class="header-title">🌿 미래농업연구소</div>
+    <div class="header-right">
+      <div class="score-badge">⭐ <span id="header-score">0</span>점</div>
+      <button class="music-btn" id="music-toggle-btn" onclick="toggleMusic()">🔊</button>
+    </div>
+  </div>
+
+  <!-- ── 인트로 화면 ── -->
+  <div id="screen-intro" class="screen active">
+    <div class="intro-badge">MILAB · 2050 미래농업연구소</div>
+    <div class="intro-title">🌿 스마트팜<br>시뮬레이터</div>
+    <div class="intro-subtitle">AI 시대, 나는 미래 농업 설계사!</div>
+
+    <div class="fami-wrap">
+      <svg class="fami-body" id="fami-intro" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+        <!-- 헬멧 -->
+        <ellipse cx="60" cy="25" rx="32" ry="10" fill="#0a4a20" opacity="0.8"/>
+        <rect x="28" y="20" width="64" height="8" rx="4" fill="#0d6b34"/>
+        <!-- 머리 -->
+        <rect x="32" y="26" width="56" height="44" rx="14" fill="#1a3a22"/>
+        <rect x="34" y="28" width="52" height="40" rx="12" fill="#142e1a"/>
+        <!-- 눈 -->
+        <rect x="42" y="40" width="14" height="10" rx="3" fill="#3dff7a" opacity="0.9"/>
+        <rect x="64" y="40" width="14" height="10" rx="3" fill="#3dff7a" opacity="0.9"/>
+        <rect x="46" y="43" width="6" height="4" rx="2" fill="#fff" opacity="0.7"/>
+        <rect x="68" y="43" width="6" height="4" rx="2" fill="#fff" opacity="0.7"/>
+        <!-- 입 -->
+        <rect x="50" y="56" width="20" height="4" rx="2" fill="#3dff7a" opacity="0.7"/>
+        <!-- 몸통 -->
+        <rect x="36" y="72" width="48" height="34" rx="10" fill="#1a3a22"/>
+        <rect x="44" y="78" width="32" height="20" rx="6" fill="#0d2a14"/>
+        <!-- 배 패널 -->
+        <rect x="47" y="81" width="26" height="14" rx="4" fill="#0a1e0d"/>
+        <circle cx="53" cy="85" r="3" fill="#3dff7a" opacity="0.8"/>
+        <circle cx="60" cy="85" r="3" fill="#00e5b4" opacity="0.7"/>
+        <circle cx="67" cy="85" r="3" fill="#ffb84d" opacity="0.7"/>
+        <rect x="50" y="91" width="20" height="2" rx="1" fill="#1db954" opacity="0.5"/>
+        <!-- 팔 -->
+        <rect x="20" y="74" width="14" height="26" rx="7" fill="#1a3a22"/>
+        <rect x="86" y="74" width="14" height="26" rx="7" fill="#1a3a22"/>
+        <!-- 다리 -->
+        <rect x="40" y="106" width="16" height="12" rx="6" fill="#1a3a22"/>
+        <rect x="64" y="106" width="16" height="12" rx="6" fill="#1a3a22"/>
+        <!-- 안테나 -->
+        <line x1="60" y1="16" x2="60" y2="6" stroke="#3dff7a" stroke-width="2"/>
+        <circle cx="60" cy="5" r="3" fill="#3dff7a"/>
+      </svg>
+    </div>
+
+    <div class="fami-speech">
+      <div class="fami-name">FAMI (농업 AI 로봇)</div>
+      안녕! 나는 미래농업연구소의 AI 로봇 <strong>파미(FAMI)</strong>야.<br>
+      2050년, 기후변화로 <strong>식량 위기</strong>가 현실화됐어. 정부는 차세대 <strong>스마트팜 설계사</strong>를 긴급 모집 중이야.<br>
+      <strong>4개의 미션</strong>을 완수하면 스마트팜 설계 자격을 얻을 수 있어! 같이 해보자! 🌱
+    </div>
+
+    <div class="mission-overview">
+      <div class="mission-card">
+        <div class="mission-card-num">MISSION 01</div>
+        <div class="mission-card-title">🔍 스마트팜 현황 브리핑</div>
+        <div class="mission-card-desc">실제 농업 통계를 분석해 스마트팜의 필요성을 파악해!</div>
+      </div>
+      <div class="mission-card">
+        <div class="mission-card-num">MISSION 02</div>
+        <div class="mission-card-title">📚 스마트팜 설계 퀴즈</div>
+        <div class="mission-card-desc">장단점·IoT 원리·AI 윤리까지 3단계 난이도 도전!</div>
+      </div>
+      <div class="mission-card">
+        <div class="mission-card-num">MISSION 03</div>
+        <div class="mission-card-title">🤖 AI 데이터 분류 체험</div>
+        <div class="mission-card-desc">센서 데이터를 분류하며 머신러닝 원리를 직접 체험!</div>
+      </div>
+      <div class="mission-card">
+        <div class="mission-card-num">MISSION 04</div>
+        <div class="mission-card-title">🏗️ 스마트팜 최종 설계</div>
+        <div class="mission-card-desc">시나리오 판단으로 나만의 스마트팜 방향을 결정!</div>
+      </div>
+    </div>
+
+    <button class="btn-primary" onclick="startGame()">🌱 연구소 입소하기</button>
+  </div>
+
+  <!-- ── 미션 1 화면 ── -->
+  <div id="screen-m1" class="screen">
+    <div class="mission-header">
+      <div class="mission-icon">🔍</div>
+      <div class="mission-info">
+        <div class="mission-tag">MISSION 01 · 지식 탐색</div>
+        <div class="mission-name">스마트팜 현황 브리핑</div>
+      </div>
+    </div>
+    <div class="progress-wrap"><div class="progress-fill" id="m1-progress" style="width:0%"></div></div>
+    <div class="timer-wrap">
+      <span class="timer-label">⏱ 전체 시간</span>
+      <div class="timer-bar-bg"><div class="timer-bar-fill" id="m1-timer-bar" style="width:100%"></div></div>
+      <span class="timer-num" id="m1-timer-num">60</span>
+    </div>
+    <div id="m1-content"></div>
+  </div>
+
+  <!-- ── 미션 2 화면 ── -->
+  <div id="screen-m2" class="screen">
+    <div class="mission-header">
+      <div class="mission-icon">📚</div>
+      <div class="mission-info">
+        <div class="mission-tag">MISSION 02 · 교과 융합 퀴즈</div>
+        <div class="mission-name">스마트팜 설계 퀴즈</div>
+      </div>
+    </div>
+    <div class="progress-wrap"><div class="progress-fill" id="m2-progress" style="width:0%"></div></div>
+    <div class="diff-tabs">
+      <button class="diff-tab active" id="tab-easy" onclick="setDiff('easy')">🟢 쉬움</button>
+      <button class="diff-tab" id="tab-normal" onclick="setDiff('normal')">🟡 보통</button>
+      <button class="diff-tab" id="tab-hard" onclick="setDiff('hard')">🔴 도전</button>
+    </div>
+    <div id="m2-content"></div>
+  </div>
+
+  <!-- ── 미션 3 화면 ── -->
+  <div id="screen-m3" class="screen">
+    <div class="mission-header">
+      <div class="mission-icon">🤖</div>
+      <div class="mission-info">
+        <div class="mission-tag">MISSION 03 · AI 체험 미션</div>
+        <div class="mission-name">AI 데이터 분류 체험</div>
+      </div>
+    </div>
+    <div class="progress-wrap"><div class="progress-fill" id="m3-progress" style="width:0%"></div></div>
+    <div id="m3-content"></div>
+  </div>
+
+  <!-- ── 미션 4 화면 ── -->
+  <div id="screen-m4" class="screen">
+    <div class="mission-header">
+      <div class="mission-icon">🏗️</div>
+      <div class="mission-info">
+        <div class="mission-tag">MISSION 04 · 진로·사회 판단</div>
+        <div class="mission-name">스마트팜 최종 설계 판단</div>
+      </div>
+    </div>
+    <div class="progress-wrap"><div class="progress-fill" id="m4-progress" style="width:0%"></div></div>
+    <div id="m4-content"></div>
+  </div>
+
+  <!-- ── 결과 화면 ── -->
+  <div id="screen-result" class="screen">
+    <div id="result-content"></div>
+  </div>
+</div>
+
+<script>
+// ══════════════════════════════════════════
+// portfolioEntry 자동 출력
+// ══════════════════════════════════════════
+const portfolioEntry = {
+  id: "#020",
+  title: "🌿 미래농업연구소 스마트팜 시뮬레이터",
+  target: "중학교",
+  grade: "중학교 1학년",
+  subjects: ["기술·가정","정보","과학","사회"],
+  aiFeature: true,
+  theme: "스마트팜·IoT농업·진로탐색",
+  date: "2026-04",
+  url: "https://milab2019.github.io/main/smart_farm_020.html"
+};
+console.log("portfolioEntry:", JSON.stringify(portfolioEntry, null, 2));
+
+// ══════════════════════════════════════════
+// 게임 상태
+// ══════════════════════════════════════════
+let state = {
+  totalScore: 0,
+  m1Score: 0, m2Score: 0, m3Score: 0, m4Score: 0,
+  m1Stars: 0, m2Stars: 0, m3Stars: 0, m4Stars: 0,
+  m1Done: false,
+  currentDiff: 'easy',
+  m2Answered: {easy:false, normal:false, hard:false},
+  m2Scores: {easy:0, normal:0, hard:0},
+  m3Done: false,
+  m3Correct: 0,
+  m1Timer: null,
+  m2Timer: null,
+  hintUsed: {m1:false, m2easy:false, m2normal:false, m2hard:false},
+  musicOn: true,
+  audioCtx: null
+};
+
+// ══════════════════════════════════════════
+// 파티클
+// ══════════════════════════════════════════
+function createParticles(){
+  const bg = document.getElementById('particles-bg');
+  for(let i=0;i<28;i++){
+    const p = document.createElement('div');
+    p.className = 'particle';
+    p.style.cssText = `left:${Math.random()*100}%;--dur:${6+Math.random()*8}s;--delay:${Math.random()*6}s;`;
+    bg.appendChild(p);
+  }
+}
+
+// ══════════════════════════════════════════
+// Web Audio API
+// ══════════════════════════════════════════
+function initAudio(){
+  try{
+    state.audioCtx = new (window.AudioContext||window.webkitAudioContext)();
+  }catch(e){}
+}
+function playNote(freq, type='sine', duration=0.15, vol=0.15){
+  if(!state.musicOn||!state.audioCtx) return;
+  try{
+    const o=state.audioCtx.createOscillator();
+    const g=state.audioCtx.createGain();
+    o.connect(g); g.connect(state.audioCtx.destination);
+    o.type=type; o.frequency.value=freq;
+    g.gain.setValueAtTime(vol,state.audioCtx.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.001,state.audioCtx.currentTime+duration);
+    o.start(); o.stop(state.audioCtx.currentTime+duration);
+  }catch(e){}
+}
+function playCorrect(){
+  playNote(523,undefined,0.1,0.1);
+  setTimeout(()=>playNote(659,undefined,0.1,0.1),120);
+  setTimeout(()=>playNote(784,undefined,0.18,0.12),240);
+}
+function playWrong(){
+  playNote(200,'sawtooth',0.25,0.12);
+  setTimeout(()=>playNote(160,'sawtooth',0.2,0.1),150);
+}
+function playClear(){
+  [523,659,784,1047].forEach((f,i)=>setTimeout(()=>playNote(f,undefined,0.18,0.12),i*120));
+}
+function playBgm(){
+  if(!state.musicOn||!state.audioCtx||state.bgmPlaying) return;
+  state.bgmPlaying=true;
+  const melody=[262,294,330,349,392,440,494,523];
+  let i=0;
+  state.bgmInterval = setInterval(()=>{
+    if(!state.musicOn){clearInterval(state.bgmInterval);state.bgmPlaying=false;return;}
+    playNote(melody[i%melody.length],'triangle',0.22,0.03);
+    i++;
+  },480);
+}
+function toggleMusic(){
+  state.musicOn=!state.musicOn;
+  document.getElementById('music-toggle-btn').textContent=state.musicOn?'🔊':'🔇';
+  if(state.musicOn&&state.audioCtx) playBgm();
+  else if(state.bgmInterval){clearInterval(state.bgmInterval);state.bgmPlaying=false;}
+}
+
+// ══════════════════════════════════════════
+// 미션 1 데이터
+// ══════════════════════════════════════════
+const m1Questions = [
+  {
+    q:"다음 통계를 보고, 스마트팜이 <strong>가장 시급하게</strong> 필요한 이유로 옳은 것은?",
+    hint:"농업인의 평균 연령이 빠르게 높아지고 있어. 10년 뒤에는 누가 농사를 지을까?",
+    choices:["농촌 인구가 도시보다 많기 때문에","농업인 고령화로 청년 농업 인력이 부족하기 때문에","스마트폰 보급률이 낮아 기술 접근이 어렵기 때문에","식량을 모두 수입하는 것이 더 경제적이기 때문에"],
+    answer:1,
+    feedback:"농업인 평균 연령이 67.4세(2023년)로, 고령화로 인한 농업 인력 부족이 스마트팜 도입의 핵심 이유야. 스마트팜은 고령 농업인도 스마트폰으로 원격 관리할 수 있어! <br><strong>[관련 교과] 기술·가정 — 기술시스템, 사회 — 지속가능발전</strong>"
+  },
+  {
+    q:"스마트팜에서 <span class='tooltip-wrap'><span class='tooltip-trigger'>IoT 센서</span><span class='tooltip-box'>사물인터넷(IoT): 온도·습도 등을 측정해 인터넷으로 전송하는 장치</span></span>가 주로 측정하는 데이터로 <strong>맞지 않는</strong> 것은?",
+    hint:"IoT 센서는 식물의 성장에 영향을 주는 환경 요소를 측정해. 주식 가격은 농업과 관계없겠지?",
+    choices:["온도와 습도","토양 수분 함량","CO₂ 농도와 조도(빛의 밝기)","주식 시장 가격"],
+    answer:3,
+    feedback:"스마트팜 IoT 센서는 온도·습도·토양수분·CO₂·조도 등 <strong>식물 성장에 영향을 주는 환경 데이터</strong>를 수집해. 주식 가격은 농업 데이터가 아니야! <br><strong>[관련 교과] 정보 — 데이터·IoT, 과학 — 생명과학</strong>"
+  },
+  {
+    q:"스마트팜의 <strong>물 절약 효과</strong>에 관한 통계를 참고할 때, 스마트팜이 환경에 미치는 가장 큰 긍정적 효과는?",
+    hint:"스마트팜은 필요한 만큼만 물과 비료를 자동으로 공급해. 낭비가 줄어들면 환경에 어떤 영향이 있을까?",
+    choices:["더 많은 농약을 사용해 해충을 완전히 제거한다","물·비료 사용량을 최대 70%까지 줄여 자원을 절약한다","농지 면적을 2배로 늘려 생산량을 증가시킨다","화학비료를 대량 투입해 토양을 개선한다"],
+    answer:1,
+    feedback:"스마트팜은 센서 데이터를 분석해 <strong>필요한 만큼만 물과 비료를 공급</strong>해. 기존 농업 대비 물 사용량 최대 70% 절감, 비료 50% 절감 효과가 있어! <br><strong>[관련 교과] 과학 — 물질 순환, 사회 — 지속가능발전</strong>"
+  }
+];
+
+// ══════════════════════════════════════════
+// 미션 2 데이터
+// ══════════════════════════════════════════
+const m2Data = {
+  easy: {
+    q:"스마트팜의 <strong>장점</strong>으로 옳지 <strong>않은</strong> 것은?",
+    choices:["연중 생산 가능 — 계절에 관계없이 작물 재배","원격 모니터링 — 스마트폰으로 언제 어디서나 관리","초기 설치 비용이 매우 저렴해 누구나 쉽게 시작 가능","생산량 예측 가능 — 데이터 기반으로 수확량 예측"],
+    answer:2,
+    hint:"스마트팜의 가장 큰 단점 중 하나가 초기 비용이야. 비닐하우스 1동 스마트팜 구축에 보통 1억 원 이상 필요해.",
+    feedback:"스마트팜은 초기 설치 비용이 <strong>매우 높아</strong>. 온실 1동(330㎡) 기준 스마트 제어 시스템 설치에 평균 8,000만~1억 원 이상 필요해. 이것이 농가 도입의 가장 큰 걸림돌이야! <br><strong>[관련 교과] 기술·가정 — 기술시스템</strong>",
+    points:10, time:30
+  },
+  normal: {
+    q:"스마트팜 센서 데이터를 보여주는 화면이다. 다음 상황에서 <strong>가장 적절한 조치</strong>는?<br><br><span style='background:rgba(255,79,79,0.1);border:1px solid rgba(255,79,79,0.3);border-radius:8px;padding:8px 12px;display:block;margin:10px 0;font-size:13px;'>🌡️ 온도: 34.2°C (토마토 적정: 18~25°C)<br>💧 습도: 28% (적정: 65~80%)<br>🌿 CO₂: 420ppm (적정: 800~1200ppm)</span>",
+    choices:["현재 데이터가 정상이므로 아무것도 하지 않아도 된다","환기팬을 가동하고 미스트 노즐로 습도를 높인다","CO₂ 공급 장치를 끄고 창문을 열어 환기시킨다","모든 시스템을 끄고 내일 다시 확인한다"],
+    answer:1,
+    hint:"온도가 너무 높고 습도가 너무 낮아. 더운 공기를 내보내고 수분을 보충해야 해!",
+    feedback:"온도 34.2°C는 토마토 적정 온도(18~25°C)를 크게 초과하고, 습도 28%는 적정(65~80%)보다 매우 낮아. <strong>환기팬으로 더운 공기를 배출하고, 미스트 노즐로 습도를 보충</strong>해야 해. 이런 판단을 AI가 자동으로 수행해! <br><strong>[관련 교과] 과학 — 생명과학, 정보 — 데이터 분석</strong>",
+    points:15, time:45
+  },
+  hard: {
+    q:"스마트팜 AI 시스템이 <strong>토마토 병해충 탐지 알고리즘</strong>을 개발했다. 그런데 학습 데이터가 '온실 재배 토마토'로만 구성되어 있다. 이 AI를 <strong>'노지 재배 토마토'에 적용</strong>할 때 예상되는 문제점으로 가장 적절한 것은?",
+    choices:["AI가 너무 정확해서 농업인이 게을러질 수 있다","온실과 노지의 환경 차이로 인해 병해충 탐지 정확도가 떨어질 수 있다","학습 데이터가 너무 많아 처리 속도가 느려질 수 있다","노지 재배는 면적이 넓어 카메라 설치 비용이 증가할 수 있다"],
+    answer:1,
+    hint:"AI는 학습한 데이터의 특성만 이해해. 온실(빛·온도 조절됨)과 노지(햇빛·바람 직접 노출)는 환경이 완전히 달라!",
+    feedback:"이것이 바로 <strong>AI 편향(Bias) 문제</strong>야. 온실 환경(균일한 빛·온도)에서만 학습한 AI는 노지(자연광·바람·불규칙 환경)에서 다른 방식으로 나타나는 병해충을 제대로 인식하지 못할 수 있어. <strong>데이터의 다양성이 AI 정확도의 핵심!</strong> <br><strong>[관련 교과] 정보 — AI 윤리·편향, 도덕 — 디지털 윤리</strong>",
+    points:20, time:60
+  }
+};
+
+// ══════════════════════════════════════════
+// 미션 3 데이터 (센서 카드)
+// ══════════════════════════════════════════
+const sensorCards = [
+  {id:'s1', icon:'🌡️', name:'온도 센서', value:'21.5', unit:'°C', zone:'normal', crop:'토마토 적정: 18~25°C'},
+  {id:'s2', icon:'💧', name:'습도 센서', value:'72', unit:'%', zone:'normal', crop:'토마토 적정: 65~80%'},
+  {id:'s3', icon:'🌿', name:'CO₂ 센서', value:'950', unit:'ppm', zone:'normal', crop:'적정: 800~1200ppm'},
+  {id:'s4', icon:'🌡️', name:'온도 센서', value:'32.8', unit:'°C', zone:'warn', crop:'⚠️ 적정 범위 초과'},
+  {id:'s5', icon:'💧', name:'토양수분', value:'18', unit:'%', zone:'warn', crop:'⚠️ 관수 필요 수준'},
+  {id:'s6', icon:'☀️', name:'조도 센서', value:'420', unit:'lux', zone:'warn', crop:'⚠️ 최소 조도 미달'},
+  {id:'s7', icon:'🌡️', name:'온도 센서', value:'42.1', unit:'°C', zone:'danger', crop:'🚨 열해 위험'},
+  {id:'s8', icon:'💧', name:'습도 센서', value:'8', unit:'%', zone:'danger', crop:'🚨 건조 피해 위험'},
+];
+
+// ══════════════════════════════════════════
+// 미션 4 데이터
+// ══════════════════════════════════════════
+const m4Scenarios = [
+  {
+    situation:"충주의 한 농촌 마을. 65세 이상 농업인이 80%를 차지하고, 기존 고추 재배로는 수익이 줄고 있어. 마을 공동으로 스마트팜을 구축하려는데, 투자 예산이 제한적이야.",
+    title:"💰 어떤 스마트팜 전략을 선택할까?",
+    choices:[
+      {label:"A 비용 절감형", text:"핵심 IoT 센서만 설치하고 원격 모니터링 중심으로 운영", sub:"초기 비용↓ / 자동화 수준↓ / 고령 농업인 편의↑"},
+      {label:"B 생산성 극대화형", text:"전자동 제어 시스템 + AI 생육 관리로 수확량 최대화", sub:"초기 비용↑↑ / 수익성↑ / 기술 의존도↑"},
+      {label:"C 친환경 지속가능형", text:"태양광 에너지 + 순환 용수 시스템으로 탄소 제로 농장 구현", sub:"초기 비용↑ / 환경 가치↑ / 장기 수익↑"}
+    ],
+    scores:[12,8,10]
+  },
+  {
+    situation:"도시 외곽에 새로운 수직형 스마트팜을 설계해야 해. 대도시 소비자들이 신선식품을 원하고, 토지 비용이 매우 비싸. 연간 365일 안정적 공급이 목표야.",
+    title:"🏢 수직형 스마트팜 핵심 기술은?",
+    choices:[
+      {label:"A LED 인공광 시스템", text:"태양광 없이 LED로만 재배 — 층별 독립 제어 가능", sub:"전기 비용↑ / 연중 생산 완전 보장"},
+      {label:"B 빗물·재활용 수경재배", text:"물 순환 시스템으로 수돗물 90% 절약", sub:"초기 설치 복잡 / 장기 물 비용↓↓"},
+      {label:"C AI 생육 예측 시스템", text:"수확 2주 전에 정확한 출하량을 마트에 예고", sub:"데이터 축적 필요 / 유통 혁신 가능"}
+    ],
+    scores:[10,12,8]
+  },
+  {
+    situation:"학교 급식 채소를 직접 재배하는 교육용 스마트팜을 학교에 구축하려 해. 학생들이 직접 데이터를 보고 배울 수 있어야 하고, 유지보수도 쉬워야 해.",
+    title:"🏫 교육용 스마트팜 설계 방향은?",
+    choices:[
+      {label:"A 대시보드 중심 설계", text:"모든 센서 데이터를 교실 모니터에 실시간 표시", sub:"학습 효과↑ / 데이터 리터러시 교육 가능"},
+      {label:"B 체험형 수동+자동 혼합", text:"학생이 직접 조작하는 구역 + AI 자동제어 구역 분리", sub:"참여도↑ / 관리 복잡도↑"},
+      {label:"C 앱 연동 모바일 관리", text:"학생 스마트폰으로 원격 제어·알림 수신 가능", sub:"접근성↑ / 개인정보 교육 함께 필요"}
+    ],
+    scores:[10,12,8]
+  }
+];
+
+// ══════════════════════════════════════════
+// 엔딩 데이터
+// ══════════════════════════════════════════
+const endings = [
+  {min:80, career:"🏆 스마트팜 설계 전문가", desc:"IoT 농업 엔지니어 적성 발견!", msg:"분석력과 판단력이 탁월해! 센서 데이터를 읽고 최적 환경을 설계하는 IoT 농업 엔지니어가 딱 맞아. 농업과 기술의 경계를 허무는 미래 직업이야!", career2:"IoT 농업 엔지니어 / 스마트팜 설계사"},
+  {min:60, career:"📊 농업 데이터 분석가", desc:"데이터로 농업을 바꾼다!", msg:"데이터를 꼼꼼히 분석하는 능력이 뛰어나! 농업 빅데이터를 분석해 최적 재배 조건을 연구하는 전문가가 어울려. AI 시대 핵심 농업 직종이야!", career2:"농업 데이터 분석가 / 애그테크 연구원"},
+  {min:40, career:"🌾 식물공장 운영관리사", desc:"현장 경험이 강점!", msg:"현장 감각이 좋아! 스마트팜을 직접 운영·관리하는 식물공장 운영관리사가 어울려. 실제 작물을 돌보며 AI 시스템을 함께 활용하는 전문직이야!", career2:"식물공장 운영관리사 / 스마트 농업인"},
+  {min:0, career:"🔬 농업 AI 연구자", desc:"처음부터 다시 배우는 용기!", msg:"좋은 시도였어! 스마트팜 기술은 끊임없이 발전해. 농업 AI의 한계를 연구하고 새로운 알고리즘을 개발하는 연구자의 길도 멋진 선택이야!", career2:"농업 AI 연구자 / 애그테크 개발자"},
+];
+
+// ══════════════════════════════════════════
+// 미션 1 렌더링
+// ══════════════════════════════════════════
+let m1Current = 0;
+let m1TimerVal = 60;
+let m1TimerInterval = null;
+
+function renderM1(){
+  if(m1Current === 0){
+    // 통계 브리핑 먼저
+    document.getElementById('m1-content').innerHTML = `
+      <div class="news-card">
+        <div class="news-tag">📰 2050 농업부 긴급 브리핑</div>
+        <div class="news-title">한국 농업 현황 — 스마트팜이 필요한 이유</div>
+        <div class="news-body">
+          기후변화와 농촌 고령화로 한국 식량 자급률이 위기에 처해 있습니다.<br>
+          2023년 기준 곡물 자급률 <strong>21.4%</strong>로 OECD 최하위권, 농업인 평균 연령 <strong>67.4세</strong>로<br>
+          10년 내 심각한 농업 인력 부족이 예상됩니다.
+        </div>
+        <div class="stat-grid">
+          <div class="stat-item">
+            <div class="stat-num">67.4세</div>
+            <div class="stat-label">농업인 평균 연령</div>
+            <div class="stat-source">출처: 농림부 2023</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-num">21.4%</div>
+            <div class="stat-label">곡물 자급률</div>
+            <div class="stat-source">출처: 농림부 2023</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-num">70%↓</div>
+            <div class="stat-label">스마트팜 물 절감률</div>
+            <div class="stat-source">출처: 농진청</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-num">7,000개↑</div>
+            <div class="stat-label">국내 스마트팜 농가</div>
+            <div class="stat-source">출처: 농림부 2024</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-num">52조원</div>
+            <div class="stat-label">2030 글로벌 시장 규모</div>
+            <div class="stat-source">출처: 마켓리서치</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-num">3.5배</div>
+            <div class="stat-label">토지 생산성 향상</div>
+            <div class="stat-source">출처: 농진청</div>
+          </div>
+        </div>
+      </div>
+      <button class="btn-primary" onclick="m1Next()" style="width:100%">📝 퀴즈로 이동 →</button>
+    `;
+    m1StartTimer();
+    document.getElementById('m1-progress').style.width = '20%';
+  } else {
+    renderM1Quiz(m1Current - 1);
+  }
+}
+
+function m1StartTimer(){
+  m1TimerVal = 60;
+  updateM1Timer();
+  m1TimerInterval = setInterval(()=>{
+    m1TimerVal--;
+    updateM1Timer();
+    if(m1TimerVal<=0){
+      clearInterval(m1TimerInterval);
+      autoFinishM1();
+    }
+  },1000);
+}
+
+function updateM1Timer(){
+  const bar = document.getElementById('m1-timer-bar');
+  const num = document.getElementById('m1-timer-num');
+  if(!bar||!num) return;
+  const pct = (m1TimerVal/60)*100;
+  bar.style.width = pct+'%';
+  num.textContent = m1TimerVal;
+  if(m1TimerVal<=10){
+    bar.classList.add('warn');
+    num.classList.add('warn');
+  }
+}
+
+function autoFinishM1(){
+  // 타이머 종료 시 현재까지 점수로 미션 완료
+  finishM1();
+}
+
+function m1Next(){
+  m1Current++;
+  if(m1Current > m1Questions.length){
+    clearInterval(m1TimerInterval);
+    finishM1();
+    return;
+  }
+  document.getElementById('m1-progress').style.width = (20+m1Current*26)+'%';
+  renderM1Quiz(m1Current-1);
+}
+
+function renderM1Quiz(idx){
+  const q = m1Questions[idx];
+  document.getElementById('m1-content').innerHTML = `
+    <div class="q-card">
+      <div class="q-num">문제 ${idx+1} / ${m1Questions.length}</div>
+      <div class="q-text">${q.q}</div>
+      <div class="hint-row">
+        <button class="hint-btn" id="m1-hint-btn" onclick="showM1Hint()" ${state.hintUsed.m1?'disabled':''}>
+          💡 힌트 (-3점)
+        </button>
+      </div>
+      <div class="hint-box" id="m1-hint-box">${q.hint}</div>
+      <div class="choices" id="m1-choices">
+        ${q.choices.map((c,i)=>`
+          <button class="choice-btn" onclick="answerM1(${i},${q.answer},${idx})" data-idx="${i}">
+            <span class="choice-letter">${'ABCD'[i]}</span>${c}
+          </button>
+        `).join('')}
+      </div>
+      <div class="feedback-box" id="m1-feedback"></div>
+    </div>
+  `;
+}
+
+function showM1Hint(){
+  state.hintUsed.m1 = true;
+  document.getElementById('m1-hint-box').classList.add('show');
+  document.getElementById('m1-hint-btn').disabled = true;
+}
+
+function answerM1(chosen, correct, qIdx){
+  const btns = document.querySelectorAll('#m1-choices .choice-btn');
+  btns.forEach(b=>b.disabled=true);
+  const isCorrect = chosen === correct;
+  btns[chosen].classList.add(isCorrect?'correct':'wrong');
+  if(!isCorrect) btns[correct].classList.add('correct');
+
+  let pts = isCorrect ? 10 : 0;
+  if(isCorrect && state.hintUsed.m1) pts = Math.max(0, pts-3);
+  state.m1Score += pts;
+  state.totalScore += pts;
+  document.getElementById('header-score').textContent = state.totalScore;
+
+  const fb = document.getElementById('m1-feedback');
+  fb.className = 'feedback-box show ' + (isCorrect?'correct-fb':'wrong-fb');
+  fb.innerHTML = `
+    <div class="feedback-fami">
+      <div class="feedback-fami-img">${isCorrect?'🤖✨':'🤖💭'}</div>
+      <div class="feedback-text">
+        ${isCorrect?'<strong>정답!</strong> +'+pts+'점 획득!<br>':'<strong>좋은 시도야!</strong> 이런 생각도 있어:<br>'}
+        ${m1Questions[qIdx].feedback}
+      </div>
+    </div>
+    <div style="text-align:center;margin-top:12px;">
+      <button class="btn-next" onclick="m1Next()">${qIdx < m1Questions.length-1 ? '다음 문제 →' : '미션 완료! ✅'}</button>
+    </div>
+  `;
+
+  if(isCorrect) playCorrect(); else playWrong();
+  state.hintUsed.m1 = false;
+}
+
+function finishM1(){
+  clearInterval(m1TimerInterval);
+  state.m1Done = true;
+  const s = state.m1Score;
+  const stars = s>=25?3:s>=15?2:1;
+  state.m1Stars = stars;
+  document.getElementById('m1-content').innerHTML = `
+    <div class="mission-clear">
+      <div class="mission-clear-title">✅ 미션 1 완료!</div>
+      <div class="mission-clear-score">${s}점</div>
+      <div class="mission-clear-stars">${'★'.repeat(stars)}${'☆'.repeat(3-stars)}</div>
+      <div style="color:var(--text-secondary);font-size:14px;margin-bottom:16px;">
+        스마트팜의 필요성과 현황을 파악했어!<br>
+        이제 설계 퀴즈에 도전해보자!
+      </div>
+      <button class="btn-next" onclick="showMission(2)">미션 2 시작 →</button>
+    </div>
+  `;
+  playClear();
+}
+
+// ══════════════════════════════════════════
+// 미션 2 렌더링
+// ══════════════════════════════════════════
+let m2Timer = null;
+
+function setDiff(diff){
+  state.currentDiff = diff;
+  ['easy','normal','hard'].forEach(d=>{
+    document.getElementById('tab-'+d).classList.toggle('active',d===diff);
+  });
+  renderM2Quiz(diff);
+}
+
+function renderM2Quiz(diff){
+  const d = m2Data[diff];
+  const done = state.m2Answered[diff];
+  document.getElementById('m2-content').innerHTML = `
+    <div class="q-card">
+      <div class="q-num">난이도: ${diff==='easy'?'🟢 쉬움 (10점)':diff==='normal'?'🟡 보통 (15점)':'🔴 도전 (20점)'}</div>
+      <div class="q-text">${d.q}</div>
+      ${!done?`
+      <div class="timer-wrap" id="m2-timer-wrap">
+        <span class="timer-label">⏱ 제한 시간</span>
+        <div class="timer-bar-bg"><div class="timer-bar-fill" id="m2-timer-bar" style="width:100%"></div></div>
+        <span class="timer-num" id="m2-timer-num">${d.time}</span>
+      </div>
+      <div class="hint-row">
+        <button class="hint-btn" id="m2-hint-btn" onclick="showM2Hint('${diff}')" ${state.hintUsed['m2'+diff]?'disabled':''}>
+          💡 힌트 (-${Math.round(d.points*0.3)}점)
+        </button>
+      </div>
+      <div class="hint-box" id="m2-hint-box">${d.hint}</div>
+      `:''}
+      <div class="choices" id="m2-choices">
+        ${d.choices.map((c,i)=>{
+          let cls = '';
+          if(done){
+            if(i===d.answer) cls='correct';
+          }
+          return `<button class="choice-btn ${cls}" onclick="${done?'':'answerM2('+i+','+d.answer+',\''+diff+'\')'}" ${done?'disabled':''} data-idx="${i}">
+            <span class="choice-letter">${'ABCD'[i]}</span>${c}
+          </button>`;
+        }).join('')}
+      </div>
+      <div class="feedback-box ${done?'show correct-fb':''}" id="m2-feedback">
+        ${done?`<div class="feedback-fami"><div class="feedback-fami-img">🤖</div><div class="feedback-text">${d.feedback}</div></div>`:''}
+      </div>
+    </div>
+    ${done?`<div style="text-align:center;"><button class="btn-next" onclick="checkM2Done()">계속하기 →</button></div>`:''}
+  `;
+
+  if(!done){
+    startM2Timer(diff, d.time);
+  }
+
+  const answered = Object.values(state.m2Answered).filter(Boolean).length;
+  document.getElementById('m2-progress').style.width = (answered/3*100)+'%';
+}
+
+function startM2Timer(diff, maxTime){
+  if(m2Timer) clearInterval(m2Timer);
+  let t = maxTime;
+  m2Timer = setInterval(()=>{
+    t--;
+    const bar = document.getElementById('m2-timer-bar');
+    const num = document.getElementById('m2-timer-num');
+    if(!bar||!num){clearInterval(m2Timer);return;}
+    bar.style.width = (t/maxTime*100)+'%';
+    num.textContent = t;
+    if(t<=10){bar.classList.add('warn');num.classList.add('warn');}
+    if(t<=0){
+      clearInterval(m2Timer);
+      autoWrongM2(diff);
+    }
+  },1000);
+}
+
+function showM2Hint(diff){
+  state.hintUsed['m2'+diff] = true;
+  document.getElementById('m2-hint-box').classList.add('show');
+  document.getElementById('m2-hint-btn').disabled = true;
+}
+
+function autoWrongM2(diff){
+  const d = m2Data[diff];
+  state.m2Answered[diff] = true;
+  state.m2Scores[diff] = 0;
+  const btns = document.querySelectorAll('#m2-choices .choice-btn');
+  btns.forEach(b=>b.disabled=true);
+  btns[d.answer].classList.add('correct');
+  const fb = document.getElementById('m2-feedback');
+  fb.className = 'feedback-box show wrong-fb';
+  fb.innerHTML = `<div class="feedback-fami"><div class="feedback-fami-img">🤖💭</div><div class="feedback-text"><strong>시간 초과!</strong> 좋은 시도야! 이런 생각도 있어:<br>${d.feedback}</div></div>
+  <div style="text-align:center;margin-top:12px;"><button class="btn-next" onclick="checkM2Done()">계속하기 →</button></div>`;
+  playWrong();
+}
+
+function answerM2(chosen, correct, diff){
+  clearInterval(m2Timer);
+  const d = m2Data[diff];
+  const btns = document.querySelectorAll('#m2-choices .choice-btn');
+  btns.forEach(b=>b.disabled=true);
+  const isCorrect = chosen === correct;
+  btns[chosen].classList.add(isCorrect?'correct':'wrong');
+  if(!isCorrect) btns[correct].classList.add('correct');
+
+  let pts = isCorrect ? d.points : 0;
+  if(isCorrect && state.hintUsed['m2'+diff]) pts = Math.max(0, pts - Math.round(d.points*0.3));
+  state.m2Scores[diff] = pts;
+  state.totalScore += pts;
+  document.getElementById('header-score').textContent = state.totalScore;
+  state.m2Answered[diff] = true;
+
+  const fb = document.getElementById('m2-feedback');
+  fb.className = 'feedback-box show ' + (isCorrect?'correct-fb':'wrong-fb');
+  fb.innerHTML = `
+    <div class="feedback-fami">
+      <div class="feedback-fami-img">${isCorrect?'🤖✨':'🤖💭'}</div>
+      <div class="feedback-text">
+        ${isCorrect?'<strong>정답!</strong> +'+pts+'점!<br>':'<strong>좋은 시도야!</strong> 이런 생각도 있어:<br>'}
+        ${d.feedback}
+      </div>
+    </div>
+    <div style="text-align:center;margin-top:12px;"><button class="btn-next" onclick="checkM2Done()">계속하기 →</button></div>
+  `;
+  const tw = document.getElementById('m2-timer-wrap');
+  if(tw) tw.style.display='none';
+  if(isCorrect) playCorrect(); else playWrong();
+}
+
+function checkM2Done(){
+  const allDone = Object.values(state.m2Answered).every(Boolean);
+  if(!allDone){
+    // 남은 탭으로 이동
+    const next = ['easy','normal','hard'].find(d=>!state.m2Answered[d]);
+    if(next) setDiff(next);
+    return;
+  }
+  // 모두 완료
+  state.m2Score = Object.values(state.m2Scores).reduce((a,b)=>a+b,0);
+  const s = state.m2Score;
+  const stars = s>=35?3:s>=20?2:1;
+  state.m2Stars = stars;
+  document.getElementById('m2-content').innerHTML = `
+    <div class="mission-clear">
+      <div class="mission-clear-title">✅ 미션 2 완료!</div>
+      <div class="mission-clear-score">${s}점</div>
+      <div class="mission-clear-stars">${'★'.repeat(stars)}${'☆'.repeat(3-stars)}</div>
+      <div style="color:var(--text-secondary);font-size:14px;margin-bottom:16px;">
+        스마트팜 장단점과 AI 윤리까지 마스터!<br>
+        이제 AI 데이터 분류를 직접 체험해보자!
+      </div>
+      <button class="btn-next" onclick="showMission(3)">미션 3 시작 →</button>
+    </div>
+  `;
+  playClear();
+}
+
+// ══════════════════════════════════════════
+// 미션 3 렌더링 (드래그앤드롭)
+// ══════════════════════════════════════════
+let m3Placed = {};
+
+function renderM3(){
+  document.getElementById('m3-progress').style.width = '10%';
+  document.getElementById('m3-content').innerHTML = `
+    <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:16px;margin-bottom:14px;">
+      <div style="font-size:13px;color:var(--blue-data);font-weight:700;margin-bottom:8px;">🤖 파미의 설명</div>
+      <div style="font-size:14px;color:var(--text-secondary);line-height:1.8;">
+        아래 센서 데이터 카드를 <strong style="color:var(--text-primary)">드래그</strong>해서 올바른 구역으로 분류해봐!<br>
+        실제 스마트팜 AI는 이런 데이터를 <strong style="color:var(--text-primary)">수천 번 학습</strong>해서 자동으로 판단해. 이게 바로 <span class="tooltip-wrap"><span class="tooltip-trigger">머신러닝</span><span class="tooltip-box">컴퓨터가 데이터를 스스로 학습해 판단하는 AI 기술</span></span>이야!
+      </div>
+    </div>
+
+    <div style="font-size:13px;color:var(--text-muted);margin-bottom:8px;">📊 센서 데이터 카드 (드래그해서 분류하세요)</div>
+    <div class="sensor-cards-row" id="sensor-source">
+      ${sensorCards.map(s=>`
+        <div class="sensor-card" id="${s.id}" draggable="true"
+          ondragstart="dragStart(event,'${s.id}')"
+          ondragend="dragEnd(event)"
+          onclick="tapCard('${s.id}')">
+          <div class="sensor-icon">${s.icon}</div>
+          <div class="sensor-name">${s.name}</div>
+          <div class="sensor-value">${s.value}</div>
+          <div class="sensor-unit">${s.unit}</div>
+        </div>
+      `).join('')}
+    </div>
+
+    <div class="zone-row">
+      <div class="drop-zone zone-normal" id="zone-normal"
+        ondragover="event.preventDefault();this.classList.add('drag-over')"
+        ondragleave="this.classList.remove('drag-over')"
+        ondrop="dropCard(event,'normal')">
+        <div class="zone-title" style="color:var(--green-bright)">🟢 정상 범위</div>
+        <div class="zone-range">작물 최적 상태</div>
+        <div class="zone-items" id="items-normal"></div>
+      </div>
+      <div class="drop-zone zone-warn" id="zone-warn"
+        ondragover="event.preventDefault();this.classList.add('drag-over')"
+        ondragleave="this.classList.remove('drag-over')"
+        ondrop="dropCard(event,'warn')">
+        <div class="zone-title" style="color:var(--amber)">🟡 경고 범위</div>
+        <div class="zone-range">조치 필요</div>
+        <div class="zone-items" id="items-warn"></div>
+      </div>
+      <div class="drop-zone zone-danger" id="zone-danger"
+        ondragover="event.preventDefault();this.classList.add('drag-over')"
+        ondragleave="this.classList.remove('drag-over')"
+        ondrop="dropCard(event,'danger')">
+        <div class="zone-title" style="color:var(--red-warn)">🔴 위험 범위</div>
+        <div class="zone-range">즉각 대응 필요</div>
+        <div class="zone-items" id="items-danger"></div>
+      </div>
+    </div>
+
+    <div id="m3-ai-result" style="display:none;"></div>
+    <div id="m3-check-area" style="text-align:center;margin-top:12px;display:none;">
+      <button class="btn-next" onclick="checkM3()">🤖 AI 판단 확인하기</button>
+    </div>
+  `;
+  m3Placed = {};
+  updateM3Check();
+}
+
+let dragId = null;
+function dragStart(e,id){dragId=id;e.target.classList.add('dragging');}
+function dragEnd(e){e.target.classList.remove('dragging');document.querySelectorAll('.drop-zone').forEach(z=>z.classList.remove('drag-over'));}
+function dropCard(e,zone){
+  e.preventDefault();
+  e.currentTarget.classList.remove('drag-over');
+  if(!dragId) return;
+  placeCard(dragId, zone);
+}
+
+function tapCard(id){
+  // 모바일: 탭하면 선택 후 구역 선택 팝업 대신 순서대로 배치
+  const zones = ['normal','warn','danger'];
+  const prev = m3Placed[id];
+  const idx = prev ? (zones.indexOf(prev)+1)%3 : 0;
+  placeCard(id, zones[idx]);
+}
+
+function placeCard(id, zone){
+  const card = sensorCards.find(s=>s.id===id);
+  if(!card) return;
+  // 이전 위치에서 제거
+  const prev = m3Placed[id];
+  if(prev){
+    const oldList = document.getElementById('items-'+prev);
+    const old = oldList.querySelector('[data-sid="'+id+'"]');
+    if(old) old.remove();
+  } else {
+    const src = document.getElementById(id);
+    if(src) src.remove();
+  }
+  m3Placed[id] = zone;
+  const zoneList = document.getElementById('items-'+zone);
+  const el = document.createElement('div');
+  el.className = 'zone-item';
+  el.dataset.sid = id;
+  el.innerHTML = `<span>${card.icon} ${card.name}: <strong>${card.value}${card.unit}</strong></span><span style="font-size:11px;color:var(--text-muted)">${card.crop}</span>`;
+  el.style.cursor='pointer';
+  el.title='탭하여 이동';
+  el.onclick = ()=>{
+    const zones=['normal','warn','danger'];
+    const idx = (zones.indexOf(zone)+1)%3;
+    placeCard(id, zones[idx]);
+  };
+  zoneList.appendChild(el);
+  document.getElementById('m3-progress').style.width = (10+Object.keys(m3Placed).length*10)+'%';
+  updateM3Check();
+}
+
+function updateM3Check(){
+  const total = sensorCards.length;
+  const placed = Object.keys(m3Placed).length;
+  document.getElementById('m3-check-area').style.display = placed>=total?'block':'none';
+}
+
+function checkM3(){
+  let correct = 0;
+  sensorCards.forEach(s=>{
+    if(m3Placed[s.id]===s.zone) correct++;
+  });
+  state.m3Correct = correct;
+  const pts = correct*5;
+  state.m3Score = pts;
+  state.totalScore += pts;
+  document.getElementById('header-score').textContent = state.totalScore;
+
+  const stars = correct>=7?3:correct>=5?2:1;
+  state.m3Stars = stars;
+
+  const resultHtml = `
+    <div class="ai-decision">
+      <div class="ai-decision-title">🤖 AI 분석 결과: ${correct}/${sensorCards.length}개 정확히 분류!</div>
+      <div class="ai-action-row">
+        <div class="ai-action">
+          <div class="ai-action-icon">🌡️</div>
+          <div class="ai-action-desc"><strong>온도 위험 감지 →</strong> 환기팬 즉시 가동, 차광막 전개</div>
+        </div>
+        <div class="ai-action">
+          <div class="ai-action-icon">💧</div>
+          <div class="ai-action-desc"><strong>습도 경고 감지 →</strong> 미스트 노즐 5분 가동</div>
+        </div>
+        <div class="ai-action">
+          <div class="ai-action-icon">☀️</div>
+          <div class="ai-action-desc"><strong>조도 경고 감지 →</strong> 보조 LED 조명 50% 출력</div>
+        </div>
+      </div>
+    </div>
+    <div class="ai-explain">
+      <div class="ai-explain-title">💡 머신러닝이란?</div>
+      <div class="ai-explain-text">
+        방금 네가 한 '데이터 분류' 작업, AI는 이걸 <strong style="color:var(--text-primary)">수만 번 반복 학습</strong>해서 자동화해!<br>
+        실제 스마트팜 AI는 온도·습도·CO₂ 데이터를 실시간으로 분석해 <strong style="color:var(--text-primary)">0.1초 만에 제어 명령</strong>을 내려.<br>
+        이것이 바로 <span class="tooltip-wrap"><span class="tooltip-trigger">머신러닝(Machine Learning)</span><span class="tooltip-box">데이터를 학습해 스스로 판단하는 AI 기술</span></span>의 핵심이야!
+      </div>
+    </div>
+    <div class="mission-clear" style="margin-top:14px;">
+      <div class="mission-clear-title">✅ 미션 3 완료!</div>
+      <div class="mission-clear-score">${pts}점</div>
+      <div class="mission-clear-stars">${'★'.repeat(stars)}${'☆'.repeat(3-stars)}</div>
+      <button class="btn-next" onclick="showMission(4)">미션 4 — 최종 설계 →</button>
+    </div>
+  `;
+  document.getElementById('m3-ai-result').innerHTML = resultHtml;
+  document.getElementById('m3-ai-result').style.display='block';
+  document.getElementById('m3-check-area').style.display='none';
+  document.getElementById('m3-progress').style.width='100%';
+  playClear();
+}
+
+// ══════════════════════════════════════════
+// 미션 4 렌더링
+// ══════════════════════════════════════════
+let m4Current = 0;
+
+function renderM4(){
+  m4Current = 0;
+  document.getElementById('m4-progress').style.width = '0%';
+  renderM4Scenario(0);
+}
+
+function renderM4Scenario(idx){
+  if(idx >= m4Scenarios.length){
+    finishM4();
+    return;
+  }
+  const s = m4Scenarios[idx];
+  document.getElementById('m4-content').innerHTML = `
+    <div class="scenario-card">
+      <div class="scenario-title-lg">${s.title}</div>
+      <div class="scenario-situation">📌 상황: ${s.situation}</div>
+      <div style="font-size:13px;color:var(--text-muted);margin-bottom:10px;">어떤 방향을 선택하겠어?</div>
+      <div class="scenario-choices">
+        ${s.choices.map((c,i)=>`
+          <button class="scenario-btn" onclick="answerM4(${idx},${i})">
+            <span class="scenario-btn-label">${c.label}</span>
+            <span class="scenario-btn-text">${c.text}</span>
+            <span class="scenario-btn-sub">${c.sub}</span>
+          </button>
+        `).join('')}
+      </div>
+    </div>
+  `;
+  document.getElementById('m4-progress').style.width = ((idx/m4Scenarios.length)*100)+'%';
+}
+
+function answerM4(scenarioIdx, choiceIdx){
+  const s = m4Scenarios[scenarioIdx];
+  const pts = s.scores[choiceIdx];
+  state.m4Score += pts;
+  state.totalScore += pts;
+  document.getElementById('header-score').textContent = state.totalScore;
+
+  const c = s.choices[choiceIdx];
+  document.getElementById('m4-content').innerHTML = `
+    <div class="scenario-card">
+      <div style="font-size:13px;color:var(--green-mid);font-weight:700;margin-bottom:8px;">✅ 선택: ${c.label}</div>
+      <div style="font-size:15px;font-weight:700;margin-bottom:8px;">${c.text}</div>
+      <div class="feedback-box show correct-fb">
+        <div class="feedback-fami">
+          <div class="feedback-fami-img">🤖✨</div>
+          <div class="feedback-text">
+            <strong>좋은 판단이야!</strong> +${pts}점 획득!<br>
+            ${getFeedbackM4(scenarioIdx, choiceIdx)}
+          </div>
+        </div>
+      </div>
+      <div style="text-align:center;margin-top:14px;">
+        <button class="btn-next" onclick="nextM4(${scenarioIdx+1})">${scenarioIdx < m4Scenarios.length-1 ? '다음 상황 →' : '최종 결과 보기 🏆'}</button>
+      </div>
+    </div>
+  `;
+  playCorrect();
+}
+
+function getFeedbackM4(si, ci){
+  const feedbacks = [
+    ["어르신 농업인에게 친화적이고 초기 부담이 낮아. 단계적으로 자동화를 확대하는 전략이야!","생산성이 극대화되지만 초기 투자와 기술 의존도가 높아. 충분한 교육이 필요해!","환경 가치와 장기 수익성을 동시에 추구하는 미래 지향적 선택이야!"],
+    ["에너지 비용이 높지만 완전한 연중 생산이 가능해. 도심 수직농장의 핵심 기술이야!","물 재활용으로 운영 비용을 크게 줄일 수 있어. 지속가능한 스마트팜의 핵심이야!","수요 예측이 가능해지면 유통 혁명까지 이룰 수 있어. 데이터 리터러시의 힘이야!"],
+    ["실시간 데이터 시각화로 학생들이 농업을 과학으로 이해하게 돼. 미래 농업인 양성의 첫걸음!","직접 만지고 조작하는 경험이 학습 효과를 높여. 체험 중심 교육의 가치야!","스마트폰 연동으로 농업에 친숙해지지만, 개인정보 보호 교육도 함께 해야 해!"]
+  ];
+  return feedbacks[si][ci];
+}
+
+function nextM4(next){
+  m4Current = next;
+  renderM4Scenario(next);
+}
+
+function finishM4(){
+  const s = state.m4Score;
+  const stars = s>=28?3:s>=18?2:1;
+  state.m4Stars = stars;
+  document.getElementById('m4-content').innerHTML = `
+    <div class="mission-clear">
+      <div class="mission-clear-title">✅ 미션 4 완료!</div>
+      <div class="mission-clear-score">${s}점</div>
+      <div class="mission-clear-stars">${'★'.repeat(stars)}${'☆'.repeat(3-stars)}</div>
+      <div style="color:var(--text-secondary);font-size:14px;margin-bottom:16px;">
+        스마트팜 설계 판단력 검증 완료!<br>
+        최종 결과를 확인해봐!
+      </div>
+      <button class="btn-next" onclick="showResult()">🏆 최종 결과 보기</button>
+    </div>
+  `;
+  playClear();
+}
+
+// ══════════════════════════════════════════
+// 결과 화면
+// ══════════════════════════════════════════
+function showResult(){
+  const total = state.totalScore;
+  const ending = endings.find(e=>total>=e.min)||endings[endings.length-1];
+
+  document.getElementById('screen-result').innerHTML = `
+    <div style="text-align:center;padding:20px 0;">
+      <div class="intro-badge">미션 완료 · 스마트팜 설계 자격 취득</div>
+      <div class="result-title">🌿 농업 설계사 결과 발표!</div>
+      <div class="result-score-big">${total}</div>
+      <div class="result-score-label">/ 100점 만점 기준</div>
+      <div style="margin:16px 0;">
+        <div style="font-size:13px;color:var(--text-muted);margin-bottom:4px;">당신의 미래 직업</div>
+        <div class="result-career">${ending.career}<br>${ending.desc}</div>
+      </div>
+      
+      <div class="result-detail" style="text-align:left;">
+        <div style="font-size:13px;color:var(--green-bright);font-weight:700;margin-bottom:6px;">🤖 파미의 커리어 조언</div>
+        <div style="font-size:14px;color:var(--text-secondary);line-height:1.8;margin-bottom:10px;">${ending.msg}</div>
+        <div style="background:rgba(255,255,255,0.04);border-radius:8px;padding:10px 12px;">
+          <div style="font-size:11px;color:var(--text-muted);margin-bottom:4px;">추천 진로</div>
+          <div style="font-size:14px;font-weight:700;color:var(--teal);">${ending.career2}</div>
+        </div>
+      </div>
+
+      <div class="badges-row">
+        <div class="badge-item">
+          <div class="badge-icon">🔍</div>
+          <div class="badge-name">현황 분석</div>
+          <div class="badge-stars">${'★'.repeat(state.m1Stars)}${'☆'.repeat(3-state.m1Stars)}</div>
+        </div>
+        <div class="badge-item">
+          <div class="badge-icon">📚</div>
+          <div class="badge-name">설계 지식</div>
+          <div class="badge-stars">${'★'.repeat(state.m2Stars)}${'☆'.repeat(3-state.m2Stars)}</div>
+        </div>
+        <div class="badge-item">
+          <div class="badge-icon">🤖</div>
+          <div class="badge-name">AI 체험</div>
+          <div class="badge-stars">${'★'.repeat(state.m3Stars)}${'☆'.repeat(3-state.m3Stars)}</div>
+        </div>
+        <div class="badge-item">
+          <div class="badge-icon">🏗️</div>
+          <div class="badge-name">설계 판단</div>
+          <div class="badge-stars">${'★'.repeat(state.m4Stars)}${'☆'.repeat(3-state.m4Stars)}</div>
+        </div>
+      </div>
+
+      <div class="result-detail">
+        <div class="result-detail-title">📊 미션별 점수</div>
+        <div class="result-mission-row"><span>미션 1 — 스마트팜 현황 브리핑</span><span style="color:var(--green-bright);font-weight:700">${state.m1Score}점</span></div>
+        <div class="result-mission-row"><span>미션 2 — 설계 퀴즈 (3난이도)</span><span style="color:var(--green-bright);font-weight:700">${state.m2Score}점</span></div>
+        <div class="result-mission-row"><span>미션 3 — AI 데이터 분류</span><span style="color:var(--green-bright);font-weight:700">${state.m3Score}점</span></div>
+        <div class="result-mission-row"><span>미션 4 — 최종 설계 판단</span><span style="color:var(--green-bright);font-weight:700">${state.m4Score}점</span></div>
+        <div class="result-mission-row" style="border-top:1px solid var(--border-bright);margin-top:8px;padding-top:8px;">
+          <span style="font-weight:700">총점</span>
+          <span style="color:var(--green-bright);font-weight:700;font-size:18px;">${total}점</span>
+        </div>
+      </div>
+
+      <div class="nickname-area">
+        <div class="nickname-label">🏆 명예의 전당에 등록하기</div>
+        <div class="nickname-row">
+          <input class="nickname-input" id="nickname-input" type="text" placeholder="닉네임을 입력하세요" maxlength="10">
+          <button class="btn-primary" onclick="saveScore()" style="padding:12px 20px;font-size:14px;">등록</button>
+        </div>
+      </div>
+
+      <div class="leaderboard">
+        <div class="lb-title">🏆 명예의 전당 (상위 5명)</div>
+        <div id="lb-list"></div>
+      </div>
+
+      <div class="qr-section">
+        <div class="qr-title">📱 QR코드로 공유하기 — 자유학기제 발표용</div>
+        <div id="qr-container"></div>
+        <div class="qr-sub">MILAB · 충주 · 2026 | 스마트팜 진로체험 #020</div>
+      </div>
+
+      <div style="margin-top:20px;display:flex;gap:10px;flex-wrap:wrap;justify-content:center;">
+        <button class="btn-primary" onclick="location.reload()">🔄 다시 도전하기</button>
+        <a href="https://milab2019.github.io/main/milab_portfolio.html" target="_blank" style="text-decoration:none;">
+          <button class="btn-secondary">🌿 MILAB 포트폴리오</button>
+        </a>
+      </div>
+      <div style="font-size:11px;color:var(--text-muted);margin-top:20px;">
+        MILAB · 충주 · 2026 | 미래농업연구소 스마트팜 시뮬레이터 #020<br>
+        중학교 1학년 | 기술·가정·정보·과학·사회 교과 융합 | 자유학기제 연계
+      </div>
+    </div>
+  `;
+  showScreen('screen-result');
+  renderLeaderboard();
+  generateQR();
+}
+
+// ══════════════════════════════════════════
+// 리더보드
+// ══════════════════════════════════════════
+const LB_KEY = 'milab_m1_020_lb';
+function saveScore(){
+  const name = document.getElementById('nickname-input').value.trim();
+  if(!name){alert('닉네임을 입력해줘!');return;}
+  let lb = getLB();
+  lb.push({name, score:state.totalScore, date:new Date().toLocaleDateString('ko-KR')});
+  lb.sort((a,b)=>b.score-a.score);
+  lb = lb.slice(0,5);
+  localStorage.setItem(LB_KEY, JSON.stringify(lb));
+  renderLeaderboard();
+  document.querySelector('.nickname-area').innerHTML = '<div style="color:var(--green-bright);font-weight:700;padding:10px;">✅ 등록 완료! 명예의 전당에 올라갔어!</div>';
+}
+function getLB(){
+  try{return JSON.parse(localStorage.getItem(LB_KEY)||'[]');}catch{return [];}
+}
+function renderLeaderboard(){
+  const lb = getLB();
+  const list = document.getElementById('lb-list');
+  if(!list) return;
+  if(!lb.length){list.innerHTML='<div style="font-size:13px;color:var(--text-muted);padding:8px 0;">아직 기록이 없어. 첫 번째 도전자가 되어봐!</div>';return;}
+  const rankClass = ['gold','silver','bronze'];
+  list.innerHTML = lb.map((r,i)=>`
+    <div class="lb-row">
+      <div class="lb-rank ${rankClass[i]||''}">${i===0?'🥇':i===1?'🥈':i===2?'🥉':i+1}</div>
+      <div class="lb-name">${r.name}</div>
+      <div style="font-size:11px;color:var(--text-muted)">${r.date}</div>
+      <div class="lb-score">${r.score}점</div>
+    </div>
+  `).join('');
+}
+
+// ══════════════════════════════════════════
+// QR 코드 생성
+// ══════════════════════════════════════════
+function generateQR(){
+  const container = document.getElementById('qr-container');
+  if(!container) return;
+  container.innerHTML = '<div id="qr-div"></div>';
+  try{
+    new QRCode(document.getElementById('qr-div'), {
+      text: portfolioEntry.url,
+      width:128, height:128,
+      colorDark:'#000000', colorLight:'#ffffff',
+      correctLevel: QRCode.CorrectLevel.M
+    });
+  }catch(e){container.innerHTML='<div style="font-size:12px;color:var(--text-muted);">QR 생성 실패 — 직접 URL 접속: '+portfolioEntry.url+'</div>';}
+}
+
+// ══════════════════════════════════════════
+// 화면 전환
+// ══════════════════════════════════════════
+function showScreen(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo(0,0);
+}
+
+function showMission(num){
+  if(num===2){
+    showScreen('screen-m2');
+    setDiff('easy');
+  } else if(num===3){
+    showScreen('screen-m3');
+    renderM3();
+  } else if(num===4){
+    showScreen('screen-m4');
+    renderM4();
+  }
+}
+
+function startGame(){
+  initAudio();
+  document.getElementById('main-header').style.display='flex';
+  showScreen('screen-m1');
+  renderM1();
+  setTimeout(()=>playBgm(), 300);
+}
+
+// ══════════════════════════════════════════
+// 초기화
+// ══════════════════════════════════════════
+window.onload = function(){
+  createParticles();
+  setTimeout(()=>{
+    const ls = document.getElementById('loading-screen');
+    ls.style.transition='opacity 0.8s';
+    ls.style.opacity='0';
+    setTimeout(()=>ls.remove(),800);
+  },2000);
+};
+</script>
+</body>
+</html>
