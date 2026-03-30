@@ -1,0 +1,1486 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🌐 AI IoT 세계를 구하라! — 스마트 도시 비상 프로젝트</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Noto+Sans+KR:wght@300;400;500;700&display=swap');
+
+:root {
+  --navy: #050d1a;
+  --navy2: #0a1628;
+  --navy3: #0f2044;
+  --cyan: #00e5ff;
+  --cyan2: #00b8cc;
+  --green: #00ff88;
+  --green2: #00cc6a;
+  --orange: #ff6b35;
+  --red: #ff3366;
+  --yellow: #ffd600;
+  --white: #e8f4ff;
+  --gray: #7090b0;
+  --card: rgba(10,22,40,0.92);
+  --border: rgba(0,229,255,0.18);
+  --glow: 0 0 20px rgba(0,229,255,0.3);
+}
+
+* { margin:0; padding:0; box-sizing:border-box; }
+
+body {
+  font-family:'Noto Sans KR',sans-serif;
+  background: var(--navy);
+  color: var(--white);
+  min-height: 100vh;
+  overflow-x: hidden;
+  position: relative;
+}
+
+/* Circuit BG */
+body::before {
+  content:'';
+  position:fixed; inset:0;
+  background-image:
+    linear-gradient(rgba(0,229,255,0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0,229,255,0.04) 1px, transparent 1px);
+  background-size: 40px 40px;
+  pointer-events:none; z-index:0;
+}
+
+body::after {
+  content:'';
+  position:fixed; inset:0;
+  background: radial-gradient(ellipse at 20% 20%, rgba(0,229,255,0.07) 0%, transparent 60%),
+              radial-gradient(ellipse at 80% 80%, rgba(0,255,136,0.05) 0%, transparent 60%);
+  pointer-events:none; z-index:0;
+}
+
+.screen { display:none; position:relative; z-index:1; min-height:100vh; }
+.screen.active { display:flex; flex-direction:column; align-items:center; justify-content:center; padding:20px; }
+
+/* ===== TITLE SCREEN ===== */
+#screen-title { text-align:center; gap:20px; }
+
+.logo-badge {
+  display:inline-block;
+  background: linear-gradient(135deg, var(--cyan), var(--green));
+  color: var(--navy);
+  font-family:'Orbitron',monospace;
+  font-size:11px; font-weight:700;
+  padding:5px 14px; border-radius:20px;
+  letter-spacing:2px; text-transform:uppercase;
+  margin-bottom:10px;
+  animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.7} }
+
+.game-title {
+  font-family:'Orbitron',monospace;
+  font-size:clamp(22px,5vw,38px);
+  font-weight:900;
+  background: linear-gradient(135deg, var(--cyan), var(--green), var(--cyan));
+  background-size:200% auto;
+  -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+  background-clip:text;
+  animation: shine 3s linear infinite;
+  line-height:1.2; margin-bottom:8px;
+}
+
+@keyframes shine { to { background-position:200% center; } }
+
+.game-subtitle {
+  font-size:16px; color:var(--gray);
+  margin-bottom:24px; font-weight:300;
+}
+
+/* Mascot */
+.mascot-wrap { position:relative; width:130px; height:130px; margin:0 auto 20px; }
+.mascot-svg { width:100%; height:100%; }
+.mascot-glow {
+  position:absolute; inset:-10px;
+  border-radius:50%;
+  background: radial-gradient(circle, rgba(0,229,255,0.2), transparent 70%);
+  animation: breathe 2.5s ease-in-out infinite;
+}
+@keyframes breathe { 0%,100%{transform:scale(1)} 50%{transform:scale(1.1)} }
+
+/* Story box */
+.story-box {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius:16px;
+  padding:20px 24px;
+  max-width:560px; width:100%;
+  text-align:left;
+  font-size:14px; line-height:1.8;
+  color: rgba(232,244,255,0.85);
+  margin-bottom:20px;
+  box-shadow: var(--glow);
+}
+
+.story-box h3 {
+  font-family:'Orbitron',monospace;
+  font-size:13px; color:var(--cyan);
+  letter-spacing:1px; margin-bottom:10px;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, var(--cyan), var(--green2));
+  color: var(--navy);
+  border:none; border-radius:12px;
+  padding:16px 40px;
+  font-family:'Orbitron',monospace;
+  font-size:15px; font-weight:700;
+  cursor:pointer; letter-spacing:1px;
+  box-shadow: 0 0 30px rgba(0,229,255,0.4);
+  transition: all 0.3s;
+  width:100%; max-width:320px;
+}
+.btn-primary:hover { transform:translateY(-2px); box-shadow:0 0 40px rgba(0,229,255,0.6); }
+.btn-primary:active { transform:translateY(0); }
+
+.btn-secondary {
+  background: transparent;
+  color: var(--cyan);
+  border: 1px solid var(--border);
+  border-radius:10px;
+  padding:10px 24px;
+  font-size:13px; cursor:pointer;
+  transition: all 0.2s;
+}
+.btn-secondary:hover { background:rgba(0,229,255,0.1); }
+
+/* Difficulty select */
+.diff-select { display:flex; gap:10px; flex-wrap:wrap; justify-content:center; margin:16px 0; }
+.diff-btn {
+  padding:10px 22px; border-radius:10px;
+  border: 1px solid var(--border);
+  background: rgba(255,255,255,0.04);
+  color: var(--white); font-size:14px; cursor:pointer;
+  transition: all 0.2s; font-family:'Noto Sans KR',sans-serif;
+}
+.diff-btn.selected { background:rgba(0,229,255,0.15); border-color:var(--cyan); color:var(--cyan); }
+.diff-btn:hover { background:rgba(0,229,255,0.08); }
+
+/* ===== HEADER BAR ===== */
+.hud {
+  position:fixed; top:0; left:0; right:0;
+  background: rgba(5,13,26,0.95);
+  border-bottom: 1px solid var(--border);
+  padding:10px 16px;
+  display:flex; align-items:center; justify-content:space-between;
+  z-index:100; backdrop-filter:blur(10px);
+}
+.hud-title { font-family:'Orbitron',monospace; font-size:11px; color:var(--cyan); letter-spacing:1px; }
+.hud-score { font-family:'Orbitron',monospace; font-size:14px; color:var(--green); }
+.hud-music { background:none; border:1px solid var(--border); color:var(--gray); border-radius:8px; padding:4px 10px; cursor:pointer; font-size:16px; }
+
+/* Progress bar */
+.progress-wrap { width:100%; max-width:600px; margin:70px auto 10px; padding:0 16px; position:relative; z-index:1; }
+.progress-track { background:rgba(255,255,255,0.06); border-radius:10px; height:8px; overflow:hidden; }
+.progress-fill { height:100%; border-radius:10px; background:linear-gradient(90deg,var(--cyan),var(--green)); transition:width 0.5s; }
+.progress-labels { display:flex; justify-content:space-between; margin-top:6px; font-size:11px; color:var(--gray); font-family:'Orbitron',monospace; }
+
+/* ===== MISSION SCREEN ===== */
+.mission-header {
+  text-align:center; margin-bottom:18px; width:100%; max-width:600px;
+}
+.mission-badge {
+  display:inline-flex; align-items:center; gap:8px;
+  background:rgba(0,229,255,0.1); border:1px solid var(--cyan);
+  border-radius:20px; padding:6px 16px;
+  font-family:'Orbitron',monospace; font-size:12px; color:var(--cyan);
+  letter-spacing:1px; margin-bottom:10px;
+}
+.mission-title { font-size:20px; font-weight:700; margin-bottom:6px; }
+.mission-desc { font-size:13px; color:var(--gray); line-height:1.6; }
+
+/* Timer */
+.timer-wrap { margin:12px 0; }
+.timer-ring {
+  display:inline-flex; align-items:center; gap:8px;
+  background:rgba(255,255,255,0.04); border-radius:30px;
+  padding:8px 18px; border:1px solid var(--border);
+}
+.timer-num {
+  font-family:'Orbitron',monospace; font-size:22px; font-weight:700; color:var(--cyan);
+  min-width:50px; text-align:center;
+  transition: color 0.3s;
+}
+.timer-num.danger { color:var(--red); animation:blink 0.5s ease-in-out infinite; }
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.4} }
+
+/* Question card */
+.q-card {
+  background:var(--card); border:1px solid var(--border);
+  border-radius:18px; padding:22px;
+  max-width:600px; width:100%;
+  box-shadow:var(--glow); margin-bottom:16px;
+}
+.q-text { font-size:16px; font-weight:500; line-height:1.7; margin-bottom:18px; }
+.q-context {
+  background:rgba(0,229,255,0.05); border-left:3px solid var(--cyan);
+  border-radius:0 8px 8px 0; padding:10px 14px;
+  font-size:13px; color:rgba(232,244,255,0.75); line-height:1.6;
+  margin-bottom:14px;
+}
+
+/* Options */
+.options { display:flex; flex-direction:column; gap:10px; }
+.opt-btn {
+  background:rgba(255,255,255,0.04); border:1px solid var(--border);
+  border-radius:12px; padding:14px 18px;
+  font-size:15px; color:var(--white);
+  cursor:pointer; text-align:left;
+  transition:all 0.2s; line-height:1.5;
+  font-family:'Noto Sans KR',sans-serif;
+  display:flex; align-items:flex-start; gap:12px;
+}
+.opt-btn:hover:not(:disabled) { background:rgba(0,229,255,0.1); border-color:var(--cyan); transform:translateX(4px); }
+.opt-btn:disabled { cursor:default; }
+.opt-btn.correct { background:rgba(0,255,136,0.15); border-color:var(--green); color:var(--green); }
+.opt-btn.wrong { background:rgba(255,51,102,0.12); border-color:var(--red); color:var(--red); }
+.opt-label {
+  width:26px; height:26px; border-radius:50%;
+  background:rgba(0,229,255,0.15); border:1px solid var(--border);
+  display:flex; align-items:center; justify-content:center;
+  font-family:'Orbitron',monospace; font-size:11px; font-weight:700; flex-shrink:0;
+}
+
+/* Feedback */
+.feedback-box {
+  display:none; border-radius:12px; padding:14px 18px;
+  font-size:14px; line-height:1.6; margin-bottom:12px;
+  max-width:600px; width:100%;
+}
+.feedback-box.show { display:block; animation:fadeIn 0.3s; }
+@keyframes fadeIn { from{opacity:0;transform:translateY(6px)} to{opacity:1;transform:translateY(0)} }
+.feedback-box.correct-fb { background:rgba(0,255,136,0.1); border:1px solid var(--green); }
+.feedback-box.wrong-fb { background:rgba(255,51,102,0.08); border:1px solid rgba(255,51,102,0.4); }
+
+.hint-btn {
+  background:none; border:1px solid var(--yellow);
+  color:var(--yellow); border-radius:8px;
+  padding:7px 16px; font-size:13px; cursor:pointer;
+  transition:all 0.2s; margin-bottom:10px;
+}
+.hint-btn:hover { background:rgba(255,214,0,0.1); }
+.hint-box {
+  display:none; background:rgba(255,214,0,0.06);
+  border:1px solid rgba(255,214,0,0.3); border-radius:10px;
+  padding:12px 16px; font-size:13px; color:rgba(232,244,255,0.8);
+  margin-bottom:10px; max-width:600px; width:100%;
+}
+.hint-box.show { display:block; animation:fadeIn 0.3s; }
+
+.next-btn {
+  background:linear-gradient(135deg,var(--cyan),var(--green2));
+  color:var(--navy); border:none; border-radius:10px;
+  padding:13px 32px; font-family:'Orbitron',monospace;
+  font-size:14px; font-weight:700; cursor:pointer;
+  letter-spacing:0.5px; display:none; margin-top:8px;
+  transition:all 0.2s;
+}
+.next-btn.show { display:block; }
+.next-btn:hover { transform:translateY(-2px); box-shadow:0 0 20px rgba(0,229,255,0.4); }
+
+/* Stars */
+.stars-row { display:flex; gap:6px; justify-content:center; margin:8px 0; }
+.star { font-size:22px; opacity:0.3; transition:all 0.3s; }
+.star.lit { opacity:1; filter:drop-shadow(0 0 6px var(--yellow)); }
+
+/* ===== MISSION 2 TABS ===== */
+.diff-tabs { display:flex; gap:0; border:1px solid var(--border); border-radius:10px; overflow:hidden; margin-bottom:16px; max-width:600px; width:100%; }
+.diff-tab {
+  flex:1; padding:10px; background:rgba(255,255,255,0.03);
+  border:none; color:var(--gray); font-size:13px; cursor:pointer;
+  transition:all 0.2s; font-family:'Noto Sans KR',sans-serif;
+}
+.diff-tab.active { background:rgba(0,229,255,0.12); color:var(--cyan); font-weight:700; }
+
+/* ===== MISSION 3 — DATA SORT ===== */
+.m3-wrap { max-width:640px; width:100%; }
+.data-cards-row {
+  display:flex; flex-wrap:wrap; gap:10px; justify-content:center;
+  margin-bottom:18px; min-height:80px;
+  background:rgba(255,255,255,0.02); border:1px dashed var(--border);
+  border-radius:12px; padding:12px;
+}
+.data-card {
+  background:rgba(0,229,255,0.08); border:1px solid var(--cyan);
+  border-radius:10px; padding:10px 14px;
+  font-size:13px; cursor:grab; user-select:none;
+  transition:all 0.2s; text-align:center; min-width:110px;
+  display:flex; flex-direction:column; align-items:center; gap:4px;
+}
+.data-card:hover { background:rgba(0,229,255,0.15); transform:scale(1.04); }
+.data-card.dragging { opacity:0.4; cursor:grabbing; }
+.data-card .card-icon { font-size:22px; }
+.data-card .card-val { font-family:'Orbitron',monospace; font-size:12px; color:var(--cyan); }
+
+.buckets { display:flex; gap:12px; flex-wrap:wrap; justify-content:center; }
+.bucket {
+  flex:1; min-width:140px; max-width:200px;
+  border:2px dashed var(--border); border-radius:14px;
+  padding:14px 10px; text-align:center; min-height:130px;
+  transition:all 0.2s;
+  background:rgba(255,255,255,0.02);
+}
+.bucket.drag-over { border-color:var(--cyan); background:rgba(0,229,255,0.06); }
+.bucket.normal-b { border-color:rgba(0,255,136,0.4); }
+.bucket.abnormal-b { border-color:rgba(255,214,0,0.4); }
+.bucket.danger-b { border-color:rgba(255,51,102,0.4); }
+.bucket-title { font-size:13px; font-weight:700; margin-bottom:8px; }
+.bucket .data-card { cursor:default; font-size:12px; min-width:90px; margin:3px auto; }
+.bucket-hint { font-size:11px; color:var(--gray); margin-top:4px; }
+
+.m3-check-btn {
+  background:linear-gradient(135deg,var(--green),var(--cyan));
+  color:var(--navy); border:none; border-radius:10px;
+  padding:13px 32px; font-family:'Orbitron',monospace;
+  font-size:14px; font-weight:700; cursor:pointer;
+  margin-top:14px; display:block; width:100%; max-width:300px; margin-left:auto; margin-right:auto;
+}
+
+/* ===== MISSION 4 — SCENARIO ===== */
+.scenario-box {
+  background:var(--card); border:1px solid var(--border);
+  border-radius:18px; padding:22px;
+  max-width:600px; width:100%; margin-bottom:16px;
+}
+.scenario-title { font-size:18px; font-weight:700; margin-bottom:12px; }
+.scenario-text { font-size:14px; line-height:1.8; color:rgba(232,244,255,0.85); margin-bottom:18px; }
+.choice-btn {
+  display:block; width:100%; background:rgba(255,255,255,0.04);
+  border:1px solid var(--border); border-radius:12px;
+  padding:16px 20px; font-size:15px; color:var(--white);
+  cursor:pointer; text-align:left; margin-bottom:10px;
+  transition:all 0.2s; font-family:'Noto Sans KR',sans-serif;
+}
+.choice-btn:hover { background:rgba(0,229,255,0.1); border-color:var(--cyan); transform:translateX(4px); }
+
+/* ===== ENDING SCREEN ===== */
+#screen-ending { text-align:center; gap:16px; padding-top:80px; }
+.ending-badge {
+  font-size:64px; animation:pop 0.5s ease-out;
+}
+@keyframes pop { from{transform:scale(0)} to{transform:scale(1)} }
+.ending-title {
+  font-family:'Orbitron',monospace;
+  font-size:clamp(18px,4vw,28px); font-weight:900;
+  color:var(--cyan); margin-bottom:8px;
+}
+.ending-career {
+  background:var(--card); border:1px solid var(--border);
+  border-radius:14px; padding:18px 24px;
+  max-width:520px; font-size:15px; line-height:1.8;
+  box-shadow:var(--glow);
+}
+.ending-career h4 { color:var(--green); margin-bottom:8px; font-size:13px; font-family:'Orbitron',monospace; letter-spacing:1px; }
+.score-total {
+  font-family:'Orbitron',monospace;
+  font-size:36px; font-weight:900;
+  background:linear-gradient(135deg,var(--cyan),var(--green));
+  -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+  background-clip:text;
+}
+
+/* Nickname / leaderboard */
+.lb-box {
+  background:var(--card); border:1px solid var(--border);
+  border-radius:14px; padding:18px 24px;
+  max-width:420px; width:100%; text-align:left;
+}
+.lb-box h4 { font-family:'Orbitron',monospace; font-size:12px; color:var(--cyan); letter-spacing:1px; margin-bottom:12px; }
+.lb-input {
+  width:100%; background:rgba(255,255,255,0.06);
+  border:1px solid var(--border); border-radius:8px;
+  padding:10px 14px; color:var(--white); font-size:15px;
+  margin-bottom:8px; outline:none; font-family:'Noto Sans KR',sans-serif;
+}
+.lb-input:focus { border-color:var(--cyan); }
+.lb-register-btn {
+  background:rgba(0,229,255,0.12); border:1px solid var(--cyan);
+  color:var(--cyan); border-radius:8px; padding:8px 20px;
+  font-size:13px; cursor:pointer; transition:all 0.2s; margin-bottom:14px;
+}
+.lb-register-btn:hover { background:rgba(0,229,255,0.2); }
+.lb-list { list-style:none; }
+.lb-list li {
+  display:flex; justify-content:space-between; align-items:center;
+  padding:7px 0; border-bottom:1px solid rgba(255,255,255,0.05);
+  font-size:14px;
+}
+.lb-rank { font-family:'Orbitron',monospace; font-size:12px; color:var(--gray); width:26px; }
+.lb-name { flex:1; }
+.lb-pts { font-family:'Orbitron',monospace; font-size:13px; color:var(--cyan); }
+
+/* QR */
+.qr-wrap {
+  background:white; border-radius:12px; padding:12px;
+  display:inline-block; margin-top:8px;
+}
+
+/* Mission clear overlay */
+.clear-overlay {
+  display:none; position:fixed; inset:0; z-index:200;
+  background:rgba(5,13,26,0.85); backdrop-filter:blur(4px);
+  align-items:center; justify-content:center; flex-direction:column;
+  gap:16px;
+}
+.clear-overlay.show { display:flex; animation:fadeIn 0.3s; }
+.clear-emoji { font-size:70px; animation:pop 0.4s ease-out; }
+.clear-title { font-family:'Orbitron',monospace; font-size:26px; font-weight:900; color:var(--cyan); }
+.clear-pts { font-family:'Orbitron',monospace; font-size:18px; color:var(--green); }
+.clear-next {
+  background:linear-gradient(135deg,var(--cyan),var(--green2));
+  color:var(--navy); border:none; border-radius:12px;
+  padding:14px 36px; font-family:'Orbitron',monospace;
+  font-size:15px; font-weight:700; cursor:pointer; margin-top:10px;
+}
+
+/* Utility */
+.text-cyan { color:var(--cyan); }
+.text-green { color:var(--green); }
+.text-red { color:var(--red); }
+.text-yellow { color:var(--yellow); }
+.text-gray { color:var(--gray); }
+.fw7 { font-weight:700; }
+.mt8 { margin-top:8px; }
+.mt16 { margin-top:16px; }
+.center { text-align:center; }
+.small { font-size:13px; }
+
+.badges-row { display:flex; gap:12px; justify-content:center; flex-wrap:wrap; margin:8px 0; }
+.badge-item {
+  background:rgba(255,255,255,0.04); border:1px solid var(--border);
+  border-radius:10px; padding:8px 14px; text-align:center; font-size:12px;
+}
+.badge-item.earned { border-color:var(--yellow); background:rgba(255,214,0,0.07); }
+.badge-item .b-stars { font-size:14px; }
+.badge-item .b-name { color:var(--gray); font-size:11px; margin-top:2px; }
+
+.section-divider {
+  width:100%; max-width:600px; height:1px;
+  background:linear-gradient(90deg,transparent,var(--border),transparent);
+  margin:10px 0;
+}
+
+/* M2 score chips */
+.score-chip {
+  display:inline-block; font-family:'Orbitron',monospace;
+  font-size:11px; padding:3px 10px; border-radius:20px;
+  border:1px solid var(--border); color:var(--gray); margin-left:8px;
+}
+</style>
+</head>
+<body>
+
+<!-- ===== TITLE SCREEN ===== -->
+<div id="screen-title" class="screen active">
+  <div class="logo-badge">🏫 MILAB · 충주 · AI IoT 진로체험</div>
+  <div class="game-title">🌐 AI IoT 세계를 구하라!</div>
+  <div class="game-subtitle">스마트 도시 비상 프로젝트 — 중학교 AI 리터러시 체험</div>
+
+  <div class="mascot-wrap">
+    <div class="mascot-glow"></div>
+    <svg class="mascot-svg" id="mascot-main" viewBox="0 0 130 130" xmlns="http://www.w3.org/2000/svg">
+      <!-- Helmet -->
+      <ellipse cx="65" cy="42" rx="34" ry="32" fill="#0a1628" stroke="#00e5ff" stroke-width="2.5"/>
+      <path d="M31 48 Q31 80 65 82 Q99 80 99 48" fill="#0f2044" stroke="#00e5ff" stroke-width="2"/>
+      <!-- Visor -->
+      <rect x="36" y="34" width="58" height="26" rx="12" fill="#001a33" stroke="#00e5ff" stroke-width="2"/>
+      <!-- Eyes -->
+      <ellipse cx="51" cy="47" rx="9" ry="8" fill="#00e5ff" opacity="0.9"/>
+      <ellipse cx="79" cy="47" rx="9" ry="8" fill="#00e5ff" opacity="0.9"/>
+      <ellipse cx="51" cy="47" rx="5" ry="6" fill="#001a33"/>
+      <ellipse cx="79" cy="47" rx="5" ry="6" fill="#001a33"/>
+      <circle cx="53" cy="44" r="2" fill="white"/>
+      <circle cx="81" cy="44" r="2" fill="white"/>
+      <!-- Antenna -->
+      <line x1="65" y1="10" x2="65" y2="22" stroke="#00e5ff" stroke-width="2"/>
+      <circle cx="65" cy="8" r="5" fill="#00ff88" stroke="#00e5ff" stroke-width="1.5">
+        <animate attributeName="opacity" values="1;0.3;1" dur="1.5s" repeatCount="indefinite"/>
+      </circle>
+      <!-- Helmet detail -->
+      <rect x="52" y="22" width="26" height="5" rx="2.5" fill="#00e5ff" opacity="0.4"/>
+      <!-- Body -->
+      <rect x="43" y="83" width="44" height="34" rx="10" fill="#0a1628" stroke="#00e5ff" stroke-width="2"/>
+      <!-- Chest IoT icons -->
+      <rect x="51" y="90" width="12" height="12" rx="3" fill="#00e5ff" opacity="0.25"/>
+      <rect x="67" y="90" width="12" height="12" rx="3" fill="#00ff88" opacity="0.25"/>
+      <circle cx="57" cy="96" r="3" fill="#00e5ff" opacity="0.7"/>
+      <circle cx="73" cy="96" r="3" fill="#00ff88" opacity="0.7"/>
+      <!-- Neck -->
+      <rect x="58" y="79" width="14" height="8" rx="3" fill="#0a1628" stroke="#00e5ff" stroke-width="1.5"/>
+      <!-- Arms -->
+      <rect x="25" y="83" width="14" height="28" rx="7" fill="#0a1628" stroke="#00e5ff" stroke-width="1.5"/>
+      <rect x="91" y="83" width="14" height="28" rx="7" fill="#0a1628" stroke="#00e5ff" stroke-width="1.5"/>
+      <!-- Feet -->
+      <ellipse cx="53" cy="119" rx="12" ry="8" fill="#0a1628" stroke="#00e5ff" stroke-width="1.5"/>
+      <ellipse cx="77" cy="119" rx="12" ry="8" fill="#0a1628" stroke="#00e5ff" stroke-width="1.5"/>
+    </svg>
+  </div>
+
+  <div class="story-box">
+    <h3>🚨 긴급 상황 발생!</h3>
+    2035년, 충주 스마트시티의 AI IoT 네트워크에 이상이 발생했습니다.<br>
+    신입 IoT 엔지니어 인턴으로 채용된 여러분은 <strong class="text-cyan">4가지 미션</strong>을 통해
+    스마트시티를 복구하고, <strong class="text-green">나만의 진로</strong>를 발견해야 합니다!
+  </div>
+
+  <div style="width:100%;max-width:400px">
+    <div style="text-align:center;font-size:13px;color:var(--gray);margin-bottom:8px;">⚙️ 난이도 선택</div>
+    <div class="diff-select">
+      <button class="diff-btn selected" onclick="setDiff('easy',this)">🟢 쉬움</button>
+      <button class="diff-btn" onclick="setDiff('normal',this)">🟡 보통</button>
+      <button class="diff-btn" onclick="setDiff('hard',this)">🔴 도전</button>
+    </div>
+  </div>
+
+  <button class="btn-primary" onclick="startGame()">🚀 미션 시작!</button>
+  <button class="btn-secondary mt8" onclick="showLeaderboard()">🏆 명예의 전당</button>
+
+  <div class="mt16 small text-gray center">
+    🎓 대상: 중학교 1~3학년 &nbsp;|&nbsp; 교과: 정보·과학·사회·도덕<br>
+    📍 미랩(MILAB) · 충주 · 2026 AI IoT 진로체험
+  </div>
+</div>
+
+<!-- HUD (공통) -->
+<div class="hud" id="main-hud" style="display:none">
+  <div class="hud-title">🌐 AI IoT 비상 프로젝트</div>
+  <div class="hud-score" id="hud-score">0점</div>
+  <button class="hud-music" id="music-btn" onclick="toggleMusic()">🔊</button>
+</div>
+
+<!-- ===== MISSION 1 SCREEN ===== -->
+<div id="screen-m1" class="screen">
+  <div class="progress-wrap">
+    <div class="progress-track"><div class="progress-fill" style="width:25%"></div></div>
+    <div class="progress-labels"><span>시작</span><span>M1</span><span>M2</span><span>M3</span><span>M4</span></div>
+  </div>
+
+  <div class="mission-header" style="max-width:600px;margin-top:10px">
+    <div class="mission-badge">📡 MISSION 1 — 긴급 브리핑</div>
+    <div class="mission-title">AI IoT가 뭐야? 스마트시티 긴급 브리핑</div>
+    <div class="mission-desc">AI IoT 개념·장단점·실생활 사례를 이해하세요</div>
+  </div>
+
+  <div class="timer-wrap">
+    <div class="timer-ring">
+      <span>⏱️</span>
+      <span class="timer-num" id="m1-timer">80</span>
+      <span style="color:var(--gray);font-size:13px">초 남음</span>
+    </div>
+  </div>
+
+  <div id="m1-progress" style="font-family:'Orbitron',monospace;font-size:12px;color:var(--gray);margin-bottom:8px"></div>
+
+  <div class="q-card" id="m1-qcard">
+    <div class="q-context" id="m1-context"></div>
+    <div class="q-text" id="m1-qtext"></div>
+    <div class="options" id="m1-options"></div>
+  </div>
+
+  <div class="hint-box" id="m1-hint"></div>
+  <button class="hint-btn" id="m1-hint-btn" onclick="showHint('m1')">💡 힌트 보기 (배점 30% 차감)</button>
+  <div class="feedback-box" id="m1-feedback"></div>
+  <button class="next-btn" id="m1-next">다음 문제 →</button>
+</div>
+
+<!-- ===== MISSION 2 SCREEN ===== -->
+<div id="screen-m2" class="screen">
+  <div class="progress-wrap">
+    <div class="progress-track"><div class="progress-fill" style="width:50%"></div></div>
+    <div class="progress-labels"><span>시작</span><span>M1</span><span>M2 ✓</span><span>M3</span><span>M4</span></div>
+  </div>
+
+  <div class="mission-header" style="max-width:600px;margin-top:10px">
+    <div class="mission-badge">🔧 MISSION 2 — 현장 판단 퀴즈</div>
+    <div class="mission-title">장단점 판단 퀴즈: 현장 엔지니어의 선택</div>
+    <div class="mission-desc">난이도를 선택해 AI IoT의 장단점과 윤리를 탐구하세요</div>
+  </div>
+
+  <div class="diff-tabs" id="m2-tabs">
+    <button class="diff-tab active" onclick="setM2Diff('easy',this)">🟢 쉬움 <span class="score-chip">10점</span></button>
+    <button class="diff-tab" onclick="setM2Diff('normal',this)">🟡 보통 <span class="score-chip">15점</span></button>
+    <button class="diff-tab" onclick="setM2Diff('hard',this)">🔴 도전 <span class="score-chip">20점</span></button>
+  </div>
+
+  <div id="m2-progress" style="font-family:'Orbitron',monospace;font-size:12px;color:var(--gray);margin-bottom:8px"></div>
+
+  <div class="timer-wrap" id="m2-timer-wrap">
+    <div class="timer-ring">
+      <span>⏱️</span>
+      <span class="timer-num" id="m2-timer">45</span>
+      <span style="color:var(--gray);font-size:13px">초 남음</span>
+    </div>
+  </div>
+
+  <div class="q-card" id="m2-qcard">
+    <div class="q-context" id="m2-context"></div>
+    <div class="q-text" id="m2-qtext"></div>
+    <div class="options" id="m2-options"></div>
+  </div>
+
+  <div class="hint-box" id="m2-hint"></div>
+  <button class="hint-btn" id="m2-hint-btn" onclick="showHint('m2')">💡 힌트 보기 (배점 30% 차감)</button>
+  <div class="feedback-box" id="m2-feedback"></div>
+  <button class="next-btn" id="m2-next">다음 문제 →</button>
+</div>
+
+<!-- ===== MISSION 3 SCREEN ===== -->
+<div id="screen-m3" class="screen">
+  <div class="progress-wrap">
+    <div class="progress-track"><div class="progress-fill" style="width:75%"></div></div>
+    <div class="progress-labels"><span>시작</span><span>M1</span><span>M2</span><span>M3 ✓</span><span>M4</span></div>
+  </div>
+
+  <div class="mission-header" style="max-width:640px;margin-top:10px">
+    <div class="mission-badge">🤖 MISSION 3 — AI 체험</div>
+    <div class="mission-title">센서 데이터를 분류하라! (지도학습 체험)</div>
+    <div class="mission-desc">IoT 센서 데이터를 분류해 AI가 학습하는 방식을 체험하세요. 타이머 없음 🙆</div>
+  </div>
+
+  <div class="m3-wrap" id="m3-area">
+    <div style="font-size:13px;color:var(--gray);margin-bottom:8px;text-align:center">📦 분류할 데이터 카드 (드래그해서 아래 바구니에 넣으세요)</div>
+    <div class="data-cards-row" id="m3-source"></div>
+
+    <div class="buckets" id="m3-buckets">
+      <div class="bucket normal-b" id="bucket-normal" ondragover="dragOver(event)" ondrop="dropCard(event,'normal')">
+        <div class="bucket-title text-green">✅ 정상</div>
+        <div class="bucket-hint" style="color:var(--green);font-size:11px;margin-bottom:6px">센서값 정상 범위</div>
+        <div id="drop-normal"></div>
+      </div>
+      <div class="bucket abnormal-b" id="bucket-abnormal" ondragover="dragOver(event)" ondrop="dropCard(event,'abnormal')">
+        <div class="bucket-title text-yellow">⚠️ 이상</div>
+        <div class="bucket-hint" style="color:var(--yellow);font-size:11px;margin-bottom:6px">범위 벗어남·요주의</div>
+        <div id="drop-abnormal"></div>
+      </div>
+      <div class="bucket danger-b" id="bucket-danger" ondragover="dragOver(event)" ondrop="dropCard(event,'danger')">
+        <div class="bucket-title text-red">🚨 위험</div>
+        <div class="bucket-hint" style="color:var(--red);font-size:11px;margin-bottom:6px">즉시 조치 필요</div>
+        <div id="drop-danger"></div>
+      </div>
+    </div>
+
+    <button class="m3-check-btn" onclick="checkM3()">🤖 AI 분류 결과 확인!</button>
+    <div class="feedback-box" id="m3-feedback" style="max-width:640px;margin-top:12px"></div>
+    <button class="next-btn" id="m3-next" style="margin-top:10px;display:none">다음 미션 →</button>
+  </div>
+</div>
+
+<!-- ===== MISSION 4 SCREEN ===== -->
+<div id="screen-m4" class="screen">
+  <div class="progress-wrap">
+    <div class="progress-track"><div class="progress-fill" style="width:95%"></div></div>
+    <div class="progress-labels"><span>시작</span><span>M1</span><span>M2</span><span>M3</span><span>M4 ✓</span></div>
+  </div>
+
+  <div class="mission-header" style="max-width:600px;margin-top:10px">
+    <div class="mission-badge">🎯 MISSION 4 — 진로 판단</div>
+    <div class="mission-title">나는 어떤 IoT 전문가?</div>
+    <div class="mission-desc">시나리오를 읽고 나에게 맞는 프로젝트를 선택하세요. 타이머 없음 🙆</div>
+  </div>
+
+  <div class="scenario-box">
+    <div class="scenario-title">🏙️ 스마트시티 복구 완료! 시장의 특명</div>
+    <div class="scenario-text">
+      여러분의 활약 덕분에 충주 스마트시티가 복구되었습니다!<br>
+      시장이 여러분에게 <strong class="text-cyan">후속 AI IoT 프로젝트</strong> 중 하나를 맡아달라고 합니다.<br><br>
+      어떤 분야가 가장 끌리나요? 솔직하게 선택해 보세요!
+    </div>
+
+    <button class="choice-btn" onclick="chooseM4('A')">🏭 A. 공장 자동화 설비 IoT 도입 설계<br><small class="text-gray" style="font-size:12px">스마트팩토리, 센서·로봇 제어, 생산 효율화</small></button>
+    <button class="choice-btn" onclick="chooseM4('B')">🏥 B. 병원 환자 모니터링 AI 시스템 구축<br><small class="text-gray" style="font-size:12px">헬스케어 IoT, 실시간 생체신호 분석, 의료 AI</small></button>
+    <button class="choice-btn" onclick="chooseM4('C')">🏫 C. 학교 스마트 에너지 절감 시스템 개발<br><small class="text-gray" style="font-size:12px">에너지 IoT, 환경센서, 그린캠퍼스 설계</small></button>
+    <button class="choice-btn" onclick="chooseM4('D')">🚦 D. 도시 교통 AI 신호 최적화 프로젝트<br><small class="text-gray" style="font-size:12px">자율주행 연계, 교통 데이터 분석, 도시 AI</small></button>
+  </div>
+</div>
+
+<!-- ===== ENDING SCREEN ===== -->
+<div id="screen-ending" class="screen">
+  <div class="ending-badge" id="ending-emoji">🏆</div>
+  <div class="ending-title" id="ending-title"></div>
+  <div class="score-total" id="ending-score"></div>
+
+  <div class="badges-row" id="ending-badges"></div>
+
+  <div class="ending-career" id="ending-career"></div>
+
+  <div class="section-divider"></div>
+
+  <div class="lb-box">
+    <h4>🏆 명예의 전당</h4>
+    <input class="lb-input" id="lb-name" placeholder="닉네임 입력 (예: 미래 엔지니어)">
+    <button class="lb-register-btn" onclick="registerLB()">점수 등록하기</button>
+    <ul class="lb-list" id="lb-list"></ul>
+  </div>
+
+  <div style="text-align:center;margin-top:8px">
+    <div class="small text-gray mb">📱 이 게임 공유하기</div>
+    <div class="qr-wrap"><div id="qr-code"></div></div>
+    <div class="small text-gray mt8">자유학기제 진로 체험 공유용 QR</div>
+  </div>
+
+  <div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-top:16px">
+    <button class="btn-primary" style="padding:12px 28px;font-size:14px" onclick="restartGame()">🔄 다시 도전</button>
+    <button class="btn-secondary" onclick="showLeaderboard()">🏆 전체 랭킹</button>
+  </div>
+
+  <div class="small text-gray center mt16">
+    📍 미랩(MILAB) · 충주 · 2026 AI IoT 진로체험 #021
+  </div>
+</div>
+
+<!-- Mission Clear Overlay -->
+<div class="clear-overlay" id="clear-overlay">
+  <div class="clear-emoji" id="clear-emoji">🎉</div>
+  <div class="clear-title" id="clear-title">미션 클리어!</div>
+  <div class="clear-pts" id="clear-pts">+30점</div>
+  <div class="stars-row" id="clear-stars"></div>
+  <button class="clear-next" id="clear-next-btn">다음 미션 →</button>
+</div>
+
+<script>
+// ==================== GAME DATA ====================
+const GAME_ID = 'milab_m_021';
+const GAME_URL = 'https://milab2019.github.io/main/ai_iot_city_021.html';
+
+let gameState = {
+  diff: 'easy',
+  score: 0,
+  missionScores: [0,0,0,0],
+  missionStars: [0,0,0,0],
+  m4choice: null
+};
+
+// M1 Questions
+const M1_QUESTIONS = [
+  {
+    context:'📰 [스마트시티 뉴스] 2035년 충주시는 도로·병원·공장에 수천 개의 센서를 설치해 실시간으로 데이터를 수집·분석합니다.',
+    q:'IoT(사물인터넷)의 올바른 정의는 무엇인가요?',
+    opts:['인터넷으로 영상을 스트리밍하는 기술','사물이 인터넷에 연결되어 데이터를 주고받는 기술','스마트폰 앱을 개발하는 기술','인공지능 로봇을 만드는 기술'],
+    ans:1, hint:'IoT = Internet of Things. 사물(Things)이 핵심입니다!',
+    fb:'✅ 정답! IoT는 <b>사물이 인터넷으로 연결</b>되어 데이터를 주고받는 기술입니다. 정보 교과 핵심 개념이에요!'
+  },
+  {
+    context:'📊 [현장 보고서] 공장 AI IoT 시스템이 설비 진동 데이터를 분석해 고장 3일 전에 자동으로 수리 알림을 보냅니다.',
+    q:'AI IoT가 기존 IoT와 다른 핵심적인 차이점은?',
+    opts:['더 빠른 인터넷을 사용한다','센서 수가 더 많다','AI가 데이터를 분석해 스스로 판단·자동화한다','클라우드를 사용한다'],
+    ans:2, hint:'AI = 인공지능. 데이터를 스스로 "분석하고 판단"하는 것이 핵심!',
+    fb:'✅ 정답! AI IoT는 IoT 데이터를 <b>AI가 분석해 스스로 판단·예측</b>합니다. 단순 수집을 넘어선 지능형 시스템이에요!'
+  },
+  {
+    context:'🏠 [생활 속 AI IoT] 스마트홈: 외출 시 자동 소등, 자율주행: 실시간 교통 분석, 스마트병원: 환자 상태 자동 모니터링',
+    q:'AI IoT의 가장 대표적인 <b>장점</b>은 무엇인가요?',
+    opts:['설치 비용이 저렴하다','인터넷 없이도 작동한다','실시간 모니터링과 자동화로 효율이 높아진다','해킹이 불가능하다'],
+    ans:2, hint:'AI IoT가 없으면 사람이 24시간 확인해야 하는 것들을 떠올려보세요!',
+    fb:'✅ 정답! <b>실시간 모니터링·자동화·예측 유지보수</b>가 AI IoT의 핵심 장점입니다. 사람이 놓칠 수 있는 부분을 AI가 대신합니다!'
+  },
+  {
+    context:'⚠️ [보안 경고] 2034년, 스마트시티 IoT 네트워크 해킹으로 신호등 3,000개가 동시에 오작동해 도시 마비 사태가 발생했습니다.',
+    q:'이 사건이 보여주는 AI IoT의 대표적인 <b>단점</b>은?',
+    opts:['전력 소비 과다','보안 취약성과 해킹 위험','데이터 처리 속도 저하','네트워크 비용 증가'],
+    ans:1, hint:'수천 개의 기기가 연결될수록 공격 표면도 넓어집니다.',
+    fb:'✅ 정답! <b>보안 취약성</b>이 AI IoT 최대 단점입니다. 연결된 기기가 많을수록 해킹 위험도 커지므로 보안 설계가 필수예요!'
+  }
+];
+
+// M2 Questions by difficulty
+const M2_QUESTIONS = {
+  easy: [
+    {
+      context:'🏭 스마트팩토리 시나리오: AI IoT 센서가 기계 온도를 실시간 감지합니다.',
+      q:'공장에 AI IoT를 도입했을 때의 <b>장점</b>으로 올바른 것은?',
+      opts:['고장을 미리 예측해 생산 중단을 줄인다','직원이 전혀 필요 없어진다','설치 즉시 완벽하게 작동한다','인터넷 없이도 데이터를 분석한다'],
+      ans:0, hint:'AI가 데이터 패턴을 보고 고장 "예측"을 할 수 있어요!',
+      fb:'✅ 정답! <b>예측 유지보수(Predictive Maintenance)</b>가 핵심 장점입니다. 고장 전에 미리 알아 생산성을 높입니다!'
+    },
+    {
+      context:'🚗 자율주행차 시나리오: AI IoT 센서가 도로 상황을 실시간 분석합니다.',
+      q:'자율주행차 AI IoT의 단점으로 올바른 것은?',
+      opts:['연료를 절약할 수 없다','센서 오작동 시 대형 사고 위험이 있다','속도가 너무 느리다','야간 주행이 불가능하다'],
+      ans:1, hint:'모든 기술은 완벽하지 않습니다. 오작동하면 어떻게 될까요?',
+      fb:'✅ 정답! AI IoT 단점: <b>오작동 시 대형 사고 위험</b>. 자율주행에서 센서 오류 1개가 치명적 결과를 낳을 수 있어 안전 설계가 중요합니다!'
+    }
+  ],
+  normal: [
+    {
+      context:'🏥 병원 AI IoT 시나리오: 환자 침대마다 센서가 부착되어 심박·체온·혈압을 24시간 자동 측정·전송합니다.',
+      q:'이 시스템 도입 시 <b>가장 중요하게 고려해야 할 문제</b>는?',
+      opts:['병원 인테리어 변경 비용','환자 의료정보 유출 등 개인정보 침해 위험','센서 배터리 교체 주기','Wi-Fi 속도 향상 필요'],
+      ans:1, hint:'의료 데이터는 매우 민감합니다. 유출되면 어떤 피해가 생길까요?',
+      fb:'✅ 정답! <b>개인정보 침해</b>가 의료 AI IoT의 핵심 위험입니다. 환자 동의·암호화·접근제한 등 보안 설계가 필수예요!'
+    },
+    {
+      context:'🌆 스마트시티 에너지 시나리오: AI IoT가 가정의 전력 사용 패턴을 학습해 자동으로 에너지를 조절합니다.',
+      q:'이 시스템이 가져오는 <b>장점과 단점</b>을 모두 올바르게 설명한 것은?',
+      opts:['장점: 에너지 절약, 단점: 생활 패턴 데이터 수집으로 프라이버시 침해 가능','장점: 완벽한 보안, 단점: 비용 절감 불가','장점: 인터넷 불필요, 단점: 데이터 분석 느림','장점: 무한 확장, 단점: 사용법 복잡'],
+      ans:0, hint:'에너지 패턴을 알면 내 생활 패턴도 알 수 있지 않을까요?',
+      fb:'✅ 정답! AI IoT는 <b>효율성↑ 동시에 프라이버시↓</b>의 트레이드오프가 있습니다. 기술의 두 얼굴을 항상 함께 생각해야 해요!'
+    }
+  ],
+  hard: [
+    {
+      context:'⚖️ [AI 윤리 딜레마] 2035년, 병원 AI IoT가 환자 동의 없이 수집한 데이터를 분석해 희귀병 치료법을 개발했습니다. 이로 인해 1,000명의 생명을 구했지만, 환자들의 개인정보는 무단 사용되었습니다.',
+      q:'이 상황에 대해 가장 비판적으로 옳은 판단은?',
+      opts:['생명을 구했으므로 무조건 옳다','결과와 상관없이 동의 없는 데이터 사용은 윤리 위반이다','기술 발전을 위해 개인정보는 항상 공개해야 한다','AI는 판단 책임이 없으므로 개발자도 책임이 없다'],
+      ans:1, hint:'좋은 결과가 나빴던 과정을 정당화할 수 있을까요? "목적이 수단을 정당화한다"는 원칙을 생각해보세요.',
+      fb:'✅ 정답! <b>결과가 좋아도 동의 없는 데이터 사용은 윤리 위반</b>입니다. AI 시대에는 "결과"만큼 "과정의 윤리"가 중요합니다. 개인정보자기결정권을 기억하세요!'
+    },
+    {
+      context:'🤖 [AI 편향 딜레마] 스마트시티 AI가 특정 지역 주민에게는 구급차를 늦게 배차하는 패턴이 발견됐습니다. 조사 결과 훈련 데이터에 편향이 있었습니다.',
+      q:'이 상황의 근본 원인과 해결 방향으로 가장 적절한 것은?',
+      opts:['AI가 의도적으로 차별한 것이므로 AI를 즉시 폐기해야 한다','편향된 훈련 데이터가 원인이므로 다양하고 공정한 데이터 수집·검수가 필요하다','완벽한 AI를 만들면 해결된다','AI는 수학적이므로 편향이 생길 수 없다'],
+      ans:1, hint:'AI는 데이터에서 배웁니다. 데이터가 편향되면 AI도 편향됩니다!',
+      fb:'✅ 정답! <b>AI 편향은 편향된 데이터에서 비롯됩니다.</b> 해결책은 다양한 데이터 수집, 공정성 검수, 지속적 모니터링입니다. AI를 설계하는 사람의 책임이 중요해요!'
+    }
+  ]
+};
+
+// M3 Data cards
+const M3_CARDS = [
+  { id:'c1', icon:'🌡️', label:'공장 온도', val:'32°C', cat:'normal', reason:'정상 범위(20-40°C) 내 수치' },
+  { id:'c2', icon:'🌡️', label:'보일러 온도', val:'95°C', cat:'danger', reason:'위험 임계값(90°C) 초과!' },
+  { id:'c3', icon:'📳', label:'기계 진동', val:'2.1mm/s', cat:'normal', reason:'허용 범위(0-3mm/s) 내 수치' },
+  { id:'c4', icon:'📳', label:'모터 진동', val:'8.7mm/s', cat:'danger', reason:'위험 수준(>6mm/s) 초과!' },
+  { id:'c5', icon:'💨', label:'공기질 CO₂', val:'1200ppm', cat:'abnormal', reason:'기준치(1000ppm) 초과, 환기 필요' },
+  { id:'c6', icon:'🔆', label:'조도 센서', val:'450lux', cat:'normal', reason:'작업 적정 조도(400-600lux) 범위' },
+  { id:'c7', icon:'⚡', label:'전력 소비', val:'9.8kW', cat:'danger', reason:'최대 허용(10kW) 근접, 과부하 주의' },
+  { id:'c8', icon:'💧', label:'습도 센서', val:'68%', cat:'abnormal', reason:'권장 범위(40-60%) 초과, 결로 위험' }
+];
+
+let m3Placed = {}; // cardId -> bucket
+
+// M4 Endings
+const M4_ENDINGS = {
+  score_high: { // 80-100
+    emoji:'🏆', title:'IoT 마스터 엔지니어',
+    msg:`<h4>🌟 당신의 진로 레포트</h4>
+    탁월한 분석력과 판단력! 당신은 AI IoT 시스템을 설계하고 최적화하는
+    <b>스마트시티 엔지니어</b>의 자질이 있습니다.<br><br>
+    🔭 관련 진로: AI IoT 시스템 설계사 · 스마트팩토리 엔지니어 · IoT 보안 전문가 · 임베디드 시스템 개발자<br><br>
+    📚 추천 교과: 정보(AI·SW) · 과학(물리·전기) · 기술·가정(기술시스템)`
+  },
+  score_mid: { // 60-79
+    emoji:'🔬', title:'데이터 과학 탐험가',
+    msg:`<h4>🌟 당신의 진로 레포트</h4>
+    데이터로 세상의 패턴을 읽는 능력! IoT가 수집한 방대한 데이터를
+    분석·시각화하는 <b>데이터 과학자</b>의 잠재력이 있습니다.<br><br>
+    🔭 관련 진로: 데이터 분석가 · AI 개발자 · IoT 플랫폼 기획자 · 스마트시티 연구원<br><br>
+    📚 추천 교과: 정보(데이터·AI) · 수학(통계) · 사회(도시계획)`
+  },
+  score_low: { // 40-59
+    emoji:'🌱', title:'미래 기술 씨앗',
+    msg:`<h4>🌟 당신의 진로 레포트</h4>
+    기초가 탄탄해지는 중! 꾸준한 도전으로 성장 중입니다.
+    IT 기반 기술을 폭넓게 배우는 <b>기술 전문가</b> 방향이 잘 맞습니다.<br><br>
+    🔭 관련 진로: IT 인프라 전문가 · 기술 교육자 · 드론·로봇 운용 전문가 · 네트워크 엔지니어<br><br>
+    📚 추천 교과: 정보(네트워크) · 기술·가정 · 물리`
+  },
+  score_start: { // 0-39
+    emoji:'💡', title:'창의적 문제 해결사',
+    msg:`<h4>🌟 당신의 진로 레포트</h4>
+    다른 방식으로 세상을 바라보는 당신! 기술 자체보다
+    기술로 <b>사회 문제를 해결</b>하는 역할에 어울립니다.<br><br>
+    🔭 관련 진로: UX 디자이너 · IT 서비스 기획자 · 사회혁신가 · 스타트업 창업가<br><br>
+    📚 추천 교과: 사회 · 도덕(윤리) · 국어(미디어) · 미술`
+  }
+};
+
+// M4 choice extra messages
+const M4_CHOICE_MSG = {
+  A: '🏭 <b>스마트팩토리 방향</b>: 기계·센서·제어에 관심 있는 당신은 제조 AI IoT 엔지니어에 적합합니다!',
+  B: '🏥 <b>헬스케어 AI IoT 방향</b>: 생명과 기술을 연결하는 의료 AI 시스템 개발자 진로를 탐색해보세요!',
+  C: '🏫 <b>그린테크 방향</b>: 환경·에너지에 관심 있는 당신은 지속가능한 스마트시티 설계자로 어울립니다!',
+  D: '🚦 <b>스마트교통 방향</b>: 도시 데이터와 AI에 관심 있다면 자율주행·교통 AI 전문가를 목표해보세요!'
+};
+
+// ==================== AUDIO ====================
+let audioCtx = null, musicPlaying = false, musicNodes = [];
+let musicOn = true;
+
+function initAudio() {
+  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+}
+
+function playBGM() {
+  if (!musicOn) return;
+  initAudio();
+  stopBGM();
+  const notes = [261, 311, 370, 440, 370, 311, 261, 220];
+  let i = 0;
+  function playNote() {
+    if (!musicOn) return;
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.connect(gain); gain.connect(audioCtx.destination);
+    osc.frequency.value = notes[i % notes.length];
+    osc.type = 'sawtooth';
+    gain.gain.setValueAtTime(0.04, audioCtx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.45);
+    osc.start(); osc.stop(audioCtx.currentTime + 0.5);
+    musicNodes.push(osc);
+    i++;
+    if (musicOn) setTimeout(playNote, 500);
+  }
+  musicPlaying = true;
+  playNote();
+}
+
+function stopBGM() { musicPlaying = false; musicNodes.forEach(n => { try{n.stop()}catch(e){} }); musicNodes = []; }
+
+function toggleMusic() {
+  musicOn = !musicOn;
+  document.getElementById('music-btn').textContent = musicOn ? '🔊' : '🔇';
+  if (musicOn) playBGM(); else stopBGM();
+}
+
+function sfx(type) {
+  initAudio();
+  const o = audioCtx.createOscillator(), g = audioCtx.createGain();
+  o.connect(g); g.connect(audioCtx.destination);
+  if (type === 'correct') {
+    o.frequency.setValueAtTime(440, audioCtx.currentTime);
+    o.frequency.exponentialRampToValueAtTime(880, audioCtx.currentTime + 0.2);
+    g.gain.setValueAtTime(0.15, audioCtx.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.3);
+    o.start(); o.stop(audioCtx.currentTime + 0.3);
+  } else if (type === 'wrong') {
+    o.frequency.setValueAtTime(220, audioCtx.currentTime);
+    o.type = 'square';
+    g.gain.setValueAtTime(0.1, audioCtx.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.2);
+    o.start(); o.stop(audioCtx.currentTime + 0.2);
+  } else if (type === 'clear') {
+    [523,659,784,1047].forEach((f, i) => {
+      const o2 = audioCtx.createOscillator(), g2 = audioCtx.createGain();
+      o2.connect(g2); g2.connect(audioCtx.destination);
+      o2.frequency.value = f;
+      g2.gain.setValueAtTime(0.12, audioCtx.currentTime + i*0.12);
+      g2.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + i*0.12 + 0.2);
+      o2.start(audioCtx.currentTime + i*0.12);
+      o2.stop(audioCtx.currentTime + i*0.12 + 0.25);
+    });
+  }
+}
+
+// ==================== GAME LOGIC ====================
+let m1Timer = null, m2Timer = null;
+let m1Idx = 0, m1HintUsed = false, m1Answered = false;
+let m2Diff = 'easy', m2Idx = 0, m2HintUsed = false, m2Answered = false;
+
+function setDiff(d, btn) {
+  gameState.diff = d;
+  document.querySelectorAll('.diff-btn').forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+}
+
+function startGame() {
+  initAudio();
+  document.getElementById('screen-title').classList.remove('active');
+  document.getElementById('main-hud').style.display = 'flex';
+  playBGM();
+  startM1();
+}
+
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo(0,0);
+}
+
+function updateHUD() {
+  document.getElementById('hud-score').textContent = gameState.score + '점';
+}
+
+// ===== MISSION 1 =====
+function startM1() {
+  m1Idx = 0; m1HintUsed = false; m1Answered = false;
+  gameState.missionScores[0] = 0;
+  showScreen('screen-m1');
+  loadM1Q();
+  startM1Timer();
+}
+
+let m1TimeLeft = 80;
+function startM1Timer() {
+  clearInterval(m1Timer);
+  m1TimeLeft = 80;
+  updateM1Timer();
+  m1Timer = setInterval(() => {
+    m1TimeLeft--;
+    updateM1Timer();
+    if (m1TimeLeft <= 0) {
+      clearInterval(m1Timer);
+      // auto-finish remaining
+      sfx('wrong');
+      setTimeout(() => showClear(0, 0, '⏰ 시간 초과! 다음 미션으로'), 500);
+    }
+  }, 1000);
+}
+
+function updateM1Timer() {
+  const el = document.getElementById('m1-timer');
+  el.textContent = m1TimeLeft;
+  el.className = 'timer-num' + (m1TimeLeft <= 10 ? ' danger' : '');
+}
+
+function loadM1Q() {
+  if (m1Idx >= M1_QUESTIONS.length) {
+    clearInterval(m1Timer);
+    const stars = calcStars(gameState.missionScores[0], 40);
+    gameState.missionStars[0] = stars;
+    showClear(1, gameState.missionScores[0], '미션 1 클리어!');
+    return;
+  }
+  m1HintUsed = false; m1Answered = false;
+  const q = M1_QUESTIONS[m1Idx];
+  document.getElementById('m1-progress').textContent = `문제 ${m1Idx+1} / ${M1_QUESTIONS.length}`;
+  document.getElementById('m1-context').innerHTML = q.context;
+  document.getElementById('m1-qtext').innerHTML = q.q;
+  document.getElementById('m1-hint').classList.remove('show');
+  document.getElementById('m1-feedback').classList.remove('show');
+  document.getElementById('m1-next').classList.remove('show');
+  document.getElementById('m1-hint-btn').style.display = 'block';
+
+  const pts = {easy:10, normal:15, hard:20}[gameState.diff];
+  const labels = ['A','B','C','D'];
+  let html = '';
+  q.opts.forEach((o,i) => {
+    html += `<button class="opt-btn" onclick="answerM1(${i})">
+      <span class="opt-label">${labels[i]}</span><span>${o}</span>
+    </button>`;
+  });
+  document.getElementById('m1-options').innerHTML = html;
+}
+
+function answerM1(idx) {
+  if (m1Answered) return;
+  m1Answered = true;
+  const q = M1_QUESTIONS[m1Idx];
+  const pts = {easy:10, normal:15, hard:20}[gameState.diff];
+  const earned = m1HintUsed ? Math.round(pts * 0.7) : pts;
+  const correct = idx === q.ans;
+  const btns = document.querySelectorAll('#m1-options .opt-btn');
+  btns.forEach(b => b.disabled = true);
+  btns[q.ans].classList.add('correct');
+  if (!correct) btns[idx].classList.add('wrong');
+
+  const fb = document.getElementById('m1-feedback');
+  if (correct) {
+    gameState.missionScores[0] += earned;
+    gameState.score += earned;
+    updateHUD(); sfx('correct');
+    fb.className = 'feedback-box correct-fb show';
+    fb.innerHTML = `🤖 아이옷: ${q.fb}<br><span class="text-green fw7">+${earned}점 획득!</span>`;
+  } else {
+    sfx('wrong');
+    fb.className = 'feedback-box wrong-fb show';
+    fb.innerHTML = `🤖 아이옷: 좋은 시도야! 이런 생각도 있어:<br>${q.fb}<br><span class="text-gray">(0점)</span>`;
+  }
+
+  document.getElementById('m1-hint-btn').style.display = 'none';
+  const nextBtn = document.getElementById('m1-next');
+  nextBtn.classList.add('show');
+  nextBtn.onclick = () => { m1Idx++; loadM1Q(); };
+}
+
+function showHint(mission) {
+  if (mission === 'm1') {
+    m1HintUsed = true;
+    const h = document.getElementById('m1-hint');
+    h.innerHTML = '💡 ' + M1_QUESTIONS[m1Idx].hint;
+    h.classList.add('show');
+    document.getElementById('m1-hint-btn').style.display = 'none';
+  } else {
+    m2HintUsed = true;
+    const qs = M2_QUESTIONS[m2Diff];
+    const h = document.getElementById('m2-hint');
+    h.innerHTML = '💡 ' + qs[m2Idx].hint;
+    h.classList.add('show');
+    document.getElementById('m2-hint-btn').style.display = 'none';
+  }
+}
+
+// ===== MISSION 2 =====
+function startM2() {
+  m2Diff = 'easy'; m2Idx = 0; m2HintUsed = false; m2Answered = false;
+  gameState.missionScores[1] = 0;
+  // set default tab
+  document.querySelectorAll('.diff-tab').forEach((t,i) => t.classList.toggle('active', i===0));
+  showScreen('screen-m2');
+  loadM2Q();
+}
+
+function setM2Diff(d, btn) {
+  m2Diff = d; m2Idx = 0; m2HintUsed = false; m2Answered = false;
+  document.querySelectorAll('.diff-tab').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  clearInterval(m2Timer);
+  loadM2Q();
+}
+
+let m2TimeLeft = 45;
+function startM2Timer() {
+  clearInterval(m2Timer);
+  m2TimeLeft = 45;
+  updateM2Timer();
+  m2Timer = setInterval(() => {
+    m2TimeLeft--;
+    updateM2Timer();
+    if (m2TimeLeft <= 0) {
+      clearInterval(m2Timer);
+      if (!m2Answered) {
+        m2Answered = true;
+        sfx('wrong');
+        // mark timeout
+        const qs = M2_QUESTIONS[m2Diff];
+        const q = qs[m2Idx];
+        const btns = document.querySelectorAll('#m2-options .opt-btn');
+        btns.forEach(b => b.disabled = true);
+        btns[q.ans].classList.add('correct');
+        const fb = document.getElementById('m2-feedback');
+        fb.className = 'feedback-box wrong-fb show';
+        fb.innerHTML = `⏰ 시간 초과! 정답은 <b>${['A','B','C','D'][q.ans]}</b>번이었어요.<br>${q.fb}`;
+        document.getElementById('m2-hint-btn').style.display = 'none';
+        const nb = document.getElementById('m2-next');
+        nb.classList.add('show');
+        nb.onclick = advanceM2;
+      }
+    }
+  }, 1000);
+}
+
+function updateM2Timer() {
+  const el = document.getElementById('m2-timer');
+  el.textContent = m2TimeLeft;
+  el.className = 'timer-num' + (m2TimeLeft <= 10 ? ' danger' : '');
+}
+
+function loadM2Q() {
+  const qs = M2_QUESTIONS[m2Diff];
+  if (m2Idx >= qs.length) {
+    clearInterval(m2Timer);
+    const stars = calcStars(gameState.missionScores[1], 30);
+    gameState.missionStars[1] = stars;
+    showClear(2, gameState.missionScores[1], '미션 2 클리어!');
+    return;
+  }
+  m2HintUsed = false; m2Answered = false;
+  const q = qs[m2Idx];
+  document.getElementById('m2-progress').textContent = `문제 ${m2Idx+1} / ${qs.length}`;
+  document.getElementById('m2-context').innerHTML = q.context;
+  document.getElementById('m2-qtext').innerHTML = q.q;
+  document.getElementById('m2-hint').classList.remove('show');
+  document.getElementById('m2-feedback').classList.remove('show');
+  document.getElementById('m2-next').classList.remove('show');
+  document.getElementById('m2-hint-btn').style.display = 'block';
+
+  const labels = ['A','B','C','D'];
+  let html = '';
+  q.opts.forEach((o,i) => {
+    html += `<button class="opt-btn" onclick="answerM2(${i})">
+      <span class="opt-label">${labels[i]}</span><span>${o}</span>
+    </button>`;
+  });
+  document.getElementById('m2-options').innerHTML = html;
+  startM2Timer();
+}
+
+function answerM2(idx) {
+  if (m2Answered) return;
+  m2Answered = true;
+  clearInterval(m2Timer);
+  const qs = M2_QUESTIONS[m2Diff];
+  const q = qs[m2Idx];
+  const pts = {easy:10, normal:15, hard:20}[m2Diff];
+  const earned = m2HintUsed ? Math.round(pts*0.7) : pts;
+  const correct = idx === q.ans;
+  const btns = document.querySelectorAll('#m2-options .opt-btn');
+  btns.forEach(b => b.disabled = true);
+  btns[q.ans].classList.add('correct');
+  if (!correct) btns[idx].classList.add('wrong');
+
+  const fb = document.getElementById('m2-feedback');
+  if (correct) {
+    gameState.missionScores[1] += earned;
+    gameState.score += earned;
+    updateHUD(); sfx('correct');
+    fb.className = 'feedback-box correct-fb show';
+    fb.innerHTML = `🤖 아이옷: ${q.fb}<br><span class="text-green fw7">+${earned}점!</span>`;
+  } else {
+    sfx('wrong');
+    fb.className = 'feedback-box wrong-fb show';
+    fb.innerHTML = `🤖 아이옷: 좋은 시도야! 이런 생각도 있어:<br>${q.fb}`;
+  }
+
+  document.getElementById('m2-hint-btn').style.display = 'none';
+  const nb = document.getElementById('m2-next');
+  nb.classList.add('show');
+  nb.onclick = advanceM2;
+}
+
+function advanceM2() {
+  m2Idx++;
+  loadM2Q();
+}
+
+// ===== MISSION 3 =====
+function startM3() {
+  gameState.missionScores[2] = 0;
+  m3Placed = {};
+  showScreen('screen-m3');
+  initM3();
+}
+
+function initM3() {
+  // Render source cards
+  const src = document.getElementById('m3-source');
+  src.innerHTML = '';
+  M3_CARDS.forEach(card => {
+    const div = document.createElement('div');
+    div.className = 'data-card';
+    div.id = 'card-' + card.id;
+    div.draggable = true;
+    div.innerHTML = `<span class="card-icon">${card.icon}</span><div>${card.label}</div><div class="card-val">${card.val}</div>`;
+    div.addEventListener('dragstart', e => { e.dataTransfer.setData('text', card.id); div.classList.add('dragging'); });
+    div.addEventListener('dragend', () => div.classList.remove('dragging'));
+    src.appendChild(div);
+  });
+
+  // Clear buckets
+  ['normal','abnormal','danger'].forEach(b => {
+    document.getElementById('drop-' + b).innerHTML = '';
+  });
+
+  document.getElementById('m3-feedback').classList.remove('show');
+  document.getElementById('m3-next').style.display = 'none';
+}
+
+function dragOver(e) { e.preventDefault(); e.currentTarget.classList.add('drag-over'); }
+
+function dropCard(e, bucket) {
+  e.preventDefault();
+  e.currentTarget.classList.remove('drag-over');
+  const cardId = e.dataTransfer.getData('text');
+  const card = M3_CARDS.find(c => c.id === cardId);
+  if (!card) return;
+
+  // Remove from previous bucket if any
+  if (m3Placed[cardId]) {
+    const prev = document.getElementById('drop-' + m3Placed[cardId]);
+    const existing = prev.querySelector('#drop-' + cardId);
+    if (existing) existing.remove();
+    const srcCard = document.getElementById('card-' + cardId);
+    if (srcCard) srcCard.style.display = '';
+  }
+
+  // Move card to bucket
+  m3Placed[cardId] = bucket;
+  const srcCard = document.getElementById('card-' + cardId);
+  if (srcCard) srcCard.style.display = 'none';
+
+  const mini = document.createElement('div');
+  mini.className = 'data-card';
+  mini.id = 'drop-' + cardId;
+  mini.innerHTML = `<span class="card-icon">${card.icon}</span><div style="font-size:11px">${card.label}</div><div class="card-val">${card.val}</div>`;
+  mini.style.cursor = 'pointer';
+  mini.onclick = () => returnCardToSource(cardId);
+  document.getElementById('drop-' + bucket).appendChild(mini);
+}
+
+function returnCardToSource(cardId) {
+  const bucket = m3Placed[cardId];
+  if (!bucket) return;
+  const mini = document.getElementById('drop-' + cardId);
+  if (mini) mini.remove();
+  delete m3Placed[cardId];
+  const srcCard = document.getElementById('card-' + cardId);
+  if (srcCard) srcCard.style.display = '';
+}
+
+function checkM3() {
+  let correct = 0;
+  let detail = '';
+  M3_CARDS.forEach(card => {
+    const placed = m3Placed[card.id];
+    if (placed === card.cat) {
+      correct++;
+    }
+    const icon = placed === card.cat ? '✅' : (placed ? '❌' : '⬜');
+    detail += `${icon} ${card.icon}${card.label}(${card.val}): <b>${catLabel(placed || '미배치')}</b> → ${card.cat === placed ? '정답!' : '정답: '+catLabel(card.cat)+' — '+card.reason}<br>`;
+  });
+
+  const pts = Math.round((correct / M3_CARDS.length) * 40);
+  gameState.missionScores[2] = pts;
+  gameState.score += pts;
+  updateHUD();
+
+  const stars = calcStars(pts, 40);
+  gameState.missionStars[2] = stars;
+
+  sfx(correct >= 6 ? 'correct' : 'wrong');
+
+  const fb = document.getElementById('m3-feedback');
+  fb.className = `feedback-box ${correct >= 6 ? 'correct-fb' : 'wrong-fb'} show`;
+  fb.innerHTML = `🤖 아이옷의 분류 결과: <b>${correct}/${M3_CARDS.length}개 정답!</b> (+${pts}점)<br><br>
+    <b>🧠 지도학습 핵심:</b> AI는 사람이 데이터를 먼저 분류·라벨링해줘야 학습할 수 있어요!<br><br>
+    <details><summary style="cursor:pointer;color:var(--cyan)">📋 상세 결과 보기</summary><br>${detail}</details>`;
+
+  document.getElementById('m3-next').style.display = 'block';
+  document.getElementById('m3-next').onclick = () => {
+    showClear(3, pts, '미션 3 클리어!');
+  };
+}
+
+function catLabel(c) {
+  return {normal:'✅정상', abnormal:'⚠️이상', danger:'🚨위험', '미배치':'⬜미배치'}[c] || c;
+}
+
+// ===== MISSION 4 =====
+function startM4() {
+  gameState.missionScores[3] = 15; // participation score
+  gameState.score += 15;
+  updateHUD();
+  showScreen('screen-m4');
+}
+
+function chooseM4(choice) {
+  gameState.m4choice = choice;
+  sfx('clear');
+  showEnding();
+}
+
+// ===== ENDINGS =====
+function showEnding() {
+  showScreen('screen-ending');
+  stopBGM();
+
+  const s = gameState.score;
+  let ending;
+  if (s >= 80) ending = M4_ENDINGS.score_high;
+  else if (s >= 60) ending = M4_ENDINGS.score_mid;
+  else if (s >= 40) ending = M4_ENDINGS.score_low;
+  else ending = M4_ENDINGS.score_start;
+
+  document.getElementById('ending-emoji').textContent = ending.emoji;
+  document.getElementById('ending-title').textContent = ending.title;
+  document.getElementById('ending-score').textContent = gameState.score + '점';
+
+  // Career
+  const careerEl = document.getElementById('ending-career');
+  const choiceMsg = gameState.m4choice ? '<br><br>🎯 ' + M4_CHOICE_MSG[gameState.m4choice] : '';
+  careerEl.innerHTML = ending.msg + choiceMsg;
+
+  // Badges
+  const badgesEl = document.getElementById('ending-badges');
+  const names = ['브리핑','현장판단','데이터분류','진로탐색'];
+  badgesEl.innerHTML = gameState.missionStars.map((s,i) =>
+    `<div class="badge-item ${s>0?'earned':''}">
+      <div class="b-stars">${'⭐'.repeat(s) + '☆'.repeat(3-s)}</div>
+      <div class="b-name">M${i+1} ${names[i]}</div>
+    </div>`
+  ).join('');
+
+  // Leaderboard
+  renderLB();
+
+  // QR
+  const qrEl = document.getElementById('qr-code');
+  qrEl.innerHTML = '';
+  new QRCode(qrEl, { text: GAME_URL, width:100, height:100, colorDark:'#000000', colorLight:'#ffffff' });
+
+  // Portfolio entry
+  const entry = {
+    id: GAME_ID,
+    title: '🌐 AI IoT 세계를 구하라! — 스마트 도시 비상 프로젝트',
+    target: '중학교 1~3학년',
+    grade: 'middle',
+    subjects: ['정보','과학','사회','도덕'],
+    aiFeature: '지도학습 데이터 분류 체험, AI IoT 장단점 판단, AI 윤리 딜레마, 진로 멀티엔딩',
+    theme: 'AI IoT 스마트시티 문제 해결 진로체험',
+    date: new Date().toISOString().split('T')[0],
+    url: GAME_URL,
+    difficulty: gameState.diff,
+    finalScore: gameState.score,
+    missionScores: gameState.missionScores,
+    careerPath: gameState.m4choice
+  };
+  console.log('portfolioEntry =', JSON.stringify(entry, null, 2));
+}
+
+// ===== MISSION CLEAR OVERLAY =====
+function showClear(nextMission, pts, title) {
+  sfx('clear');
+  const ov = document.getElementById('clear-overlay');
+  const emojis = ['','📡','🔧','🤖','🎯'];
+  document.getElementById('clear-emoji').textContent = emojis[nextMission] || '🎉';
+  document.getElementById('clear-title').textContent = title;
+  document.getElementById('clear-pts').textContent = pts > 0 ? `+${pts}점 획득!` : '계속 도전하세요!';
+  const starsEl = document.getElementById('clear-stars');
+  const stars = nextMission > 0 ? gameState.missionStars[nextMission-1] : 0;
+  starsEl.innerHTML = [1,2,3].map(i => `<span class="star ${i<=stars?'lit':''}">⭐</span>`).join('');
+  ov.classList.add('show');
+
+  const nextFns = [null, startM2, startM3, startM4, showEnding];
+  document.getElementById('clear-next-btn').onclick = () => {
+    ov.classList.remove('show');
+    if (nextMission <= 4 && nextFns[nextMission]) nextFns[nextMission]();
+    else showEnding();
+  };
+}
+
+function calcStars(pts, max) {
+  const ratio = pts / max;
+  if (ratio >= 0.8) return 3;
+  if (ratio >= 0.5) return 2;
+  if (ratio > 0) return 1;
+  return 0;
+}
+
+// ===== LEADERBOARD =====
+function getLB() {
+  try { return JSON.parse(localStorage.getItem(GAME_ID + '_lb') || '[]'); } catch { return []; }
+}
+function saveLB(lb) { localStorage.setItem(GAME_ID + '_lb', JSON.stringify(lb)); }
+
+function registerLB() {
+  const name = document.getElementById('lb-name').value.trim() || '익명 엔지니어';
+  let lb = getLB();
+  lb.push({ name, score: gameState.score, date: new Date().toLocaleDateString('ko-KR') });
+  lb.sort((a,b) => b.score - a.score);
+  lb = lb.slice(0,5);
+  saveLB(lb);
+  renderLB();
+}
+
+function renderLB() {
+  const lb = getLB();
+  const el = document.getElementById('lb-list');
+  if (!el) return;
+  const medals = ['🥇','🥈','🥉','4️⃣','5️⃣'];
+  el.innerHTML = lb.length ? lb.map((r,i) =>
+    `<li><span class="lb-rank">${medals[i]}</span><span class="lb-name">${r.name}</span><span class="lb-pts">${r.score}점</span></li>`
+  ).join('') : '<li style="color:var(--gray);font-size:13px">아직 기록이 없어요!</li>';
+}
+
+function showLeaderboard() {
+  // simple overlay using ending screen lb
+  alert('🏆 명예의 전당\n\n' + (getLB().map((r,i) => `${i+1}. ${r.name}: ${r.score}점`).join('\n') || '기록 없음'));
+}
+
+function restartGame() {
+  gameState = { diff:'easy', score:0, missionScores:[0,0,0,0], missionStars:[0,0,0,0], m4choice:null };
+  clearInterval(m1Timer); clearInterval(m2Timer);
+  document.getElementById('main-hud').style.display = 'none';
+  showScreen('screen-title');
+  stopBGM();
+}
+</script>
+</body>
+</html>
