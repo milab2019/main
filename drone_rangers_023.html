@@ -1,0 +1,1708 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>드론 구조대 - 드드와 함께 마을을 구하라!</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<style>
+  :root {
+    --sky: #87CEEB;
+    --sky-light: #E0F4FF;
+    --green: #7BC67E;
+    --green-light: #D4EDDA;
+    --yellow: #FFE066;
+    --orange: #FFA94D;
+    --pink: #FFB3C6;
+    --purple: #C3A6FF;
+    --white: #FFFFFF;
+    --gray: #6C757D;
+    --dark: #2C3E50;
+    --shadow: 0 4px 15px rgba(0,0,0,0.12);
+    --radius: 18px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif;
+    background: linear-gradient(160deg, #87CEEB 0%, #E0F7FA 40%, #C8E6C9 100%);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ===== HEADER ===== */
+  #header {
+    background: linear-gradient(90deg, #4A90D9, #5BA3E8);
+    padding: 14px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  #header h1 { color: white; font-size: 20px; font-weight: 800; }
+  #header .score-badge {
+    background: var(--yellow);
+    color: var(--dark);
+    font-weight: 700;
+    padding: 6px 14px;
+    border-radius: 50px;
+    font-size: 15px;
+  }
+  #music-btn {
+    background: rgba(255,255,255,0.25);
+    border: none;
+    color: white;
+    font-size: 22px;
+    cursor: pointer;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* ===== SCREENS ===== */
+  .screen { display: none; padding: 20px; max-width: 680px; margin: 0 auto; }
+  .screen.active { display: block; }
+
+  /* ===== CARD ===== */
+  .card {
+    background: white;
+    border-radius: var(--radius);
+    padding: 24px;
+    box-shadow: var(--shadow);
+    margin-bottom: 20px;
+  }
+
+  /* ===== MASCOT ===== */
+  .mascot-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin: 16px 0;
+  }
+  .mascot-svg { width: 120px; height: 120px; }
+  .mascot-bubble {
+    background: #f0f8ff;
+    border: 2.5px solid #87CEEB;
+    border-radius: 16px;
+    padding: 12px 18px;
+    font-size: 16px;
+    color: var(--dark);
+    text-align: center;
+    max-width: 300px;
+    margin-top: 10px;
+    line-height: 1.6;
+    position: relative;
+  }
+  .mascot-bubble::before {
+    content: '';
+    position: absolute;
+    top: -14px;
+    left: 50%;
+    transform: translateX(-50%);
+    border: 7px solid transparent;
+    border-bottom-color: #87CEEB;
+  }
+
+  /* ===== BUTTONS ===== */
+  .btn {
+    display: inline-block;
+    padding: 14px 28px;
+    border: none;
+    border-radius: 50px;
+    font-size: 18px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+    min-height: 52px;
+    touch-action: manipulation;
+  }
+  .btn:active { transform: scale(0.96); }
+  .btn-primary { background: linear-gradient(135deg, #4A90D9, #5BA3E8); color: white; box-shadow: 0 4px 12px rgba(74,144,217,0.4); }
+  .btn-success { background: linear-gradient(135deg, #48bb78, #68d391); color: white; box-shadow: 0 4px 12px rgba(72,187,120,0.4); }
+  .btn-orange { background: linear-gradient(135deg, #f6ad55, #fc8181); color: white; }
+  .btn-full { width: 100%; text-align: center; }
+  .btn-sm { padding: 10px 18px; font-size: 15px; min-height: 44px; }
+
+  /* ===== TITLE SCREEN ===== */
+  #title-screen { text-align: center; padding-top: 30px; }
+  .title-logo { font-size: 64px; margin-bottom: 10px; }
+  .title-main { font-size: 28px; font-weight: 800; color: var(--dark); line-height: 1.4; margin-bottom: 8px; }
+  .title-sub { font-size: 17px; color: #555; margin-bottom: 24px; line-height: 1.5; }
+  .grade-badge {
+    display: inline-block;
+    background: linear-gradient(135deg, #4A90D9, #5BA3E8);
+    color: white;
+    padding: 6px 20px;
+    border-radius: 50px;
+    font-size: 15px;
+    font-weight: 700;
+    margin-bottom: 20px;
+  }
+  .mission-list { text-align: left; }
+  .mission-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px;
+    border-radius: 12px;
+    margin-bottom: 10px;
+    background: var(--sky-light);
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--dark);
+  }
+  .mission-icon { font-size: 28px; }
+
+  /* ===== MISSION HEADER ===== */
+  .mission-header {
+    background: linear-gradient(135deg, #4A90D9, #3a7bd5);
+    color: white;
+    border-radius: var(--radius);
+    padding: 16px 20px;
+    margin-bottom: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .mission-title { font-size: 20px; font-weight: 800; }
+  .mission-sub { font-size: 14px; opacity: 0.85; margin-top: 2px; }
+
+  /* ===== TIMER ===== */
+  .timer-bar-wrap { background: rgba(255,255,255,0.3); border-radius: 10px; height: 10px; margin-top: 8px; overflow: hidden; }
+  .timer-bar { height: 100%; background: var(--yellow); border-radius: 10px; transition: width 1s linear; }
+  .timer-num { font-size: 22px; font-weight: 800; color: white; }
+  .timer-num.urgent { color: #FFE066; animation: blink 0.5s ease-in-out infinite; }
+  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+  /* ===== CHOICES ===== */
+  .choice-btn {
+    width: 100%;
+    background: white;
+    border: 3px solid #e0e0e0;
+    border-radius: 14px;
+    padding: 16px 20px;
+    font-size: 17px;
+    font-weight: 600;
+    color: var(--dark);
+    cursor: pointer;
+    margin-bottom: 12px;
+    text-align: left;
+    transition: all 0.2s;
+    min-height: 52px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    touch-action: manipulation;
+  }
+  .choice-btn:hover { border-color: #4A90D9; background: #f0f8ff; transform: translateX(4px); }
+  .choice-btn.correct { border-color: #48bb78; background: #f0fff4; color: #2d6a4f; }
+  .choice-btn.wrong { border-color: #fc8181; background: #fff5f5; color: #c53030; }
+  .choice-btn:disabled { cursor: not-allowed; }
+  .choice-emoji { font-size: 24px; }
+
+  /* ===== FEEDBACK ===== */
+  .feedback-box {
+    border-radius: 14px;
+    padding: 14px 18px;
+    margin: 12px 0;
+    font-size: 16px;
+    font-weight: 600;
+    display: none;
+    line-height: 1.5;
+  }
+  .feedback-box.correct { background: #f0fff4; border: 2px solid #48bb78; color: #2d6a4f; }
+  .feedback-box.wrong { background: #fff5f5; border: 2px solid #fc8181; color: #c53030; }
+
+  /* ===== HINT ===== */
+  .hint-btn {
+    background: var(--yellow);
+    color: var(--dark);
+    border: none;
+    border-radius: 50px;
+    padding: 8px 18px;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    margin-bottom: 14px;
+  }
+  .hint-box {
+    background: #FFFDE7;
+    border: 2px dashed #FFD54F;
+    border-radius: 12px;
+    padding: 12px 16px;
+    font-size: 16px;
+    margin-bottom: 12px;
+    display: none;
+    color: #555;
+  }
+
+  /* ===== DIFFICULTY TABS ===== */
+  .diff-tabs { display: flex; gap: 8px; margin-bottom: 16px; }
+  .diff-tab {
+    flex: 1;
+    padding: 10px;
+    border: 2.5px solid #e0e0e0;
+    border-radius: 10px;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    background: white;
+    color: var(--gray);
+    text-align: center;
+    min-height: 44px;
+  }
+  .diff-tab.active { background: #4A90D9; color: white; border-color: #4A90D9; }
+
+  /* ===== PROGRESS ===== */
+  .progress-dots { display: flex; justify-content: center; gap: 10px; margin: 14px 0; }
+  .prog-dot { width: 14px; height: 14px; border-radius: 50%; background: #e0e0e0; transition: all 0.3s; }
+  .prog-dot.done { background: #48bb78; transform: scale(1.2); }
+  .prog-dot.active { background: #4A90D9; transform: scale(1.3); }
+
+  /* ===== STARS ===== */
+  .stars-display { font-size: 30px; letter-spacing: 4px; text-align: center; margin: 8px 0; }
+
+  /* ===== GRAPH (Mission 4) ===== */
+  .graph-container { overflow-x: auto; padding-bottom: 10px; }
+  .bar-chart { display: flex; align-items: flex-end; gap: 14px; height: 200px; padding: 10px 0; }
+  .bar-group { display: flex; flex-direction: column; align-items: center; gap: 6px; flex: 1; }
+  .bar { border-radius: 8px 8px 0 0; width: 44px; transition: height 0.6s ease; min-width: 36px; cursor: pointer; }
+  .bar-label { font-size: 14px; font-weight: 700; color: var(--dark); text-align: center; line-height: 1.3; }
+  .bar-val { font-size: 15px; font-weight: 800; color: var(--dark); }
+  .chart-q { background: var(--sky-light); border-radius: 12px; padding: 14px; margin-top: 14px; font-size: 16px; font-weight: 600; color: var(--dark); line-height: 1.5; }
+
+  /* ===== ORDER MISSION ===== */
+  .order-steps { display: flex; flex-direction: column; gap: 10px; margin-bottom: 16px; }
+  .order-item {
+    background: white;
+    border: 3px solid #e0e0e0;
+    border-radius: 14px;
+    padding: 14px 18px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    transition: all 0.2s;
+    min-height: 52px;
+  }
+  .order-item.selected { border-color: #4A90D9; background: #f0f8ff; }
+  .order-item.placed { border-color: #48bb78; background: #f0fff4; opacity: 0.6; }
+  .order-item.wrong-place { border-color: #fc8181; background: #fff5f5; }
+  .order-slots { display: flex; flex-direction: column; gap: 10px; margin-bottom: 16px; }
+  .order-slot {
+    background: #f8f9fa;
+    border: 3px dashed #c0c0c0;
+    border-radius: 14px;
+    padding: 14px 18px;
+    font-size: 16px;
+    color: #aaa;
+    min-height: 52px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .order-slot.filled { background: #E8F5E9; border-color: #48bb78; color: var(--dark); font-weight: 600; }
+  .slot-num { font-size: 20px; font-weight: 800; color: #4A90D9; min-width: 28px; }
+
+  /* ===== RESULT SCREEN ===== */
+  #result-screen { text-align: center; }
+  .result-trophy { font-size: 80px; margin: 20px 0; }
+  .result-title { font-size: 26px; font-weight: 800; color: var(--dark); margin-bottom: 8px; }
+  .result-score { font-size: 48px; font-weight: 900; color: #4A90D9; margin: 10px 0; }
+  .result-msg { font-size: 17px; color: #555; line-height: 1.6; margin-bottom: 20px; }
+  .ending-badge {
+    display: inline-block;
+    padding: 8px 22px;
+    border-radius: 50px;
+    font-size: 16px;
+    font-weight: 700;
+    margin-bottom: 16px;
+  }
+  .name-input {
+    width: 100%;
+    padding: 14px 18px;
+    border: 3px solid #4A90D9;
+    border-radius: 14px;
+    font-size: 18px;
+    outline: none;
+    margin-bottom: 12px;
+  }
+  .hall-of-fame { text-align: left; }
+  .hof-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    border-radius: 12px;
+    margin-bottom: 8px;
+    background: var(--sky-light);
+    font-size: 16px;
+    font-weight: 600;
+  }
+  .hof-rank { font-size: 22px; min-width: 36px; }
+
+  /* ===== QR ===== */
+  #qr-box { display: flex; flex-direction: column; align-items: center; padding: 20px; }
+  #qrcode { margin: 10px 0; }
+  .qr-label { font-size: 14px; color: var(--gray); margin-top: 6px; }
+
+  /* ===== MISSION COMPLETE ===== */
+  .mission-complete-banner {
+    background: linear-gradient(135deg, #48bb78, #68d391);
+    color: white;
+    border-radius: var(--radius);
+    padding: 18px;
+    text-align: center;
+    margin-bottom: 16px;
+  }
+  .mission-complete-banner h3 { font-size: 22px; font-weight: 800; margin-bottom: 4px; }
+  .mission-complete-banner p { font-size: 16px; opacity: 0.9; }
+
+  /* ===== IMAGE MISSION ===== */
+  .image-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 16px 0; }
+  .image-choice {
+    background: white;
+    border: 3px solid #e0e0e0;
+    border-radius: 14px;
+    padding: 16px 12px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    min-height: 100px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    touch-action: manipulation;
+  }
+  .image-choice:hover { border-color: #4A90D9; background: #f0f8ff; transform: scale(1.03); }
+  .image-choice.correct { border-color: #48bb78; background: #f0fff4; }
+  .image-choice.wrong { border-color: #fc8181; background: #fff5f5; }
+  .image-emoji { font-size: 40px; }
+  .image-label { font-size: 15px; font-weight: 700; color: var(--dark); }
+
+  /* ===== RESPONSIVE ===== */
+  @media (max-width: 400px) {
+    .title-main { font-size: 22px; }
+    .mission-title { font-size: 17px; }
+    .choice-btn { font-size: 15px; }
+    .bar-chart { height: 160px; }
+  }
+
+  /* ===== ANIMATIONS ===== */
+  @keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-8px)} }
+  @keyframes spin { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
+  @keyframes pulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.08)} }
+  @keyframes slideIn { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
+  .float-anim { animation: float 2.5s ease-in-out infinite; }
+  .slide-in { animation: slideIn 0.4s ease forwards; }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div id="header">
+  <h1>🚁 드론 구조대</h1>
+  <div class="score-badge">⭐ <span id="total-score">0</span>점</div>
+  <button id="music-btn" onclick="toggleMusic()">🎵</button>
+</div>
+
+<!-- ===== TITLE SCREEN ===== -->
+<div id="title-screen" class="screen active">
+  <div class="title-logo float-anim">🚁</div>
+  <div class="title-main">드드와 함께<br>마을을 구하라!</div>
+  <div class="title-sub">봄 축제가 위험해요!<br>드론 대원이 되어 마을을 도와주세요! 🌸</div>
+  <div class="grade-badge">🎒 초등 3~4학년 | 과학·사회 융합</div>
+
+  <div class="card">
+    <div class="mascot-container">
+      <svg class="mascot-svg float-anim" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+        <!-- Body -->
+        <rect x="30" y="48" width="60" height="40" rx="14" fill="#4A90D9"/>
+        <!-- Arms/Propeller mounts -->
+        <rect x="10" y="38" width="25" height="8" rx="4" fill="#3a7bd5"/>
+        <rect x="85" y="38" width="25" height="8" rx="4" fill="#3a7bd5"/>
+        <rect x="10" y="72" width="25" height="8" rx="4" fill="#3a7bd5"/>
+        <rect x="85" y="72" width="25" height="8" rx="4" fill="#3a7bd5"/>
+        <!-- Propellers -->
+        <ellipse cx="18" cy="34" rx="14" ry="4" fill="#87CEEB" opacity="0.8"/>
+        <ellipse cx="102" cy="34" rx="14" ry="4" fill="#87CEEB" opacity="0.8"/>
+        <ellipse cx="18" cy="76" rx="14" ry="4" fill="#87CEEB" opacity="0.8"/>
+        <ellipse cx="102" cy="76" rx="14" ry="4" fill="#87CEEB" opacity="0.8"/>
+        <!-- Camera/Face -->
+        <circle cx="60" cy="68" r="16" fill="white"/>
+        <circle cx="60" cy="68" r="12" fill="#1a1a2e"/>
+        <circle cx="60" cy="68" r="7" fill="#4A90D9"/>
+        <circle cx="56" cy="64" r="3" fill="white" opacity="0.7"/>
+        <!-- Eyes on top -->
+        <circle cx="50" cy="52" r="6" fill="white"/>
+        <circle cx="70" cy="52" r="6" fill="white"/>
+        <circle cx="51" cy="53" r="3.5" fill="#333"/>
+        <circle cx="71" cy="53" r="3.5" fill="#333"/>
+        <circle cx="52" cy="52" r="1.5" fill="white"/>
+        <circle cx="72" cy="52" r="1.5" fill="white"/>
+        <!-- Smile -->
+        <path d="M52 62 Q60 68 68 62" stroke="#FFB3C6" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+        <!-- Legs -->
+        <rect x="40" y="86" width="6" height="14" rx="3" fill="#3a7bd5"/>
+        <rect x="74" y="86" width="6" height="14" rx="3" fill="#3a7bd5"/>
+        <rect x="34" y="97" width="18" height="5" rx="2.5" fill="#2c6fad"/>
+        <rect x="68" y="97" width="18" height="5" rx="2.5" fill="#2c6fad"/>
+      </svg>
+      <div class="mascot-bubble">안녕! 나는 드론 드드야! 🚁<br>같이 마을을 구하러 가자!</div>
+    </div>
+
+    <div class="mission-list">
+      <div class="mission-item"><div class="mission-icon">🔍</div><div>미션1: 드론 부품 찾기 (90초)</div></div>
+      <div class="mission-item"><div class="mission-icon">📚</div><div>미션2: 드론 지식 퀴즈</div></div>
+      <div class="mission-item"><div class="mission-icon">🔢</div><div>미션3: 비행 순서 맞추기</div></div>
+      <div class="mission-item"><div class="mission-icon">📊</div><div>미션4: 드론 활동 그래프 읽기</div></div>
+    </div>
+  </div>
+
+  <button class="btn btn-primary btn-full" onclick="startGame()" style="margin-bottom:30px">
+    🚀 게임 시작!
+  </button>
+</div>
+
+<!-- ===== MISSION 1: 그림 보고 선택 ===== -->
+<div id="mission1-screen" class="screen">
+  <div class="mission-header">
+    <div>
+      <div class="mission-title">🔍 미션1 · 드론 부품 찾기</div>
+      <div class="mission-sub">그림을 보고 올바른 드론 부품을 골라요!</div>
+    </div>
+    <div style="text-align:right">
+      <div class="timer-num" id="m1-timer">90</div>
+      <div style="font-size:12px;color:rgba(255,255,255,0.8)">초 남음</div>
+    </div>
+  </div>
+  <div class="timer-bar-wrap" style="margin-bottom:16px">
+    <div class="timer-bar" id="m1-timer-bar" style="width:100%"></div>
+  </div>
+
+  <div class="progress-dots">
+    <div class="prog-dot active" id="m1-dot-0"></div>
+    <div class="prog-dot" id="m1-dot-1"></div>
+    <div class="prog-dot" id="m1-dot-2"></div>
+    <div class="prog-dot" id="m1-dot-3"></div>
+  </div>
+
+  <div class="card">
+    <div class="mascot-container">
+      <svg id="m1-mascot" class="mascot-svg" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+        <rect x="30" y="48" width="60" height="40" rx="14" fill="#4A90D9"/>
+        <rect x="10" y="38" width="25" height="8" rx="4" fill="#3a7bd5"/>
+        <rect x="85" y="38" width="25" height="8" rx="4" fill="#3a7bd5"/>
+        <rect x="10" y="72" width="25" height="8" rx="4" fill="#3a7bd5"/>
+        <rect x="85" y="72" width="25" height="8" rx="4" fill="#3a7bd5"/>
+        <ellipse cx="18" cy="34" rx="14" ry="4" fill="#87CEEB" opacity="0.8"/>
+        <ellipse cx="102" cy="34" rx="14" ry="4" fill="#87CEEB" opacity="0.8"/>
+        <ellipse cx="18" cy="76" rx="14" ry="4" fill="#87CEEB" opacity="0.8"/>
+        <ellipse cx="102" cy="76" rx="14" ry="4" fill="#87CEEB" opacity="0.8"/>
+        <circle cx="60" cy="68" r="16" fill="white"/>
+        <circle cx="60" cy="68" r="12" fill="#1a1a2e"/>
+        <circle cx="60" cy="68" r="7" fill="#4A90D9"/>
+        <circle cx="56" cy="64" r="3" fill="white" opacity="0.7"/>
+        <circle cx="50" cy="52" r="6" fill="white"/>
+        <circle cx="70" cy="52" r="6" fill="white"/>
+        <circle cx="51" cy="53" r="3.5" fill="#333"/>
+        <circle cx="71" cy="53" r="3.5" fill="#333"/>
+        <circle cx="52" cy="52" r="1.5" fill="white"/>
+        <circle cx="72" cy="52" r="1.5" fill="white"/>
+        <path d="M52 62 Q60 68 68 62" id="m1-mouth" stroke="#FFB3C6" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+        <rect x="40" y="86" width="6" height="14" rx="3" fill="#3a7bd5"/>
+        <rect x="74" y="86" width="6" height="14" rx="3" fill="#3a7bd5"/>
+        <rect x="34" y="97" width="18" height="5" rx="2.5" fill="#2c6fad"/>
+        <rect x="68" y="97" width="18" height="5" rx="2.5" fill="#2c6fad"/>
+      </svg>
+      <div class="mascot-bubble" id="m1-bubble">아래 그림 중에서 올바른 답을 골라봐!</div>
+    </div>
+
+    <div style="font-size:18px;font-weight:700;color:var(--dark);margin-bottom:16px;text-align:center" id="m1-question"></div>
+
+    <div class="image-grid" id="m1-choices"></div>
+    <div class="feedback-box" id="m1-feedback"></div>
+
+    <button class="hint-btn" id="m1-hint-btn" onclick="showHint('m1')">💡 힌트 보기 (-50%점수)</button>
+    <div class="hint-box" id="m1-hint-box"></div>
+  </div>
+
+  <div style="text-align:center;margin-top:10px">
+    <span style="font-size:15px;color:#666">문제 <span id="m1-qnum">1</span> / 4</span>
+  </div>
+</div>
+
+<!-- ===== MISSION 2: 퀴즈 ===== -->
+<div id="mission2-screen" class="screen">
+  <div class="mission-header">
+    <div>
+      <div class="mission-title">📚 미션2 · 드론 지식 퀴즈</div>
+      <div class="mission-sub">난이도를 골라 도전해봐요!</div>
+    </div>
+    <div style="text-align:right">
+      <div class="timer-num" id="m2-timer">45</div>
+      <div style="font-size:12px;color:rgba(255,255,255,0.8)">초 남음</div>
+    </div>
+  </div>
+  <div class="timer-bar-wrap" style="margin-bottom:16px">
+    <div class="timer-bar" id="m2-timer-bar" style="width:100%;background:#68d391"></div>
+  </div>
+
+  <div class="diff-tabs">
+    <div class="diff-tab active" id="tab-easy" onclick="setDiff('easy')">🟢 쉬움</div>
+    <div class="diff-tab" id="tab-medium" onclick="setDiff('medium')">🟡 보통</div>
+    <div class="diff-tab" id="tab-hard" onclick="setDiff('hard')">🔴 도전</div>
+  </div>
+
+  <div class="progress-dots">
+    <div class="prog-dot active" id="m2-dot-0"></div>
+    <div class="prog-dot" id="m2-dot-1"></div>
+    <div class="prog-dot" id="m2-dot-2"></div>
+  </div>
+
+  <div class="card">
+    <div class="mascot-container">
+      <svg id="m2-mascot" class="mascot-svg" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+        <rect x="30" y="48" width="60" height="40" rx="14" fill="#4A90D9"/>
+        <rect x="10" y="38" width="25" height="8" rx="4" fill="#3a7bd5"/>
+        <rect x="85" y="38" width="25" height="8" rx="4" fill="#3a7bd5"/>
+        <rect x="10" y="72" width="25" height="8" rx="4" fill="#3a7bd5"/>
+        <rect x="85" y="72" width="25" height="8" rx="4" fill="#3a7bd5"/>
+        <ellipse cx="18" cy="34" rx="14" ry="4" fill="#87CEEB" opacity="0.8"/>
+        <ellipse cx="102" cy="34" rx="14" ry="4" fill="#87CEEB" opacity="0.8"/>
+        <ellipse cx="18" cy="76" rx="14" ry="4" fill="#87CEEB" opacity="0.8"/>
+        <ellipse cx="102" cy="76" rx="14" ry="4" fill="#87CEEB" opacity="0.8"/>
+        <circle cx="60" cy="68" r="16" fill="white"/>
+        <circle cx="60" cy="68" r="12" fill="#1a1a2e"/>
+        <circle cx="60" cy="68" r="7" fill="#4A90D9"/>
+        <circle cx="56" cy="64" r="3" fill="white" opacity="0.7"/>
+        <circle cx="50" cy="52" r="6" fill="white"/>
+        <circle cx="70" cy="52" r="6" fill="white"/>
+        <circle cx="51" cy="53" r="3.5" fill="#333"/>
+        <circle cx="71" cy="53" r="3.5" fill="#333"/>
+        <circle cx="52" cy="52" r="1.5" fill="white"/>
+        <circle cx="72" cy="52" r="1.5" fill="white"/>
+        <path d="M52 62 Q60 68 68 62" id="m2-mouth" stroke="#FFB3C6" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+        <rect x="40" y="86" width="6" height="14" rx="3" fill="#3a7bd5"/>
+        <rect x="74" y="86" width="6" height="14" rx="3" fill="#3a7bd5"/>
+        <rect x="34" y="97" width="18" height="5" rx="2.5" fill="#2c6fad"/>
+        <rect x="68" y="97" width="18" height="5" rx="2.5" fill="#2c6fad"/>
+      </svg>
+      <div class="mascot-bubble" id="m2-bubble">퀴즈를 풀어봐! 힌트도 쓸 수 있어!</div>
+    </div>
+
+    <div style="font-size:17px;font-weight:700;color:var(--dark);margin-bottom:16px;line-height:1.5;background:var(--sky-light);padding:14px;border-radius:12px" id="m2-question"></div>
+
+    <div id="m2-choices"></div>
+    <div class="feedback-box" id="m2-feedback"></div>
+
+    <button class="hint-btn" id="m2-hint-btn" onclick="showHint('m2')">💡 힌트 보기 (-50%점수)</button>
+    <div class="hint-box" id="m2-hint-box"></div>
+  </div>
+  <div style="text-align:center;font-size:15px;color:#666">문제 <span id="m2-qnum">1</span> / 3</div>
+</div>
+
+<!-- ===== MISSION 3: 순서 맞추기 ===== -->
+<div id="mission3-screen" class="screen">
+  <div class="mission-header">
+    <div>
+      <div class="mission-title">🔢 미션3 · 비행 순서 맞추기</div>
+      <div class="mission-sub">드론이 날기 위한 순서를 맞춰봐요!</div>
+    </div>
+    <div style="background:rgba(255,255,255,0.25);border-radius:10px;padding:6px 12px;font-size:14px;color:white">⏱ 시간 제한 없음</div>
+  </div>
+
+  <div class="progress-dots">
+    <div class="prog-dot active" id="m3-dot-0"></div>
+    <div class="prog-dot" id="m3-dot-1"></div>
+  </div>
+
+  <div class="card">
+    <div class="mascot-container">
+      <svg id="m3-mascot" class="mascot-svg" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+        <rect x="30" y="48" width="60" height="40" rx="14" fill="#4A90D9"/>
+        <rect x="10" y="38" width="25" height="8" rx="4" fill="#3a7bd5"/>
+        <rect x="85" y="38" width="25" height="8" rx="4" fill="#3a7bd5"/>
+        <rect x="10" y="72" width="25" height="8" rx="4" fill="#3a7bd5"/>
+        <rect x="85" y="72" width="25" height="8" rx="4" fill="#3a7bd5"/>
+        <ellipse cx="18" cy="34" rx="14" ry="4" fill="#87CEEB" opacity="0.8"/>
+        <ellipse cx="102" cy="34" rx="14" ry="4" fill="#87CEEB" opacity="0.8"/>
+        <ellipse cx="18" cy="76" rx="14" ry="4" fill="#87CEEB" opacity="0.8"/>
+        <ellipse cx="102" cy="76" rx="14" ry="4" fill="#87CEEB" opacity="0.8"/>
+        <circle cx="60" cy="68" r="16" fill="white"/>
+        <circle cx="60" cy="68" r="12" fill="#1a1a2e"/>
+        <circle cx="60" cy="68" r="7" fill="#4A90D9"/>
+        <circle cx="56" cy="64" r="3" fill="white" opacity="0.7"/>
+        <circle cx="50" cy="52" r="6" fill="white"/>
+        <circle cx="70" cy="52" r="6" fill="white"/>
+        <circle cx="51" cy="53" r="3.5" fill="#333"/>
+        <circle cx="71" cy="53" r="3.5" fill="#333"/>
+        <circle cx="52" cy="52" r="1.5" fill="white"/>
+        <circle cx="72" cy="52" r="1.5" fill="white"/>
+        <path d="M52 62 Q60 68 68 62" id="m3-mouth" stroke="#FFB3C6" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+        <rect x="40" y="86" width="6" height="14" rx="3" fill="#3a7bd5"/>
+        <rect x="74" y="86" width="6" height="14" rx="3" fill="#3a7bd5"/>
+        <rect x="34" y="97" width="18" height="5" rx="2.5" fill="#2c6fad"/>
+        <rect x="68" y="97" width="18" height="5" rx="2.5" fill="#2c6fad"/>
+      </svg>
+      <div class="mascot-bubble" id="m3-bubble">아래 카드를 순서대로 눌러봐!</div>
+    </div>
+
+    <div style="font-size:17px;font-weight:700;color:var(--dark);margin-bottom:16px;line-height:1.5" id="m3-question"></div>
+
+    <!-- Slots (target order) -->
+    <div style="font-size:15px;font-weight:700;color:#666;margin-bottom:8px">📋 순서 칸 (여기를 채워요)</div>
+    <div class="order-slots" id="m3-slots"></div>
+
+    <!-- Items to pick -->
+    <div style="font-size:15px;font-weight:700;color:#666;margin:12px 0 8px">🃏 고르는 카드 (순서대로 눌러요)</div>
+    <div class="order-steps" id="m3-items"></div>
+
+    <div class="feedback-box" id="m3-feedback"></div>
+    <button class="btn btn-orange btn-sm" id="m3-reset-btn" onclick="resetOrder()" style="margin-bottom:10px;display:none">🔄 다시 해볼게요</button>
+    <button class="btn btn-primary" id="m3-check-btn" onclick="checkOrder()" style="display:none;width:100%">✅ 확인!</button>
+  </div>
+  <div style="text-align:center;font-size:15px;color:#666">문제 <span id="m3-qnum">1</span> / 2</div>
+</div>
+
+<!-- ===== MISSION 4: 그래프 읽기 ===== -->
+<div id="mission4-screen" class="screen">
+  <div class="mission-header">
+    <div>
+      <div class="mission-title">📊 미션4 · 그래프 읽기</div>
+      <div class="mission-sub">드론 활동 그래프를 읽어봐요!</div>
+    </div>
+    <div style="background:rgba(255,255,255,0.25);border-radius:10px;padding:6px 12px;font-size:14px;color:white">⏱ 시간 제한 없음</div>
+  </div>
+
+  <div class="progress-dots">
+    <div class="prog-dot active" id="m4-dot-0"></div>
+    <div class="prog-dot" id="m4-dot-1"></div>
+    <div class="prog-dot" id="m4-dot-2"></div>
+  </div>
+
+  <div class="card">
+    <div class="mascot-container">
+      <svg id="m4-mascot" class="mascot-svg" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+        <rect x="30" y="48" width="60" height="40" rx="14" fill="#4A90D9"/>
+        <rect x="10" y="38" width="25" height="8" rx="4" fill="#3a7bd5"/>
+        <rect x="85" y="38" width="25" height="8" rx="4" fill="#3a7bd5"/>
+        <rect x="10" y="72" width="25" height="8" rx="4" fill="#3a7bd5"/>
+        <rect x="85" y="72" width="25" height="8" rx="4" fill="#3a7bd5"/>
+        <ellipse cx="18" cy="34" rx="14" ry="4" fill="#87CEEB" opacity="0.8"/>
+        <ellipse cx="102" cy="34" rx="14" ry="4" fill="#87CEEB" opacity="0.8"/>
+        <ellipse cx="18" cy="76" rx="14" ry="4" fill="#87CEEB" opacity="0.8"/>
+        <ellipse cx="102" cy="76" rx="14" ry="4" fill="#87CEEB" opacity="0.8"/>
+        <circle cx="60" cy="68" r="16" fill="white"/>
+        <circle cx="60" cy="68" r="12" fill="#1a1a2e"/>
+        <circle cx="60" cy="68" r="7" fill="#4A90D9"/>
+        <circle cx="56" cy="64" r="3" fill="white" opacity="0.7"/>
+        <circle cx="50" cy="52" r="6" fill="white"/>
+        <circle cx="70" cy="52" r="6" fill="white"/>
+        <circle cx="51" cy="53" r="3.5" fill="#333"/>
+        <circle cx="71" cy="53" r="3.5" fill="#333"/>
+        <circle cx="52" cy="52" r="1.5" fill="white"/>
+        <circle cx="72" cy="52" r="1.5" fill="white"/>
+        <path d="M52 62 Q60 68 68 62" id="m4-mouth" stroke="#FFB3C6" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+        <rect x="40" y="86" width="6" height="14" rx="3" fill="#3a7bd5"/>
+        <rect x="74" y="86" width="6" height="14" rx="3" fill="#3a7bd5"/>
+        <rect x="34" y="97" width="18" height="5" rx="2.5" fill="#2c6fad"/>
+        <rect x="68" y="97" width="18" height="5" rx="2.5" fill="#2c6fad"/>
+      </svg>
+      <div class="mascot-bubble" id="m4-bubble">막대 그래프를 보고 문제를 풀어봐!</div>
+    </div>
+
+    <div class="graph-container">
+      <div class="bar-chart" id="m4-chart"></div>
+    </div>
+
+    <div class="chart-q" id="m4-question"></div>
+    <div style="margin-top:14px" id="m4-choices"></div>
+    <div class="feedback-box" id="m4-feedback"></div>
+    <button class="hint-btn" id="m4-hint-btn" onclick="showHint('m4')">💡 힌트 보기 (-50%점수)</button>
+    <div class="hint-box" id="m4-hint-box"></div>
+  </div>
+  <div style="text-align:center;font-size:15px;color:#666">문제 <span id="m4-qnum">1</span> / 3</div>
+</div>
+
+<!-- ===== RESULT SCREEN ===== -->
+<div id="result-screen" class="screen">
+  <div class="card" style="text-align:center">
+    <div class="result-trophy" id="result-trophy">🏆</div>
+    <div class="result-title" id="result-title">미션 완료!</div>
+    <div class="result-score"><span id="final-score">0</span>점</div>
+    <div class="ending-badge" id="ending-badge">🌟 드론 마스터!</div>
+    <div class="result-msg" id="result-msg"></div>
+    <div class="stars-display" id="result-stars"></div>
+  </div>
+
+  <div class="card">
+    <div style="font-size:17px;font-weight:700;margin-bottom:12px">🏅 명예의 전당에 이름 올리기</div>
+    <input class="name-input" id="player-name" placeholder="이름을 입력해요 (예: 홍길동)" maxlength="10">
+    <button class="btn btn-success btn-full" onclick="saveScore()">✨ 점수 등록!</button>
+  </div>
+
+  <div class="card">
+    <div style="font-size:17px;font-weight:700;margin-bottom:12px">🏆 명예의 전당</div>
+    <div class="hall-of-fame" id="hall-of-fame"></div>
+  </div>
+
+  <div id="qr-box" class="card">
+    <div style="font-size:17px;font-weight:700;margin-bottom:8px">📱 QR코드로 친구에게 공유해요!</div>
+    <div id="qrcode"></div>
+    <div class="qr-label">QR코드를 스마트폰으로 찍으면 게임으로 이동해요</div>
+  </div>
+
+  <button class="btn btn-primary btn-full" onclick="restartGame()" style="margin-bottom:30px">🔄 다시 도전!</button>
+</div>
+
+<script>
+// ===== PORTFOLIO ENTRY =====
+const portfolioEntry = {
+  id: "023",
+  title: "드론 구조대 - 드드와 함께 마을을 구하라!",
+  subtitle: "드론 원리와 지역사회를 배우는 4미션 교육 게임",
+  target: "초등 3~4학년",
+  subjects: ["과학", "사회", "국어"],
+  theme: "드론",
+  missions: ["그림 보고 선택 (드론 부품)", "교과 융합 퀴즈 (3단계 난이도)", "비행 순서 맞추기", "드론 활동 그래프 읽기"],
+  date: "2026-03-31",
+  url: "https://milab2019.github.io/main/drone_rangers.html"
+};
+console.log("portfolioEntry:", JSON.stringify(portfolioEntry, null, 2));
+
+// ===== STATE =====
+let totalScore = 0;
+let currentMission = 1;
+let missionScores = [0, 0, 0, 0];
+let missionStars = [0, 0, 0, 0];
+let timerInterval = null;
+let timerSec = 90;
+let m1QIdx = 0, m2QIdx = 0, m3QIdx = 0, m4QIdx = 0;
+let m2Difficulty = 'easy';
+let hintUsed = {};
+let m3Answers = [];
+let m3CorrectOrder = [];
+let m3SlotFilled = 0;
+let audioCtx = null;
+let musicOn = true;
+let bgGain = null;
+let bgStarted = false;
+
+// ===== AUDIO =====
+function initAudio() {
+  if (audioCtx) return;
+  try {
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    startBGM();
+  } catch(e) {}
+}
+
+function startBGM() {
+  if (!audioCtx || bgStarted) return;
+  bgStarted = true;
+  bgGain = audioCtx.createGain();
+  bgGain.gain.value = musicOn ? 0.12 : 0;
+  bgGain.connect(audioCtx.destination);
+  playBGMLoop();
+}
+
+function playBGMLoop() {
+  if (!audioCtx || !musicOn) return;
+  const notes = [523.25, 659.25, 783.99, 659.25, 523.25, 392, 440, 523.25];
+  let t = audioCtx.currentTime;
+  notes.forEach((f, i) => {
+    const osc = audioCtx.createOscillator();
+    const g = audioCtx.createGain();
+    osc.type = 'sine';
+    osc.frequency.value = f;
+    g.gain.setValueAtTime(0, t + i * 0.28);
+    g.gain.linearRampToValueAtTime(0.15, t + i * 0.28 + 0.05);
+    g.gain.linearRampToValueAtTime(0, t + i * 0.28 + 0.25);
+    osc.connect(g);
+    g.connect(bgGain);
+    osc.start(t + i * 0.28);
+    osc.stop(t + i * 0.28 + 0.28);
+  });
+  setTimeout(playBGMLoop, notes.length * 280 + 100);
+}
+
+function playSound(type) {
+  if (!audioCtx) return;
+  const osc = audioCtx.createOscillator();
+  const g = audioCtx.createGain();
+  osc.connect(g); g.connect(audioCtx.destination);
+  if (type === 'correct') {
+    osc.frequency.value = 880; osc.type = 'sine';
+    g.gain.setValueAtTime(0.25, audioCtx.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.4);
+    osc.start(); osc.stop(audioCtx.currentTime + 0.4);
+  } else if (type === 'wrong') {
+    osc.frequency.value = 200; osc.type = 'sawtooth';
+    g.gain.setValueAtTime(0.2, audioCtx.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
+    osc.start(); osc.stop(audioCtx.currentTime + 0.3);
+  } else if (type === 'mission') {
+    [523, 659, 784, 1046].forEach((f, i) => {
+      const o2 = audioCtx.createOscillator();
+      const g2 = audioCtx.createGain();
+      o2.frequency.value = f; o2.type = 'sine';
+      g2.gain.setValueAtTime(0.2, audioCtx.currentTime + i*0.12);
+      g2.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + i*0.12+0.2);
+      o2.connect(g2); g2.connect(audioCtx.destination);
+      o2.start(audioCtx.currentTime + i*0.12);
+      o2.stop(audioCtx.currentTime + i*0.12+0.2);
+    });
+  }
+}
+
+function toggleMusic() {
+  musicOn = !musicOn;
+  document.getElementById('music-btn').textContent = musicOn ? '🎵' : '🔇';
+  if (bgGain) bgGain.gain.value = musicOn ? 0.12 : 0;
+  if (musicOn && !bgStarted) startBGM();
+}
+
+// ===== MASCOT EMOTIONS =====
+function setMascotEmotion(prefix, emotion) {
+  const mouth = document.getElementById(prefix + '-mouth');
+  if (!mouth) return;
+  if (emotion === 'happy') {
+    mouth.setAttribute('d', 'M48 60 Q60 70 72 60');
+    mouth.setAttribute('stroke', '#48bb78');
+  } else if (emotion === 'sad') {
+    mouth.setAttribute('d', 'M50 68 Q60 60 70 68');
+    mouth.setAttribute('stroke', '#fc8181');
+  } else {
+    mouth.setAttribute('d', 'M52 62 Q60 68 68 62');
+    mouth.setAttribute('stroke', '#FFB3C6');
+  }
+}
+
+function setBubble(id, text) {
+  const el = document.getElementById(id);
+  if (el) el.innerHTML = text;
+}
+
+// ===== SCREENS =====
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo(0, 0);
+}
+
+function updateScoreDisplay() {
+  document.getElementById('total-score').textContent = totalScore;
+}
+
+// ===== MISSION DATA =====
+
+// Mission 1: 그림 보고 선택 (4문제)
+const m1Data = [
+  {
+    q: "드론의 날개를 뭐라고 할까요? 날개가 빙글빙글 돌면서 드론을 하늘로 들어 올려요!",
+    choices: [
+      {emoji: "🌀", label: "프로펠러", correct: true},
+      {emoji: "🦅", label: "깃털 날개", correct: false},
+      {emoji: "⛵", label: "돛", correct: false},
+      {emoji: "🎪", label: "천막", correct: false}
+    ],
+    hint: "선풍기 날개처럼 빙글빙글 돌아요!",
+    explain: "드론의 날개는 '프로펠러'예요! 빠르게 돌면서 바람을 만들어 드론을 하늘로 들어 올려요. ✈️"
+  },
+  {
+    q: "드론이 오래 날기 위해서 꼭 필요한 것은 무엇일까요? 스마트폰에도 들어 있어요!",
+    choices: [
+      {emoji: "🔋", label: "배터리", correct: true},
+      {emoji: "🍕", label: "피자", correct: false},
+      {emoji: "💧", label: "물", correct: false},
+      {emoji: "🪨", label: "돌", correct: false}
+    ],
+    hint: "스마트폰을 충전할 때 필요한 것이에요!",
+    explain: "드론은 '배터리'에서 전기 에너지를 얻어 날아요! 배터리가 다 되면 착륙해야 해요. 🔋"
+  },
+  {
+    q: "드론을 조종하는 기계를 뭐라고 할까요? 손으로 들고 버튼을 눌러 드론을 움직여요!",
+    choices: [
+      {emoji: "🕹️", label: "조종기", correct: true},
+      {emoji: "📚", label: "책", correct: false},
+      {emoji: "🎸", label: "기타", correct: false},
+      {emoji: "🧲", label: "자석", correct: false}
+    ],
+    hint: "게임기 컨트롤러처럼 생겼어요!",
+    explain: "드론을 조종하는 기계를 '조종기'라고 해요! 전파 신호를 드론에 보내 움직여요. 🕹️"
+  },
+  {
+    q: "드론에 달린 카메라는 무엇을 할 수 있을까요?",
+    choices: [
+      {emoji: "📷", label: "사진 찍기", correct: true},
+      {emoji: "🎵", label: "노래 부르기", correct: false},
+      {emoji: "🍦", label: "아이스크림 만들기", correct: false},
+      {emoji: "💤", label: "잠 자기", correct: false}
+    ],
+    hint: "스마트폰으로도 할 수 있는 것이에요!",
+    explain: "드론 카메라로 위에서 사진을 찍고, 동영상을 녹화할 수 있어요! 높은 곳에서 찍으면 마을 전체가 보여요. 📷"
+  }
+];
+
+// Mission 2: 퀴즈 (난이도별 각 3문제)
+const m2Data = {
+  easy: [
+    {
+      q: "드론은 어떻게 하늘 위로 올라갈 수 있을까요?",
+      choices: ["프로펠러가 빠르게 돌아서", "바람을 타서", "사람이 던져서"],
+      correct: 0,
+      hint: "날개를 빠르게 돌리면 바람이 생겨요!",
+      explain: "프로펠러(날개)가 빠르게 돌면 아래로 바람이 생기고, 드론이 위로 떠올라요! 마치 선풍기처럼요. 🌀"
+    },
+    {
+      q: "드론으로 할 수 없는 일은 무엇일까요?",
+      choices: ["사진 찍기", "물건 배달하기", "요리하기"],
+      correct: 2,
+      hint: "드론은 하늘을 날아다니는 기계예요!",
+      explain: "드론은 하늘에서 사진 찍기, 물건 배달, 농약 뿌리기 등을 할 수 있지만 요리는 할 수 없어요! 🍳"
+    },
+    {
+      q: "드론을 날리면 안 되는 곳은 어디일까요?",
+      choices: ["넓은 공원", "비행기가 다니는 공항 근처", "운동장"],
+      correct: 1,
+      hint: "비행기가 다니는 곳과 드론이 함께 날면 위험해요!",
+      explain: "공항 근처에서 드론을 날리면 비행기와 부딪힐 수 있어 매우 위험해요! 드론은 정해진 장소에서만 날려요. ✈️"
+    }
+  ],
+  medium: [
+    {
+      q: "드론이 사용하는 에너지와 같은 에너지를 사용하는 것은 무엇일까요?",
+      choices: ["전기 자동차", "나무 장작", "물레방아"],
+      correct: 0,
+      hint: "콘센트에서 충전하는 에너지예요!",
+      explain: "드론과 전기 자동차는 모두 '전기 에너지'를 사용해요! 배터리에 전기를 저장해서 움직여요. ⚡"
+    },
+    {
+      q: "드론이 마을 쓰레기를 발견하고 신호를 보냈어요. 이처럼 드론이 우리 마을에 도움을 주는 예가 아닌 것은?",
+      choices: ["산불 발견하기", "실종된 사람 찾기", "날씨를 혼자 바꾸기"],
+      correct: 2,
+      hint: "드론은 찾고, 보고, 배달할 수 있지만 자연은 바꿀 수 없어요!",
+      explain: "드론은 산불 발견, 실종자 수색, 배달 등을 도와줄 수 있어요. 하지만 날씨는 바꿀 수 없답니다! ☁️"
+    },
+    {
+      q: "드론의 프로펠러(날개)가 4개일 때, 반대쪽 프로펠러 2개를 더 빠르게 돌리면 드론은 어떻게 될까요?",
+      choices: ["한쪽으로 기울어요", "더 높이 올라가요", "그대로 있어요"],
+      correct: 0,
+      hint: "힘이 서로 달라지면 균형이 깨져요!",
+      explain: "한쪽 프로펠러가 더 빠르면 그쪽에 힘이 강해져서 드론이 기울어요! 4개가 모두 같은 속도여야 똑바로 날 수 있어요. ⚖️"
+    }
+  ],
+  hard: [
+    {
+      q: "봄이 되어 꽃씨를 드론으로 뿌리려고 해요. 드론으로 씨앗을 뿌리면 사람이 직접 뿌리는 것보다 좋은 점은 무엇일까요?",
+      choices: ["넓은 곳을 빠르게 뿌릴 수 있어요", "씨앗이 더 맛있어져요", "꽃이 더 빨리 피어요"],
+      correct: 0,
+      hint: "드론은 하늘을 날아다니며 일할 수 있어요!",
+      explain: "드론은 하늘을 날아 넓은 면적에 씨앗을 빠르게 뿌릴 수 있어요! 사람이 걸어다니며 하는 것보다 훨씬 효율적이에요. 🌱"
+    },
+    {
+      q: "드론 구조대가 실종된 고양이를 찾고 있어요. 드론 카메라로 위에서 내려다볼 때 가장 잘 보이는 상황은?",
+      choices: ["낮에 밝을 때 넓은 공원을 살펴봐요", "밤에 어두운 숲 속을 살펴봐요", "건물 안쪽을 살펴봐요"],
+      correct: 0,
+      hint: "드론 카메라가 잘 보이려면 밝고 넓은 곳이어야 해요!",
+      explain: "드론은 낮에 밝은 야외 넓은 공간을 가장 잘 볼 수 있어요! 어둡거나 건물 안은 잘 보이지 않아요. 🔍"
+    },
+    {
+      q: "드론이 마을 지도를 만들기 위해 하늘을 날며 사진을 찍었어요. 드론이 높이 올라갈수록 사진에서 마을은 어떻게 보일까요?",
+      choices: ["더 작고 넓게 보여요", "더 크고 자세하게 보여요", "똑같이 보여요"],
+      correct: 0,
+      hint: "멀리서 보면 물건이 어떻게 보이나요?",
+      explain: "높이 올라갈수록 멀리서 보는 것처럼 마을이 작고 넓게 보여요! 그래서 더 넓은 곳을 한 번에 사진으로 담을 수 있어요. 🗺️"
+    }
+  ]
+};
+
+// Mission 3: 순서 맞추기 (2문제)
+const m3Data = [
+  {
+    q: "✈️ 드론을 날리기 전에 해야 할 준비 순서를 맞춰봐요!",
+    items: [
+      {emoji: "🔋", text: "배터리를 충전해요"},
+      {emoji: "🌤️", text: "날씨와 장소를 확인해요"},
+      {emoji: "🕹️", text: "조종기를 켜요"},
+      {emoji: "🚁", text: "드론을 하늘로 띄워요"}
+    ],
+    correctOrder: [0, 1, 2, 3]
+  },
+  {
+    q: "🔍 드론으로 실종된 반려동물을 찾는 순서를 맞춰봐요!",
+    items: [
+      {emoji: "📞", text: "구조 요청 연락을 받아요"},
+      {emoji: "🗺️", text: "수색할 지역을 정해요"},
+      {emoji: "🚁", text: "드론을 날려 하늘에서 찾아요"},
+      {emoji: "🐾", text: "동물을 발견하고 위치를 알려요"}
+    ],
+    correctOrder: [0, 1, 2, 3]
+  }
+];
+
+// Mission 4: 그래프 읽기 (3문제)
+const m4Data = [
+  {
+    title: "드론 구조대 이번 주 활동 횟수",
+    bars: [
+      {label: "월요일", val: 3, color: "#4A90D9"},
+      {label: "화요일", val: 5, color: "#48bb78"},
+      {label: "수요일", val: 2, color: "#f6ad55"},
+      {label: "목요일", val: 7, color: "#9b59b6"},
+      {label: "금요일", val: 4, color: "#e74c3c"}
+    ],
+    q: "🚁 드론 구조대가 가장 많이 활동한 요일은 언제일까요?",
+    choices: ["화요일", "목요일", "금요일"],
+    correct: 1,
+    hint: "막대가 가장 높은 날을 찾아봐요!",
+    explain: "목요일에 7번으로 가장 많이 활동했어요! 막대가 제일 높은 날이 목요일이에요. 📊"
+  },
+  {
+    title: "드론이 배달한 물건 수 (한 달)",
+    bars: [
+      {label: "의약품", val: 8, color: "#e74c3c"},
+      {label: "편지", val: 6, color: "#f6ad55"},
+      {label: "꽃씨", val: 10, color: "#48bb78"},
+      {label: "음식", val: 4, color: "#4A90D9"}
+    ],
+    q: "📦 드론이 가장 많이 배달한 물건은 무엇인가요?",
+    choices: ["의약품", "꽃씨", "음식"],
+    correct: 1,
+    hint: "막대 높이 숫자를 비교해봐요!",
+    explain: "꽃씨를 10번으로 가장 많이 배달했어요! 봄이라 꽃씨 배달이 많았나 봐요. 🌸"
+  },
+  {
+    title: "드론 활동 요청 이유 (건)",
+    bars: [
+      {label: "수색·구조", val: 6, color: "#9b59b6"},
+      {label: "촬영", val: 9, color: "#4A90D9"},
+      {label: "배달", val: 5, color: "#48bb78"},
+      {label: "측량", val: 3, color: "#f6ad55"}
+    ],
+    q: "📊 수색·구조 요청과 측량 요청을 합치면 모두 몇 건인가요?",
+    choices: ["8건", "9건", "11건"],
+    correct: 1,
+    hint: "수색·구조(6건) + 측량(3건) = ?",
+    explain: "수색·구조(6건) + 측량(3건) = 9건이에요! 더하기를 잘 했나요? 😊"
+  }
+];
+
+// ===== GAME FLOW =====
+function startGame() {
+  initAudio();
+  totalScore = 0;
+  missionScores = [0, 0, 0, 0];
+  missionStars = [0, 0, 0, 0];
+  m1QIdx = 0; m2QIdx = 0; m3QIdx = 0; m4QIdx = 0;
+  m2Difficulty = 'easy';
+  hintUsed = {};
+  updateScoreDisplay();
+  loadMission1Question();
+  showScreen('mission1-screen');
+}
+
+// ===== MISSION 1 =====
+function loadMission1Question() {
+  clearTimer();
+  const q = m1Data[m1QIdx];
+
+  // Update dots
+  m1Data.forEach((_, i) => {
+    const d = document.getElementById('m1-dot-' + i);
+    if (d) d.className = 'prog-dot' + (i < m1QIdx ? ' done' : (i === m1QIdx ? ' active' : ''));
+  });
+
+  document.getElementById('m1-qnum').textContent = m1QIdx + 1;
+  document.getElementById('m1-question').textContent = q.q;
+  document.getElementById('m1-feedback').style.display = 'none';
+  document.getElementById('m1-hint-box').style.display = 'none';
+  document.getElementById('m1-hint-btn').style.display = 'inline-block';
+  setBubble('m1-bubble', '아래 그림 중에서 올바른 답을 골라봐! 🔍');
+  setMascotEmotion('m1', 'default');
+
+  const grid = document.getElementById('m1-choices');
+  grid.innerHTML = '';
+  q.choices.forEach((c, i) => {
+    const btn = document.createElement('div');
+    btn.className = 'image-choice';
+    btn.innerHTML = `<div class="image-emoji">${c.emoji}</div><div class="image-label">${c.label}</div>`;
+    btn.onclick = () => answerM1(i, c.correct, btn);
+    grid.appendChild(btn);
+  });
+
+  startTimer('m1', 90);
+}
+
+function answerM1(idx, correct, btn) {
+  clearTimer();
+  const q = m1Data[m1QIdx];
+  const allBtns = document.querySelectorAll('#m1-choices .image-choice');
+  allBtns.forEach(b => { b.onclick = null; });
+
+  const feedback = document.getElementById('m1-feedback');
+  feedback.style.display = 'block';
+
+  if (correct) {
+    btn.classList.add('correct');
+    const pts = hintUsed['m1_' + m1QIdx] ? 5 : 10;
+    missionScores[0] += pts;
+    totalScore += pts;
+    updateScoreDisplay();
+    playSound('correct');
+    setMascotEmotion('m1', 'happy');
+    setBubble('m1-bubble', '🎉 정답이야! 정말 잘했어!');
+    feedback.className = 'feedback-box correct';
+    feedback.innerHTML = `✅ 정답! (+${pts}점)<br>💡 ${q.explain}`;
+    // highlight correct
+    allBtns.forEach((b, i) => { if (q.choices[i].correct) b.classList.add('correct'); });
+  } else {
+    btn.classList.add('wrong');
+    playSound('wrong');
+    setMascotEmotion('m1', 'sad');
+    setBubble('m1-bubble', '😊 틀렸어도 괜찮아! 다음엔 맞출 수 있어!');
+    feedback.className = 'feedback-box wrong';
+    feedback.innerHTML = `❌ 아쉬워요! 다시 해봐요!<br>💡 ${q.explain}`;
+    allBtns.forEach((b, i) => { if (q.choices[i].correct) b.classList.add('correct'); });
+  }
+
+  setTimeout(() => {
+    m1QIdx++;
+    if (m1QIdx < m1Data.length) {
+      loadMission1Question();
+    } else {
+      completeMission1();
+    }
+  }, 2200);
+}
+
+function completeMission1() {
+  clearTimer();
+  const stars = missionScores[0] >= 35 ? 3 : missionScores[0] >= 20 ? 2 : 1;
+  missionStars[0] = stars;
+  saveMissionStars();
+  playSound('mission');
+  loadMission2Question();
+  showScreen('mission2-screen');
+}
+
+// ===== MISSION 2 =====
+function setDiff(diff) {
+  m2Difficulty = diff;
+  m2QIdx = 0;
+  ['easy','medium','hard'].forEach(d => {
+    document.getElementById('tab-' + d).className = 'diff-tab' + (d === diff ? ' active' : '');
+  });
+  loadMission2Question();
+}
+
+function loadMission2Question() {
+  clearTimer();
+  const questions = m2Data[m2Difficulty];
+  const q = questions[m2QIdx];
+
+  questions.forEach((_, i) => {
+    const d = document.getElementById('m2-dot-' + i);
+    if (d) d.className = 'prog-dot' + (i < m2QIdx ? ' done' : (i === m2QIdx ? ' active' : ''));
+  });
+
+  document.getElementById('m2-qnum').textContent = m2QIdx + 1;
+  document.getElementById('m2-question').textContent = q.q;
+  document.getElementById('m2-feedback').style.display = 'none';
+  document.getElementById('m2-hint-box').style.display = 'none';
+  document.getElementById('m2-hint-btn').style.display = 'inline-block';
+  setBubble('m2-bubble', '퀴즈를 풀어봐! 힌트도 쓸 수 있어! 📚');
+  setMascotEmotion('m2', 'default');
+
+  const choices = document.getElementById('m2-choices');
+  choices.innerHTML = '';
+  const emojis = ['🅰️', '🅱️', '🆎'];
+  q.choices.forEach((c, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'choice-btn';
+    btn.innerHTML = `<span class="choice-emoji">${emojis[i]}</span> ${c}`;
+    btn.onclick = () => answerM2(i, q.correct === i, btn, q);
+    choices.appendChild(btn);
+  });
+
+  startTimer('m2', 45);
+}
+
+function answerM2(idx, correct, btn, q) {
+  clearTimer();
+  const allBtns = document.querySelectorAll('#m2-choices .choice-btn');
+  allBtns.forEach(b => { b.disabled = true; });
+  allBtns[q.correct].classList.add('correct');
+
+  const feedback = document.getElementById('m2-feedback');
+  feedback.style.display = 'block';
+
+  if (correct) {
+    const pts = m2Difficulty === 'easy' ? 10 : m2Difficulty === 'medium' ? 15 : 15;
+    const finalPts = hintUsed['m2_' + m2Difficulty + '_' + m2QIdx] ? Math.floor(pts * 0.5) : pts;
+    missionScores[1] += finalPts;
+    totalScore += finalPts;
+    updateScoreDisplay();
+    playSound('correct');
+    setMascotEmotion('m2', 'happy');
+    setBubble('m2-bubble', '🎉 맞았어! 정말 똑똑한 드론 대원이야!');
+    feedback.className = 'feedback-box correct';
+    feedback.innerHTML = `✅ 정답! (+${finalPts}점)<br>💡 ${q.explain}`;
+  } else {
+    btn.classList.add('wrong');
+    playSound('wrong');
+    setMascotEmotion('m2', 'sad');
+    setBubble('m2-bubble', '😊 틀렸지만 노력했어요! 다음엔 맞출 수 있어!');
+    feedback.className = 'feedback-box wrong';
+    feedback.innerHTML = `❌ 아쉬워요! 다시 해봐요!<br>💡 ${q.explain}`;
+  }
+
+  setTimeout(() => {
+    m2QIdx++;
+    const questions = m2Data[m2Difficulty];
+    if (m2QIdx < questions.length) {
+      loadMission2Question();
+    } else {
+      completeMission2();
+    }
+  }, 2200);
+}
+
+function completeMission2() {
+  clearTimer();
+  const stars = missionScores[1] >= 40 ? 3 : missionScores[1] >= 20 ? 2 : 1;
+  missionStars[1] = stars;
+  saveMissionStars();
+  playSound('mission');
+  loadMission3Question();
+  showScreen('mission3-screen');
+}
+
+// ===== MISSION 3 =====
+let m3Selected = null;
+
+function loadMission3Question() {
+  const q = m3Data[m3QIdx];
+  m3CorrectOrder = q.correctOrder;
+  m3Answers = new Array(q.items.length).fill(null);
+  m3SlotFilled = 0;
+  m3Selected = null;
+
+  [0, 1].forEach(i => {
+    const d = document.getElementById('m3-dot-' + i);
+    if (d) d.className = 'prog-dot' + (i < m3QIdx ? ' done' : (i === m3QIdx ? ' active' : ''));
+  });
+
+  document.getElementById('m3-qnum').textContent = m3QIdx + 1;
+  document.getElementById('m3-question').textContent = q.q;
+  document.getElementById('m3-feedback').style.display = 'none';
+  document.getElementById('m3-reset-btn').style.display = 'none';
+  document.getElementById('m3-check-btn').style.display = 'none';
+  setBubble('m3-bubble', '아래 카드를 순서대로 눌러봐! 1→2→3→4 순서야! 🔢');
+  setMascotEmotion('m3', 'default');
+
+  // Render slots
+  const slots = document.getElementById('m3-slots');
+  slots.innerHTML = '';
+  q.items.forEach((_, i) => {
+    const slot = document.createElement('div');
+    slot.className = 'order-slot';
+    slot.id = 'm3-slot-' + i;
+    slot.innerHTML = `<span class="slot-num">${i + 1}</span><span class="slot-text">여기에 카드를 놓아요</span>`;
+    slots.appendChild(slot);
+  });
+
+  // Render items (shuffled visual but same data)
+  const shuffled = [...q.items.keys()];
+  const steps = document.getElementById('m3-items');
+  steps.innerHTML = '';
+  shuffled.forEach(idx => {
+    const item = q.items[idx];
+    const el = document.createElement('div');
+    el.className = 'order-item';
+    el.id = 'm3-item-' + idx;
+    el.innerHTML = `<span style="font-size:26px">${item.emoji}</span><span>${item.text}</span>`;
+    el.onclick = () => selectOrderItem(idx, el);
+    steps.appendChild(el);
+  });
+}
+
+function selectOrderItem(idx, el) {
+  if (el.classList.contains('placed')) return;
+
+  // Place into next empty slot
+  const slot = document.getElementById('m3-slot-' + m3SlotFilled);
+  if (!slot) return;
+
+  m3Answers[m3SlotFilled] = idx;
+  slot.className = 'order-slot filled';
+  slot.innerHTML = `<span class="slot-num">${m3SlotFilled + 1}</span><span>${m3Data[m3QIdx].items[idx].emoji} ${m3Data[m3QIdx].items[idx].text}</span>`;
+
+  el.classList.add('placed');
+  el.onclick = null;
+  m3SlotFilled++;
+
+  if (m3SlotFilled === m3Data[m3QIdx].items.length) {
+    document.getElementById('m3-check-btn').style.display = 'block';
+    document.getElementById('m3-reset-btn').style.display = 'inline-block';
+  }
+}
+
+function resetOrder() {
+  loadMission3Question();
+}
+
+function checkOrder() {
+  const q = m3Data[m3QIdx];
+  let allCorrect = true;
+  m3Answers.forEach((ans, i) => {
+    if (ans !== m3CorrectOrder[i]) allCorrect = false;
+  });
+
+  const feedback = document.getElementById('m3-feedback');
+  feedback.style.display = 'block';
+
+  if (allCorrect) {
+    const pts = 15;
+    missionScores[2] += pts;
+    totalScore += pts;
+    updateScoreDisplay();
+    playSound('correct');
+    setMascotEmotion('m3', 'happy');
+    setBubble('m3-bubble', '🎉 완벽한 순서야! 대단해!');
+    feedback.className = 'feedback-box correct';
+    feedback.innerHTML = `✅ 완벽한 순서! (+${pts}점)<br>💡 드론을 안전하게 날리려면 준비 순서가 매우 중요해요! 🚁`;
+    // Mark slots green
+    q.items.forEach((_, i) => {
+      const slot = document.getElementById('m3-slot-' + i);
+      if (slot) slot.style.borderColor = '#48bb78';
+    });
+  } else {
+    playSound('wrong');
+    setMascotEmotion('m3', 'sad');
+    setBubble('m3-bubble', '😊 아쉬워요! 다시 시도해봐요! 할 수 있어!');
+    feedback.className = 'feedback-box wrong';
+    // Show correct order
+    const correctStr = m3CorrectOrder.map(i => q.items[i].emoji + ' ' + q.items[i].text).join(' → ');
+    feedback.innerHTML = `❌ 아쉬워요! 다시 해봐요!<br>💡 올바른 순서: ${correctStr}`;
+    m3Answers.forEach((ans, i) => {
+      const slot = document.getElementById('m3-slot-' + i);
+      if (slot) slot.style.borderColor = ans === m3CorrectOrder[i] ? '#48bb78' : '#fc8181';
+    });
+  }
+
+  document.getElementById('m3-check-btn').style.display = 'none';
+  document.getElementById('m3-reset-btn').style.display = 'none';
+
+  setTimeout(() => {
+    m3QIdx++;
+    if (m3QIdx < m3Data.length) {
+      loadMission3Question();
+    } else {
+      completeMission3();
+    }
+  }, 2500);
+}
+
+function completeMission3() {
+  const stars = missionScores[2] >= 25 ? 3 : missionScores[2] >= 10 ? 2 : 1;
+  missionStars[2] = stars;
+  saveMissionStars();
+  playSound('mission');
+  loadMission4Question();
+  showScreen('mission4-screen');
+}
+
+// ===== MISSION 4 =====
+function loadMission4Question() {
+  const q = m4Data[m4QIdx];
+
+  m4Data.forEach((_, i) => {
+    const d = document.getElementById('m4-dot-' + i);
+    if (d) d.className = 'prog-dot' + (i < m4QIdx ? ' done' : (i === m4QIdx ? ' active' : ''));
+  });
+
+  document.getElementById('m4-qnum').textContent = m4QIdx + 1;
+  document.getElementById('m4-feedback').style.display = 'none';
+  document.getElementById('m4-hint-box').style.display = 'none';
+  document.getElementById('m4-hint-btn').style.display = 'inline-block';
+  setBubble('m4-bubble', '막대 그래프를 보고 문제를 풀어봐! 📊');
+  setMascotEmotion('m4', 'default');
+
+  // Draw chart
+  const chart = document.getElementById('m4-chart');
+  chart.innerHTML = '';
+  const maxVal = Math.max(...q.bars.map(b => b.val));
+  q.bars.forEach(bar => {
+    const group = document.createElement('div');
+    group.className = 'bar-group';
+    const barEl = document.createElement('div');
+    barEl.className = 'bar';
+    const height = Math.round((bar.val / maxVal) * 160);
+    barEl.style.cssText = `height:${height}px;background:${bar.color};`;
+    const valEl = document.createElement('div');
+    valEl.className = 'bar-val';
+    valEl.textContent = bar.val + '번';
+    const labelEl = document.createElement('div');
+    labelEl.className = 'bar-label';
+    labelEl.textContent = bar.label;
+    group.appendChild(barEl);
+    group.appendChild(valEl);
+    group.appendChild(labelEl);
+    chart.appendChild(group);
+  });
+
+  document.getElementById('m4-question').textContent = q.q;
+
+  const choices = document.getElementById('m4-choices');
+  choices.innerHTML = '';
+  const emojis = ['1️⃣', '2️⃣', '3️⃣'];
+  q.choices.forEach((c, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'choice-btn';
+    btn.innerHTML = `<span class="choice-emoji">${emojis[i]}</span> ${c}`;
+    btn.onclick = () => answerM4(i, q.correct === i, btn, q);
+    choices.appendChild(btn);
+  });
+}
+
+function answerM4(idx, correct, btn, q) {
+  const allBtns = document.querySelectorAll('#m4-choices .choice-btn');
+  allBtns.forEach(b => { b.disabled = true; });
+  allBtns[q.correct].classList.add('correct');
+
+  const feedback = document.getElementById('m4-feedback');
+  feedback.style.display = 'block';
+
+  if (correct) {
+    const pts = hintUsed['m4_' + m4QIdx] ? 7 : 15;
+    missionScores[3] += pts;
+    totalScore += pts;
+    updateScoreDisplay();
+    playSound('correct');
+    setMascotEmotion('m4', 'happy');
+    setBubble('m4-bubble', '🎉 그래프를 잘 읽었어! 최고야!');
+    feedback.className = 'feedback-box correct';
+    feedback.innerHTML = `✅ 정답! (+${pts}점)<br>💡 ${q.explain}`;
+  } else {
+    btn.classList.add('wrong');
+    playSound('wrong');
+    setMascotEmotion('m4', 'sad');
+    setBubble('m4-bubble', '😊 틀렸지만 괜찮아! 그래프를 다시 살펴봐!');
+    feedback.className = 'feedback-box wrong';
+    feedback.innerHTML = `❌ 아쉬워요! 다시 해봐요!<br>💡 ${q.explain}`;
+  }
+
+  setTimeout(() => {
+    m4QIdx++;
+    if (m4QIdx < m4Data.length) {
+      loadMission4Question();
+    } else {
+      completeMission4();
+    }
+  }, 2200);
+}
+
+function completeMission4() {
+  const stars = missionScores[3] >= 40 ? 3 : missionScores[3] >= 20 ? 2 : 1;
+  missionStars[3] = stars;
+  saveMissionStars();
+  playSound('mission');
+  showResultScreen();
+}
+
+// ===== RESULT =====
+function showResultScreen() {
+  const score = totalScore;
+  let trophy, title, ending, msg, badgeStyle;
+
+  if (score >= 80) {
+    trophy = '🏆'; title = '드론 마스터!';
+    ending = '🌟 엔딩 A - 마을의 영웅 드론 대원!';
+    msg = '와! 최고점수야! 넌 이제 진짜 드론 대원이야! 마을 사람들이 모두 박수를 보내고 있어. 드드가 너를 자랑스러워해! 🚁💙';
+    badgeStyle = 'background:linear-gradient(135deg,#FFD700,#FFA500);color:#333;';
+  } else if (score >= 60) {
+    trophy = '🥇'; title = '드론 파일럿 합격!';
+    ending = '🌈 엔딩 B - 드론 파일럿 자격증 획득!';
+    msg = '드론 파일럿 자격증을 받았어! 아주 잘했어. 조금 더 공부하면 완벽해질 거야! 드드가 응원해! 🎉';
+    badgeStyle = 'background:linear-gradient(135deg,#87CEEB,#4A90D9);color:white;';
+  } else if (score >= 40) {
+    trophy = '🥈'; title = '드론 훈련생!';
+    ending = '💪 엔딩 C - 열심히 훈련 중인 드론 대원!';
+    msg = '훈련생 인증! 드론에 대해 많이 알았지? 더 연습하면 마스터가 될 수 있어! 드드가 기다리고 있어! 😊';
+    badgeStyle = 'background:linear-gradient(135deg,#C0C0C0,#A0A0A0);color:white;';
+  } else {
+    trophy = '🌱'; title = '드론 입문자!';
+    ending = '🌱 엔딩 D - 이제 막 시작한 드론 꿈나무!';
+    msg = '드론에 대해 처음 배웠구나! 괜찮아, 드드도 처음엔 잘 못 날았어. 다시 도전해봐! 할 수 있어! 💙';
+    badgeStyle = 'background:linear-gradient(135deg,#90EE90,#48bb78);color:white;';
+  }
+
+  document.getElementById('result-trophy').textContent = trophy;
+  document.getElementById('result-title').textContent = title;
+  document.getElementById('final-score').textContent = score;
+  const badge = document.getElementById('ending-badge');
+  badge.textContent = ending;
+  badge.style.cssText = badgeStyle;
+  document.getElementById('result-msg').textContent = msg;
+
+  const totalStars = missionStars.reduce((a, b) => a + b, 0);
+  document.getElementById('result-stars').textContent = '⭐'.repeat(Math.min(totalStars, 12));
+
+  loadHallOfFame();
+  generateQR();
+  showScreen('result-screen');
+}
+
+function generateQR() {
+  const qrDiv = document.getElementById('qrcode');
+  qrDiv.innerHTML = '';
+  try {
+    new QRCode(qrDiv, {
+      text: window.location.href || 'https://milab2019.github.io/main/drone_rangers.html',
+      width: 150,
+      height: 150,
+      colorDark: '#2C3E50',
+      colorLight: '#FFFFFF',
+      correctLevel: QRCode.CorrectLevel.M
+    });
+  } catch(e) {
+    qrDiv.innerHTML = '<p style="font-size:13px;color:#888">QR코드 생성 불가</p>';
+  }
+}
+
+// ===== HALL OF FAME =====
+const HOF_KEY = 'milab_023_drone_hof';
+
+function saveScore() {
+  const name = document.getElementById('player-name').value.trim();
+  if (!name) { alert('이름을 입력해주세요!'); return; }
+  let hof = JSON.parse(localStorage.getItem(HOF_KEY) || '[]');
+  hof.push({ name, score: totalScore, date: new Date().toLocaleDateString('ko-KR') });
+  hof.sort((a, b) => b.score - a.score);
+  hof = hof.slice(0, 5);
+  localStorage.setItem(HOF_KEY, JSON.stringify(hof));
+  loadHallOfFame();
+  document.getElementById('player-name').value = '';
+  playSound('correct');
+}
+
+function loadHallOfFame() {
+  const hof = JSON.parse(localStorage.getItem(HOF_KEY) || '[]');
+  const el = document.getElementById('hall-of-fame');
+  const medals = ['🥇', '🥈', '🥉', '4️⃣', '5️⃣'];
+  if (!hof.length) {
+    el.innerHTML = '<p style="color:#999;text-align:center;font-size:15px">아직 기록이 없어요. 첫 번째 영웅이 되어봐요!</p>';
+    return;
+  }
+  el.innerHTML = hof.map((h, i) =>
+    `<div class="hof-item"><div class="hof-rank">${medals[i]}</div><div><b>${h.name}</b></div><div style="margin-left:auto;font-size:17px;font-weight:800;color:#4A90D9">${h.score}점</div><div style="font-size:12px;color:#999">${h.date}</div></div>`
+  ).join('');
+}
+
+function saveMissionStars() {
+  localStorage.setItem('milab_023_stars', JSON.stringify(missionStars));
+}
+
+// ===== TIMER =====
+function startTimer(prefix, sec) {
+  timerSec = sec;
+  const numEl = document.getElementById(prefix + '-timer');
+  const barEl = document.getElementById(prefix + '-timer-bar');
+  if (!numEl) return;
+  numEl.textContent = sec;
+  if (barEl) barEl.style.width = '100%';
+
+  timerInterval = setInterval(() => {
+    timerSec--;
+    if (numEl) {
+      numEl.textContent = timerSec;
+      if (timerSec <= 10) numEl.classList.add('urgent');
+      else numEl.classList.remove('urgent');
+    }
+    if (barEl) barEl.style.width = (timerSec / sec * 100) + '%';
+    if (timerSec <= 0) {
+      clearTimer();
+      handleTimerEnd(prefix);
+    }
+  }, 1000);
+}
+
+function clearTimer() {
+  if (timerInterval) { clearInterval(timerInterval); timerInterval = null; }
+}
+
+function handleTimerEnd(prefix) {
+  if (prefix === 'm1') {
+    // Auto advance
+    const feedback = document.getElementById('m1-feedback');
+    feedback.style.display = 'block';
+    feedback.className = 'feedback-box wrong';
+    feedback.innerHTML = '⏰ 시간이 다 됐어요! 다음 문제로 넘어가요.';
+    setMascotEmotion('m1', 'sad');
+    setTimeout(() => {
+      m1QIdx++;
+      if (m1QIdx < m1Data.length) loadMission1Question();
+      else completeMission1();
+    }, 1500);
+  } else if (prefix === 'm2') {
+    const q = m2Data[m2Difficulty][m2QIdx];
+    const feedback = document.getElementById('m2-feedback');
+    feedback.style.display = 'block';
+    feedback.className = 'feedback-box wrong';
+    feedback.innerHTML = `⏰ 시간이 다 됐어요!<br>💡 ${q.explain}`;
+    const allBtns = document.querySelectorAll('#m2-choices .choice-btn');
+    allBtns.forEach(b => b.disabled = true);
+    if (allBtns[q.correct]) allBtns[q.correct].classList.add('correct');
+    setMascotEmotion('m2', 'sad');
+    setTimeout(() => {
+      m2QIdx++;
+      if (m2QIdx < m2Data[m2Difficulty].length) loadMission2Question();
+      else completeMission2();
+    }, 2000);
+  }
+}
+
+// ===== HINT =====
+function showHint(prefix) {
+  let q, hintText, key;
+  if (prefix === 'm1') {
+    q = m1Data[m1QIdx];
+    hintText = q.hint;
+    key = 'm1_' + m1QIdx;
+  } else if (prefix === 'm2') {
+    q = m2Data[m2Difficulty][m2QIdx];
+    hintText = q.hint;
+    key = 'm2_' + m2Difficulty + '_' + m2QIdx;
+  } else if (prefix === 'm4') {
+    q = m4Data[m4QIdx];
+    hintText = q.hint;
+    key = 'm4_' + m4QIdx;
+  }
+  hintUsed[key] = true;
+  const box = document.getElementById(prefix + '-hint-box');
+  box.style.display = 'block';
+  box.textContent = '💡 힌트: ' + hintText + ' (점수 50% 감점됩니다)';
+  document.getElementById(prefix + '-hint-btn').style.display = 'none';
+}
+
+// ===== RESTART =====
+function restartGame() {
+  clearTimer();
+  startGame();
+}
+</script>
+</body>
+</html>
