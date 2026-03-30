@@ -1,0 +1,1563 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>🌍 지구 비상구조대 | 미랩 교육게임 #022</title>
+<script src="https://cdn.rawgit.com/davidshimjs/qrcodejs/gh-pages/qrcode.min.js"></script>
+<style>
+  :root {
+    --green: #2ecc71;
+    --dark-green: #27ae60;
+    --blue: #3498db;
+    --sky: #87ceeb;
+    --orange: #e67e22;
+    --red: #e74c3c;
+    --yellow: #f1c40f;
+    --purple: #9b59b6;
+    --bg: linear-gradient(135deg, #e0f7fa 0%, #b2ebf2 40%, #e8f5e9 100%);
+    --card: rgba(255,255,255,0.92);
+    --shadow: 0 8px 32px rgba(46,204,113,0.15);
+    --radius: 20px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Malgun Gothic', '맑은 고딕', sans-serif;
+    background: var(--bg);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    overflow-x: hidden;
+  }
+
+  /* ── HEADER ── */
+  .game-header {
+    width: 100%; max-width: 700px;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 14px 20px 0;
+    position: sticky; top: 0; z-index: 100;
+    background: rgba(224,247,250,0.85);
+    backdrop-filter: blur(8px);
+  }
+  .header-title { font-size: 16px; font-weight: 700; color: #1a5276; }
+  .score-board { display: flex; gap: 8px; align-items: center; }
+  .score-badge {
+    background: var(--green); color: #fff;
+    border-radius: 12px; padding: 4px 10px; font-size: 14px; font-weight: 700;
+  }
+  #music-btn {
+    background: none; border: 2px solid var(--dark-green);
+    border-radius: 50%; width: 36px; height: 36px;
+    font-size: 18px; cursor: pointer; display: flex; align-items: center; justify-content: center;
+    transition: background 0.2s;
+  }
+  #music-btn:hover { background: rgba(46,204,113,0.15); }
+
+  /* ── MAIN CONTAINER ── */
+  .container {
+    width: 100%; max-width: 700px;
+    padding: 16px 16px 32px;
+    display: flex; flex-direction: column; gap: 16px;
+    flex: 1;
+  }
+
+  /* ── MASCOT ── */
+  .mascot-area {
+    display: flex; align-items: flex-end; gap: 14px;
+    background: var(--card);
+    border-radius: var(--radius);
+    padding: 16px 20px;
+    box-shadow: var(--shadow);
+    min-height: 110px;
+  }
+  .mascot-svg { width: 80px; height: 80px; flex-shrink: 0; }
+  .speech-bubble {
+    background: #fff; border: 2px solid var(--green);
+    border-radius: 16px; padding: 10px 14px;
+    font-size: 15px; line-height: 1.55; color: #1a5276;
+    position: relative; flex: 1;
+  }
+  .speech-bubble::before {
+    content: ''; position: absolute;
+    left: -14px; top: 20px;
+    border: 7px solid transparent;
+    border-right-color: var(--green);
+  }
+  .speech-bubble::after {
+    content: ''; position: absolute;
+    left: -11px; top: 21px;
+    border: 6px solid transparent;
+    border-right-color: #fff;
+  }
+
+  /* ── MISSION TABS ── */
+  .mission-tabs {
+    display: grid; grid-template-columns: repeat(4, 1fr);
+    gap: 6px;
+  }
+  .tab-btn {
+    background: rgba(255,255,255,0.7);
+    border: 2px solid #ccc;
+    border-radius: 14px; padding: 8px 4px; font-size: 12px;
+    font-weight: 700; cursor: pointer; text-align: center;
+    transition: all 0.2s; color: #555;
+    min-height: 48px; display: flex; flex-direction: column;
+    align-items: center; justify-content: center; gap: 2px;
+  }
+  .tab-btn.active {
+    background: var(--green); border-color: var(--dark-green); color: #fff;
+  }
+  .tab-btn.done {
+    background: #d5f5e3; border-color: var(--green); color: var(--dark-green);
+  }
+  .tab-btn.locked {
+    opacity: 0.45; cursor: not-allowed;
+  }
+  .tab-icon { font-size: 20px; }
+
+  /* ── MISSION PANEL ── */
+  .mission-panel {
+    background: var(--card);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: 20px;
+    min-height: 340px;
+    display: flex; flex-direction: column; gap: 14px;
+  }
+  .mission-title {
+    font-size: 20px; font-weight: 700; color: #1a5276;
+    border-bottom: 3px solid var(--green); padding-bottom: 8px;
+  }
+  .mission-subtitle { font-size: 13px; color: #7f8c8d; }
+
+  /* ── TIMER ── */
+  .timer-bar {
+    background: #eee; border-radius: 8px; height: 10px; overflow: hidden;
+  }
+  .timer-fill {
+    height: 100%; background: var(--green);
+    transition: width 1s linear;
+    border-radius: 8px;
+  }
+  .timer-label {
+    font-size: 15px; font-weight: 700; text-align: right;
+    color: var(--dark-green);
+  }
+  .timer-label.urgent { color: var(--red); animation: blink 0.5s infinite; }
+  @keyframes blink { 50% { opacity: 0; } }
+
+  /* ── QUESTION ── */
+  .question-box {
+    background: linear-gradient(135deg, #e8f8f5, #eafaf1);
+    border-radius: 14px; padding: 16px;
+    font-size: 16px; line-height: 1.65; color: #1a5276;
+    font-weight: 600;
+  }
+  .question-box .subject-tag {
+    display: inline-block;
+    background: var(--blue); color: #fff;
+    border-radius: 8px; font-size: 11px; padding: 2px 8px;
+    margin-bottom: 8px; font-weight: 700;
+  }
+  .data-chart {
+    background: #fff; border-radius: 10px; padding: 12px;
+    margin-top: 10px; border: 1px solid #ddd;
+  }
+  .data-chart table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .data-chart th { background: var(--green); color: #fff; padding: 5px 8px; }
+  .data-chart td { padding: 5px 8px; text-align: center; border-bottom: 1px solid #eee; }
+
+  /* ── CHOICES ── */
+  .choices { display: flex; flex-direction: column; gap: 10px; }
+  .choice-btn {
+    background: #fff; border: 2px solid #bdc3c7;
+    border-radius: 14px; padding: 13px 16px;
+    font-size: 15px; font-weight: 600; cursor: pointer; text-align: left;
+    min-height: 52px;
+    transition: all 0.2s; color: #2c3e50;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .choice-btn:hover:not(:disabled) {
+    border-color: var(--green); background: #eafaf1; transform: translateX(4px);
+  }
+  .choice-btn.correct {
+    background: #d5f5e3; border-color: var(--green); color: var(--dark-green);
+    animation: correct-pop 0.4s ease;
+  }
+  .choice-btn.wrong {
+    background: #fadbd8; border-color: var(--red); color: var(--red);
+  }
+  @keyframes correct-pop {
+    0%{transform: scale(1)} 50%{transform: scale(1.03)} 100%{transform: scale(1)}
+  }
+  .choice-btn:disabled { cursor: not-allowed; }
+  .choice-num {
+    background: var(--green); color: #fff;
+    border-radius: 50%; width: 26px; height: 26px;
+    font-size: 13px; font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .choice-btn.wrong .choice-num { background: var(--red); }
+  .choice-btn.correct .choice-num { background: var(--dark-green); }
+
+  /* ── DIFF TABS ── */
+  .diff-tabs {
+    display: flex; gap: 8px; flex-wrap: wrap;
+  }
+  .diff-btn {
+    background: #fff; border: 2px solid #bdc3c7;
+    border-radius: 10px; padding: 6px 14px; font-size: 13px;
+    font-weight: 700; cursor: pointer; transition: all 0.2s;
+  }
+  .diff-btn.active { background: var(--blue); border-color: var(--blue); color: #fff; }
+
+  /* ── DRAG & DROP (Mission 3) ── */
+  .sortable-list { display: flex; flex-direction: column; gap: 8px; }
+  .sortable-item {
+    background: #fff; border: 2px solid #bdc3c7;
+    border-radius: 12px; padding: 12px 16px;
+    font-size: 14px; font-weight: 600; cursor: grab;
+    display: flex; align-items: center; gap: 10px;
+    transition: all 0.2s; color: #2c3e50;
+    user-select: none;
+  }
+  .sortable-item:active { cursor: grabbing; }
+  .sortable-item.dragging { opacity: 0.5; border-color: var(--blue); }
+  .sortable-item.over { border-color: var(--green); background: #eafaf1; }
+  .drag-handle { font-size: 18px; color: #aaa; flex-shrink: 0; }
+  .step-num {
+    background: var(--blue); color: #fff;
+    border-radius: 50%; width: 24px; height: 24px;
+    font-size: 12px; font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+
+  /* ── DATA BARS (Mission 4) ── */
+  .bar-chart { display: flex; flex-direction: column; gap: 10px; }
+  .bar-row { display: flex; align-items: center; gap: 10px; }
+  .bar-label { font-size: 13px; font-weight: 700; min-width: 80px; color: #1a5276; }
+  .bar-bg {
+    flex: 1; background: #eee; border-radius: 6px; height: 28px; overflow: hidden;
+  }
+  .bar-fill {
+    height: 100%; border-radius: 6px;
+    display: flex; align-items: center; padding-left: 8px;
+    font-size: 12px; font-weight: 700; color: #fff;
+    transition: width 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  }
+
+  /* ── HINT ── */
+  .hint-area { display: flex; align-items: center; gap: 10px; }
+  .hint-btn {
+    background: var(--yellow); border: none;
+    border-radius: 10px; padding: 8px 16px;
+    font-size: 13px; font-weight: 700; cursor: pointer;
+    color: #7d6608; transition: all 0.2s; min-height: 40px;
+  }
+  .hint-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+  .hint-box {
+    background: #fef9e7; border: 2px solid var(--yellow);
+    border-radius: 12px; padding: 10px 14px;
+    font-size: 13px; color: #7d6608; display: none; flex: 1;
+  }
+  .hint-box.show { display: block; }
+
+  /* ── FEEDBACK ── */
+  .feedback-box {
+    background: #eafaf1; border: 2px solid var(--green);
+    border-radius: 14px; padding: 12px 16px;
+    font-size: 14px; color: #1a5276; display: none;
+  }
+  .feedback-box.wrong-feedback {
+    background: #fadbd8; border-color: var(--red); color: #922b21;
+  }
+  .feedback-box.show { display: block; }
+  .source-tag { font-size: 11px; color: #aaa; margin-top: 4px; }
+
+  /* ── PROGRESS STARS ── */
+  .stars-row { display: flex; gap: 4px; align-items: center; }
+  .star { font-size: 20px; }
+
+  /* ── NEXT BTN ── */
+  .next-btn {
+    background: var(--green); color: #fff;
+    border: none; border-radius: 14px; padding: 14px 28px;
+    font-size: 16px; font-weight: 700; cursor: pointer;
+    min-height: 52px; transition: all 0.2s;
+    align-self: flex-end;
+  }
+  .next-btn:hover { background: var(--dark-green); transform: scale(1.03); }
+  .next-btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+
+  /* ── SCREEN SYSTEM ── */
+  .screen { display: none; width: 100%; }
+  .screen.active { display: flex; flex-direction: column; }
+
+  /* ── TITLE SCREEN ── */
+  .title-screen {
+    min-height: 100vh; align-items: center; justify-content: center;
+    flex-direction: column; gap: 20px; padding: 24px;
+    text-align: center;
+  }
+  .title-logo { font-size: 64px; animation: float 3s ease-in-out infinite; }
+  @keyframes float {
+    0%,100%{transform:translateY(0)} 50%{transform:translateY(-14px)}
+  }
+  .title-game { font-size: 28px; font-weight: 700; color: #1a5276; line-height: 1.3; }
+  .title-sub { font-size: 15px; color: #5d6d7e; }
+  .start-btn {
+    background: var(--green); color: #fff;
+    border: none; border-radius: 20px; padding: 18px 48px;
+    font-size: 20px; font-weight: 700; cursor: pointer;
+    box-shadow: 0 6px 20px rgba(46,204,113,0.4);
+    transition: all 0.2s; min-height: 60px;
+    animation: pulse-btn 2s ease-in-out infinite;
+  }
+  @keyframes pulse-btn {
+    0%,100%{box-shadow:0 6px 20px rgba(46,204,113,0.4)}
+    50%{box-shadow:0 8px 28px rgba(46,204,113,0.7)}
+  }
+  .start-btn:hover { background: var(--dark-green); transform: scale(1.04); }
+  .title-info { font-size: 13px; color: #7f8c8d; }
+  .title-qr {
+    display: flex; flex-direction: column; align-items: center; gap: 6px;
+    background: var(--card); border-radius: 16px; padding: 14px 20px;
+    box-shadow: var(--shadow);
+  }
+  .title-qr p { font-size: 12px; color: #7f8c8d; font-weight: 600; }
+  .title-card {
+    background: var(--card); border-radius: var(--radius);
+    padding: 18px 24px; max-width: 380px; width: 100%;
+    box-shadow: var(--shadow); text-align: left;
+  }
+  .title-card h3 { font-size: 15px; color: var(--dark-green); margin-bottom: 8px; }
+  .title-card ul { list-style: none; display: flex; flex-direction: column; gap: 5px; }
+  .title-card li { font-size: 13px; color: #2c3e50; padding-left: 20px; position: relative; }
+  .title-card li::before { content: '🌿'; position: absolute; left: 0; }
+
+  /* ── RESULT SCREEN ── */
+  .result-screen {
+    min-height: 100vh; align-items: center; justify-content: center;
+    flex-direction: column; gap: 18px; padding: 24px; text-align: center;
+  }
+  .result-badge { font-size: 72px; animation: spin-in 0.6s ease; }
+  @keyframes spin-in {
+    from{transform: scale(0) rotate(-180deg)} to{transform: scale(1) rotate(0)}
+  }
+  .result-title { font-size: 26px; font-weight: 700; color: #1a5276; }
+  .result-score { font-size: 48px; font-weight: 700; color: var(--green); }
+  .result-ending {
+    background: var(--card); border-radius: var(--radius);
+    padding: 18px 24px; max-width: 380px; width: 100%;
+    box-shadow: var(--shadow); font-size: 15px; color: #2c3e50; line-height: 1.65;
+  }
+  .halloffame {
+    background: var(--card); border-radius: var(--radius);
+    padding: 18px 24px; max-width: 380px; width: 100%;
+    box-shadow: var(--shadow);
+  }
+  .halloffame h3 { font-size: 16px; color: var(--orange); margin-bottom: 10px; }
+  .hof-entry {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 6px 0; border-bottom: 1px solid #eee; font-size: 14px;
+  }
+  .hof-rank { font-weight: 700; min-width: 28px; }
+  .name-input {
+    border: 2px solid var(--green); border-radius: 10px;
+    padding: 10px 14px; font-size: 15px; width: 180px;
+  }
+  .register-btn {
+    background: var(--orange); color: #fff;
+    border: none; border-radius: 10px; padding: 10px 18px;
+    font-size: 14px; font-weight: 700; cursor: pointer; min-height: 44px;
+  }
+  .qr-area { display: flex; flex-direction: column; align-items: center; gap: 8px; }
+  .qr-area p { font-size: 12px; color: #7f8c8d; }
+  .replay-btn {
+    background: var(--blue); color: #fff;
+    border: none; border-radius: 14px; padding: 14px 32px;
+    font-size: 16px; font-weight: 700; cursor: pointer; min-height: 52px;
+    transition: all 0.2s;
+  }
+  .replay-btn:hover { background: #2980b9; }
+
+  /* ── MASCOT ANIMATIONS ── */
+  @keyframes mascot-happy {
+    0%{transform:translateY(0)} 25%{transform:translateY(-8px)} 75%{transform:translateY(-4px)} 100%{transform:translateY(0)}
+  }
+  @keyframes mascot-sad {
+    0%,100%{transform:rotate(0)} 25%{transform:rotate(-6deg)} 75%{transform:rotate(6deg)}
+  }
+  .mascot-svg.happy { animation: mascot-happy 0.5s ease; }
+  .mascot-svg.sad { animation: mascot-sad 0.6s ease; }
+
+  /* ── PROGRESS BAR (top) ── */
+  .progress-top {
+    height: 6px; background: #ddd; width: 100%; max-width: 700px;
+    border-radius: 3px; overflow: hidden;
+  }
+  .progress-top-fill {
+    height: 100%; background: linear-gradient(90deg, var(--green), var(--blue));
+    transition: width 0.4s;
+  }
+
+  /* ── MISSION INTRO ── */
+  .mission-intro {
+    text-align: center; padding: 20px;
+    display: flex; flex-direction: column; align-items: center; gap: 14px;
+  }
+  .intro-icon { font-size: 56px; }
+  .intro-title { font-size: 22px; font-weight: 700; color: #1a5276; }
+  .intro-desc { font-size: 15px; color: #5d6d7e; max-width: 320px; line-height: 1.6; }
+  .launch-btn {
+    background: var(--green); color: #fff;
+    border: none; border-radius: 14px; padding: 14px 32px;
+    font-size: 16px; font-weight: 700; cursor: pointer; min-height: 52px;
+    transition: all 0.2s;
+  }
+  .launch-btn:hover { background: var(--dark-green); }
+
+  @media (max-width: 500px) {
+    .mission-title { font-size: 17px; }
+    .question-box { font-size: 14px; }
+    .choice-btn { font-size: 14px; padding: 11px 13px; }
+    .tab-btn { font-size: 11px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ============================
+     TITLE SCREEN
+============================= -->
+<div id="screen-title" class="screen title-screen active">
+  <div class="title-logo">🌍</div>
+  <div>
+    <div class="title-game">지구 비상구조대</div>
+    <div class="title-sub">에코봇과 함께 지구를 구하라! 🌿</div>
+  </div>
+  <div class="title-card">
+    <h3>📋 게임 안내</h3>
+    <ul>
+      <li>미션 4개를 순서대로 클리어!</li>
+      <li>힌트는 문제당 1회 (점수 -50%)</li>
+      <li>과학·사회·도덕·실과 교과 융합</li>
+      <li>클리어 후 명예의 전당 등록!</li>
+    </ul>
+  </div>
+  <button class="start-btn" onclick="startGame()">🚀 지구를 구하러 가기!</button>
+  <!-- QR — 타이틀 화면에서 바로 접속 가능 -->
+  <div class="title-qr">
+    <p>📱 스마트폰으로 바로 접속!</p>
+    <div id="qrcode-title"></div>
+  </div>
+  <div class="title-info">초등 5~6학년 | 지구의 날 기념 (4.22) | MILAB 2026</div>
+</div>
+
+<!-- ============================
+     GAME SCREEN
+============================= -->
+<div id="screen-game" class="screen" style="flex-direction:column;align-items:center;">
+  <div class="progress-top"><div class="progress-top-fill" id="progress-bar" style="width:0%"></div></div>
+  
+  <div class="game-header">
+    <div class="header-title">🌍 지구 비상구조대 #022</div>
+    <div class="score-board">
+      <div class="score-badge">⭐ <span id="total-score">0</span>점</div>
+      <button id="music-btn" onclick="toggleMusic()" title="음악 ON/OFF">🔊</button>
+    </div>
+  </div>
+
+  <div class="container">
+    <!-- mascot -->
+    <div class="mascot-area">
+      <svg class="mascot-svg" id="mascot" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+        <!-- body -->
+        <rect x="25" y="40" width="50" height="45" rx="14" fill="#2ecc71"/>
+        <!-- head -->
+        <circle cx="50" cy="28" r="22" fill="#2ecc71"/>
+        <!-- visor -->
+        <ellipse cx="50" cy="28" rx="15" ry="13" fill="#87CEEB" opacity="0.9"/>
+        <!-- eyes -->
+        <circle id="eye-l" cx="44" cy="25" r="4" fill="#1a5276"/>
+        <circle id="eye-r" cx="56" cy="25" r="4" fill="#1a5276"/>
+        <circle cx="45" cy="24" r="1.5" fill="#fff"/>
+        <circle cx="57" cy="24" r="1.5" fill="#fff"/>
+        <!-- mouth -->
+        <path id="mascot-mouth" d="M44 34 Q50 39 56 34" stroke="#1a5276" stroke-width="2" fill="none" stroke-linecap="round"/>
+        <!-- antenna -->
+        <line x1="50" y1="6" x2="50" y2="14" stroke="#27ae60" stroke-width="2.5"/>
+        <circle cx="50" cy="5" r="4" fill="#f1c40f"/>
+        <!-- arms -->
+        <rect x="10" y="50" width="16" height="8" rx="4" fill="#27ae60"/>
+        <rect x="74" y="50" width="16" height="8" rx="4" fill="#27ae60"/>
+        <!-- earth icon on chest -->
+        <circle cx="50" cy="62" r="9" fill="#3498db"/>
+        <path d="M44 58 Q50 54 56 58 Q52 68 44 64 Z" fill="#2ecc71" opacity="0.85"/>
+      </svg>
+      <div class="speech-bubble" id="mascot-speech">안녕! 나는 에코봇이야. 지구가 위기에 처했어! 함께 4가지 미션을 해결하고 지구를 구해보자! 🌿</div>
+    </div>
+
+    <!-- mission tabs -->
+    <div class="mission-tabs">
+      <button class="tab-btn active" id="tab-0" onclick="selectMission(0)">
+        <span class="tab-icon">🗺️</span>
+        <span>미션1</span>
+        <span id="stars-0">☆☆☆</span>
+      </button>
+      <button class="tab-btn locked" id="tab-1" onclick="selectMission(1)">
+        <span class="tab-icon">🔬</span>
+        <span>미션2</span>
+        <span id="stars-1">☆☆☆</span>
+      </button>
+      <button class="tab-btn locked" id="tab-2" onclick="selectMission(2)">
+        <span class="tab-icon">🌱</span>
+        <span>미션3</span>
+        <span id="stars-2">☆☆☆</span>
+      </button>
+      <button class="tab-btn locked" id="tab-3" onclick="selectMission(3)">
+        <span class="tab-icon">📊</span>
+        <span>미션4</span>
+        <span id="stars-3">☆☆☆</span>
+      </button>
+    </div>
+
+    <!-- mission panel -->
+    <div class="mission-panel" id="mission-panel">
+      <!-- content injected by JS -->
+    </div>
+  </div>
+</div>
+
+<!-- ============================
+     RESULT SCREEN
+============================= -->
+<div id="screen-result" class="screen result-screen">
+  <div class="result-badge" id="result-badge">🏆</div>
+  <div class="result-title" id="result-title">레전드 구조대원!</div>
+  <div>
+    <div style="font-size:16px;color:#7f8c8d;">최종 점수</div>
+    <div class="result-score" id="result-score">0점</div>
+  </div>
+  <div class="result-ending" id="result-ending"></div>
+
+  <!-- hall of fame -->
+  <div class="halloffame">
+    <h3>🏅 명예의 전당 (TOP 5)</h3>
+    <div id="hof-list"></div>
+    <div style="display:flex;gap:8px;margin-top:12px;">
+      <input class="name-input" id="name-input" type="text" maxlength="10" placeholder="이름 입력">
+      <button class="register-btn" onclick="registerScore()">등록!</button>
+    </div>
+  </div>
+
+  <!-- QR -->
+  <div class="qr-area">
+    <p>📱 친구에게 공유해요!</p>
+    <div id="qrcode"></div>
+  </div>
+
+  <button class="replay-btn" onclick="replayGame()">🔄 다시 도전!</button>
+</div>
+
+<script>
+// ==============================
+// PORTFOLIO ENTRY (auto console)
+// ==============================
+const portfolioEntry = {
+  id: "022",
+  title: "지구 비상구조대",
+  subtitle: "에코봇과 함께 기후위기를 극복하라!",
+  target: "초등 5~6학년",
+  subjects: ["과학","사회","도덕","실과"],
+  theme: "지구의날(4.22) × 기후변화·탄소중립",
+  missions: [
+    "미션1: 기후변화 지도 읽기 (지식 확인 / 60초 타이머)",
+    "미션2: 과학+사회 교과 융합 퀴즈 (난이도 3단계 / 30초 타이머)",
+    "미션3: 탄소중립 실천 순서 정렬 (드래그앤드롭 / 타이머 없음)",
+    "미션4: 에너지 데이터 분석 (막대그래프 독해 / 타이머 없음)"
+  ],
+  date: "2026-03-30",
+  url: "https://milab2019.github.io/main/earth_rescue_squad.html"
+};
+console.log("📦 portfolioEntry:", JSON.stringify(portfolioEntry, null, 2));
+
+// ==============================
+// AUDIO ENGINE
+// ==============================
+let audioCtx = null;
+let musicOn = true;
+let bgNodes = [];
+
+function getAudioCtx() {
+  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  return audioCtx;
+}
+
+function playBGM() {
+  if (!musicOn) return;
+  stopBGM();
+  const ctx = getAudioCtx();
+  const notes = [261,293,329,349,392,440,392,349,329,293];
+  const intervals = [0,0.5,1,1.5,2,2.5,3,3.5,4,4.5];
+  notes.forEach((freq, i) => {
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.connect(gain); gain.connect(ctx.destination);
+    osc.type = 'sine'; osc.frequency.value = freq;
+    gain.gain.setValueAtTime(0, ctx.currentTime + intervals[i]);
+    gain.gain.linearRampToValueAtTime(0.06, ctx.currentTime + intervals[i] + 0.05);
+    gain.gain.linearRampToValueAtTime(0, ctx.currentTime + intervals[i] + 0.45);
+    osc.start(ctx.currentTime + intervals[i]);
+    osc.stop(ctx.currentTime + intervals[i] + 0.5);
+    bgNodes.push(osc);
+  });
+  setTimeout(playBGM, 5200);
+}
+
+function stopBGM() { bgNodes.forEach(n => { try{n.stop();}catch(e){} }); bgNodes = []; }
+
+function toggleMusic() {
+  musicOn = !musicOn;
+  document.getElementById('music-btn').textContent = musicOn ? '🔊' : '🔇';
+  if (musicOn) playBGM(); else stopBGM();
+}
+
+function playCorrect() {
+  const ctx = getAudioCtx();
+  [523,659,784].forEach((f,i) => {
+    const o = ctx.createOscillator(); const g = ctx.createGain();
+    o.connect(g); g.connect(ctx.destination);
+    o.type='triangle'; o.frequency.value=f;
+    g.gain.setValueAtTime(0.12,ctx.currentTime+i*0.12);
+    g.gain.linearRampToValueAtTime(0,ctx.currentTime+i*0.12+0.25);
+    o.start(ctx.currentTime+i*0.12); o.stop(ctx.currentTime+i*0.12+0.3);
+  });
+}
+
+function playWrong() {
+  const ctx = getAudioCtx();
+  const o = ctx.createOscillator(); const g = ctx.createGain();
+  o.connect(g); g.connect(ctx.destination);
+  o.type='sawtooth'; o.frequency.value=180;
+  g.gain.setValueAtTime(0.1,ctx.currentTime);
+  g.gain.linearRampToValueAtTime(0,ctx.currentTime+0.4);
+  o.start(); o.stop(ctx.currentTime+0.4);
+}
+
+function playFanfare() {
+  const ctx = getAudioCtx();
+  const seq = [523,659,784,1047];
+  seq.forEach((f,i) => {
+    const o = ctx.createOscillator(); const g = ctx.createGain();
+    o.connect(g); g.connect(ctx.destination);
+    o.type='square'; o.frequency.value=f;
+    g.gain.setValueAtTime(0.08,ctx.currentTime+i*0.18);
+    g.gain.linearRampToValueAtTime(0,ctx.currentTime+i*0.18+0.35);
+    o.start(ctx.currentTime+i*0.18); o.stop(ctx.currentTime+i*0.18+0.4);
+  });
+}
+
+// ==============================
+// GAME STATE
+// ==============================
+let state = {
+  currentMission: 0,
+  missionStatus: [false, false, false, false], // done
+  missionUnlocked: [true, false, false, false],
+  missionStars: [0,0,0,0],
+  scores: [0,0,0,0],
+  totalScore: 0
+};
+
+// ==============================
+// MISSION DATA
+// ==============================
+
+// ── MISSION 1: 기후변화 지도 읽기 (knowledge / 60s timer) ──
+const m1_questions = [
+  {
+    subject: "과학",
+    q: "다음 중 지구 온난화(온도가 높아지는 현상)의 주요 원인은 무엇일까요?",
+    choices: ["화산 폭발만이 원인이다", "온실가스(이산화탄소 등)가 증가했기 때문이다", "태양이 지구로 이동했기 때문이다", "바람이 강해졌기 때문이다"],
+    answer: 1,
+    hint: "석탄, 석유 등 화석연료를 태우면 이산화탄소가 많이 나와요!",
+    explain: "자동차, 공장, 화력발전소에서 화석연료를 태울 때 온실가스가 나와요. 이 가스가 지구 열을 가두어 온도가 올라가요. (출처: 과학 5학년 2단원 지구와 우주)"
+  },
+  {
+    subject: "사회",
+    q: "지구의 날은 매년 몇 월 며칠일까요?",
+    choices: ["3월 22일", "4월 5일", "4월 22일", "6월 5일"],
+    answer: 2,
+    hint: "1970년에 미국에서 시작된 환경 기념일이에요!",
+    explain: "지구의 날은 매년 4월 22일이에요. 1970년 미국에서 시작되어 지금은 전 세계 192개국이 참여해요. (출처: 사회 6학년 환경 단원)"
+  },
+  {
+    subject: "과학",
+    q: "기후변화로 북극 빙하가 녹으면 어떤 일이 일어날까요?",
+    choices: ["해수면이 올라가서 섬이 잠길 수 있다", "날씨가 항상 맑아진다", "동물들이 늘어난다", "지구 온도가 내려간다"],
+    answer: 0,
+    hint: "얼음이 물이 되면 바닷물이 늘어나요!",
+    explain: "북극과 빙하가 녹으면 바닷물 양이 늘어나 해수면이 높아져요. 낮은 섬나라들이 물에 잠길 수 있어요. (출처: 과학 6학년 기후변화 단원)"
+  },
+  {
+    subject: "도덕",
+    q: "지구 환경을 지키는 것은 왜 우리의 책임일까요?",
+    choices: ["환경부 공무원만의 일이다", "미래 세대도 지구에서 살아야 하기 때문이다", "환경은 저절로 회복되기 때문이다", "환경문제는 먼 나라 이야기이기 때문이다"],
+    answer: 1,
+    hint: "우리 아이들과 손자, 손녀들도 이 지구에서 살 거예요!",
+    explain: "미래 세대도 지구를 사용할 권리가 있어요. 지금 우리가 환경을 보호해야 미래 사람들도 건강하게 살 수 있어요. (출처: 도덕 5학년 자연과 더불어 사는 삶)"
+  }
+];
+
+// ── MISSION 2: 교과 융합 퀴즈 (3 difficulty tabs / 30s timer) ──
+const m2_questions = {
+  easy: [
+    {
+      subject: "과학",
+      q: "다음 중 재생 가능한 에너지(계속 쓸 수 있는 에너지)는 무엇일까요?",
+      choices: ["석탄", "석유", "태양에너지", "천연가스"],
+      answer: 2,
+      hint: "해는 매일 뜨고, 없어지지 않아요!",
+      explain: "태양에너지, 바람에너지, 물에너지는 사라지지 않아 계속 사용할 수 있어요. 석탄과 석유는 쓰면 없어지는 화석연료예요. (출처: 과학 6학년 에너지 단원)"
+    },
+    {
+      subject: "실과",
+      q: "탄소중립이란 무엇일까요?",
+      choices: ["탄소를 전혀 사용하지 않는 것", "내뿜는 탄소와 흡수하는 탄소를 같게 만드는 것", "탄소를 땅속에 묻는 것", "탄소 음식을 먹지 않는 것"],
+      answer: 1,
+      hint: "균형(밸런스)을 맞추는 것이에요!",
+      explain: "탄소중립이란 이산화탄소를 내뿜는 양과 흡수하는 양을 같게 해서 실질적으로 '0'으로 만드는 거예요. 나무 심기, 재생에너지 사용 등이 방법이에요. (출처: 실과 6학년)"
+    }
+  ],
+  normal: [
+    {
+      subject: "사회",
+      q: "한국은 2050년까지 탄소중립을 이루겠다는 목표를 발표했어요. 이를 위해 학생이 직접 실천할 수 있는 가장 효과적인 방법은?",
+      choices: ["에어컨을 더 자주 켜서 여름을 시원하게 보낸다", "가까운 거리는 자전거나 걸어서 이동한다", "플라스틱 컵을 매일 사용한다", "음식을 많이 남겨서 쓰레기를 줄인다"],
+      answer: 1,
+      hint: "교통에서 나오는 온실가스가 전체의 약 14%예요!",
+      explain: "자동차 대신 자전거, 도보, 대중교통을 이용하면 온실가스 배출을 크게 줄일 수 있어요. (출처: 사회 6학년 지속가능한 미래 단원)"
+    },
+    {
+      subject: "과학",
+      q: "다음 중 온실가스가 아닌 것은?",
+      choices: ["이산화탄소(CO₂)", "메탄(CH₄)", "질소(N₂)", "수증기(H₂O)"],
+      answer: 2,
+      hint: "공기의 약 78%를 차지하는 기체예요!",
+      explain: "질소(N₂)는 온실가스가 아니에요. 이산화탄소, 메탄, 수증기 등이 온실가스예요. 온실가스는 지구 열을 가두는 역할을 해요. (출처: 과학 6학년 기후변화)"
+    }
+  ],
+  hard: [
+    {
+      subject: "사회+과학",
+      q: "🌍 자료를 보고 답하세요.\n어떤 나라 A는 인구가 매우 많고 공장도 많아서 이산화탄소를 1년에 10,000만 톤 배출합니다. 나라 B는 작은 나라지만 1인당 이산화탄소 배출량이 A의 3배입니다. 환경 문제 해결을 위해 어떤 관점이 더 중요할까요?",
+      choices: ["총 배출량이 많은 나라가 더 책임이 크다", "1인당 배출량이 많은 나라가 더 책임이 크다", "두 관점 모두 중요하며 국제 협력이 필요하다", "배출량 순위는 환경에 영향을 주지 않는다"],
+      answer: 2,
+      hint: "총량도 중요하지만, 1인당 소비 습관도 중요해요!",
+      explain: "기후변화는 국제 협력이 필요한 문제예요. 총 배출량과 1인당 배출량 모두 고려하면서 각 나라가 책임지는 자세가 필요해요. (출처: 사회 6학년 세계와 우리나라 단원)"
+    },
+    {
+      subject: "실과+도덕",
+      q: "생산자가 제품을 만들 때 환경을 생각한 '착한 소비'를 뭐라고 할까요?",
+      choices: ["무한소비", "윤리적 소비(착한 소비)", "충동소비", "사재기"],
+      answer: 1,
+      hint: "환경, 사람, 동물을 생각하며 소비하는 거예요!",
+      explain: "윤리적 소비란 환경을 보호하고, 공정하게 만들어진 제품을 선택하는 소비 방식이에요. 친환경 제품, 공정무역 제품 구매가 예시예요. (출처: 실과 6학년 소비생활 단원)"
+    }
+  ]
+};
+
+// ── MISSION 3: 탄소중립 실천 순서 정렬 (drag & drop) ──
+const m3_sets = [
+  {
+    scenario: "🌱 학교에서 '친환경 텃밭 프로젝트'를 진행하려 해요. 올바른 순서로 정렬해보세요!",
+    items: [
+      "① 텃밭에 심을 식물 종류 조사하기",
+      "② 필요한 재료(흙, 씨앗, 화분)를 친환경으로 선택하기",
+      "③ 텃밭에 씨앗 심고 물주기",
+      "④ 자란 채소로 학교 급식 식재료 사용하기"
+    ],
+    correctOrder: [0,1,2,3],
+    explain: "조사 → 친환경 재료 선택 → 실천(심기) → 결과 활용의 순서가 올바른 프로젝트 수행 방법이에요!"
+  },
+  {
+    scenario: "♻️ 올바른 분리수거 순서를 정렬해보세요!",
+    items: [
+      "① 음식물이 묻은 용기를 깨끗이 씻기",
+      "② 재질 확인(플라스틱/종이/유리/캔) 확인하기",
+      "③ 각 재질에 맞는 분리수거함에 넣기",
+      "④ 분리수거 일정에 맞춰 배출하기"
+    ],
+    correctOrder: [0,1,2,3],
+    explain: "씻기 → 재질 확인 → 분리 → 배출! 이 순서를 지키면 재활용 효율이 높아져요!"
+  }
+];
+
+// ── MISSION 4: 에너지 데이터 분석 (bar chart + questions) ──
+const m4_data = {
+  title: "📊 우리나라 가정의 탄소 배출원 비율 (2023년 기준)",
+  bars: [
+    { label: "난방·냉방", value: 45, color: "#e74c3c" },
+    { label: "전기제품", value: 28, color: "#3498db" },
+    { label: "교통수단", value: 17, color: "#e67e22" },
+    { label: "음식·소비", value: 10, color: "#2ecc71" }
+  ],
+  questions: [
+    {
+      subject: "실과+사회",
+      q: "위 자료를 보고, 가정에서 탄소를 가장 많이 배출하는 원인은 무엇인가요?",
+      choices: ["전기제품 사용", "난방·냉방", "교통수단", "음식 소비"],
+      answer: 1,
+      hint: "가장 긴 막대를 찾아봐요!",
+      explain: "난방·냉방이 45%로 가장 큰 비중이에요. 겨울 실내 온도를 1℃만 낮춰도 탄소 배출을 7% 줄일 수 있어요! (출처: 환경부 가정부문 온실가스 통계)"
+    },
+    {
+      subject: "도덕+실과",
+      q: "탄소 배출을 줄이기 위해 전기제품 관련 실천 방법으로 옳지 않은 것은?",
+      choices: ["사용하지 않는 플러그 뽑기", "에너지 효율 1등급 제품 사용하기", "TV를 오래 켜두고 자리 비우기", "LED 전구로 교체하기"],
+      answer: 2,
+      hint: "쓰지 않는데 켜두면 전기가 낭비돼요!",
+      explain: "TV나 컴퓨터를 자리를 비울 때 켜두면 불필요한 전력이 낭비돼요. 안 쓸 때는 끄고, 대기전력도 차단해야 해요. (출처: 실과 6학년 에너지 절약 단원)"
+    }
+  ]
+};
+
+// ==============================
+// GAME LOGIC
+// ==============================
+let m1State = { qIdx: 0, score: 0, hintUsed: [], timerSec: 60, timerInterval: null, answered: [] };
+let m2State = { diff: 'easy', qIdx: 0, score: 0, hintUsed: [], timerSec: 30, timerInterval: null, answered: [] };
+let m3State = { setIdx: 0, currentOrder: [], draggingIdx: null, checked: false };
+let m4State = { qIdx: 0, score: 0, hintUsed: [], answered: [], shown: false };
+
+// ==============================
+// SCREEN CONTROL
+// ==============================
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+function startGame() {
+  try { getAudioCtx(); playBGM(); } catch(e) {}
+  showScreen('screen-game');
+  updateProgress();
+  renderMission(0);
+}
+
+function updateProgress() {
+  const done = state.missionStatus.filter(Boolean).length;
+  document.getElementById('progress-bar').style.width = (done / 4 * 100) + '%';
+  document.getElementById('total-score').textContent = state.scores.reduce((a,b)=>a+b,0);
+}
+
+function selectMission(idx) {
+  if (!state.missionUnlocked[idx]) return;
+  state.currentMission = idx;
+  // update tabs
+  document.querySelectorAll('.tab-btn').forEach((btn,i) => {
+    btn.classList.remove('active');
+    if (state.missionStatus[i]) btn.classList.add('done');
+    if (!state.missionUnlocked[i]) btn.classList.add('locked');
+    else btn.classList.remove('locked');
+  });
+  document.getElementById('tab-'+idx).classList.add('active');
+  renderMission(idx);
+}
+
+function renderMission(idx) {
+  const panel = document.getElementById('mission-panel');
+  if (idx === 0) renderM1(panel);
+  else if (idx === 1) renderM2(panel);
+  else if (idx === 2) renderM3(panel);
+  else if (idx === 3) renderM4(panel);
+}
+
+// ==============================
+// MASCOT
+// ==============================
+function setMascot(mood, text) {
+  const svg = document.getElementById('mascot');
+  const mouth = document.getElementById('mascot-mouth');
+  svg.classList.remove('happy','sad');
+  if (mood === 'happy') {
+    mouth.setAttribute('d','M44 33 Q50 40 56 33');
+    void svg.offsetWidth;
+    svg.classList.add('happy');
+  } else if (mood === 'sad') {
+    mouth.setAttribute('d','M44 37 Q50 32 56 37');
+    void svg.offsetWidth;
+    svg.classList.add('sad');
+  } else {
+    mouth.setAttribute('d','M44 34 Q50 39 56 34');
+  }
+  document.getElementById('mascot-speech').textContent = text;
+}
+
+// ==============================
+// MISSION 1 — 지식 확인 / 60s timer
+// ==============================
+function renderM1(panel) {
+  clearInterval(m1State.timerInterval);
+  if (state.missionStatus[0]) {
+    panel.innerHTML = buildDonePanel(0);
+    return;
+  }
+  if (m1State.qIdx === 0 && !m1State.timerStarted) {
+    // show intro first
+    panel.innerHTML = `<div class="mission-intro">
+      <div class="intro-icon">🗺️</div>
+      <div class="intro-title">미션1: 기후변화 지도 읽기</div>
+      <div class="intro-desc">60초 안에 4문제를 모두 풀어요! 기후변화에 대한 기본 지식을 확인해봐요.</div>
+      <button class="launch-btn" onclick="startM1()">⏱️ 시작!</button>
+    </div>`;
+    setMascot('default','미션1! 기후변화가 왜 생기는지, 지구의 날이 언제인지 알아볼 거야. 준비됐으면 시작해보자!');
+    return;
+  }
+  buildM1Question(panel);
+}
+
+function startM1() {
+  m1State.timerStarted = true;
+  m1State.timerSec = 60;
+  m1State.timerInterval = setInterval(() => {
+    m1State.timerSec--;
+    updateM1Timer();
+    if (m1State.timerSec <= 0) {
+      clearInterval(m1State.timerInterval);
+      completeM1(true);
+    }
+  }, 1000);
+  buildM1Question(document.getElementById('mission-panel'));
+}
+
+function buildM1Question(panel) {
+  if (m1State.qIdx >= m1_questions.length) {
+    clearInterval(m1State.timerInterval);
+    completeM1(false);
+    return;
+  }
+  const q = m1_questions[m1State.qIdx];
+  const hintUsed = m1State.hintUsed[m1State.qIdx];
+  const answered = m1State.answered[m1State.qIdx];
+  
+  panel.innerHTML = `
+    <div class="mission-title">🗺️ 미션1 — 기후변화 지도 읽기 <span class="mission-subtitle">(${m1State.qIdx+1}/${m1_questions.length})</span></div>
+    <div style="display:flex;justify-content:space-between;align-items:center;">
+      <div class="timer-label ${m1State.timerSec<=10?'urgent':''}" id="m1-timer">⏱ ${m1State.timerSec}초</div>
+      <div style="font-size:13px;color:#7f8c8d;">10점/문항</div>
+    </div>
+    <div class="timer-bar"><div class="timer-fill" id="m1-tfill" style="width:${m1State.timerSec/60*100}%"></div></div>
+    <div class="question-box">
+      <span class="subject-tag">${q.subject}</span><br>
+      ${q.q}
+    </div>
+    <div class="choices">
+      ${q.choices.map((c,i)=>`
+        <button class="choice-btn ${answered!==undefined?(i===q.answer?'correct':(i===answered&&answered!==q.answer?'wrong':'')):''}
+        " onclick="answerM1(${i})" ${answered!==undefined?'disabled':''}>
+          <span class="choice-num">${i+1}</span>${c}
+        </button>
+      `).join('')}
+    </div>
+    <div class="hint-area">
+      <button class="hint-btn" id="m1-hint-btn" onclick="useHintM1()" ${hintUsed?'disabled':''}>
+        💡 힌트 ${hintUsed?'(사용됨)':'(배점 -50%)'}
+      </button>
+      <div class="hint-box ${hintUsed?'show':''}" id="m1-hint-box">💡 ${q.hint}</div>
+    </div>
+    <div class="feedback-box ${answered!==undefined?'show':''}
+     ${answered!==undefined&&answered!==q.answer?'wrong-feedback':''}" id="m1-feedback">
+      ${answered!==undefined?(answered===q.answer?'🎉 정답이에요! '+q.explain:'😅 괜찮아요! 한 번 더! '+q.explain):''}
+    </div>
+    ${answered!==undefined?`<button class="next-btn" onclick="nextM1()">다음 문제 ➡️</button>`:''}
+  `;
+}
+
+function updateM1Timer() {
+  const tl = document.getElementById('m1-timer');
+  const tf = document.getElementById('m1-tfill');
+  if (tl) {
+    tl.textContent = `⏱ ${m1State.timerSec}초`;
+    tl.className = `timer-label ${m1State.timerSec<=10?'urgent':''}`;
+  }
+  if (tf) tf.style.width = (m1State.timerSec/60*100)+'%';
+}
+
+function answerM1(i) {
+  if (m1State.answered[m1State.qIdx] !== undefined) return;
+  const q = m1_questions[m1State.qIdx];
+  m1State.answered[m1State.qIdx] = i;
+  let pts = 10;
+  if (m1State.hintUsed[m1State.qIdx]) pts = 5;
+  if (i === q.answer) {
+    m1State.score += pts;
+    playCorrect();
+    setMascot('happy','정답이야! 대단해! 계속 파이팅! 🎉');
+  } else {
+    playWrong();
+    setMascot('sad','틀려도 배우는 중이에요! 해설을 읽고 다음 문제로 가봐요! 💪');
+  }
+  buildM1Question(document.getElementById('mission-panel'));
+}
+
+function nextM1() {
+  m1State.qIdx++;
+  if (m1State.qIdx >= m1_questions.length) {
+    clearInterval(m1State.timerInterval);
+    completeM1(false);
+  } else {
+    buildM1Question(document.getElementById('mission-panel'));
+  }
+}
+
+function useHintM1() {
+  m1State.hintUsed[m1State.qIdx] = true;
+  buildM1Question(document.getElementById('mission-panel'));
+}
+
+function completeM1(timeout) {
+  const correct = m1State.answered.filter((a,i)=>a===m1_questions[i].answer).length;
+  const stars = correct>=4?3:correct>=2?2:correct>=1?1:0;
+  finishMission(0, m1State.score, stars, timeout?'시간 초과! 다음엔 더 빠르게 도전해봐요!':'미션1 완료! 기후변화 지식왕이야! 🌍');
+}
+
+// ==============================
+// MISSION 2 — 교과 융합 퀴즈 / 30s per Q / difficulty tabs
+// ==============================
+function renderM2(panel) {
+  clearInterval(m2State.timerInterval);
+  if (state.missionStatus[1]) {
+    panel.innerHTML = buildDonePanel(1);
+    return;
+  }
+  if (!m2State.started) {
+    panel.innerHTML = `<div class="mission-intro">
+      <div class="intro-icon">🔬</div>
+      <div class="intro-title">미션2: 교과 융합 퀴즈</div>
+      <div class="intro-desc">난이도(쉬움/보통/도전)를 선택하고 퀴즈를 풀어요. 문제당 30초!</div>
+      <div class="diff-tabs" style="justify-content:center;">
+        <button class="diff-btn ${m2State.diff==='easy'?'active':''}" onclick="setDiff('easy')">🌱 쉬움 (10점)</button>
+        <button class="diff-btn ${m2State.diff==='normal'?'active':''}" onclick="setDiff('normal')">🌿 보통 (15점)</button>
+        <button class="diff-btn ${m2State.diff==='hard'?'active':''}" onclick="setDiff('hard')">🌳 도전 (20점)</button>
+      </div>
+      <button class="launch-btn" onclick="startM2()">🚀 시작!</button>
+    </div>`;
+    setMascot('default','미션2! 난이도를 고르고 환경 교과 퀴즈를 풀어봐. 도전 난이도에 나올수록 더 많은 점수야!');
+    return;
+  }
+  buildM2Question(panel);
+}
+
+function setDiff(d) {
+  m2State.diff = d;
+  renderM2(document.getElementById('mission-panel'));
+}
+
+function startM2() {
+  m2State.started = true;
+  m2State.qIdx = 0;
+  m2State.score = 0;
+  m2State.hintUsed = [];
+  m2State.answered = [];
+  startM2Timer();
+  buildM2Question(document.getElementById('mission-panel'));
+}
+
+function startM2Timer() {
+  clearInterval(m2State.timerInterval);
+  m2State.timerSec = 30;
+  m2State.timerInterval = setInterval(()=>{
+    m2State.timerSec--;
+    updateM2Timer();
+    if(m2State.timerSec<=0){
+      clearInterval(m2State.timerInterval);
+      // auto wrong
+      if(m2State.answered[m2State.qIdx]===undefined){
+        m2State.answered[m2State.qIdx] = -1;
+        playWrong();
+        setMascot('sad','시간 초과! 괜찮아, 해설을 보고 다음으로 넘어가자!');
+        buildM2Question(document.getElementById('mission-panel'));
+      }
+    }
+  },1000);
+}
+
+function buildM2Question(panel) {
+  const qs = m2_questions[m2State.diff];
+  if(m2State.qIdx >= qs.length){
+    clearInterval(m2State.timerInterval);
+    completeM2();
+    return;
+  }
+  const q = qs[m2State.qIdx];
+  const pts = m2State.diff==='easy'?10:m2State.diff==='normal'?15:20;
+  const answered = m2State.answered[m2State.qIdx];
+  const hintUsed = m2State.hintUsed[m2State.qIdx];
+  
+  panel.innerHTML = `
+    <div class="mission-title">🔬 미션2 — 교과 융합 퀴즈 <span class="mission-subtitle">(${m2State.qIdx+1}/${qs.length})</span></div>
+    <div class="diff-tabs">
+      <button class="diff-btn ${m2State.diff==='easy'?'active':''}" onclick="setDiff('easy')" ${m2State.started?'disabled':''}>🌱 쉬움</button>
+      <button class="diff-btn ${m2State.diff==='normal'?'active':''}" onclick="setDiff('normal')" ${m2State.started?'disabled':''}>🌿 보통</button>
+      <button class="diff-btn ${m2State.diff==='hard'?'active':''}" onclick="setDiff('hard')" ${m2State.started?'disabled':''}>🌳 도전</button>
+    </div>
+    <div style="display:flex;justify-content:space-between;align-items:center;">
+      <div class="timer-label ${m2State.timerSec<=10?'urgent':''}" id="m2-timer">⏱ ${m2State.timerSec}초</div>
+      <div style="font-size:13px;color:#7f8c8d;">${pts}점/문항</div>
+    </div>
+    <div class="timer-bar"><div class="timer-fill" id="m2-tfill" style="width:${m2State.timerSec/30*100}%"></div></div>
+    <div class="question-box">
+      <span class="subject-tag">${q.subject}</span><br>
+      ${q.q.replace(/\n/g,'<br>')}
+    </div>
+    <div class="choices">
+      ${q.choices.map((c,i)=>`
+        <button class="choice-btn ${answered!==undefined?(i===q.answer?'correct':(i===answered?'wrong':'')):''}
+        " onclick="answerM2(${i})" ${answered!==undefined?'disabled':''}>
+          <span class="choice-num">${i+1}</span>${c}
+        </button>
+      `).join('')}
+    </div>
+    <div class="hint-area">
+      <button class="hint-btn" onclick="useHintM2()" ${hintUsed?'disabled':''}>
+        💡 힌트 ${hintUsed?'(사용됨)':'(배점 -50%)'}
+      </button>
+      <div class="hint-box ${hintUsed?'show':''}">💡 ${q.hint}</div>
+    </div>
+    <div class="feedback-box ${answered!==undefined?'show':''}
+     ${answered!==undefined&&answered!==q.answer?'wrong-feedback':''}" id="m2-feedback">
+      ${answered!==undefined?(answered===q.answer?'🎉 정답! '+q.explain:'😅 틀려도 괜찮아! '+q.explain):''}
+    </div>
+    ${answered!==undefined?`<button class="next-btn" onclick="nextM2()">다음 문제 ➡️</button>`:''}
+  `;
+}
+
+function updateM2Timer() {
+  const tl = document.getElementById('m2-timer');
+  const tf = document.getElementById('m2-tfill');
+  if(tl){ tl.textContent=`⏱ ${m2State.timerSec}초`; tl.className=`timer-label ${m2State.timerSec<=10?'urgent':''}`; }
+  if(tf) tf.style.width=(m2State.timerSec/30*100)+'%';
+}
+
+function answerM2(i) {
+  if(m2State.answered[m2State.qIdx]!==undefined) return;
+  clearInterval(m2State.timerInterval);
+  const qs = m2_questions[m2State.diff];
+  const q = qs[m2State.qIdx];
+  m2State.answered[m2State.qIdx] = i;
+  let pts = m2State.diff==='easy'?10:m2State.diff==='normal'?15:20;
+  if(m2State.hintUsed[m2State.qIdx]) pts = Math.floor(pts/2);
+  if(i===q.answer){ m2State.score+=pts; playCorrect(); setMascot('happy','완벽해! 환경 박사 등극! 🌿'); }
+  else { playWrong(); setMascot('sad','아쉽지만 괜찮아! 해설 잘 읽어봐! 💪'); }
+  buildM2Question(document.getElementById('mission-panel'));
+}
+
+function nextM2() {
+  m2State.qIdx++;
+  const qs = m2_questions[m2State.diff];
+  if(m2State.qIdx>=qs.length){ completeM2(); return; }
+  startM2Timer();
+  buildM2Question(document.getElementById('mission-panel'));
+}
+
+function useHintM2() {
+  m2State.hintUsed[m2State.qIdx]=true;
+  buildM2Question(document.getElementById('mission-panel'));
+}
+
+function completeM2() {
+  const qs = m2_questions[m2State.diff];
+  const correct = m2State.answered.filter((a,i)=>a===qs[i].answer).length;
+  const stars = correct>=qs.length?3:correct>0?2:1;
+  finishMission(1, m2State.score, stars, '미션2 완료! 환경 교과서를 통째로 외운 것 같아! 🔬');
+}
+
+// ==============================
+// MISSION 3 — 드래그앤드롭 정렬
+// ==============================
+function renderM3(panel) {
+  if(state.missionStatus[2]){ panel.innerHTML = buildDonePanel(2); return; }
+  if(!m3State.started){
+    panel.innerHTML = `<div class="mission-intro">
+      <div class="intro-icon">🌱</div>
+      <div class="intro-title">미션3: 탄소중립 실천 순서 정렬</div>
+      <div class="intro-desc">카드를 드래그해서 올바른 순서로 정렬해봐요! 시간 제한 없이 생각하며 풀어요.</div>
+      <button class="launch-btn" onclick="startM3()">🌱 시작!</button>
+    </div>`;
+    setMascot('default','미션3! 순서가 중요해. 생각하면서 천천히 정렬해봐! 정답 맞추면 별 3개!');
+    return;
+  }
+  buildM3(panel);
+}
+
+function startM3() {
+  m3State.started = true;
+  m3State.setIdx = 0;
+  initM3Set();
+  buildM3(document.getElementById('mission-panel'));
+}
+
+function initM3Set() {
+  const set = m3_sets[m3State.setIdx];
+  // shuffle
+  m3State.currentOrder = [...Array(set.items.length).keys()].sort(()=>Math.random()-0.5);
+  m3State.checked = false;
+  m3State.score3 = m3State.score3||0;
+}
+
+function buildM3(panel) {
+  const set = m3_sets[m3State.setIdx];
+  const order = m3State.currentOrder;
+  panel.innerHTML = `
+    <div class="mission-title">🌱 미션3 — 탄소중립 실천 순서 정렬 <span class="mission-subtitle">(${m3State.setIdx+1}/${m3_sets.length})</span></div>
+    <div class="question-box">${set.scenario}</div>
+    <p style="font-size:13px;color:#7f8c8d;margin-top:4px;">💡 카드를 드래그해서 올바른 순서로 바꿔보세요!</p>
+    <div class="sortable-list" id="sortable-list">
+      ${order.map((itemIdx,pos)=>`
+        <div class="sortable-item" draggable="true"
+          data-pos="${pos}" data-idx="${itemIdx}"
+          ondragstart="dragStart(event,${pos})"
+          ondragover="dragOver(event,${pos})"
+          ondrop="dropItem(event,${pos})"
+          ondragend="dragEnd(event)"
+          ontouchstart="touchStart(event,${pos})"
+          ontouchmove="touchMove(event)"
+          ontouchend="touchEnd(event,${pos})">
+          <span class="drag-handle">⠿</span>
+          <span class="step-num">${pos+1}</span>
+          ${set.items[itemIdx]}
+        </div>
+      `).join('')}
+    </div>
+    <div class="feedback-box ${m3State.checked?'show':''} ${m3State.checked&&!m3State.correctFlag?'wrong-feedback':''}" id="m3-feedback">
+      ${m3State.checked?(m3State.correctFlag?'🎉 완벽한 순서예요! '+set.explain:'😅 순서가 조금 달라요! 다시 도전해봐요! '+set.explain):''}
+    </div>
+    ${m3State.checked&&m3State.correctFlag?`<button class="next-btn" onclick="nextM3()">다음 ➡️</button>`:
+      `<button class="next-btn" onclick="checkM3()">✅ 정답 확인</button>`}
+  `;
+}
+
+let dragSrcPos = null;
+let touchSrcPos = null;
+let touchEl = null;
+
+function dragStart(e, pos) { dragSrcPos = pos; e.target.classList.add('dragging'); }
+function dragOver(e, pos) {
+  e.preventDefault();
+  document.querySelectorAll('.sortable-item').forEach(el=>el.classList.remove('over'));
+  const el = document.querySelector(`[data-pos="${pos}"]`);
+  if(el) el.classList.add('over');
+}
+function dropItem(e, pos) {
+  e.preventDefault();
+  if(dragSrcPos===null||dragSrcPos===pos) return;
+  const a = m3State.currentOrder[dragSrcPos];
+  m3State.currentOrder[dragSrcPos] = m3State.currentOrder[pos];
+  m3State.currentOrder[pos] = a;
+  m3State.checked = false;
+  buildM3(document.getElementById('mission-panel'));
+  dragSrcPos = null;
+}
+function dragEnd(e) { e.target.classList.remove('dragging'); document.querySelectorAll('.sortable-item').forEach(el=>el.classList.remove('over')); }
+
+// touch support
+function touchStart(e, pos) { touchSrcPos = pos; touchEl = e.currentTarget; }
+function touchMove(e) { e.preventDefault(); }
+function touchEnd(e, pos) {
+  if(touchSrcPos===null||touchSrcPos===pos) return;
+  const a = m3State.currentOrder[touchSrcPos];
+  m3State.currentOrder[touchSrcPos] = m3State.currentOrder[pos];
+  m3State.currentOrder[pos] = a;
+  m3State.checked = false;
+  buildM3(document.getElementById('mission-panel'));
+  touchSrcPos = null;
+}
+
+function checkM3() {
+  const set = m3_sets[m3State.setIdx];
+  m3State.checked = true;
+  m3State.correctFlag = m3State.currentOrder.every((v,i)=>v===set.correctOrder[i]);
+  if(m3State.correctFlag){ playCorrect(); m3State.score3+=30; setMascot('happy','완벽해! 순서 정렬 마스터! 🌱'); }
+  else { playWrong(); setMascot('sad','조금만 더 생각해봐요! 다시 확인해봐!'); }
+  buildM3(document.getElementById('mission-panel'));
+}
+
+function nextM3() {
+  m3State.setIdx++;
+  if(m3State.setIdx>=m3_sets.length){
+    const stars = m3State.score3>=60?3:m3State.score3>=30?2:1;
+    finishMission(2, m3State.score3, stars, '미션3 완료! 탄소중립 실천 순서 완벽 마스터! ♻️');
+  } else {
+    initM3Set();
+    buildM3(document.getElementById('mission-panel'));
+  }
+}
+
+// ==============================
+// MISSION 4 — 데이터 분석
+// ==============================
+function renderM4(panel) {
+  if(state.missionStatus[3]){ panel.innerHTML = buildDonePanel(3); return; }
+  if(!m4State.started){
+    panel.innerHTML = `<div class="mission-intro">
+      <div class="intro-icon">📊</div>
+      <div class="intro-title">미션4: 에너지 데이터 분석</div>
+      <div class="intro-desc">실제 데이터 그래프를 읽고 질문에 답해봐요! 분석하고 판단하는 힘을 키워요.</div>
+      <button class="launch-btn" onclick="startM4()">📊 시작!</button>
+    </div>`;
+    setMascot('default','마지막 미션이야! 실제 통계 데이터를 보고 답하는 거야. 잘 읽어봐! 📊');
+    return;
+  }
+  buildM4(panel);
+}
+
+function startM4() {
+  m4State.started = true;
+  m4State.qIdx = 0;
+  m4State.score = 0;
+  m4State.hintUsed = [];
+  m4State.answered = [];
+  buildM4(document.getElementById('mission-panel'));
+}
+
+function buildM4(panel) {
+  if(m4State.qIdx>=m4_data.questions.length){
+    const stars = m4State.score>=30?3:m4State.score>=15?2:1;
+    finishMission(3, m4State.score, stars, '미션4 완료! 데이터 분석 전문가야! 📊');
+    return;
+  }
+  const q = m4_data.questions[m4State.qIdx];
+  const answered = m4State.answered[m4State.qIdx];
+  const hintUsed = m4State.hintUsed[m4State.qIdx];
+  
+  panel.innerHTML = `
+    <div class="mission-title">📊 미션4 — 에너지 데이터 분석 <span class="mission-subtitle">(${m4State.qIdx+1}/${m4_data.questions.length})</span></div>
+    <div class="question-box">
+      <strong>${m4_data.title}</strong>
+      <div class="bar-chart" style="margin-top:12px;">
+        ${m4_data.bars.map(b=>`
+          <div class="bar-row">
+            <div class="bar-label">${b.label}</div>
+            <div class="bar-bg">
+              <div class="bar-fill" style="width:${b.value}%;background:${b.color};">${b.value}%</div>
+            </div>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+    <div class="question-box" style="margin-top:4px;">
+      <span class="subject-tag">${q.subject}</span><br>
+      ${q.q}
+    </div>
+    <div class="choices">
+      ${q.choices.map((c,i)=>`
+        <button class="choice-btn ${answered!==undefined?(i===q.answer?'correct':(i===answered?'wrong':'')):''}
+        " onclick="answerM4(${i})" ${answered!==undefined?'disabled':''}>
+          <span class="choice-num">${i+1}</span>${c}
+        </button>
+      `).join('')}
+    </div>
+    <div class="hint-area">
+      <button class="hint-btn" onclick="useHintM4()" ${hintUsed?'disabled':''}>
+        💡 힌트 ${hintUsed?'(사용됨)':'(배점 -50%)'}
+      </button>
+      <div class="hint-box ${hintUsed?'show':''}">💡 ${q.hint}</div>
+    </div>
+    <div class="feedback-box ${answered!==undefined?'show':''} ${answered!==undefined&&answered!==q.answer?'wrong-feedback':''}">
+      ${answered!==undefined?(answered===q.answer?'🎉 정답! '+q.explain:'😅 다시 생각해봐요! '+q.explain):''}
+    </div>
+    ${answered!==undefined?`<button class="next-btn" onclick="nextM4()">다음 문제 ➡️</button>`:''}
+  `;
+}
+
+function answerM4(i) {
+  if(m4State.answered[m4State.qIdx]!==undefined) return;
+  const q = m4_data.questions[m4State.qIdx];
+  m4State.answered[m4State.qIdx] = i;
+  let pts = 15;
+  if(m4State.hintUsed[m4State.qIdx]) pts=8;
+  if(i===q.answer){ m4State.score+=pts; playCorrect(); setMascot('happy','데이터를 읽는 눈이 대단해! 📊'); }
+  else { playWrong(); setMascot('sad','막대그래프를 다시 잘 봐봐! 괜찮아, 할 수 있어!'); }
+  buildM4(document.getElementById('mission-panel'));
+}
+
+function nextM4() {
+  m4State.qIdx++;
+  buildM4(document.getElementById('mission-panel'));
+}
+
+function useHintM4() {
+  m4State.hintUsed[m4State.qIdx]=true;
+  buildM4(document.getElementById('mission-panel'));
+}
+
+// ==============================
+// FINISH MISSION
+// ==============================
+function buildDonePanel(idx) {
+  const emojis = ['🗺️','🔬','🌱','📊'];
+  const names = ['기후변화 지도 읽기','교과 융합 퀴즈','탄소중립 실천 순서 정렬','에너지 데이터 분석'];
+  return `<div class="mission-intro">
+    <div class="intro-icon">✅</div>
+    <div class="intro-title">${emojis[idx]} 미션${idx+1} 완료!</div>
+    <div class="intro-desc">${names[idx]} 미션을 클리어했어요! 🎉<br>획득 점수: <strong>${state.scores[idx]}점</strong> / 별: ${'⭐'.repeat(state.missionStars[idx])}</div>
+    ${idx<3?`<button class="launch-btn" onclick="selectMission(${idx+1})">미션${idx+2} 도전하기 ➡️</button>`:`<button class="launch-btn" onclick="showResult()">🏆 최종 결과 보기</button>`}
+  </div>`;
+}
+
+function finishMission(idx, score, stars, msg) {
+  clearInterval(m1State.timerInterval);
+  clearInterval(m2State.timerInterval);
+  state.missionStatus[idx] = true;
+  state.scores[idx] = score;
+  state.missionStars[idx] = stars;
+  state.totalScore = state.scores.reduce((a,b)=>a+b,0);
+  if(idx<3) state.missionUnlocked[idx+1] = true;
+  
+  // update tab stars
+  const starStr = ['☆☆☆','⭐☆☆','⭐⭐☆','⭐⭐⭐'][stars];
+  document.getElementById('stars-'+idx).textContent = starStr;
+  
+  updateProgress();
+  playFanfare();
+  setMascot('happy', msg);
+  
+  // save stars to localStorage
+  const key = 'milab_game_022_stars';
+  const saved = JSON.parse(localStorage.getItem(key)||'[0,0,0,0]');
+  saved[idx] = Math.max(saved[idx], stars);
+  localStorage.setItem(key, JSON.stringify(saved));
+  
+  // update tab appearance
+  document.querySelectorAll('.tab-btn').forEach((btn,i)=>{
+    btn.classList.remove('locked');
+    if(state.missionStatus[i]) btn.classList.add('done');
+    if(state.missionUnlocked[i]) btn.classList.remove('locked');
+  });
+  
+  renderMission(idx);
+  selectMission(idx);
+}
+
+// ==============================
+// RESULT
+// ==============================
+function showResult() {
+  stopBGM();
+  const score = state.totalScore;
+  let badge, title, ending;
+  if(score>=80){
+    badge='🏆'; title='레전드 지구 구조대원!';
+    ending='믿을 수 없어! 완벽한 점수야! 에코봇도 깜짝 놀랐어. 너 덕분에 2050년 지구가 건강해졌어. 지구의 날마다 네가 떠오를 거야! 🌍✨';
+  } else if(score>=60){
+    badge='🥈'; title='전문 구조대원!';
+    ending='훌륭해! 기후변화를 막는 지식을 갖췄어. 조금 더 공부하면 레전드가 될 수 있어! 지구가 고마워하고 있어. 🌿💚';
+  } else if(score>=40){
+    badge='🥉'; title='탐험가 구조대원!';
+    ending='잘 했어! 환경 지식이 쑥쑥 자라고 있어. 다시 도전해서 지구를 더 잘 구해봐! 에코봇이 응원할게! 🌱💪';
+  } else {
+    badge='🌱'; title='견습 구조대원!';
+    ending='첫 도전 고생했어! 틀려도 배우는 거야. 해설을 읽고 다시 도전하면 반드시 레전드가 될 수 있어! 에코봇이 기다릴게! 😊';
+  }
+  
+  document.getElementById('result-badge').textContent = badge;
+  document.getElementById('result-title').textContent = title;
+  document.getElementById('result-score').textContent = score+'점';
+  document.getElementById('result-ending').textContent = ending;
+  
+  renderHOF();
+  generateQR();
+  showScreen('screen-result');
+  playFanfare();
+}
+
+function renderHOF() {
+  const key = 'milab_game_022_lb';
+  const entries = JSON.parse(localStorage.getItem(key)||'[]');
+  const sorted = entries.sort((a,b)=>b.score-a.score).slice(0,5);
+  const medals = ['🥇','🥈','🥉','④','⑤'];
+  document.getElementById('hof-list').innerHTML = sorted.length?
+    sorted.map((e,i)=>`<div class="hof-entry">
+      <span class="hof-rank">${medals[i]}</span>
+      <span>${e.name}</span>
+      <span><strong>${e.score}점</strong></span>
+    </div>`).join(''):
+    '<div style="color:#aaa;font-size:13px;padding:8px 0;">아직 기록이 없어요. 첫 번째 주인공이 되어봐요!</div>';
+}
+
+function registerScore() {
+  const name = document.getElementById('name-input').value.trim();
+  if(!name){ alert('이름을 입력해주세요!'); return; }
+  const key = 'milab_game_022_lb';
+  const entries = JSON.parse(localStorage.getItem(key)||'[]');
+  entries.push({ name, score: state.totalScore, date: new Date().toLocaleDateString('ko-KR') });
+  localStorage.setItem(key, JSON.stringify(entries));
+  renderHOF();
+  document.getElementById('name-input').value='';
+  alert(`🏅 ${name} 님의 ${state.totalScore}점이 등록됐어요!`);
+}
+
+function generateQR() {
+  // 결과 화면 QR
+  const el = document.getElementById('qrcode');
+  el.innerHTML = '';
+  try {
+    new QRCode(el, {
+      text: portfolioEntry.url,
+      width: 120, height: 120,
+      colorDark: '#1a5276', colorLight: '#ffffff',
+      correctLevel: QRCode.CorrectLevel.M
+    });
+  } catch(e) { el.innerHTML = '<p style="font-size:12px;color:#aaa;">QR 생성 오류</p>'; }
+}
+
+function generateTitleQR() {
+  // 타이틀 화면 QR
+  const el = document.getElementById('qrcode-title');
+  if (!el) return;
+  el.innerHTML = '';
+  try {
+    new QRCode(el, {
+      text: portfolioEntry.url,
+      width: 110, height: 110,
+      colorDark: '#27ae60', colorLight: '#ffffff',
+      correctLevel: QRCode.CorrectLevel.M
+    });
+  } catch(e) { el.innerHTML = '<p style="font-size:12px;color:#aaa;">QR 생성 오류</p>'; }
+}
+
+function replayGame() {
+  state = { currentMission:0, missionStatus:[false,false,false,false], missionUnlocked:[true,false,false,false], missionStars:[0,0,0,0], scores:[0,0,0,0], totalScore:0 };
+  m1State = { qIdx:0, score:0, hintUsed:[], timerSec:60, timerInterval:null, answered:[], timerStarted:false };
+  m2State = { diff:'easy', qIdx:0, score:0, hintUsed:[], timerSec:30, timerInterval:null, answered:[], started:false };
+  m3State = { setIdx:0, currentOrder:[], draggingIdx:null, checked:false, started:false, score3:0 };
+  m4State = { qIdx:0, score:0, hintUsed:[], answered:[], started:false };
+  document.querySelectorAll('.tab-btn').forEach((btn,i)=>{
+    btn.className='tab-btn'+(i===0?' active':' locked');
+  });
+  ['stars-0','stars-1','stars-2','stars-3'].forEach(id=>document.getElementById(id).textContent='☆☆☆');
+  document.getElementById('total-score').textContent='0';
+  document.getElementById('progress-bar').style.width='0%';
+  showScreen('screen-game');
+  renderMission(0);
+  try{ playBGM(); }catch(e){}
+}
+
+// init saved stars on load
+window.addEventListener('load', ()=>{
+  const key = 'milab_game_022_stars';
+  const saved = JSON.parse(localStorage.getItem(key)||'[0,0,0,0]');
+  saved.forEach((s,i)=>{
+    if(s>0) document.getElementById('stars-'+i).textContent = '⭐'.repeat(s)+'☆'.repeat(3-s);
+  });
+  // 타이틀 화면 QR 생성 (CDN 로드 후 약간 지연)
+  setTimeout(generateTitleQR, 400);
+});
+</script>
+</body>
+</html>
