@@ -1,0 +1,1314 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🤖 AI 로봇 아카데미 | MILAB #027</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<style>
+  /* ===== 기본 리셋 & 변수 ===== */
+  *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+  :root{
+    --bg1:#1a1a3e;--bg2:#16213e;--bg3:#0f3460;
+    --accent:#00d4ff;--accent2:#7b2fff;--accent3:#ff6b6b;
+    --green:#00ff88;--yellow:#ffd700;--orange:#ff9500;
+    --card:#ffffff12;--card2:#ffffff1e;
+    --text:#e8f4ff;--text2:#b0c4de;
+    --radius:16px;--shadow:0 8px 32px rgba(0,212,255,0.15);
+  }
+  body{
+    font-family:'Noto Sans KR',sans-serif;
+    background:linear-gradient(135deg,var(--bg1),var(--bg2),var(--bg3));
+    min-height:100vh;color:var(--text);
+    font-size:17px;line-height:1.6;
+    overflow-x:hidden;
+  }
+  .screen{display:none;min-height:100vh;padding:20px;}
+  .screen.active{display:flex;flex-direction:column;align-items:center;}
+
+  /* ===== 상단 HUD ===== */
+  .hud{
+    width:100%;max-width:700px;
+    display:flex;justify-content:space-between;align-items:center;
+    background:var(--card);backdrop-filter:blur(10px);
+    border:1px solid rgba(0,212,255,0.2);
+    border-radius:var(--radius);padding:10px 20px;
+    margin-bottom:18px;flex-wrap:wrap;gap:8px;
+  }
+  .hud-item{font-size:14px;color:var(--text2);}
+  .hud-item span{color:var(--accent);font-weight:700;font-size:16px;}
+  .btn-music{
+    background:transparent;border:1px solid var(--accent);
+    color:var(--accent);border-radius:8px;padding:4px 12px;
+    cursor:pointer;font-size:13px;
+  }
+
+  /* ===== 카드 공통 ===== */
+  .card{
+    width:100%;max-width:700px;
+    background:var(--card);backdrop-filter:blur(12px);
+    border:1px solid rgba(0,212,255,0.2);
+    border-radius:20px;padding:28px 24px;
+    box-shadow:var(--shadow);margin-bottom:16px;
+  }
+
+  /* ===== 버튼 ===== */
+  .btn{
+    background:linear-gradient(135deg,var(--accent2),var(--accent));
+    color:#fff;border:none;border-radius:12px;
+    padding:14px 32px;font-size:17px;font-weight:700;
+    cursor:pointer;transition:all .2s;
+    min-width:48px;min-height:48px;
+    box-shadow:0 4px 20px rgba(0,212,255,0.3);
+  }
+  .btn:hover{transform:translateY(-2px);box-shadow:0 6px 28px rgba(0,212,255,0.45);}
+  .btn:active{transform:translateY(0);}
+  .btn-sm{padding:10px 20px;font-size:15px;}
+  .btn-outline{
+    background:transparent;border:2px solid var(--accent);
+    color:var(--accent);
+  }
+  .btn-hint{
+    background:linear-gradient(135deg,#ff9500,#ff6b6b);
+    font-size:14px;padding:10px 18px;
+  }
+
+  /* ===== 선택지 ===== */
+  .choices{display:flex;flex-direction:column;gap:12px;margin-top:16px;}
+  .choice-btn{
+    background:var(--card2);border:2px solid rgba(0,212,255,0.2);
+    color:var(--text);border-radius:12px;
+    padding:14px 20px;font-size:16px;
+    text-align:left;cursor:pointer;
+    transition:all .2s;min-height:54px;
+  }
+  .choice-btn:hover{border-color:var(--accent);background:rgba(0,212,255,0.1);}
+  .choice-btn.correct{border-color:var(--green);background:rgba(0,255,136,0.15);}
+  .choice-btn.wrong{border-color:var(--accent3);background:rgba(255,107,107,0.15);}
+
+  /* ===== 타이머 ===== */
+  .timer-wrap{display:flex;align-items:center;gap:10px;margin-bottom:14px;}
+  .timer-bar{flex:1;height:10px;background:#ffffff20;border-radius:5px;overflow:hidden;}
+  .timer-fill{height:100%;background:linear-gradient(90deg,var(--green),var(--accent));border-radius:5px;transition:width .1s linear;}
+  .timer-num{font-size:22px;font-weight:700;color:var(--accent);min-width:38px;text-align:center;}
+  .timer-num.danger{color:var(--accent3);animation:blink .5s infinite;}
+  @keyframes blink{0%,100%{opacity:1;}50%{opacity:.3;}}
+
+  /* ===== 진행 표시 ===== */
+  .progress-bar{width:100%;max-width:700px;display:flex;gap:8px;margin-bottom:14px;}
+  .prog-step{
+    flex:1;height:8px;border-radius:4px;
+    background:#ffffff20;transition:background .4s;
+  }
+  .prog-step.done{background:var(--green);}
+  .prog-step.active{background:var(--accent);animation:pulse 1s infinite;}
+  @keyframes pulse{0%,100%{opacity:1;}50%{opacity:.5;}}
+
+  /* ===== 마스코트 ROMI ===== */
+  .mascot-wrap{display:flex;flex-direction:column;align-items:center;margin:10px 0;}
+  .mascot-bubble{
+    background:var(--card2);border:1px solid rgba(0,212,255,0.3);
+    border-radius:16px 16px 16px 4px;
+    padding:12px 18px;max-width:320px;
+    font-size:15px;color:var(--text);margin-bottom:8px;
+    text-align:center;position:relative;
+  }
+  svg.romi{width:90px;height:90px;}
+
+  /* ===== 시작화면 ===== */
+  .title-logo{
+    font-size:clamp(28px,6vw,48px);font-weight:900;
+    background:linear-gradient(135deg,var(--accent),var(--accent2));
+    -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+    text-align:center;margin:10px 0;
+  }
+  .subtitle{color:var(--text2);font-size:16px;text-align:center;margin-bottom:8px;}
+  .badge-row{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin:8px 0;}
+  .badge{
+    background:rgba(0,212,255,0.15);border:1px solid var(--accent);
+    border-radius:20px;padding:4px 14px;font-size:13px;color:var(--accent);
+  }
+  .story-box{
+    background:rgba(123,47,255,0.15);border:1px solid rgba(123,47,255,0.4);
+    border-radius:14px;padding:16px 20px;
+    font-size:15px;color:var(--text2);margin:12px 0;line-height:1.7;
+  }
+
+  /* ===== 미션 선택 ===== */
+  .mission-grid{display:flex;flex-direction:column;gap:12px;width:100%;max-width:700px;}
+  .mission-card{
+    background:var(--card);border:2px solid rgba(0,212,255,0.2);
+    border-radius:16px;padding:18px 22px;cursor:pointer;
+    display:flex;align-items:center;gap:16px;
+    transition:all .2s;
+  }
+  .mission-card:hover:not(.locked){border-color:var(--accent);transform:translateX(4px);}
+  .mission-card.locked{opacity:.5;cursor:not-allowed;}
+  .mission-card.done{border-color:var(--green);}
+  .mission-icon{font-size:32px;width:48px;text-align:center;}
+  .mission-info h3{font-size:17px;font-weight:700;margin-bottom:4px;}
+  .mission-info p{font-size:14px;color:var(--text2);}
+  .mission-stars{font-size:20px;margin-left:auto;}
+
+  /* ===== 난이도 탭 ===== */
+  .tab-row{display:flex;gap:8px;margin-bottom:16px;}
+  .tab{
+    flex:1;padding:10px;border:2px solid rgba(0,212,255,0.2);
+    border-radius:10px;background:transparent;
+    color:var(--text2);font-size:15px;cursor:pointer;text-align:center;
+  }
+  .tab.active{border-color:var(--accent);background:rgba(0,212,255,0.15);color:var(--accent);font-weight:700;}
+
+  /* ===== 드래그앤드롭 ===== */
+  .drag-container{display:flex;flex-direction:column;gap:24px;}
+  .drag-set{margin-bottom:8px;}
+  .drag-set h4{font-size:15px;color:var(--accent);margin-bottom:10px;font-weight:700;}
+  .drag-zone{
+    background:rgba(0,212,255,0.06);border:2px dashed rgba(0,212,255,0.25);
+    border-radius:12px;padding:12px;
+    display:flex;flex-direction:column;gap:8px;min-height:60px;
+  }
+  .drag-item{
+    background:var(--card2);border:1px solid rgba(0,212,255,0.25);
+    border-radius:10px;padding:12px 16px;
+    cursor:grab;font-size:15px;
+    display:flex;align-items:center;gap:10px;
+    user-select:none;transition:all .15s;
+  }
+  .drag-item:active{cursor:grabbing;transform:scale(1.02);}
+  .drag-item.dragging{opacity:.4;}
+  .drag-item.over{border-color:var(--accent);}
+  .drag-num{
+    width:26px;height:26px;background:var(--accent2);
+    border-radius:50%;display:flex;align-items:center;justify-content:center;
+    font-size:13px;font-weight:700;flex-shrink:0;
+  }
+  .check-btn-row{display:flex;justify-content:center;margin-top:14px;}
+
+  /* ===== 그래프 ===== */
+  .chart-wrap{overflow-x:auto;margin:12px 0;}
+  .bar-chart{display:flex;align-items:flex-end;gap:10px;height:180px;padding:10px 0;}
+  .bar-col{display:flex;flex-direction:column;align-items:center;gap:6px;flex:1;}
+  .bar{
+    width:100%;border-radius:6px 6px 0 0;
+    background:linear-gradient(to top,var(--accent2),var(--accent));
+    transition:height .6s ease;
+  }
+  .bar-label{font-size:12px;color:var(--text2);text-align:center;}
+  .bar-val{font-size:13px;font-weight:700;color:var(--accent);}
+
+  /* ===== 결과화면 ===== */
+  .result-score{
+    font-size:clamp(48px,12vw,80px);font-weight:900;
+    background:linear-gradient(135deg,var(--accent),var(--accent2));
+    -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+    text-align:center;
+  }
+  .ending-card{
+    background:linear-gradient(135deg,rgba(0,212,255,0.1),rgba(123,47,255,0.15));
+    border:2px solid rgba(0,212,255,0.3);
+    border-radius:20px;padding:24px;text-align:center;
+  }
+  .ending-title{font-size:24px;font-weight:900;margin:8px 0;}
+  .ending-desc{color:var(--text2);font-size:15px;}
+  .score-row{display:flex;justify-content:space-around;flex-wrap:wrap;gap:12px;margin:16px 0;}
+  .score-item{text-align:center;}
+  .score-item .val{font-size:22px;font-weight:700;color:var(--accent);}
+  .score-item .lbl{font-size:13px;color:var(--text2);}
+  .leaderboard{margin:16px 0;}
+  .lb-row{
+    display:flex;gap:12px;align-items:center;
+    padding:10px 14px;border-radius:10px;margin-bottom:6px;
+    background:var(--card2);
+  }
+  .lb-rank{font-size:20px;width:30px;}
+  .lb-name{flex:1;font-weight:600;}
+  .lb-score{color:var(--accent);font-weight:700;}
+  .name-input{
+    background:var(--card2);border:2px solid rgba(0,212,255,0.3);
+    color:var(--text);border-radius:10px;
+    padding:12px 16px;font-size:16px;width:100%;max-width:300px;
+    margin-bottom:12px;
+  }
+  .qr-box{margin-top:16px;text-align:center;}
+  .qr-box p{font-size:13px;color:var(--text2);margin-bottom:8px;}
+  #qr-start,#qr-result{display:inline-block;}
+
+  /* ===== 피드백 오버레이 ===== */
+  .feedback-overlay{
+    position:fixed;top:0;left:0;right:0;bottom:0;
+    background:rgba(0,0,0,0.72);
+    display:flex;align-items:center;justify-content:center;
+    z-index:99999;opacity:0;pointer-events:none;
+    transition:opacity .25s;
+  }
+  .feedback-overlay.show{opacity:1;pointer-events:all;}
+  .feedback-box{
+    background:linear-gradient(135deg,#1a1a3e,#0f3460);
+    border-radius:20px;padding:28px;
+    max-width:400px;width:90%;text-align:center;
+    border:2px solid rgba(0,212,255,0.3);
+  }
+  .feedback-icon{font-size:52px;margin-bottom:10px;}
+  .feedback-title{font-size:22px;font-weight:700;margin-bottom:8px;}
+  .feedback-desc{font-size:15px;color:var(--text2);margin-bottom:16px;line-height:1.6;}
+
+  /* ===== 반응형 ===== */
+  @media(max-width:480px){
+    .card{padding:20px 16px;}
+    .btn{padding:12px 24px;font-size:16px;}
+  }
+</style>
+</head>
+<body>
+
+<!-- ==============================
+     화면 1: 시작 화면
+================================= -->
+<div id="screen-start" class="screen active">
+  <div style="width:100%;max-width:700px;text-align:center;padding-top:10px;">
+    <div style="font-size:14px;color:var(--text2);margin-bottom:4px;">MILAB #027 · 초등 5-6학년</div>
+    <div class="title-logo">🤖 AI 로봇 아카데미</div>
+    <div class="subtitle">로봇 오류를 수정하고 미랩시티를 구하라!</div>
+
+    <div class="badge-row">
+      <span class="badge">🔬 실과+과학+도덕</span>
+      <span class="badge">📊 4개 미션</span>
+      <span class="badge">⭐ 뱃지 시스템</span>
+    </div>
+
+    <!-- 마스코트 -->
+    <div class="mascot-wrap" style="margin:16px 0;">
+      <div class="mascot-bubble">안녕! 나는 AI 로봇 <b>로미(ROMI)</b>야!<br>함께 미랩시티를 구해줘! 🌟</div>
+      <div id="romi-start"></div>
+    </div>
+
+    <!-- 스토리 -->
+    <div class="story-box">
+      📖 <b>스토리</b><br>
+      2035년 미래 도시 '미랩시티'. AI 로봇들이 도시를 돕고 있었지만, 갑자기 제어 시스템에 오류가 발생했어요!
+      로봇 엔지니어 아카데미의 신입 견습생인 <b>너</b>만이 AI 로봇의 원리를 파악하고 4가지 핵심 미션을 완수할 수 있어.
+      어서 시작하자!
+    </div>
+
+    <!-- QR -->
+    <div class="qr-box">
+      <p>📱 친구에게 공유하기</p>
+      <div id="qr-start"></div>
+    </div>
+
+    <div style="margin-top:20px;">
+      <button class="btn" onclick="startGame()" style="font-size:20px;padding:18px 48px;">🚀 미션 시작!</button>
+    </div>
+    <div style="margin-top:12px;">
+      <button class="btn-music btn" onclick="toggleMusic()" id="music-btn-start">🔊 음악 ON</button>
+    </div>
+  </div>
+</div>
+
+<!-- ==============================
+     화면 2: 미션 선택
+================================= -->
+<div id="screen-missions" class="screen">
+  <div class="hud">
+    <div class="hud-item">총점 <span id="hud-score">0</span>점</div>
+    <div class="hud-item">뱃지 <span id="hud-badges">☆☆☆☆</span></div>
+    <button class="btn-music" onclick="toggleMusic()" id="music-btn-hud">🔊</button>
+  </div>
+
+  <div style="width:100%;max-width:700px;">
+    <h2 style="font-size:22px;font-weight:700;margin-bottom:6px;">📡 미션 선택</h2>
+    <p style="color:var(--text2);font-size:15px;margin-bottom:16px;">순서대로 미션을 완료해 AI 로봇 오류를 수정하세요!</p>
+
+    <div class="progress-bar">
+      <div class="prog-step" id="prog1"></div>
+      <div class="prog-step" id="prog2"></div>
+      <div class="prog-step" id="prog3"></div>
+      <div class="prog-step" id="prog4"></div>
+    </div>
+
+    <div class="mission-grid" id="mission-grid"></div>
+
+    <div class="mascot-wrap" style="margin-top:20px;">
+      <div class="mascot-bubble" id="hub-bubble">미션을 순서대로 클리어해 봐! 할 수 있어! 💪</div>
+      <div id="romi-hub"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ==============================
+     화면 3: 미션 1
+================================= -->
+<div id="screen-m1" class="screen">
+  <div class="hud">
+    <div class="hud-item">미션 1 <span id="m1-qnum">1/6</span></div>
+    <div class="hud-item">점수 <span id="m1-score">0</span></div>
+    <button class="btn-music" onclick="toggleMusic()">🔊</button>
+  </div>
+  <div style="width:100%;max-width:700px;">
+    <h2 style="font-size:20px;font-weight:700;margin-bottom:12px;">🤖 미션1 · AI 로봇 분류 퀴즈</h2>
+    <div class="card">
+      <div class="timer-wrap">
+        <div class="timer-bar"><div class="timer-fill" id="m1-timer-fill"></div></div>
+        <div class="timer-num" id="m1-timer-num">60</div>
+      </div>
+      <div class="mascot-wrap">
+        <div class="mascot-bubble" id="m1-bubble">AI 로봇에 대해 얼마나 알고 있는지 테스트해 볼게!</div>
+        <div id="romi-m1"></div>
+      </div>
+      <div id="m1-question" style="font-size:18px;font-weight:600;margin:12px 0;line-height:1.5;"></div>
+      <div class="choices" id="m1-choices"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ==============================
+     화면 4: 미션 2
+================================= -->
+<div id="screen-m2" class="screen">
+  <div class="hud">
+    <div class="hud-item">미션 2</div>
+    <div class="hud-item">점수 <span id="m2-score">0</span></div>
+    <button class="btn-music" onclick="toggleMusic()">🔊</button>
+  </div>
+  <div style="width:100%;max-width:700px;">
+    <h2 style="font-size:20px;font-weight:700;margin-bottom:10px;">📚 미션2 · 교과 융합 퀴즈</h2>
+    <div class="tab-row" id="m2-tabs">
+      <button class="tab active" onclick="setM2Level(0)" id="tab0">⭐ 쉬움</button>
+      <button class="tab" onclick="setM2Level(1)" id="tab1">⭐⭐ 보통</button>
+      <button class="tab" onclick="setM2Level(2)" id="tab2">⭐⭐⭐ 도전</button>
+    </div>
+    <div class="card">
+      <div class="timer-wrap">
+        <div class="timer-bar"><div class="timer-fill" id="m2-timer-fill"></div></div>
+        <div class="timer-num" id="m2-timer-num">30</div>
+      </div>
+      <div class="mascot-wrap">
+        <div class="mascot-bubble" id="m2-bubble">교과서에서 배운 내용을 떠올려봐!</div>
+        <div id="romi-m2"></div>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+        <div id="m2-qnum" style="font-size:14px;color:var(--text2);"></div>
+        <button class="btn btn-hint" id="m2-hint-btn" onclick="useHint()">💡 힌트 (-50%)</button>
+      </div>
+      <div id="m2-question" style="font-size:18px;font-weight:600;margin:8px 0;line-height:1.5;"></div>
+      <div id="m2-hint-box" style="display:none;background:rgba(255,149,0,0.15);border:1px solid var(--orange);border-radius:10px;padding:10px 14px;font-size:14px;color:var(--orange);margin-bottom:10px;"></div>
+      <div class="choices" id="m2-choices"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ==============================
+     화면 5: 미션 3
+================================= -->
+<div id="screen-m3" class="screen">
+  <div class="hud">
+    <div class="hud-item">미션 3</div>
+    <div class="hud-item">점수 <span id="m3-score">0</span></div>
+    <button class="btn-music" onclick="toggleMusic()">🔊</button>
+  </div>
+  <div style="width:100%;max-width:700px;">
+    <h2 style="font-size:20px;font-weight:700;margin-bottom:8px;">🔧 미션3 · AI 로봇 작동 순서 정렬</h2>
+    <p style="color:var(--text2);font-size:14px;margin-bottom:12px;">카드를 드래그해서 올바른 순서로 정렬하세요!</p>
+
+    <div class="mascot-wrap" style="margin-bottom:12px;">
+      <div class="mascot-bubble" id="m3-bubble">천천히 생각해봐! 타이머 없으니 걱정 마! 😊</div>
+      <div id="romi-m3"></div>
+    </div>
+
+    <div class="card">
+      <div id="m3-sets-container" class="drag-container"></div>
+      <div class="check-btn-row">
+        <button class="btn" onclick="checkM3()">✅ 정답 확인</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ==============================
+     화면 6: 미션 4
+================================= -->
+<div id="screen-m4" class="screen">
+  <div class="hud">
+    <div class="hud-item">미션 4</div>
+    <div class="hud-item">점수 <span id="m4-score">0</span></div>
+    <button class="btn-music" onclick="toggleMusic()">🔊</button>
+  </div>
+  <div style="width:100%;max-width:700px;">
+    <h2 style="font-size:20px;font-weight:700;margin-bottom:8px;">📊 미션4 · AI 로봇 데이터 분석</h2>
+    <div class="mascot-wrap" style="margin-bottom:12px;">
+      <div class="mascot-bubble" id="m4-bubble">그래프를 잘 읽고 답을 골라봐!</div>
+      <div id="romi-m4"></div>
+    </div>
+
+    <div class="card" id="m4-chart-card">
+      <h3 style="font-size:16px;font-weight:700;margin-bottom:12px;color:var(--accent);">📈 미랩시티 AI 로봇 활용 현황 (2035년)</h3>
+      <div class="chart-wrap">
+        <div class="bar-chart" id="bar-chart"></div>
+      </div>
+      <p style="font-size:13px;color:var(--text2);text-align:center;">(단위: 대)</p>
+    </div>
+
+    <div class="card">
+      <div class="mascot-bubble" style="margin-bottom:10px;" id="m4-q-bubble"></div>
+      <div id="m4-question" style="font-size:18px;font-weight:600;margin:8px 0;line-height:1.5;"></div>
+      <div id="m4-qnum" style="font-size:14px;color:var(--text2);margin-bottom:10px;"></div>
+      <div class="choices" id="m4-choices"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ==============================
+     화면 7: 결과
+================================= -->
+<div id="screen-result" class="screen">
+  <div style="width:100%;max-width:700px;text-align:center;">
+    <div style="font-size:32px;margin-bottom:8px;" id="result-emoji">🏆</div>
+    <div class="result-score" id="result-score-num">0</div>
+    <div style="font-size:16px;color:var(--text2);margin-bottom:20px;">/ 100점</div>
+
+    <div class="ending-card" id="ending-card">
+      <div style="font-size:48px;" id="ending-icon">🌟</div>
+      <div class="ending-title" id="ending-title"></div>
+      <div class="ending-desc" id="ending-desc"></div>
+    </div>
+
+    <div class="score-row" style="margin-top:20px;">
+      <div class="score-item"><div class="val" id="r-m1">0</div><div class="lbl">미션1</div></div>
+      <div class="score-item"><div class="val" id="r-m2">0</div><div class="lbl">미션2</div></div>
+      <div class="score-item"><div class="val" id="r-m3">0</div><div class="lbl">미션3</div></div>
+      <div class="score-item"><div class="val" id="r-m4">0</div><div class="lbl">미션4</div></div>
+    </div>
+
+    <div class="card" style="margin-top:16px;">
+      <div class="mascot-wrap">
+        <div class="mascot-bubble" id="result-bubble"></div>
+        <div id="romi-result"></div>
+      </div>
+    </div>
+
+    <!-- 점수 등록 -->
+    <div class="card">
+      <h3 style="font-size:17px;font-weight:700;margin-bottom:12px;">🏅 명예의 전당 등록</h3>
+      <input class="name-input" id="player-name" placeholder="이름 입력 (최대 6자)" maxlength="6">
+      <button class="btn" onclick="saveScore()">📝 점수 등록</button>
+      <div class="leaderboard" id="leaderboard-display"></div>
+    </div>
+
+    <div class="qr-box">
+      <p>📱 친구에게 게임 공유하기</p>
+      <div id="qr-result"></div>
+    </div>
+
+    <div style="margin:20px 0;display:flex;gap:12px;justify-content:center;flex-wrap:wrap;">
+      <button class="btn btn-outline" onclick="location.reload()">🔄 다시 시작</button>
+      <button class="btn" onclick="showMissions()">📡 미션 목록</button>
+    </div>
+  </div>
+</div>
+
+<!-- 피드백 오버레이 -->
+<div class="feedback-overlay" id="feedback-overlay">
+  <div class="feedback-box">
+    <div class="feedback-icon" id="fb-icon">✅</div>
+    <div class="feedback-title" id="fb-title"></div>
+    <div class="feedback-desc" id="fb-desc"></div>
+    <div id="romi-fb" style="margin:12px 0;"></div>
+    <button class="btn" onclick="closeFeedback()" id="fb-btn">다음 문제 →</button>
+  </div>
+</div>
+
+<script>
+// ==============================
+// 데이터: 미션1 문항 (6문항)
+// ==============================
+const m1Questions = [
+  {q:"AI 로봇(인공지능 로봇)이란 무엇일까요?",choices:["스스로 생각하고 판단하는 능력을 가진 로봇","사람이 직접 조종해야만 움직이는 로봇","전기 없이도 작동하는 로봇","오직 걸을 수만 있는 로봇"],ans:0,exp:"AI 로봇은 인공지능을 활용해 스스로 생각하고 판단하며 행동할 수 있는 로봇이에요.",pt:10},
+  {q:"다음 중 AI 로봇이 활용되는 분야가 아닌 것은?",choices:["병원 수술 보조","음식 배달","빨래 대신하기(가정용 로봇)","과거 시간 여행"],ans:3,exp:"AI 로봇은 의료·배달·가사 등에 활용되지만, 시간 여행은 현재 과학으로 불가능해요!",pt:10},
+  {q:"AI 로봇이 학습하는 방법을 '머신러닝(기계 학습)'이라고 해요. 이것은 무엇인가요?",choices:["로봇이 직접 공장에서 만들어지는 과정","컴퓨터가 많은 데이터를 보고 스스로 패턴을 배우는 것","로봇에게 매번 사람이 정답을 알려주는 것","로봇의 배터리를 충전하는 방법"],ans:1,exp:"머신러닝은 많은 데이터를 통해 컴퓨터가 스스로 패턴을 찾고 학습하는 기술이에요.",pt:10},
+  {q:"AI 로봇의 '센서(sensor)'는 어떤 역할을 하나요?",choices:["로봇에게 에너지를 공급한다","주변 환경의 정보를 수집한다","로봇의 모양을 바꾼다","로봇을 인터넷에 연결한다"],ans:1,exp:"센서는 카메라·온도계·거리 감지기처럼 주변 환경의 정보를 수집하는 장치예요.",pt:10},
+  {q:"AI 로봇이 사람의 목소리를 이해하는 기술을 무엇이라고 하나요?",choices:["3D 프린팅","음성 인식(Voice Recognition)","블록체인","증강현실(AR)"],ans:1,exp:"음성 인식 기술 덕분에 AI 스피커나 로봇에게 말로 명령을 내릴 수 있어요.",pt:10},
+  {q:"AI 로봇을 올바르게 사용하기 위한 윤리(규칙)로 가장 중요한 것은?",choices:["로봇이 항상 인간보다 우월해야 한다","개인 정보(사생활)를 함부로 수집하면 안 된다","AI 로봇이 모든 결정을 대신해야 한다","로봇은 어린이만 사용해야 한다"],ans:1,exp:"AI 로봇 윤리에서 개인 정보 보호는 매우 중요해요. 동의 없이 정보를 수집하면 안 돼요.",pt:15},
+];
+
+// ==============================
+// 데이터: 미션2 문항 (9문항)
+// ==============================
+const m2Levels = [
+  // 쉬움 (3문항)
+  [
+    {q:"AI 로봇의 뇌 역할을 하는 것은 무엇인가요?",choices:["배터리","CPU(중앙처리장치)","바퀴","카메라"],ans:1,hint:"컴퓨터에서 계산을 담당하는 부품이에요.",exp:"CPU(중앙처리장치)는 AI 로봇이 정보를 처리하고 판단하는 '뇌' 역할을 해요.",pt:10},
+    {q:"다음 중 AI 로봇이 갖추어야 할 '도덕적' 원칙으로 올바른 것은?",choices:["사람을 차별해도 된다","항상 사람에게 해가 되지 않아야 한다","모든 정보를 무조건 공유해야 한다","로봇이 스스로 법을 만들어야 한다"],ans:1,hint:"로봇이 사람에게 어떤 영향을 주어야 할지 생각해 봐요.",exp:"AI 로봇은 사람에게 해가 되지 않는 방향으로 행동해야 한다는 원칙이 중요해요.",pt:10},
+    {q:"AI 로봇이 길을 스스로 찾아가는 기술에 필요한 센서는?",choices:["온도 센서","GPS와 거리 센서","소리 센서","색깔 센서"],ans:1,hint:"위치를 파악하는 위성 신호와 장애물 거리를 재는 장치를 생각해 봐요.",exp:"GPS는 위치를, 거리 센서는 장애물까지의 거리를 파악해 로봇이 스스로 이동할 수 있게 해요.",pt:10},
+  ],
+  // 보통 (3문항)
+  [
+    {q:"실과 수업에서 배운 '소프트웨어'와 AI 로봇의 관계는 무엇인가요?",choices:["소프트웨어 없이도 AI 로봇은 작동한다","소프트웨어는 AI 로봇이 무엇을 할지 알려주는 명령어 집합이다","소프트웨어는 로봇의 몸통(하드웨어)을 만드는 재료다","소프트웨어와 AI 로봇은 전혀 관계가 없다"],ans:1,hint:"소프트웨어 = 컴퓨터에게 내리는 명령어들의 모음이에요.",exp:"소프트웨어(프로그램)는 AI 로봇이 무엇을 어떻게 해야 하는지 명령을 내리는 역할을 해요.",pt:15},
+    {q:"과학 시간에 배운 에너지와 관련해, AI 로봇이 주로 사용하는 에너지원은?",choices:["석탄","태양열만 가능","전기 에너지 (배터리·전원)","수소만 가능"],ans:2,hint:"가정의 전자제품들이 주로 사용하는 에너지를 생각해봐요.",exp:"AI 로봇은 주로 전기 에너지(배터리 또는 전원 연결)를 사용해 작동해요.",pt:15},
+    {q:"사회 수업의 '정보화 사회'와 AI 로봇의 관계로 올바른 것은?",choices:["AI 로봇은 정보화 사회와 관련 없다","AI 로봇은 정보화 사회에서 데이터를 처리하고 서비스를 제공하는 핵심 도구다","AI 로봇이 늘어나면 인터넷은 필요 없다","AI 로봇은 정보화 사회의 발전을 막는다"],ans:1,hint:"정보화 사회 = 정보와 기술이 중심인 사회예요.",exp:"AI 로봇은 정보화 사회에서 대량의 데이터를 처리하고 다양한 서비스를 제공하는 핵심 기술이에요.",pt:15},
+  ],
+  // 도전 (3문항)
+  [
+    {q:"AI 로봇이 '딥러닝(Deep Learning)'을 사용할 때, 어떻게 학습하나요?",choices:["책을 읽고 스스로 공부한다","사람이 일일이 모든 규칙을 입력한다","수많은 데이터를 통해 인공 신경망이 스스로 특징을 찾아낸다","인터넷 검색만으로 학습한다"],ans:2,hint:"사람의 뇌 신경 구조를 본뜬 '인공 신경망'을 사용해요.",exp:"딥러닝은 인공 신경망이 엄청난 양의 데이터에서 스스로 특징과 패턴을 찾아내는 학습 방법이에요.",pt:20},
+    {q:"AI 로봇 활용의 부정적 영향(문제점)으로 올바른 것은? (도덕·사회 융합)",choices:["생산성이 높아진다","일자리 감소, 개인정보 침해, 알고리즘 편향 등의 문제가 생길 수 있다","모든 사람이 공평하게 혜택을 받는다","오류가 전혀 없다"],ans:1,hint:"기술이 발전할 때 사회적으로 생길 수 있는 어두운 면을 생각해 봐요.",exp:"AI 발전은 일자리 감소, 개인정보 침해, 알고리즘 편향 등 사회적 문제도 함께 가져올 수 있어요.",pt:20},
+    {q:"AI 로봇이 의료(병원) 분야에서 하는 역할 중 현재 실제로 활용되는 것은?",choices:["환자 대신 약을 먹는다","의료 영상(X-ray, MRI)을 분석해 질병을 더 빠르게 찾아낸다","의사를 완전히 대체한다","환자의 감정을 100% 완벽하게 이해한다"],ans:1,hint:"AI는 사람이 보기 어려운 이미지 데이터 분석에 뛰어나요.",exp:"AI는 의료 영상을 분석해 암 등 질병을 빠르고 정확하게 찾아내는 데 실제로 활용되고 있어요.",pt:20},
+  ],
+];
+
+// ==============================
+// 데이터: 미션3 정렬 세트 (3세트)
+// ==============================
+const m3Sets = [
+  {
+    title:"🤖 AI 로봇이 물체를 인식하는 과정",
+    items:["카메라(센서)로 주변 영상을 촬영한다","영상 데이터를 CPU로 전송한다","AI가 데이터를 분석해 물체를 인식한다","인식 결과를 바탕으로 행동을 결정한다","모터를 작동시켜 로봇이 움직인다","결과를 저장하고 다음 학습에 활용한다"],
+    correctOrder:[0,1,2,3,4,5]
+  },
+  {
+    title:"🏭 AI 로봇 제작 과정",
+    items:["로봇이 할 임무(목적)를 정한다","필요한 센서와 부품을 설계한다","하드웨어(몸체)를 조립한다","소프트웨어(프로그램)를 개발한다","테스트하고 오류를 수정한다","실제 현장에 배치해 사용한다"],
+    correctOrder:[0,1,2,3,4,5]
+  },
+  {
+    title:"🧠 AI 로봇의 머신러닝 학습 과정",
+    items:["학습할 데이터를 수집한다","데이터를 정리하고 가공한다","AI 모델에 데이터를 입력해 학습시킨다","학습된 모델의 성능을 평가한다","성능이 부족하면 추가 학습을 진행한다","완성된 모델을 로봇에 탑재한다"],
+    correctOrder:[0,1,2,3,4,5]
+  },
+];
+
+// ==============================
+// 데이터: 미션4 문항 (5문항)
+// ==============================
+const chartData = [
+  {label:"병원",val:320,color:"#00d4ff"},
+  {label:"물류",val:480,color:"#7b2fff"},
+  {label:"농업",val:210,color:"#00ff88"},
+  {label:"교육",val:150,color:"#ffd700"},
+  {label:"경비",val:390,color:"#ff6b6b"},
+];
+const m4Questions = [
+  {q:"그래프에서 AI 로봇이 가장 많이 활용되는 분야는 어디인가요?",choices:["병원","물류","농업","경비"],ans:1,exp:"물류 분야에 480대로 가장 많이 활용되고 있어요.",pt:15},
+  {q:"병원과 경비 분야의 AI 로봇 수를 합하면 몇 대인가요?",choices:["610대","700대","710대","720대"],ans:2,exp:"병원(320대) + 경비(390대) = 710대예요.",pt:15},
+  {q:"AI 로봇이 가장 적게 활용되는 분야는?",choices:["경비","농업","교육","병원"],ans:2,exp:"교육 분야에 150대로 가장 적게 활용되고 있어요.",pt:15},
+  {q:"물류 분야 로봇 수는 농업 분야 로봇 수의 약 몇 배인가요?",choices:["약 1배","약 2배","약 3배","약 4배"],ans:1,exp:"물류(480) ÷ 농업(210) ≈ 2.3배, 약 2배에 가장 가깝습니다.",pt:20},
+  {q:"5개 분야 AI 로봇 수의 합계는 몇 대인가요?",choices:["1,450대","1,500대","1,550대","1,600대"],ans:2,exp:"320+480+210+150+390 = 1,550대예요.",pt:20},
+];
+
+// ==============================
+// 게임 상태
+// ==============================
+let state = {
+  totalScore:0,
+  m1Score:0, m2Score:0, m3Score:0, m4Score:0,
+  m1Stars:0, m2Stars:0, m3Stars:0, m4Stars:0,
+  missionDone:[false,false,false,false],
+  m1QIdx:0, m1TimeLeft:60, m1Timer:null, m1Done:false,
+  m2Level:0, m2QIdx:0, m2TimeLeft:30, m2Timer:null,
+  m2LevelDone:[false,false,false], m2HintUsed:false,
+  m3CurrentOrder:[[],[],[]],
+  m4QIdx:0,
+  musicOn:true,
+  audioCtx:null,
+  feedbackCallback:null,
+};
+
+// ==============================
+// Web Audio API
+// ==============================
+function getAudio(){
+  if(!state.audioCtx) state.audioCtx = new (window.AudioContext||window.webkitAudioContext)();
+  return state.audioCtx;
+}
+function playSound(type){
+  if(!state.musicOn) return;
+  try{
+    const ac = getAudio();
+    const osc = ac.createOscillator();
+    const gain = ac.createGain();
+    osc.connect(gain); gain.connect(ac.destination);
+    if(type==='correct'){
+      osc.type='sine'; osc.frequency.setValueAtTime(523,ac.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(1047,ac.currentTime+0.3);
+      gain.gain.setValueAtTime(0.3,ac.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.01,ac.currentTime+0.5);
+      osc.start(); osc.stop(ac.currentTime+0.5);
+    } else if(type==='wrong'){
+      osc.type='sawtooth'; osc.frequency.setValueAtTime(200,ac.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(100,ac.currentTime+0.3);
+      gain.gain.setValueAtTime(0.2,ac.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.01,ac.currentTime+0.4);
+      osc.start(); osc.stop(ac.currentTime+0.4);
+    } else if(type==='clear'){
+      [523,659,784,1047].forEach((f,i)=>{
+        const o2=ac.createOscillator(),g2=ac.createGain();
+        o2.connect(g2); g2.connect(ac.destination);
+        o2.type='triangle'; o2.frequency.value=f;
+        g2.gain.setValueAtTime(0.25,ac.currentTime+i*0.12);
+        g2.gain.exponentialRampToValueAtTime(0.01,ac.currentTime+i*0.12+0.4);
+        o2.start(ac.currentTime+i*0.12);
+        o2.stop(ac.currentTime+i*0.12+0.4);
+      });
+    } else if(type==='bg'){
+      // 배경음: 반복 멜로디
+      [392,440,494,523,494,440].forEach((f,i)=>{
+        const o3=ac.createOscillator(),g3=ac.createGain();
+        o3.connect(g3); g3.connect(ac.destination);
+        o3.type='triangle'; o3.frequency.value=f;
+        g3.gain.setValueAtTime(0.08,ac.currentTime+i*0.35);
+        g3.gain.exponentialRampToValueAtTime(0.001,ac.currentTime+i*0.35+0.3);
+        o3.start(ac.currentTime+i*0.35);
+        o3.stop(ac.currentTime+i*0.35+0.35);
+      });
+    }
+  }catch(e){}
+}
+function toggleMusic(){
+  state.musicOn=!state.musicOn;
+  ['music-btn-start','music-btn-hud'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el) el.textContent=state.musicOn?'🔊 음악 ON':'🔇 음악 OFF';
+  });
+  if(state.musicOn) playSound('bg');
+}
+
+// ==============================
+// 마스코트 ROMI SVG 렌더러
+// ==============================
+function romiSVG(mood='normal'){
+  const eyes = mood==='happy'
+    ? `<path d="M38 38 Q42 32 46 38" stroke="#00d4ff" stroke-width="3" fill="none"/>
+       <path d="M54 38 Q58 32 62 38" stroke="#00d4ff" stroke-width="3" fill="none"/>`
+    : mood==='sad'
+    ? `<path d="M38 42 Q42 48 46 42" stroke="#ff6b6b" stroke-width="3" fill="none"/>
+       <path d="M54 42 Q58 48 62 42" stroke="#ff6b6b" stroke-width="3" fill="none"/>`
+    : `<circle cx="42" cy="40" r="4" fill="#00d4ff"/>
+       <circle cx="58" cy="40" r="4" fill="#00d4ff"/>`;
+  const antColor = mood==='happy'?'#ffd700':mood==='sad'?'#ff6b6b':'#00d4ff';
+  return `<svg class="romi" viewBox="0 0 100 120" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <linearGradient id="bg-g" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0%" stop-color="#1a1a6e"/>
+        <stop offset="100%" stop-color="#16213e"/>
+      </linearGradient>
+    </defs>
+    <!-- 안테나 -->
+    <line x1="50" y1="10" x2="50" y2="22" stroke="${antColor}" stroke-width="3" stroke-linecap="round"/>
+    <circle cx="50" cy="8" r="5" fill="${antColor}">
+      <animate attributeName="r" values="5;7;5" dur="1.5s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="1;0.6;1" dur="1.5s" repeatCount="indefinite"/>
+    </circle>
+    <!-- 머리 -->
+    <rect x="22" y="20" width="56" height="48" rx="14" fill="url(#bg-g)" stroke="#00d4ff" stroke-width="2"/>
+    <!-- 눈 -->
+    ${eyes}
+    <!-- 입 -->
+    ${mood==='happy'
+      ? `<path d="M40 54 Q50 62 60 54" stroke="#00ff88" stroke-width="2.5" fill="none" stroke-linecap="round"/>`
+      : mood==='sad'
+      ? `<path d="M40 58 Q50 50 60 58" stroke="#ff6b6b" stroke-width="2.5" fill="none" stroke-linecap="round"/>`
+      : `<rect x="40" y="54" width="20" height="4" rx="2" fill="#7b2fff"/>`}
+    <!-- 몸통 -->
+    <rect x="26" y="72" width="48" height="32" rx="10" fill="url(#bg-g)" stroke="#7b2fff" stroke-width="2"/>
+    <!-- 가슴 패널 -->
+    <rect x="34" y="78" width="32" height="20" rx="6" fill="#7b2fff" opacity=".4"/>
+    <circle cx="44" cy="88" r="4" fill="${antColor}" opacity=".8">
+      <animate attributeName="opacity" values="0.8;0.3;0.8" dur="1s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="56" cy="88" r="4" fill="#00ff88" opacity=".8">
+      <animate attributeName="opacity" values="0.8;0.3;0.8" dur="1.3s" repeatCount="indefinite"/>
+    </circle>
+    <!-- 팔 -->
+    <rect x="6" y="74" width="18" height="10" rx="5" fill="#00d4ff" opacity=".7"/>
+    <rect x="76" y="74" width="18" height="10" rx="5" fill="#00d4ff" opacity=".7"/>
+    <!-- 다리 -->
+    <rect x="32" y="104" width="14" height="12" rx="5" fill="#00d4ff" opacity=".6"/>
+    <rect x="54" y="104" width="14" height="12" rx="5" fill="#00d4ff" opacity=".6"/>
+  </svg>`;
+}
+function renderRomi(ids, mood='normal'){
+  (Array.isArray(ids)?ids:[ids]).forEach(id=>{
+    const el=document.getElementById(id);
+    if(el) el.innerHTML=romiSVG(mood);
+  });
+}
+
+// ==============================
+// QR 코드 생성
+// ==============================
+function makeQR(containerId){
+  const el=document.getElementById(containerId);
+  if(!el||el.children.length>0) return;
+  try{
+    new QRCode(el,{
+      text:location.href||'https://milab2019.github.io/main/ai_robot_academy.html',
+      width:100,height:100,colorDark:'#00d4ff',colorLight:'#0f3460',
+      correctLevel:QRCode.CorrectLevel.M
+    });
+  }catch(e){}
+}
+
+// ==============================
+// 화면 전환
+// ==============================
+function showScreen(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo(0,0);
+}
+
+// ==============================
+// 시작
+// ==============================
+function startGame(){
+  renderRomi(['romi-start','romi-hub','romi-m1','romi-m2','romi-m3','romi-m4','romi-result','romi-fb']);
+  makeQR('qr-start');
+  showMissions();
+  playSound('bg');
+}
+
+// ==============================
+// 미션 허브
+// ==============================
+function showMissions(){
+  updateHUD();
+  renderMissionGrid();
+  renderRomi('romi-hub','normal');
+  showScreen('screen-missions');
+  updateProgressBar();
+}
+function renderMissionGrid(){
+  const grid=document.getElementById('mission-grid');
+  const configs=[
+    {icon:'🤖',title:'미션1 · AI 로봇 분류 퀴즈',desc:'AI 로봇의 기초 개념을 확인해요! | ⏱ 60초',idx:0},
+    {icon:'📚',title:'미션2 · 교과 융합 퀴즈',desc:'실과·도덕·사회 융합 문제! | ⏱ 30초/문항',idx:1},
+    {icon:'🔧',title:'미션3 · 작동 순서 정렬',desc:'AI 로봇 과정을 순서대로 정렬! | ⏱ 없음',idx:2},
+    {icon:'📊',title:'미션4 · 데이터 분석',desc:'그래프를 읽고 분석해요! | ⏱ 없음',idx:3},
+  ];
+  const starsArr=[state.m1Stars,state.m2Stars,state.m3Stars,state.m4Stars];
+  grid.innerHTML=configs.map((c,i)=>{
+    const done=state.missionDone[i];
+    const locked=i>0&&!state.missionDone[i-1];
+    const stars=starsArr[i]?'★'.repeat(starsArr[i])+'☆'.repeat(3-starsArr[i]):'☆☆☆';
+    return `<div class="mission-card${locked?' locked':''}${done?' done':''}" onclick="startMission(${i})">
+      <div class="mission-icon">${c.icon}</div>
+      <div class="mission-info">
+        <h3>${c.title}${done?' ✅':''}</h3>
+        <p>${c.desc}</p>
+      </div>
+      <div class="mission-stars" style="color:${done?'var(--yellow)':'var(--text2)'}">${stars}</div>
+    </div>`;
+  }).join('');
+}
+function updateHUD(){
+  document.getElementById('hud-score').textContent=state.totalScore;
+  const allStars=[state.m1Stars,state.m2Stars,state.m3Stars,state.m4Stars];
+  document.getElementById('hud-badges').textContent=allStars.map(s=>s>0?'★'.repeat(s):'☆').join(' ');
+}
+function updateProgressBar(){
+  for(let i=1;i<=4;i++){
+    const el=document.getElementById('prog'+i);
+    if(!el) continue;
+    el.className='prog-step';
+    if(state.missionDone[i-1]) el.classList.add('done');
+    else if(i===1||state.missionDone[i-2]) el.classList.add('active');
+  }
+}
+function startMission(idx){
+  const locked=idx>0&&!state.missionDone[idx-1];
+  if(locked) return;
+  if(idx===0) startM1();
+  else if(idx===1) startM2();
+  else if(idx===2) startM3();
+  else if(idx===3) startM4();
+}
+
+// ==============================
+// 피드백 오버레이
+// ==============================
+function showFeedback(correct, desc, cb){
+  const ov=document.getElementById('feedback-overlay');
+  document.getElementById('fb-icon').textContent=correct?'🎉':'💙';
+  document.getElementById('fb-title').textContent=correct?'정답이에요!':'아쉽지만 괜찮아요!';
+  document.getElementById('fb-desc').textContent=desc;
+  const encourages=['괜찮아요! 한 번 더!','틀려도 배우는 중이에요!','포기하지 마! 로미가 응원해!'];
+  if(!correct){
+    document.getElementById('fb-desc').textContent=
+      desc+'\n\n💙 '+encourages[Math.floor(Math.random()*encourages.length)];
+  }
+  renderRomi('romi-fb',correct?'happy':'sad');
+  state.feedbackCallback=cb;
+  ov.classList.add('show');
+  playSound(correct?'correct':'wrong');
+}
+function closeFeedback(){
+  document.getElementById('feedback-overlay').classList.remove('show');
+  if(state.feedbackCallback) state.feedbackCallback();
+  state.feedbackCallback=null;
+}
+
+// ==============================
+// 미션 1
+// ==============================
+function startM1(){
+  state.m1QIdx=0; state.m1Score=0; state.m1TimeLeft=60;
+  clearInterval(state.m1Timer);
+  showScreen('screen-m1');
+  renderRomi('romi-m1','normal');
+  renderM1Question();
+  state.m1Timer=setInterval(tickM1,1000);
+}
+function tickM1(){
+  state.m1TimeLeft--;
+  updateM1Timer();
+  if(state.m1TimeLeft<=0){clearInterval(state.m1Timer); finishM1();}
+}
+function updateM1Timer(){
+  const fill=document.getElementById('m1-timer-fill');
+  const num=document.getElementById('m1-timer-num');
+  if(!fill||!num) return;
+  fill.style.width=(state.m1TimeLeft/60*100)+'%';
+  num.textContent=state.m1TimeLeft;
+  num.className='timer-num'+(state.m1TimeLeft<=10?' danger':'');
+}
+function renderM1Question(){
+  if(state.m1QIdx>=m1Questions.length){clearInterval(state.m1Timer);finishM1();return;}
+  const q=m1Questions[state.m1QIdx];
+  document.getElementById('m1-qnum').textContent=(state.m1QIdx+1)+'/'+m1Questions.length;
+  document.getElementById('m1-question').textContent=q.q;
+  document.getElementById('m1-bubble').textContent='AI 로봇에 대해 얼마나 알고 있는지 테스트해 볼게!';
+  const c=document.getElementById('m1-choices');
+  c.innerHTML=q.choices.map((ch,i)=>
+    `<button class="choice-btn" onclick="answerM1(${i})">${['①','②','③','④'][i]} ${ch}</button>`
+  ).join('');
+}
+function answerM1(idx){
+  const q=m1Questions[state.m1QIdx];
+  const correct=idx===q.ans;
+  const btns=document.querySelectorAll('#m1-choices .choice-btn');
+  btns.forEach((b,i)=>{b.disabled=true; if(i===q.ans) b.classList.add('correct'); else if(i===idx) b.classList.add('wrong');});
+  if(correct) state.m1Score+=q.pt;
+  renderRomi('romi-m1',correct?'happy':'sad');
+  const isLast = (state.m1QIdx >= m1Questions.length - 1);
+  showFeedback(correct, q.exp, ()=>{
+    state.m1QIdx++;
+    if(isLast){
+      clearInterval(state.m1Timer);
+      finishM1();
+    } else {
+      renderRomi('romi-m1','normal');
+      renderM1Question();
+    }
+  });
+}
+function finishM1(){
+  clearInterval(state.m1Timer);
+  const maxPt=m1Questions.reduce((a,q)=>a+q.pt,0);
+  const pct=state.m1Score/maxPt;
+  state.m1Stars=pct>=0.8?3:pct>=0.5?2:1;
+  state.totalScore+=state.m1Score;
+  state.missionDone[0]=true;
+  playSound('clear');
+  // 미션 완료 알림 후 허브 이동
+  showFeedback(true,`🎯 미션1 완료!\n획득 점수: ${state.m1Score}점\n별 ${state.m1Stars}개 획득!`,()=>{showMissions();});
+}
+
+// ==============================
+// 미션 2
+// ==============================
+function startM2(){
+  state.m2Level=0; state.m2QIdx=0; state.m2LevelDone=[false,false,false];
+  state.m2Score=0; clearInterval(state.m2Timer);
+  showScreen('screen-m2');
+  renderRomi('romi-m2','normal');
+  setM2Level(0);
+}
+function setM2Level(lv){
+  state.m2Level=lv;
+  state.m2QIdx=0;
+  ['tab0','tab1','tab2'].forEach((id,i)=>{
+    const el=document.getElementById(id);
+    if(el) el.className='tab'+(i===lv?' active':'');
+  });
+  clearInterval(state.m2Timer);
+  renderM2Question();
+}
+function renderM2Question(){
+  const qs=m2Levels[state.m2Level];
+  if(state.m2QIdx>=qs.length){finishM2Level();return;}
+  const q=qs[state.m2QIdx];
+  state.m2TimeLeft=30; state.m2HintUsed=false;
+  document.getElementById('m2-qnum').textContent=`[${['쉬움','보통','도전'][state.m2Level]}] ${state.m2QIdx+1}/${qs.length}`;
+  document.getElementById('m2-question').textContent=q.q;
+  document.getElementById('m2-bubble').textContent='교과서에서 배운 내용을 떠올려봐!';
+  document.getElementById('m2-hint-box').style.display='none';
+  document.getElementById('m2-hint-btn').disabled=false;
+  updateM2Timer();
+  const c=document.getElementById('m2-choices');
+  c.innerHTML=q.choices.map((ch,i)=>
+    `<button class="choice-btn" onclick="answerM2(${i})">${['①','②','③','④'][i]} ${ch}</button>`
+  ).join('');
+  clearInterval(state.m2Timer);
+  state.m2Timer=setInterval(tickM2,1000);
+}
+function tickM2(){
+  state.m2TimeLeft--;
+  updateM2Timer();
+  if(state.m2TimeLeft<=0){
+    clearInterval(state.m2Timer);
+    const q=m2Levels[state.m2Level][state.m2QIdx];
+    showFeedback(false,'⏱ 시간 초과! '+q.exp,()=>{
+      state.m2QIdx++; renderM2Question();
+    });
+  }
+}
+function updateM2Timer(){
+  const fill=document.getElementById('m2-timer-fill');
+  const num=document.getElementById('m2-timer-num');
+  if(!fill||!num) return;
+  fill.style.width=(state.m2TimeLeft/30*100)+'%';
+  num.textContent=state.m2TimeLeft;
+  num.className='timer-num'+(state.m2TimeLeft<=10?' danger':'');
+}
+function useHint(){
+  const q=m2Levels[state.m2Level][state.m2QIdx];
+  state.m2HintUsed=true;
+  document.getElementById('m2-hint-box').textContent='💡 힌트: '+q.hint;
+  document.getElementById('m2-hint-box').style.display='block';
+  document.getElementById('m2-hint-btn').disabled=true;
+}
+function answerM2(idx){
+  clearInterval(state.m2Timer);
+  const qs=m2Levels[state.m2Level];
+  const q=qs[state.m2QIdx];
+  const correct=idx===q.ans;
+  const btns=document.querySelectorAll('#m2-choices .choice-btn');
+  btns.forEach((b,i)=>{b.disabled=true; if(i===q.ans) b.classList.add('correct'); else if(i===idx) b.classList.add('wrong');});
+  if(correct) state.m2Score+=state.m2HintUsed?Math.floor(q.pt*0.5):q.pt;
+  renderRomi('romi-m2',correct?'happy':'sad');
+  const isLast=(state.m2QIdx>=qs.length-1);
+  showFeedback(correct, q.exp, ()=>{
+    state.m2QIdx++;
+    if(isLast){
+      finishM2Level();
+    } else {
+      renderRomi('romi-m2','normal');
+      renderM2Question();
+    }
+  });
+}
+function finishM2Level(){
+  state.m2LevelDone[state.m2Level]=true;
+  if(state.m2LevelDone.every(d=>d)){
+    finishM2();
+  } else {
+    const next=state.m2LevelDone.findIndex(d=>!d);
+    if(next!==-1) setM2Level(next);
+  }
+}
+function finishM2(){
+  const maxPt=m2Levels.flat().reduce((a,q)=>a+q.pt,0);
+  const pct=state.m2Score/maxPt;
+  state.m2Stars=pct>=0.8?3:pct>=0.5?2:1;
+  state.totalScore+=state.m2Score;
+  state.missionDone[1]=true;
+  playSound('clear');
+  showFeedback(true,`미션2 완료! 획득 점수: ${state.m2Score}점 / 별 ${state.m2Stars}개!`,()=>{showMissions();});
+}
+
+// ==============================
+// 미션 3 (드래그앤드롭)
+// ==============================
+let dragSrc=null;
+function startM3(){
+  state.m3Score=0;
+  showScreen('screen-m3');
+  renderRomi('romi-m3','normal');
+  renderM3Sets();
+}
+function renderM3Sets(){
+  const container=document.getElementById('m3-sets-container');
+  container.innerHTML='';
+  m3Sets.forEach((set,si)=>{
+    const shuffled=[...set.items].sort(()=>Math.random()-0.5);
+    state.m3CurrentOrder[si]=shuffled.map(it=>set.items.indexOf(it));
+    const div=document.createElement('div');
+    div.className='drag-set';
+    div.innerHTML=`<div class="drag-set"><h4>세트 ${si+1}. ${set.title}</h4>
+      <div class="drag-zone" id="zone-${si}" ondragover="allowDrop(event)" ondrop="dropItem(event,${si})">
+        ${shuffled.map((item,i)=>`
+          <div class="drag-item" draggable="true" id="ditem-${si}-${i}"
+            data-set="${si}" data-idx="${i}"
+            ondragstart="dragStart(event,${si},${i})"
+            ondragend="dragEnd(event)"
+            ontouchstart="touchStart(event,${si},${i})"
+            ontouchmove="touchMove(event)"
+            ontouchend="touchEnd(event,${si})">
+            <div class="drag-num">${i+1}</div>
+            <span>${item}</span>
+          </div>`).join('')}
+      </div></div>`;
+    container.appendChild(div);
+  });
+}
+function dragStart(e,si,idx){
+  dragSrc={si,idx,el:e.currentTarget};
+  e.currentTarget.classList.add('dragging');
+  e.dataTransfer.effectAllowed='move';
+}
+function dragEnd(e){e.currentTarget.classList.remove('dragging');}
+function allowDrop(e){e.preventDefault();}
+function dropItem(e,si){
+  e.preventDefault();
+  if(!dragSrc||dragSrc.si!==si) return;
+  const zone=document.getElementById('zone-'+si);
+  const items=[...zone.querySelectorAll('.drag-item')];
+  let target=e.target.closest('.drag-item');
+  if(!target||target===dragSrc.el) return;
+  const srcIdx=items.indexOf(dragSrc.el);
+  const tgtIdx=items.indexOf(target);
+  if(srcIdx<tgtIdx) zone.insertBefore(dragSrc.el,target.nextSibling);
+  else zone.insertBefore(dragSrc.el,target);
+  updateZoneNumbers(si);
+}
+function updateZoneNumbers(si){
+  const zone=document.getElementById('zone-'+si);
+  if(!zone) return;
+  [...zone.querySelectorAll('.drag-item .drag-num')].forEach((el,i)=>{el.textContent=i+1;});
+}
+// 터치 지원
+let touchDragEl=null, touchSi=null;
+function touchStart(e,si,idx){
+  touchSi=si; touchDragEl=e.currentTarget;
+  touchDragEl.style.opacity='0.5';
+}
+function touchMove(e){e.preventDefault();}
+function touchEnd(e,si){
+  if(!touchDragEl) return;
+  touchDragEl.style.opacity='1';
+  const zone=document.getElementById('zone-'+si);
+  if(!zone){touchDragEl=null;return;}
+  const touch=e.changedTouches[0];
+  const items=[...zone.querySelectorAll('.drag-item')].filter(el=>el!==touchDragEl);
+  let inserted=false;
+  for(const item of items){
+    const rect=item.getBoundingClientRect();
+    if(touch.clientY<rect.top+rect.height/2){
+      zone.insertBefore(touchDragEl,item);
+      inserted=true; break;
+    }
+  }
+  if(!inserted) zone.appendChild(touchDragEl);
+  updateZoneNumbers(si);
+  touchDragEl=null;
+}
+function checkM3(){
+  let totalCorrect=0;
+  m3Sets.forEach((set,si)=>{
+    const zone=document.getElementById('zone-'+si);
+    if(!zone) return;
+    const currentOrder=[...zone.querySelectorAll('.drag-item')].map(el=>{
+      const text=el.querySelector('span').textContent;
+      return set.items.indexOf(text);
+    });
+    const isCorrect=currentOrder.every((v,i)=>v===set.correctOrder[i]);
+    if(isCorrect) totalCorrect++;
+  });
+  state.m3Score=totalCorrect===3?60:totalCorrect===2?40:totalCorrect===1?20:0;
+  state.m3Stars=totalCorrect===3?3:totalCorrect>=2?2:1;
+  state.totalScore+=state.m3Score;
+  state.missionDone[2]=true;
+  playSound('clear');
+  const msgs=['다시 도전해봐! 순서를 잘 생각해봐!','2세트 정답! 대단해!','완벽해! 모든 세트 정답!'];
+  const msg=totalCorrect===3?msgs[2]:totalCorrect===2?msgs[1]:msgs[0];
+  renderRomi('romi-m3',totalCorrect>1?'happy':'sad');
+  showFeedback(totalCorrect===3, `${totalCorrect}/3 세트 정답! ${msg} (${state.m3Score}점)`,()=>{showMissions();});
+}
+
+// ==============================
+// 미션 4
+// ==============================
+function startM4(){
+  state.m4QIdx=0; state.m4Score=0;
+  showScreen('screen-m4');
+  renderRomi('romi-m4','normal');
+  renderBarChart();
+  renderM4Question();
+}
+function renderBarChart(){
+  const max=Math.max(...chartData.map(d=>d.val));
+  const chart=document.getElementById('bar-chart');
+  chart.innerHTML=chartData.map(d=>`
+    <div class="bar-col">
+      <div class="bar-val">${d.val}</div>
+      <div class="bar" style="height:${Math.round(d.val/max*140)}px;background:linear-gradient(to top,${d.color}99,${d.color});"></div>
+      <div class="bar-label">${d.label}</div>
+    </div>`).join('');
+}
+function renderM4Question(){
+  if(state.m4QIdx>=m4Questions.length){finishM4();return;}
+  const q=m4Questions[state.m4QIdx];
+  document.getElementById('m4-qnum').textContent=`문항 ${state.m4QIdx+1}/${m4Questions.length}`;
+  document.getElementById('m4-question').textContent=q.q;
+  document.getElementById('m4-q-bubble').textContent=
+    state.m4QIdx<3?'📊 위 그래프를 보고 대답해봐!':'🧮 직접 계산해봐!';
+  const c=document.getElementById('m4-choices');
+  c.innerHTML=q.choices.map((ch,i)=>
+    `<button class="choice-btn" onclick="answerM4(${i})">${['①','②','③','④'][i]} ${ch}</button>`
+  ).join('');
+}
+function answerM4(idx){
+  const q=m4Questions[state.m4QIdx];
+  const correct=idx===q.ans;
+  const btns=document.querySelectorAll('#m4-choices .choice-btn');
+  btns.forEach((b,i)=>{b.disabled=true; if(i===q.ans) b.classList.add('correct'); else if(i===idx) b.classList.add('wrong');});
+  if(correct) state.m4Score+=q.pt;
+  renderRomi('romi-m4',correct?'happy':'sad');
+  const isLast=(state.m4QIdx>=m4Questions.length-1);
+  showFeedback(correct,q.exp,()=>{
+    state.m4QIdx++;
+    if(isLast){
+      finishM4();
+    } else {
+      renderRomi('romi-m4','normal');
+      renderM4Question();
+    }
+  });
+}
+function finishM4(){
+  const maxPt=m4Questions.reduce((a,q)=>a+q.pt,0);
+  const pct=state.m4Score/maxPt;
+  state.m4Stars=pct>=0.8?3:pct>=0.5?2:1;
+  state.totalScore+=state.m4Score;
+  state.missionDone[3]=true;
+  playSound('clear');
+  showFeedback(true,`미션4 완료! ${state.m4Score}점 / 별 ${state.m4Stars}개!`,()=>{showResult();});
+}
+
+// ==============================
+// 결과 화면
+// ==============================
+function showResult(){
+  const raw=state.totalScore;
+  const maxRaw=m1Questions.reduce((a,q)=>a+q.pt,0)
+    +m2Levels.flat().reduce((a,q)=>a+q.pt,0)
+    +60
+    +m4Questions.reduce((a,q)=>a+q.pt,0);
+  const pct=Math.round(raw/maxRaw*100);
+  const score=Math.min(100,pct);
+
+  const endings=[
+    {min:80,icon:'🏆',title:'🌟 레전드 엔지니어!',desc:'완벽해요! 로미와 함께 미랩시티를 완전히 구했어요! 미래 AI 로봇 과학자는 바로 너야!',emoji:'🎊'},
+    {min:60,icon:'⭐',title:'🔧 전문가 엔지니어!',desc:'훌륭해요! 대부분의 오류를 수정했어요. 조금만 더 연습하면 레전드가 될 수 있어!',emoji:'🎉'},
+    {min:40,icon:'🔍',title:'🗺️ 탐험가 엔지니어!',desc:'잘했어요! AI 로봇의 기초를 알고 있어요. 계속 배우다 보면 더 잘할 수 있어!',emoji:'👍'},
+    {min:0,icon:'🌱',title:'🌱 견습 엔지니어!',desc:'괜찮아요! 처음이라 어렵지만, 로미가 계속 응원해! 다시 도전해봐!',emoji:'💪'},
+  ];
+  const ending=endings.find(e=>score>=e.min)||endings[3];
+
+  showScreen('screen-result');
+  document.getElementById('result-score-num').textContent=score;
+  document.getElementById('result-emoji').textContent=ending.emoji;
+  document.getElementById('ending-icon').textContent=ending.icon;
+  document.getElementById('ending-title').textContent=ending.title;
+  document.getElementById('ending-desc').textContent=ending.desc;
+  document.getElementById('r-m1').textContent=state.m1Score+'점';
+  document.getElementById('r-m2').textContent=state.m2Score+'점';
+  document.getElementById('r-m3').textContent=state.m3Score+'점';
+  document.getElementById('r-m4').textContent=state.m4Score+'점';
+
+  const mood=score>=60?'happy':score>=40?'normal':'sad';
+  renderRomi('romi-result',mood);
+  document.getElementById('result-bubble').textContent=
+    score>=80?'완벽해! 넌 진정한 AI 로봇 엔지니어야! 🏆'
+    :score>=60?'정말 잘했어! 조금만 더 연습하면 완벽해! ⭐'
+    :score>=40?'수고했어! 다시 도전하면 더 잘 할 수 있어! 💪'
+    :'괜찮아! 처음은 누구나 어렵거든! 같이 다시 해보자! 🌱';
+
+  makeQR('qr-result');
+  renderLeaderboard();
+  playSound('clear');
+
+  // portfolioEntry console 출력
+  const portfolioEntry={
+    id:"027",
+    title:"🤖 AI 로봇 아카데미",
+    subtitle:"AI 로봇의 원리를 배우고 미랩시티를 구하라!",
+    target:"초등 5-6학년",
+    subjects:["실과","과학","도덕","사회"],
+    theme:"AI로봇",
+    missions:[
+      {id:1,title:"AI 로봇 분류 퀴즈",type:"4지선다",questions:6,timer:"60초"},
+      {id:2,title:"교과 융합 퀴즈",type:"3단계 난이도",questions:9,timer:"30초/문항"},
+      {id:3,title:"작동 순서 정렬",type:"드래그앤드롭",sets:3,timer:"없음"},
+      {id:4,title:"데이터 분석",type:"그래프 독해+계산",questions:5,timer:"없음"},
+    ],
+    totalQuestions:26,
+    date:"2026.04.01",
+    url:"https://milab2019.github.io/main/ai_robot_academy.html",
+    endings:["견습 엔지니어(0-39)","탐험가 엔지니어(40-59)","전문가 엔지니어(60-79)","레전드 엔지니어(80-100)"],
+    mascot:"로미(ROMI)",
+    audioAPI:"Web Audio API",
+    storage:"LocalStorage(milab_game_027_lb)",
+    qr:"QRCode.js v1.0.0"
+  };
+  console.log('%c📋 MILAB Portfolio Entry #027','color:#00d4ff;font-size:14px;font-weight:bold;');
+  console.log(portfolioEntry);
+}
+
+// ==============================
+// 리더보드
+// ==============================
+function saveScore(){
+  const name=document.getElementById('player-name').value.trim()||'익명';
+  const raw=state.totalScore;
+  const maxRaw=m1Questions.reduce((a,q)=>a+q.pt,0)
+    +m2Levels.flat().reduce((a,q)=>a+q.pt,0)+60
+    +m4Questions.reduce((a,q)=>a+q.pt,0);
+  const score=Math.min(100,Math.round(raw/maxRaw*100));
+  let lb=[];
+  try{lb=JSON.parse(localStorage.getItem('milab_game_027_lb')||'[]');}catch(e){}
+  lb.push({name,score,date:new Date().toLocaleDateString('ko-KR')});
+  lb.sort((a,b)=>b.score-a.score);
+  lb=lb.slice(0,5);
+  localStorage.setItem('milab_game_027_lb',JSON.stringify(lb));
+  renderLeaderboard();
+}
+function renderLeaderboard(){
+  let lb=[];
+  try{lb=JSON.parse(localStorage.getItem('milab_game_027_lb')||'[]');}catch(e){}
+  const medals=['🥇','🥈','🥉','4️⃣','5️⃣'];
+  const el=document.getElementById('leaderboard-display');
+  if(!el) return;
+  el.innerHTML=lb.length===0?'<p style="color:var(--text2);text-align:center;">아직 등록된 점수가 없어요!</p>'
+    :`<h4 style="font-size:16px;font-weight:700;margin-bottom:10px;color:var(--accent);">🏅 명예의 전당 TOP 5</h4>`
+    +lb.map((e,i)=>`<div class="lb-row">
+      <div class="lb-rank">${medals[i]||''}${i+1}</div>
+      <div class="lb-name">${e.name}</div>
+      <div class="lb-score">${e.score}점</div>
+      <div style="font-size:12px;color:var(--text2);">${e.date||''}</div>
+    </div>`).join('');
+}
+
+// ==============================
+// 초기화
+// ==============================
+window.addEventListener('load',()=>{
+  renderRomi('romi-start','normal');
+  makeQR('qr-start');
+  renderLeaderboard();
+
+  // console에 포트폴리오 엔트리 예고
+  const portfolioEntry={
+    id:"027",title:"🤖 AI 로봇 아카데미",
+    subtitle:"AI 로봇의 원리를 배우고 미랩시티를 구하라!",
+    target:"초등 5-6학년",
+    subjects:["실과","과학","도덕","사회"],
+    theme:"AI로봇",
+    date:"2026.04.01",
+    url:"https://milab2019.github.io/main/ai_robot_academy.html"
+  };
+  console.log('%c🤖 MILAB #027 AI 로봇 아카데미 로드됨','color:#00d4ff;font-weight:bold;');
+  console.log(portfolioEntry);
+});
+</script>
+</body>
+</html>
