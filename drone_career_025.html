@@ -1,0 +1,1549 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🚁 드론 도시 설계국 | 미랩 #025</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&family=Space+Mono:wght@400;700&display=swap');
+
+:root {
+  --navy: #0D1B2A;
+  --navy2: #1A2940;
+  --charcoal: #1E3A5F;
+  --gold: #F0C040;
+  --gold2: #FFD966;
+  --cyan: #4FC3F7;
+  --green: #69F0AE;
+  --red: #FF6B6B;
+  --text: #E8EDF2;
+  --text-dim: #8FA3B8;
+  --border: rgba(240,192,64,0.25);
+  --card-bg: rgba(26,41,64,0.85);
+  --radius: 12px;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'Noto Sans KR', sans-serif;
+  background: var(--navy);
+  color: var(--text);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* ── Background Grid ── */
+body::before {
+  content: '';
+  position: fixed; inset: 0;
+  background-image:
+    linear-gradient(rgba(240,192,64,0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(240,192,64,0.04) 1px, transparent 1px);
+  background-size: 40px 40px;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ── SCREENS ── */
+.screen { display: none; position: relative; z-index: 1; min-height: 100vh; }
+.screen.active { display: flex; flex-direction: column; }
+
+/* ══════════════════════════════════
+   INTRO SCREEN
+══════════════════════════════════ */
+#intro {
+  align-items: center;
+  justify-content: center;
+  padding: 40px 24px;
+  text-align: center;
+}
+
+.logo-badge {
+  display: inline-block;
+  background: linear-gradient(135deg, var(--gold), #C09020);
+  color: var(--navy);
+  font-family: 'Space Mono', monospace;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  padding: 5px 14px;
+  border-radius: 20px;
+  margin-bottom: 20px;
+}
+
+.intro-title {
+  font-size: clamp(22px, 5vw, 40px);
+  font-weight: 900;
+  line-height: 1.25;
+  margin-bottom: 10px;
+  background: linear-gradient(135deg, #fff 40%, var(--gold));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+}
+
+.intro-sub {
+  font-size: 14px;
+  color: var(--text-dim);
+  margin-bottom: 28px;
+  line-height: 1.7;
+  max-width: 480px;
+}
+
+/* Mascot */
+.mascot-wrap { margin: 0 auto 28px; width: 120px; height: 120px; position: relative; }
+.mascot-svg { width: 120px; height: 120px; }
+
+/* Difficulty Selector */
+.diff-label { font-size: 13px; color: var(--text-dim); margin-bottom: 12px; letter-spacing: 1px; }
+.diff-btns { display: flex; gap: 10px; justify-content: center; margin-bottom: 28px; flex-wrap: wrap; }
+.diff-btn {
+  padding: 10px 22px;
+  border-radius: 30px;
+  border: 2px solid var(--border);
+  background: transparent;
+  color: var(--text-dim);
+  font-family: 'Noto Sans KR', sans-serif;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all .25s;
+}
+.diff-btn.selected {
+  border-color: var(--gold);
+  color: var(--gold);
+  background: rgba(240,192,64,0.1);
+}
+
+.name-wrap { display: flex; gap: 10px; justify-content: center; margin-bottom: 24px; flex-wrap: wrap; }
+.name-input {
+  padding: 12px 18px;
+  border-radius: 30px;
+  border: 2px solid var(--border);
+  background: var(--card-bg);
+  color: var(--text);
+  font-family: 'Noto Sans KR', sans-serif;
+  font-size: 15px;
+  width: 220px;
+  outline: none;
+}
+.name-input:focus { border-color: var(--gold); }
+
+.start-btn {
+  padding: 14px 40px;
+  border-radius: 30px;
+  border: none;
+  background: linear-gradient(135deg, var(--gold), #C09020);
+  color: var(--navy);
+  font-family: 'Noto Sans KR', sans-serif;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform .2s, box-shadow .2s;
+  box-shadow: 0 4px 20px rgba(240,192,64,0.3);
+}
+.start-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(240,192,64,0.4); }
+
+.story-box {
+  max-width: 520px;
+  margin: 0 auto 24px;
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px 24px;
+  text-align: left;
+  font-size: 14px;
+  line-height: 1.8;
+  color: var(--text-dim);
+}
+.story-box strong { color: var(--gold); }
+
+/* ══════════════════════════════════
+   MISSION SCREEN
+══════════════════════════════════ */
+#mission {
+  flex-direction: column;
+  padding: 0;
+}
+
+.mission-header {
+  background: linear-gradient(135deg, var(--navy2), var(--charcoal));
+  border-bottom: 1px solid var(--border);
+  padding: 14px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+  position: sticky; top: 0; z-index: 10;
+}
+
+.mission-tag {
+  font-family: 'Space Mono', monospace;
+  font-size: 11px;
+  color: var(--gold);
+  letter-spacing: 2px;
+}
+
+.progress-bar-wrap {
+  flex: 1;
+  max-width: 200px;
+  height: 6px;
+  background: rgba(255,255,255,0.1);
+  border-radius: 3px;
+  overflow: hidden;
+  margin: 0 12px;
+}
+.progress-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--gold), var(--gold2));
+  border-radius: 3px;
+  transition: width .5s ease;
+}
+
+.score-display {
+  font-family: 'Space Mono', monospace;
+  font-size: 13px;
+  color: var(--gold);
+}
+
+.sound-btn {
+  background: none; border: 1px solid var(--border);
+  border-radius: 20px; padding: 4px 12px;
+  color: var(--text-dim); font-size: 13px; cursor: pointer;
+}
+
+.mission-body {
+  flex: 1;
+  padding: 24px 20px;
+  max-width: 860px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+/* Mission title card */
+.mission-title-card {
+  background: linear-gradient(135deg, rgba(240,192,64,0.12), rgba(26,41,64,0.9));
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 18px 22px;
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.mission-icon { font-size: 28px; }
+.mission-title-text h2 { font-size: 17px; font-weight: 700; }
+.mission-title-text p { font-size: 13px; color: var(--text-dim); margin-top: 3px; }
+
+/* AI warning banner */
+.ai-warning {
+  background: rgba(255,107,107,0.1);
+  border: 1px solid rgba(255,107,107,0.3);
+  border-radius: 8px;
+  padding: 10px 16px;
+  font-size: 12px;
+  color: #FF9999;
+  margin-bottom: 16px;
+  display: none;
+}
+
+/* Timer */
+.timer-box {
+  display: flex; align-items: center; gap: 8px;
+  margin-bottom: 18px;
+}
+.timer-label { font-size: 12px; color: var(--text-dim); }
+.timer-num {
+  font-family: 'Space Mono', monospace;
+  font-size: 22px;
+  color: var(--cyan);
+  transition: color .3s;
+}
+.timer-num.urgent { color: var(--red); animation: pulse .5s infinite alternate; }
+.timer-bar-wrap { flex: 1; height: 6px; background: rgba(255,255,255,0.08); border-radius: 3px; overflow: hidden; }
+.timer-bar-fill { height: 100%; background: var(--cyan); border-radius: 3px; transition: width 1s linear, background .3s; }
+
+/* Content panels */
+.split-layout { display: grid; grid-template-columns: 7fr 3fr; gap: 16px; }
+.compare-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+
+.panel {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px;
+}
+
+.panel h3 { font-size: 13px; color: var(--gold); letter-spacing: 1px; margin-bottom: 12px; }
+
+/* Passage text */
+.passage {
+  font-size: 15px;
+  line-height: 1.9;
+  color: var(--text);
+}
+.passage strong { color: var(--gold2); }
+.source-tag { font-size: 11px; color: var(--text-dim); margin-top: 10px; }
+
+/* Choices */
+.choices { display: flex; flex-direction: column; gap: 10px; margin-top: 16px; }
+.choice-btn {
+  padding: 13px 16px;
+  border-radius: 10px;
+  border: 2px solid rgba(255,255,255,0.1);
+  background: rgba(255,255,255,0.04);
+  color: var(--text);
+  font-family: 'Noto Sans KR', sans-serif;
+  font-size: 14px;
+  text-align: left;
+  cursor: pointer;
+  transition: all .2s;
+  line-height: 1.5;
+}
+.choice-btn:hover { border-color: var(--gold); background: rgba(240,192,64,0.08); }
+.choice-btn.correct { border-color: var(--green); background: rgba(105,240,174,0.12); color: var(--green); }
+.choice-btn.wrong { border-color: var(--red); background: rgba(255,107,107,0.1); color: var(--red); }
+.choice-btn.disabled { pointer-events: none; opacity: 0.6; }
+.choice-btn.highlight { border-color: var(--cyan); background: rgba(79,195,247,0.08); }
+
+/* Chart */
+.chart-bar-item { margin-bottom: 12px; }
+.chart-bar-label { font-size: 12px; color: var(--text-dim); margin-bottom: 4px; display: flex; justify-content: space-between; }
+.chart-bar-track { height: 20px; background: rgba(255,255,255,0.06); border-radius: 4px; overflow: hidden; }
+.chart-bar-fill { height: 100%; border-radius: 4px; display: flex; align-items: center; padding-left: 8px; font-size: 11px; font-weight: 700; transition: width 1s ease; }
+.bar-korea { background: linear-gradient(90deg, #1E78C8, #4FC3F7); }
+.bar-world { background: linear-gradient(90deg, #555, #888); }
+
+/* Feedback box */
+.feedback-box {
+  margin-top: 14px;
+  border-radius: 10px;
+  padding: 14px 18px;
+  font-size: 14px;
+  line-height: 1.7;
+  display: none;
+}
+.feedback-box.correct-fb { background: rgba(105,240,174,0.1); border: 1px solid rgba(105,240,174,0.3); color: var(--green); }
+.feedback-box.wrong-fb { background: rgba(255,107,107,0.08); border: 1px solid rgba(255,107,107,0.25); color: #FF9999; }
+
+/* Next button */
+.next-btn {
+  margin-top: 18px;
+  padding: 13px 32px;
+  border-radius: 30px;
+  border: none;
+  background: linear-gradient(135deg, var(--gold), #C09020);
+  color: var(--navy);
+  font-family: 'Noto Sans KR', sans-serif;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  display: none;
+  transition: transform .2s;
+}
+.next-btn:hover { transform: translateY(-2px); }
+
+/* Hint button */
+.hint-btn {
+  padding: 8px 18px;
+  border-radius: 20px;
+  border: 1px solid var(--cyan);
+  background: transparent;
+  color: var(--cyan);
+  font-size: 13px;
+  cursor: pointer;
+  margin-bottom: 12px;
+}
+.hint-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+/* AI text highlight */
+.ai-text-block {
+  background: rgba(79,195,247,0.06);
+  border: 1px solid rgba(79,195,247,0.2);
+  border-radius: 10px;
+  padding: 18px;
+  font-size: 14px;
+  line-height: 1.9;
+  position: relative;
+}
+.error-highlight { background: rgba(255,107,107,0.25); border-radius: 3px; padding: 0 2px; cursor: pointer; transition: background .2s; }
+.error-highlight:hover { background: rgba(255,107,107,0.5); }
+.error-highlight.found { background: rgba(255,107,107,0.7); color: #fff; }
+
+/* Grid choices (2x2) */
+.choices-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 16px; }
+
+/* ── Mission 5 Roadmap ── */
+.roadmap-card {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 22px;
+  margin-bottom: 16px;
+}
+.roadmap-card h3 { color: var(--gold); font-size: 15px; margin-bottom: 12px; }
+.roadmap-item {
+  display: flex; align-items: flex-start; gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+.roadmap-item:last-child { border-bottom: none; }
+.roadmap-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--gold); margin-top: 7px; flex-shrink: 0; }
+.roadmap-item p { font-size: 14px; line-height: 1.6; }
+.roadmap-item span { font-size: 12px; color: var(--text-dim); }
+
+/* Q counter */
+.q-counter { font-size: 12px; color: var(--text-dim); margin-bottom: 6px; }
+
+/* ══════════════════════════════════
+   RESULT SCREEN
+══════════════════════════════════ */
+#result {
+  align-items: center;
+  justify-content: center;
+  padding: 40px 24px;
+  text-align: center;
+}
+
+.result-card {
+  max-width: 540px;
+  width: 100%;
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  padding: 36px 30px;
+}
+
+.result-type {
+  font-family: 'Space Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 3px;
+  color: var(--gold);
+  margin-bottom: 8px;
+}
+.result-title { font-size: 24px; font-weight: 900; margin-bottom: 6px; }
+.result-desc { font-size: 14px; color: var(--text-dim); line-height: 1.7; margin-bottom: 20px; }
+
+.score-ring {
+  width: 100px; height: 100px;
+  border-radius: 50%;
+  background: conic-gradient(var(--gold) var(--pct), rgba(255,255,255,0.08) 0);
+  display: flex; align-items: center; justify-content: center;
+  margin: 0 auto 20px;
+  position: relative;
+}
+.score-ring::before {
+  content: '';
+  width: 78px; height: 78px;
+  border-radius: 50%;
+  background: var(--navy2);
+  position: absolute;
+}
+.score-ring-num {
+  font-family: 'Space Mono', monospace;
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--gold);
+  position: relative; z-index: 1;
+}
+
+.career-list { text-align: left; margin-bottom: 20px; }
+.career-list h4 { font-size: 13px; color: var(--gold); letter-spacing: 1px; margin-bottom: 10px; }
+.career-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+  font-size: 14px;
+}
+.career-item:last-child { border-bottom: none; }
+.career-icon { font-size: 20px; }
+
+.subject-tags { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; }
+.subject-tag {
+  padding: 5px 12px;
+  border-radius: 20px;
+  border: 1px solid var(--cyan);
+  color: var(--cyan);
+  font-size: 12px;
+}
+
+.leaderboard { text-align: left; margin-bottom: 20px; }
+.leaderboard h4 { font-size: 13px; color: var(--gold); letter-spacing: 1px; margin-bottom: 10px; }
+.lb-item { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 13px; }
+.lb-rank { font-family: 'Space Mono', monospace; color: var(--gold); width: 24px; }
+
+.qr-wrap { margin: 20px auto 0; }
+.qr-wrap p { font-size: 11px; color: var(--text-dim); margin-top: 8px; }
+
+.retry-btn {
+  margin-top: 20px;
+  padding: 12px 32px;
+  border-radius: 30px;
+  border: 2px solid var(--gold);
+  background: transparent;
+  color: var(--gold);
+  font-family: 'Noto Sans KR', sans-serif;
+  font-size: 15px;
+  cursor: pointer;
+  transition: all .2s;
+}
+.retry-btn:hover { background: rgba(240,192,64,0.1); }
+
+/* Mascot feelings */
+.mascot-mini { display: inline-block; font-size: 36px; animation: float 2s ease-in-out infinite; }
+@keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-6px)} }
+@keyframes pulse { from{opacity:1} to{opacity:0.5} }
+
+/* Difficulty multiplier badge */
+.diff-badge {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 12px;
+  font-size: 11px;
+  background: rgba(240,192,64,0.15);
+  color: var(--gold);
+  margin-left: 8px;
+}
+
+/* Tooltip */
+.tooltip { font-size: 12px; color: var(--text-dim); margin-top: 6px; }
+
+/* Mission 3 prompt choices */
+.prompt-choices { display: flex; flex-direction: column; gap: 10px; margin-top: 14px; }
+
+/* Responsive */
+@media (max-width: 600px) {
+  .split-layout, .compare-layout, .choices-grid { grid-template-columns: 1fr; }
+  .mission-header { flex-wrap: wrap; }
+}
+</style>
+</head>
+<body>
+
+<!-- ══════════ INTRO ══════════ -->
+<div id="intro" class="screen active">
+  <div class="logo-badge">MILAB · #025 · 고등학교</div>
+
+  <div class="mascot-wrap">
+    <svg class="mascot-svg" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+      <!-- Drone body -->
+      <rect x="38" y="48" width="44" height="28" rx="8" fill="#1E78C8"/>
+      <rect x="48" y="54" width="24" height="16" rx="4" fill="#0D1B2A"/>
+      <!-- Eyes -->
+      <circle id="eye-l" cx="55" cy="62" r="4" fill="#4FC3F7"/>
+      <circle id="eye-r" cx="65" cy="62" r="4" fill="#4FC3F7"/>
+      <!-- Pupils -->
+      <circle cx="56" cy="63" r="1.5" fill="#0D1B2A"/>
+      <circle cx="66" cy="63" r="1.5" fill="#0D1B2A"/>
+      <!-- Arms -->
+      <line x1="38" y1="55" x2="18" y2="45" stroke="#F0C040" stroke-width="3" stroke-linecap="round"/>
+      <line x1="82" y1="55" x2="102" y2="45" stroke="#F0C040" stroke-width="3" stroke-linecap="round"/>
+      <line x1="38" y1="69" x2="18" y2="79" stroke="#F0C040" stroke-width="3" stroke-linecap="round"/>
+      <line x1="82" y1="69" x2="102" y2="79" stroke="#F0C040" stroke-width="3" stroke-linecap="round"/>
+      <!-- Propellers -->
+      <ellipse cx="18" cy="42" rx="14" ry="4" fill="rgba(240,192,64,0.6)" transform="rotate(-15,18,42)"/>
+      <ellipse cx="102" cy="42" rx="14" ry="4" fill="rgba(240,192,64,0.6)" transform="rotate(15,102,42)"/>
+      <ellipse cx="18" cy="82" rx="14" ry="4" fill="rgba(240,192,64,0.6)" transform="rotate(15,18,82)"/>
+      <ellipse cx="102" cy="82" rx="14" ry="4" fill="rgba(240,192,64,0.6)" transform="rotate(-15,102,82)"/>
+      <!-- Gold stripe -->
+      <rect x="38" y="72" width="44" height="4" rx="2" fill="#F0C040" opacity="0.5"/>
+      <!-- Antenna -->
+      <line x1="60" y1="48" x2="60" y2="36" stroke="#F0C040" stroke-width="2"/>
+      <circle cx="60" cy="33" r="4" fill="#F0C040"/>
+    </svg>
+  </div>
+
+  <div class="intro-title">🚁 드론 도시 설계국</div>
+  <div style="font-size:13px;color:var(--gold);letter-spacing:1px;margin-bottom:14px;">2035 대한민국 드론 정책의 미래를 결정하라!</div>
+
+  <div class="story-box">
+    <strong>📋 배경 브리핑</strong><br>
+    2035년, 국토교통부 산하 <strong>드론 도시 설계국</strong>에 신입 애널리스트로 발령받은 당신. 서울·부산·세종 상공을 누비는 드론 50만 대의 운항 정책을 당신이 설계한다. 글로벌 데이터 분석부터 AI 오류 검증, 직업 딜레마 해결까지 — <strong>대한민국 드론 생태계의 핵심 결정을 내려라!</strong>
+  </div>
+
+  <div class="diff-label">⚙ 난이도 선택</div>
+  <div class="diff-btns">
+    <button class="diff-btn" data-d="easy">🟢 기초 분석관</button>
+    <button class="diff-btn selected" data-d="normal">🟡 심화 전문가</button>
+    <button class="diff-btn" data-d="hard">🔴 정책 설계사</button>
+  </div>
+
+  <div class="name-wrap">
+    <input type="text" class="name-input" id="playerName" placeholder="닉네임을 입력하세요" maxlength="12"/>
+  </div>
+  <button class="start-btn" onclick="startGame()">🚀 임무 시작</button>
+</div>
+
+<!-- ══════════ MISSION ══════════ -->
+<div id="mission" class="screen">
+  <div class="mission-header">
+    <div>
+      <div class="mission-tag" id="missionTag">MISSION 01</div>
+    </div>
+    <div class="progress-bar-wrap">
+      <div class="progress-bar-fill" id="progressBar" style="width:0%"></div>
+    </div>
+    <div class="score-display">⭐ <span id="scoreDisplay">0</span>점</div>
+    <button class="sound-btn" onclick="toggleSound()" id="soundBtn">🔊 ON</button>
+  </div>
+
+  <div class="mission-body" id="missionBody"></div>
+</div>
+
+<!-- ══════════ RESULT ══════════ -->
+<div id="result" class="screen">
+  <div class="result-card">
+    <div class="result-type" id="resultType">ANALYST TYPE</div>
+    <div class="mascot-mini" id="resultMascot">🚁</div>
+    <div class="result-title" id="resultTitle"></div>
+    <div class="score-ring" id="scoreRing">
+      <div class="score-ring-num" id="scoreRingNum"></div>
+    </div>
+    <div class="result-desc" id="resultDesc"></div>
+
+    <div class="career-list">
+      <h4>🎯 추천 진로 (드론·UAM 분야)</h4>
+      <div id="careerItems"></div>
+    </div>
+
+    <div>
+      <h4 style="font-size:13px;color:var(--gold);letter-spacing:1px;margin-bottom:10px;">📚 고교학점제 추천 선택과목</h4>
+      <div class="subject-tags" id="subjectTags"></div>
+    </div>
+
+    <div class="leaderboard">
+      <h4>🏆 명예의 전당</h4>
+      <div id="lbList"></div>
+    </div>
+
+    <div id="qrSection">
+      <div id="qrCode" class="qr-wrap"></div>
+      <p class="qr-wrap" style="font-size:11px;color:var(--text-dim);margin-top:8px;">학생부 포트폴리오 첨부용 QR코드</p>
+    </div>
+
+    <button class="retry-btn" onclick="retryGame()">↺ 다시 도전</button>
+  </div>
+</div>
+
+<script>
+// ══════════════════════════════════
+// PORTFOLIO ENTRY (자동 출력)
+// ══════════════════════════════════
+const portfolioEntry = {
+  id: "025",
+  title: "드론 도시 설계국 — 2035 대한민국 드론 정책을 결정하라!",
+  target: "고등학교 공통",
+  grade: "고1·고2·고3",
+  theme: "드론·UAM·AI 진로",
+  aiFeature: "AI 드론 보고서 오류 검증, hallucination 탐지, 프롬프트 설계 미션",
+  careerTheme: "드론 파일럿, UAM 엔지니어, 드론 정책 애널리스트, 드론 AI 개발자",
+  literacyFeature: "WEF·OECD·한국통계 기반 지문 읽기, 한국 vs 세계 비교 데이터 분석, AI 편향 탐지",
+  date: new Date().toISOString().slice(0,10),
+  url: "https://milab2019.github.io/main/drone_career_025.html"
+};
+console.log("📋 portfolioEntry:", JSON.stringify(portfolioEntry, null, 2));
+
+// ══════════════════════════════════
+// STATE
+// ══════════════════════════════════
+let state = {
+  playerName: "애널리스트",
+  difficulty: "normal",
+  score: 0,
+  currentMission: 0,
+  currentQ: 0,
+  hintUsed: false,
+  soundOn: true,
+  timerInterval: null,
+  timerSec: 0,
+  missionScores: [0,0,0,0,0],
+  choicePattern: [],
+};
+
+const DIFF_MULT = { easy: 0.7, normal: 1.0, hard: 1.3 };
+
+// ══════════════════════════════════
+// AUDIO (Web Audio API)
+// ══════════════════════════════════
+let audioCtx;
+function getCtx() {
+  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  return audioCtx;
+}
+function playTone(freq, type='sine', dur=0.3, vol=0.18) {
+  if (!state.soundOn) return;
+  try {
+    const ctx = getCtx();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.connect(gain); gain.connect(ctx.destination);
+    osc.type = type; osc.frequency.value = freq;
+    gain.gain.setValueAtTime(vol, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + dur);
+    osc.start(); osc.stop(ctx.currentTime + dur);
+  } catch(e){}
+}
+function sfxCorrect() { [523,659,784].forEach((f,i)=>setTimeout(()=>playTone(f,'sine',0.3,0.2),i*80)); }
+function sfxWrong() { [250,220].forEach((f,i)=>setTimeout(()=>playTone(f,'sawtooth',0.2,0.15),i*100)); }
+function sfxLevelUp() { [392,523,659,784].forEach((f,i)=>setTimeout(()=>playTone(f,'triangle',0.4,0.22),i*90)); }
+function sfxFanfare() { [523,659,784,1047].forEach((f,i)=>setTimeout(()=>playTone(f,'sine',0.5,0.25),i*100)); }
+function bgLoop() {
+  if (!state.soundOn) return;
+  try {
+    const ctx = getCtx();
+    // 단순한 저음 드론(drone) 패드 — 울리지 않게 단일 사인파 + 긴 페이드
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.connect(gain); gain.connect(ctx.destination);
+    osc.type = 'sine';
+    osc.frequency.value = 110; // 저음 A2
+    gain.gain.setValueAtTime(0, ctx.currentTime);
+    gain.gain.linearRampToValueAtTime(0.018, ctx.currentTime + 2);
+    gain.gain.linearRampToValueAtTime(0.018, ctx.currentTime + 7);
+    gain.gain.linearRampToValueAtTime(0, ctx.currentTime + 9);
+    osc.start(ctx.currentTime);
+    osc.stop(ctx.currentTime + 9);
+    if (state.soundOn) setTimeout(bgLoop, 9000);
+  } catch(e){}
+}
+function toggleSound() {
+  state.soundOn = !state.soundOn;
+  document.getElementById('soundBtn').textContent = state.soundOn ? '🔊 ON' : '🔇 OFF';
+  if (state.soundOn) bgLoop();
+}
+
+// ══════════════════════════════════
+// DIFF BUTTONS
+// ══════════════════════════════════
+document.querySelectorAll('.diff-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.diff-btn').forEach(b => b.classList.remove('selected'));
+    btn.classList.add('selected');
+    state.difficulty = btn.dataset.d;
+  });
+});
+
+// ══════════════════════════════════
+// MISSIONS DATA
+// ══════════════════════════════════
+
+// ─── MISSION 1: 글로벌 데이터 탐정 (문해력 기초) ───
+const m1Questions = [
+  {
+    passage: `세계경제포럼(WEF) 2025 미래직업보고서에 따르면, 드론 관련 직업군은 2030년까지 글로벌 고용시장에서 <strong>순증 380만 개</strong>를 기록할 것으로 예측된다. 특히 UAM(도심항공교통) 운항 관리사, 드론 배송 최적화 AI 엔지니어, 항공 데이터 분석가의 성장세가 두드러진다. 반면 단순 배달 종사자(기존)는 2030년까지 <strong>-12%</strong> 감소가 예상된다.`,
+    source: "출처: WEF Future of Jobs Report 2025",
+    question: "위 보고서의 핵심 주장으로 가장 적절한 것은?",
+    choices: [
+      "드론 기술 발전으로 모든 배달 직업이 소멸된다",
+      "드론 관련 신직업 창출이 소멸 직업보다 큰 순증 효과를 낳는다",
+      "UAM 산업은 아직 초기 단계로 직업 통계가 불확실하다",
+      "기존 배달 종사자는 드론 기술 훈련으로 전환이 가능하다"
+    ],
+    answer: 1,
+    feedback: "핵심은 '순증 380만 개'라는 숫자입니다. 드론 관련 신직업(+)이 소멸 직업(-)보다 많아 순증 효과가 발생한다는 것이 필자의 주장입니다. ①번은 지문에 없는 과도한 해석이고, ④번은 지문의 주장이 아닙니다.",
+    hintKey: "드론 관련 직업군의 '순증' 숫자를 찾아보세요."
+  },
+  {
+    passage: `한국교통연구원(2024) 보고서에 따르면, 대한민국 UAM 시장 규모는 2030년 <strong>3조 7천억 원</strong>, 2035년 <strong>12조 원</strong>으로 성장이 전망된다. 정부는 K-UAM 로드맵을 통해 2030년 서울·부산·제주 상업 운항을 목표로 하며, 드론 파일럿 자격증 발급 건수는 2023년 기준 <strong>연간 4,200건</strong>으로 3년 전 대비 6배 증가했다.`,
+    source: "출처: 한국교통연구원 UAM 산업 전망 보고서 2024",
+    question: "이 지문에서 추론할 수 있는 '드론 파일럿 자격증 급증' 원인으로 가장 타당한 것은?",
+    choices: [
+      "드론 파일럿 자격시험의 난이도가 낮아졌기 때문이다",
+      "K-UAM 로드맵 발표 이후 시장 성장 기대로 진입 수요가 늘었기 때문이다",
+      "정부가 드론 자격증 취득 비용을 전액 지원하기 때문이다",
+      "해외 드론 기업들이 한국 파일럿을 대규모 채용하기 때문이다"
+    ],
+    answer: 1,
+    feedback: "지문의 핵심은 'K-UAM 로드맵'과 '시장 규모 급성장'입니다. 정책 기대감과 시장 성장 전망이 자격증 수요를 자극했다는 ②번이 지문 근거 기반의 가장 타당한 추론입니다. 나머지는 지문에서 근거를 찾을 수 없는 추측입니다.",
+    hintKey: "K-UAM 로드맵 발표와 시장 규모 숫자의 관계를 생각해보세요."
+  },
+  {
+    passage: `드론 보안 전문 리서치 기관 드론시큐리티랩(2025)은 상업용 드론의 <strong>약 34%가 사이버 해킹 취약점</strong>을 보유하고 있다고 발표했다. GPS 스푸핑, 명령 패킷 가로채기 등의 공격으로 드론이 제3자에 의해 원격 제어될 수 있으며, 이는 배송·인명구조·시설 점검 드론의 <strong>안전 보안 전문가</strong> 수요를 급격히 높이고 있다.`,
+    source: "출처: Drone Security Lab Global Report 2025",
+    question: "이 지문에서 필자가 근거로 사용한 '사실적 정보'와 '주장'의 관계를 바르게 연결한 것은?",
+    choices: [
+      "[사실] 34% 해킹 취약점 → [주장] 드론 전면 금지 필요",
+      "[사실] 34% 해킹 취약점 → [주장] 드론 보안 전문가 수요 증가",
+      "[사실] GPS 스푸핑 존재 → [주장] 드론은 배송에 적합하지 않다",
+      "[사실] 원격 제어 가능성 → [주장] 드론보다 일반 차량이 안전하다"
+    ],
+    answer: 1,
+    feedback: "'34% 취약점'이라는 데이터(사실)가 '보안 전문가 수요 증가'라는 결론(주장)으로 이어지는 것이 지문의 논거 구조입니다. ①③④번은 지문에서 직접 도출할 수 없는 과도한 해석입니다.",
+    hintKey: "지문의 마지막 문장에서 필자가 결론을 내리고 있습니다."
+  }
+];
+
+// ─── MISSION 2: 세계 vs 한국 비교 분석 ───
+const m2Questions = [
+  {
+    title: "드론 배송 상용화 진행도 비교",
+    chartData: [
+      { label: "🇰🇷 한국 (서비스 지역 수)", val: 12, max: 60, type: "korea", note: "2024년 기준, 제주·세종 중심" },
+      { label: "🇺🇸 미국 (Wing/Amazon 운영)", val: 45, max: 60, type: "world", note: "2024년 기준, FAA 승인 지역" },
+      { label: "🇨🇳 중국 (DJI 등 상용 지역)", val: 58, max: 60, type: "world", note: "2024년 기준" },
+      { label: "🇦🇺 호주 (Wing 선도국)", val: 40, max: 60, type: "world", note: "2024년 기준" },
+    ],
+    source: "출처: ICAO Drone Market Report 2024 / 국토교통부 드론 실증사업 현황",
+    question: "위 데이터를 바탕으로 한국이 드론 배송 상용화에서 선진국보다 뒤처진 가장 큰 구조적 원인은?",
+    choices: [
+      "한국 기업의 드론 제조 기술이 미국·중국보다 열등하기 때문이다",
+      "인구밀도가 높아 도심 드론 비행 규제가 엄격하고, 법·제도 정비가 늦기 때문이다",
+      "한국 소비자들이 드론 배송보다 기존 택배를 선호하기 때문이다",
+      "한국 정부가 드론 산업 투자 예산을 삭감했기 때문이다"
+    ],
+    answer: 1,
+    feedback: "데이터의 핵심은 한국 실증 지역 수가 미국(45개)·중국(58개)에 비해 현저히 적다는 점입니다. 이는 기술 부족이 아닌, 고밀도 도시 환경에서의 안전 규제 강화와 관련 법·제도(항공안전법, 특별자유화구역 지정 등)의 단계적 정비 과정 때문으로 분석됩니다."
+  },
+  {
+    title: "직업별 AI 대체 가능성 비율 (WEF 2025)",
+    chartData: [
+      { label: "단순 운반직", val: 78, max: 100, type: "world", note: "WEF 2025 AI 대체 위험도" },
+      { label: "드론 파일럿 (전문)", val: 22, max: 100, type: "korea", note: "WEF 2025 AI 대체 위험도" },
+      { label: "드론 AI 엔지니어", val: 8, max: 100, type: "korea", note: "WEF 2025 AI 대체 위험도" },
+      { label: "드론 정책·안전 심사관", val: 15, max: 100, type: "korea", note: "WEF 2025 AI 대체 위험도" },
+    ],
+    source: "출처: WEF Future of Jobs Report 2025 (AI 대체 가능성 지수)",
+    question: "이 데이터가 진로 선택에 주는 시사점으로 가장 타당한 것은?",
+    choices: [
+      "AI 대체 위험이 낮은 단순직에 집중하는 것이 안전한 진로 전략이다",
+      "드론 관련 고기술·분석·정책 직군으로 전문성을 쌓는 것이 AI 시대 생존 전략이다",
+      "드론 산업 자체가 AI로 대체되므로 다른 분야를 탐색해야 한다",
+      "AI 대체 위험도와 진로 선택은 직접적인 관계가 없다"
+    ],
+    answer: 1,
+    feedback: "단순 운반직(78%)은 AI 대체 위험이 높지만, 드론 파일럿·엔지니어·정책심사관 등 전문직은 8~22%에 불과합니다. '드론 산업 내에서도 어떤 역할을 맡는가'가 진로 전략의 핵심임을 데이터가 보여줍니다."
+  }
+];
+
+// ─── MISSION 3: AI 비판 검증관 ───
+const m3Questions = [
+  {
+    type: "hallucination",
+    aiText: `AI가 생성한 드론 시장 보고서:
+"대한민국은 2022년 세계 최초로 도심항공교통(UAM) 상업 서비스를 부산-서울 노선에서 시작하였으며, 월 이용객 수는 12만 명에 달합니다. 드론 배송 시장에서 한국은 미국·중국을 제치고 세계 1위 점유율을 기록 중이며, DJI 코리아는 전 세계 드론 판매량의 45%를 담당합니다."`,
+    question: "위 AI 생성 텍스트에서 사실과 다른 오류(hallucination)를 모두 고르세요.",
+    choices: [
+      "2022년 부산-서울 UAM 상업 서비스 시작",
+      "월 이용객 12만 명",
+      "한국 드론 배송 세계 1위",
+      "DJI 코리아 45% 점유율"
+    ],
+    correctMask: [true, true, true, true],
+    feedback: "모두 오류입니다! ① 한국의 UAM 상업 서비스는 2024년 기준 아직 시작되지 않았습니다(실증 단계). ② 존재하지 않는 서비스의 이용객 수입니다. ③ 드론 배송 상용화는 미국·중국이 앞서 있습니다. ④ DJI는 중국 기업이며, DJI 코리아는 한국 법인에 불과합니다. 이처럼 AI는 그럴듯하지만 틀린 정보(hallucination)를 생성합니다."
+  },
+  {
+    type: "bias",
+    aiText: `AI가 작성한 드론 직업 안내문:
+"드론 파일럿은 주로 체력이 강한 남성에게 적합한 직업입니다. 야외 작업이 많고 기계 조작 능력이 중요하여, 공학 계열을 전공한 남학생들에게 특히 추천됩니다. 여성의 경우 드론 데이터 분석이나 행정 업무 쪽이 더 적합할 수 있습니다."`,
+    question: "이 AI 텍스트에서 나타난 편향(bias)의 유형은?",
+    choices: [
+      "확증 편향 — 드론 파일럿에 관한 사전 의견만 강화",
+      "성별 편향 — 직업 적합도를 성별로 구분하는 고정관념",
+      "기술 편향 — 드론 기술의 위험성만 과장",
+      "국가 편향 — 특정 국가의 드론 기술만 우월하다고 서술"
+    ],
+    answer: 1,
+    feedback: "이 텍스트는 '남성 = 파일럿 적합, 여성 = 행정 적합'이라는 성별 고정관념(성별 편향)을 포함합니다. 실제로 드론 파일럿 자격증에는 성별 제한이 없으며, 이런 AI 편향은 진로 탐색을 제한할 수 있습니다. AI 출력을 그대로 신뢰하지 말고 비판적으로 검토해야 합니다."
+  },
+  {
+    type: "prompt",
+    question: "드론 정책 보고서 초안을 작성하려 할 때, AI로부터 더 좋은 결과를 얻기 위한 프롬프트는?",
+    choices: [
+      "드론 정책 보고서 써줘",
+      "2025년 한국 도심 드론 배송 규제 현황을 WEF·ICAO 국제 기준과 비교하고, 개선이 필요한 정책 3가지를 근거와 함께 200자로 요약해줘",
+      "드론에 대해 알고 있는 것 다 말해줘",
+      "정부 보고서 형식으로 드론 정책을 작성해줘"
+    ],
+    answer: 1,
+    feedback: "좋은 프롬프트의 조건: ① 구체적 맥락(2025년, 한국, 도심 배송) ② 비교 기준 명시(WEF·ICAO) ③ 원하는 출력 형식(개선점 3가지, 근거 포함) ④ 분량 제한(200자). ②번이 이 모든 조건을 갖춘 전문가 수준 프롬프트입니다."
+  }
+];
+
+// ─── MISSION 4: 미래 직업 설계사 ───
+const m4Questions = [
+  {
+    scenario: "당신은 2035년 대형 드론 배송기업의 'AI 운항 안전 책임자'입니다. AI가 배송 경로를 자동 설계하는데, 오늘 AI가 한 초등학교 상공을 통과하는 최단 경로를 선택했습니다. 기술적으로는 안전 기준 내이지만, 학부모 민원이 예상됩니다.",
+    question: "이 상황에서 당신의 선택은?",
+    choices: [
+      "A. AI 판단을 신뢰하고 최단 경로 유지 — 기술 기준을 충족하므로 법적 문제 없음",
+      "B. 학교 상공 회피 경로로 변경 — 사회적 신뢰와 지역사회 수용성이 장기적으로 더 중요",
+      "C. 학부모 설명회 개최 후 결정 — 이해관계자 참여로 민주적 의사결정",
+      "D. 규제 당국에 판단을 위임 — 책임 분산으로 리스크 최소화"
+    ],
+    feedback: [
+      "✅ 이 선택도 타당합니다! 단, 장기적으로 지역사회 수용성이 낮아지면 사업 지속이 어려울 수 있어요. AI 기준 충족 + 커뮤니케이션 전략을 병행하는 것이 현실적 대안입니다.",
+      "✅ 탁월한 선택! 단기 효율보다 사회적 신뢰와 장기 지속가능성을 우선한 결정입니다. 드론 산업 확장의 가장 큰 장벽은 기술이 아닌 '사회적 수용성'임을 잊지 마세요.",
+      "✅ 이해관계자 참여 방식은 민주적입니다! 단, 긴급 배송 상황이라면 의사결정 지연의 리스크가 있습니다. 평소에 커뮤니티와 신뢰를 쌓아두는 예방적 접근이 더 효과적입니다.",
+      "✅ 규제 준수는 중요합니다! 단, 책임자로서 자체적 판단을 내리지 않고 항상 위임만 하면 전문가로서의 신뢰가 낮아질 수 있습니다. AI와 규제 사이에서 인간의 판단이 핵심입니다."
+    ]
+  },
+  {
+    scenario: "당신은 드론 스타트업 공동창업자입니다. 글로벌 투자사가 5억 원 투자를 제안하지만 조건이 있습니다: 모든 핵심 AI 알고리즘을 투자사 소유로 이전해야 합니다. 거절하면 당장 운영 자금이 부족하지만, 기술 독립성은 유지됩니다.",
+    question: "당신의 선택은?",
+    choices: [
+      "A. 투자 수락 — 당장 생존이 최우선, 알고리즘은 나중에 재개발 가능",
+      "B. 투자 거절 — 기술 주권을 유지해야 장기 성장 가능성이 높다",
+      "C. 조건 재협상 — 알고리즘 공동 소유나 라이선스 방식으로 대안 제시",
+      "D. 정부 지원금 우선 신청 — 민간 투자 의존도를 낮추는 전략"
+    ],
+    feedback: [
+      "✅ 현실적 생존 전략입니다! 단, 알고리즘 소유권 없이는 장기적으로 투자사 의존이 심화될 수 있습니다. 재개발 일정과 계약 조건을 명확히 합의하는 것이 필수입니다.",
+      "✅ 기술 독립성은 장기 가치의 핵심입니다! 단, 자금 부족으로 팀이 해체되면 기술도 의미 없습니다. 대안 자금 조달 경로(정부 R&D, 소액 투자자)를 병행 탐색하는 것이 현실적입니다.",
+      "✅ 최선의 전략! 협상을 통한 중간점 찾기는 스타트업의 핵심 역량입니다. 공동 소유나 라이선스 방식은 투자사와의 Win-Win 구조를 만들 수 있습니다.",
+      "✅ 정부 지원금은 훌륭한 대안입니다! 단, 심사 기간이 길어 즉각적 자금 문제 해결이 어려울 수 있습니다. 단기·장기 자금 조달을 이원화하는 전략이 필요합니다."
+    ]
+  }
+];
+
+// ─── MISSION 5: 멀티엔딩 데이터 ───
+const endings = [
+  { range: [0,39], type: "탐색가 🔭", title: "아직 발견 중인 당신", desc: "드론 세계의 문을 막 두드린 탐색가입니다. 지금부터 차근차근 쌓아가면 됩니다!", careers: ["드론 콘텐츠 크리에이터 📸", "드론 촬영 어시스턴트 🎬", "드론 교육 보조 강사 📚"], subjects: ["인공지능기초", "진로와직업", "정보"], strategy: "드론 동아리 참여로 실전 경험을 쌓고, 드론 파일럿 자격증 취득으로 기반을 다지세요." },
+  { range: [40,54], type: "도전가 🚀", title: "성장하는 실력자", desc: "기초를 다진 도전가! 전문 영역을 한 가지 깊이 파고들어 차별화하세요.", careers: ["드론 파일럿 (국가자격) ✈️", "드론 촬영·매핑 전문가 🗺️", "드론 유지보수 기술자 🔧"], subjects: ["항공우주공학", "인공지능기초", "물리학"], strategy: "드론 국가자격증(1종~4종) 취득 후 측량·점검 분야 실무 경험을 쌓으세요." },
+  { range: [55,69], type: "전문가 예비 ⭐", title: "전문성을 갖춰가는 당신", desc: "데이터 분석력과 비판적 사고가 빛나는 예비 전문가! 한 단계만 더!", careers: ["드론 데이터 분석가 📊", "UAM 운항 관리사 🏙️", "드론 AI 솔루션 개발자 💻"], subjects: ["데이터과학", "인공지능기초", "현대사회와윤리"], strategy: "파이썬/드론 SDK 프로그래밍 학습과 항공 데이터 분석 프로젝트 포트폴리오를 구성하세요." },
+  { range: [70,84], type: "리더 예비 🌟", title: "변화를 이끄는 리더십", desc: "글로벌 시각과 분석력을 겸비한 리더 예비! 세계 무대로 나아갈 준비가 됐습니다.", careers: ["드론 정책 애널리스트 🏛️", "UAM 사업 전략가 🌐", "드론 안전 규제 전문가 ⚖️"], subjects: ["경제", "국제관계의이해", "사회문제탐구"], strategy: "국내 드론 규제 연구소 인턴, 항공안전기술원 프로그램 참여로 정책 실무 경험을 쌓으세요." },
+  { range: [85,999], type: "글로벌 선도자 🌍", title: "세계를 바꿀 당신의 미션", desc: "드론 도시 설계국에 오신 걸 환영합니다! AI 시대 대한민국 드론 생태계를 이끌 당신!", careers: ["드론 AI 윤리 전문가 🤖", "K-드론 글로벌 사업 총괄 🚁", "UAM 인프라 정책 설계사 🏗️"], subjects: ["인공지능기초", "데이터과학", "국제관계의이해"], strategy: "KAIST 항공우주학과, 서울대 공과대학, 한양대 무인이동체공학과 진학 후 글로벌 UAM 기업 인턴십으로 세계 무대에 도전하세요." }
+];
+
+// ── 정답 셔플 유틸 ──
+function shuffleQuestion(q) {
+  // choices 배열과 answer 인덱스를 함께 섞음
+  const indices = q.choices.map((_,i) => i);
+  // Fisher-Yates
+  for (let i = indices.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [indices[i], indices[j]] = [indices[j], indices[i]];
+  }
+  const newChoices = indices.map(i => q.choices[i]);
+  const newAnswer = indices.indexOf(q.answer);
+  return { ...q, choices: newChoices, answer: newAnswer };
+}
+
+function shuffleM3Question(q) {
+  if (q.type === 'hallucination') return q; // hallucination은 전체 선택이라 셔플 불필요
+  const indices = q.choices.map((_,i) => i);
+  for (let i = indices.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [indices[i], indices[j]] = [indices[j], indices[i]];
+  }
+  const newChoices = indices.map(i => q.choices[i]);
+  const newAnswer = indices.indexOf(q.answer);
+  return { ...q, choices: newChoices, answer: newAnswer };
+}
+
+function shuffleM4Question(q) {
+  const indices = q.choices.map((_,i) => i);
+  for (let i = indices.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [indices[i], indices[j]] = [indices[j], indices[i]];
+  }
+  const newChoices = indices.map(i => q.choices[i]);
+  const newFeedback = indices.map(i => q.feedback[i]);
+  return { ...q, choices: newChoices, feedback: newFeedback };
+}
+// 셔플된 문제 배열 (게임 시작 시 생성)
+let shuffledM1 = [], shuffledM2 = [], shuffledM3 = [], shuffledM4 = [];
+
+function startGame() {
+  state.playerName = document.getElementById('playerName').value.trim() || "애널리스트";
+  state.score = 0; state.currentMission = 0; state.currentQ = 0;
+  state.missionScores = [0,0,0,0,0]; state.choicePattern = [];
+  // 매 게임마다 새로 셔플
+  shuffledM1 = m1Questions.map(q => shuffleQuestion(q));
+  shuffledM2 = m2Questions.map(q => shuffleQuestion(q));
+  shuffledM3 = m3Questions.map(q => shuffleM3Question(q));
+  shuffledM4 = m4Questions.map(q => shuffleM4Question(q));
+  showScreen('mission');
+  bgLoop();
+  renderMission();
+}
+
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+function updateHeader() {
+  const titles = ['MISSION 01', 'MISSION 02', 'MISSION 03', 'MISSION 04', 'MISSION 05'];
+  document.getElementById('missionTag').textContent = titles[state.currentMission] || 'COMPLETE';
+  const pct = (state.currentMission / 5) * 100;
+  document.getElementById('progressBar').style.width = pct + '%';
+  document.getElementById('scoreDisplay').textContent = state.score;
+}
+
+function renderMission() {
+  updateHeader();
+  const body = document.getElementById('missionBody');
+  body.innerHTML = '';
+
+  if (state.currentMission === 0) renderM1(body);
+  else if (state.currentMission === 1) renderM2(body);
+  else if (state.currentMission === 2) renderM3(body);
+  else if (state.currentMission === 3) renderM4(body);
+  else if (state.currentMission === 4) renderM5(body);
+}
+
+// ─── M1 ───
+function renderM1(body) {
+  const q = shuffledM1[state.currentQ];
+  let timerSec = 60;
+
+  body.innerHTML = `
+    <div class="mission-title-card">
+      <div class="mission-icon">📖</div>
+      <div class="mission-title-text">
+        <h2>미션1 · 글로벌 데이터 탐정</h2>
+        <p>지문을 읽고 핵심 주장과 근거를 파악하세요 (전체 60초)</p>
+      </div>
+    </div>
+    <div class="timer-box">
+      <div class="timer-label">⏱ 남은 시간</div>
+      <div class="timer-num" id="timerNum">${timerSec}</div>
+      <div class="timer-bar-wrap"><div class="timer-bar-fill" id="timerBar" style="width:100%"></div></div>
+    </div>
+    <div class="q-counter">문항 ${state.currentQ+1} / ${shuffledM1.length}</div>
+    <div class="split-layout">
+      <div class="panel">
+        <h3>📄 지문</h3>
+        <div class="passage" id="passageText">${q.passage}</div>
+        <div class="source-tag">${q.source}</div>
+      </div>
+      <div class="panel">
+        <h3>❓ ${q.question}</h3>
+        <button class="hint-btn" id="hintBtn" onclick="useHint()">💡 힌트 (배점 -30%)</button>
+        <div class="choices" id="choices"></div>
+        <div class="feedback-box" id="feedback"></div>
+        <button class="next-btn" id="nextBtn" onclick="m1Next()">다음 →</button>
+      </div>
+    </div>
+  `;
+
+  q.choices.forEach((c,i) => {
+    const btn = document.createElement('button');
+    btn.className = 'choice-btn';
+    btn.textContent = `${['①','②','③','④'][i]} ${c}`;
+    btn.onclick = () => answerM1(i);
+    document.getElementById('choices').appendChild(btn);
+  });
+
+  // Timer
+  const totalTime = 60;
+  clearInterval(state.timerInterval);
+  state.timerInterval = setInterval(() => {
+    timerSec--;
+    const el = document.getElementById('timerNum');
+    const bar = document.getElementById('timerBar');
+    if (!el) { clearInterval(state.timerInterval); return; }
+    el.textContent = timerSec;
+    bar.style.width = (timerSec / totalTime * 100) + '%';
+    if (timerSec <= 10) { el.classList.add('urgent'); bar.style.background = 'var(--red)'; playTone(440,'sine',0.1,0.08); }
+    if (timerSec <= 0) {
+      clearInterval(state.timerInterval);
+      timeoutM1();
+    }
+  }, 1000);
+}
+
+function useHint() {
+  const q = shuffledM1[state.currentQ];
+  document.getElementById('hintBtn').disabled = true;
+  document.getElementById('hintBtn').textContent = '💡 힌트 사용됨';
+  state.hintUsed = true;
+  // highlight key sentence
+  const txt = document.getElementById('passageText').innerHTML;
+  document.getElementById('passageText').innerHTML = `<span style="background:rgba(240,192,64,0.2);border-radius:4px;padding:2px 4px;">힌트: ${q.hintKey}</span><br><br>` + txt;
+}
+
+function answerM1(idx) {
+  clearInterval(state.timerInterval);
+  const q = shuffledM1[state.currentQ];
+  const btns = document.getElementById('choices').querySelectorAll('.choice-btn');
+  btns.forEach(b => { b.classList.add('disabled'); });
+
+  const pts = state.hintUsed ? Math.round(10 * 0.7 * DIFF_MULT[state.difficulty]) : Math.round(10 * DIFF_MULT[state.difficulty]);
+  const fb = document.getElementById('feedback');
+  fb.style.display = 'block';
+
+  if (idx === q.answer) {
+    btns[idx].classList.add('correct');
+    sfxCorrect();
+    state.score += pts;
+    state.missionScores[0] += pts;
+    fb.className = 'feedback-box correct-fb';
+    fb.textContent = `✅ 정확한 분석! +${pts}점 | ${q.feedback}`;
+  } else {
+    btns[idx].classList.add('wrong');
+    btns[q.answer].classList.add('correct');
+    sfxWrong();
+    fb.className = 'feedback-box wrong-fb';
+    fb.textContent = `❌ 다시 생각해봐요 | ${q.feedback}`;
+  }
+  state.hintUsed = false;
+  document.getElementById('nextBtn').style.display = 'inline-block';
+  document.getElementById('scoreDisplay').textContent = state.score;
+}
+
+function timeoutM1() {
+  const fb = document.getElementById('feedback');
+  fb.style.display = 'block';
+  fb.className = 'feedback-box wrong-fb';
+  fb.textContent = '⏰ 시간 초과! 다음 문항으로 넘어갑니다.';
+  const btns = document.getElementById('choices').querySelectorAll('.choice-btn');
+  btns.forEach(b => b.classList.add('disabled'));
+  const q = shuffledM1[state.currentQ];
+  btns[q.answer].classList.add('correct');
+  document.getElementById('nextBtn').style.display = 'inline-block';
+  sfxWrong();
+}
+
+function m1Next() {
+  state.currentQ++;
+  if (state.currentQ >= shuffledM1.length) {
+    state.currentQ = 0;
+    state.currentMission++;
+    sfxLevelUp();
+    renderMission();
+  } else {
+    renderM1(document.getElementById('missionBody'));
+  }
+}
+
+// ─── M2 ───
+function renderM2(body) {
+  const q = shuffledM2[state.currentQ];
+  let timerSec = 45;
+
+  let chartHTML = q.chartData.map(d => {
+    const pct = Math.round((d.val / d.max) * 100);
+    return `
+      <div class="chart-bar-item">
+        <div class="chart-bar-label"><span>${d.label}</span><span>${d.val}%${d.max!==100?'/'+d.max+'개':''}</span></div>
+        <div class="chart-bar-track">
+          <div class="chart-bar-fill ${d.type==='korea'?'bar-korea':'bar-world'}" style="width:${pct}%">${pct}%</div>
+        </div>
+        <div style="font-size:11px;color:var(--text-dim);margin-top:3px;">${d.note}</div>
+      </div>
+    `;
+  }).join('');
+
+  body.innerHTML = `
+    <div class="mission-title-card">
+      <div class="mission-icon">🌍</div>
+      <div class="mission-title-text">
+        <h2>미션2 · 세계 vs 한국 비교 분석</h2>
+        <p>데이터를 비교하고 원인을 추론하세요 (문제당 45초)</p>
+      </div>
+    </div>
+    <div class="timer-box">
+      <div class="timer-label">⏱ 남은 시간</div>
+      <div class="timer-num" id="timerNum">${timerSec}</div>
+      <div class="timer-bar-wrap"><div class="timer-bar-fill" id="timerBar" style="width:100%;background:var(--gold)"></div></div>
+    </div>
+    <div class="q-counter">문항 ${state.currentQ+1} / ${shuffledM2.length}</div>
+    <div class="compare-layout">
+      <div class="panel">
+        <h3>📊 ${q.title}</h3>
+        ${chartHTML}
+        <div class="source-tag">${q.source}</div>
+      </div>
+      <div class="panel">
+        <h3>❓ ${q.question}</h3>
+        <div class="choices" id="choices"></div>
+        <div class="feedback-box" id="feedback"></div>
+        <button class="next-btn" id="nextBtn" onclick="m2Next()">다음 →</button>
+      </div>
+    </div>
+  `;
+
+  q.choices.forEach((c,i) => {
+    const btn = document.createElement('button');
+    btn.className = 'choice-btn';
+    btn.textContent = `${['①','②','③','④'][i]} ${c}`;
+    btn.onclick = () => answerM2(i);
+    document.getElementById('choices').appendChild(btn);
+  });
+
+  clearInterval(state.timerInterval);
+  state.timerInterval = setInterval(() => {
+    timerSec--;
+    const el = document.getElementById('timerNum');
+    const bar = document.getElementById('timerBar');
+    if (!el) { clearInterval(state.timerInterval); return; }
+    el.textContent = timerSec;
+    bar.style.width = (timerSec / 45 * 100) + '%';
+    if (timerSec <= 10) { el.classList.add('urgent'); bar.style.background = 'var(--red)'; }
+    if (timerSec <= 0) { clearInterval(state.timerInterval); timeoutM2(); }
+  }, 1000);
+}
+
+function answerM2(idx) {
+  clearInterval(state.timerInterval);
+  const q = shuffledM2[state.currentQ];
+  const btns = document.getElementById('choices').querySelectorAll('.choice-btn');
+  btns.forEach(b => b.classList.add('disabled'));
+  const pts = Math.round(15 * DIFF_MULT[state.difficulty]);
+  const fb = document.getElementById('feedback');
+  fb.style.display = 'block';
+  if (idx === q.answer) {
+    btns[idx].classList.add('correct');
+    sfxCorrect();
+    state.score += pts;
+    state.missionScores[1] += pts;
+    fb.className = 'feedback-box correct-fb';
+    fb.textContent = `✅ +${pts}점 | ${q.feedback}`;
+  } else {
+    btns[idx].classList.add('wrong');
+    btns[q.answer].classList.add('correct');
+    sfxWrong();
+    fb.className = 'feedback-box wrong-fb';
+    fb.textContent = `❌ ${q.feedback}`;
+  }
+  document.getElementById('nextBtn').style.display = 'inline-block';
+  document.getElementById('scoreDisplay').textContent = state.score;
+}
+
+function timeoutM2() {
+  const q = shuffledM2[state.currentQ];
+  const btns = document.getElementById('choices').querySelectorAll('.choice-btn');
+  btns.forEach(b => b.classList.add('disabled'));
+  btns[q.answer].classList.add('correct');
+  const fb = document.getElementById('feedback');
+  fb.style.display = 'block';
+  fb.className = 'feedback-box wrong-fb';
+  fb.textContent = '⏰ 시간 초과!';
+  document.getElementById('nextBtn').style.display = 'inline-block';
+  sfxWrong();
+}
+
+function m2Next() {
+  state.currentQ++;
+  if (state.currentQ >= shuffledM2.length) {
+    state.currentQ = 0;
+    state.currentMission++;
+    sfxLevelUp();
+    renderMission();
+  } else {
+    renderM2(document.getElementById('missionBody'));
+  }
+}
+
+// ─── M3 ───
+function renderM3(body) {
+  const q = shuffledM3[state.currentQ];
+
+  let content = '';
+  if (q.type === 'hallucination') {
+    content = `
+      <div class="ai-warning" style="display:block;">⚠️ AI가 생성한 정보는 사실과 다를 수 있습니다. 반드시 검증하세요.</div>
+      <div class="panel">
+        <h3>🤖 AI 생성 텍스트</h3>
+        <div class="ai-text-block" style="white-space:pre-wrap;">${q.aiText}</div>
+        <div style="margin-top:14px;font-size:14px;">❓ ${q.question}</div>
+        <div style="font-size:12px;color:var(--text-dim);margin-top:6px;">(틀린 항목을 모두 클릭하세요)</div>
+        <div class="choices" id="choices" style="margin-top:12px;"></div>
+        <div class="feedback-box" id="feedback"></div>
+        <button class="next-btn" id="nextBtn" onclick="m3Next()" style="display:none;">다음 →</button>
+      </div>
+    `;
+  } else if (q.type === 'bias') {
+    content = `
+      <div class="ai-warning" style="display:block;">⚠️ AI가 생성한 정보는 사실과 다를 수 있습니다. 반드시 검증하세요.</div>
+      <div class="panel">
+        <h3>🤖 AI 생성 텍스트</h3>
+        <div class="ai-text-block">${q.aiText}</div>
+        <div style="margin-top:14px;font-size:14px;">❓ ${q.question}</div>
+        <div class="choices" id="choices" style="margin-top:12px;"></div>
+        <div class="feedback-box" id="feedback"></div>
+        <button class="next-btn" id="nextBtn" onclick="m3Next()" style="display:none;">다음 →</button>
+      </div>
+    `;
+  } else {
+    content = `
+      <div class="ai-warning" style="display:block;">⚠️ AI가 생성한 정보는 사실과 다를 수 있습니다. 반드시 검증하세요.</div>
+      <div class="panel">
+        <h3>⌨️ 프롬프트 설계 미션</h3>
+        <div style="font-size:14px;color:var(--text-dim);margin-bottom:16px;line-height:1.7;">AI를 제대로 활용하려면 정확한 프롬프트가 필수입니다. 아래 중 가장 효과적인 프롬프트를 선택하세요.</div>
+        <div style="margin-top:14px;font-size:14px;font-weight:600;">❓ ${q.question}</div>
+        <div class="choices" id="choices" style="margin-top:12px;"></div>
+        <div class="feedback-box" id="feedback"></div>
+        <button class="next-btn" id="nextBtn" onclick="m3Next()" style="display:none;">다음 →</button>
+      </div>
+    `;
+  }
+
+  body.innerHTML = `
+    <div class="mission-title-card">
+      <div class="mission-icon">🤖</div>
+      <div class="mission-title-text">
+        <h2>미션3 · AI 비판 검증관</h2>
+        <p>AI 오류·편향을 찾고, 더 나은 프롬프트를 설계하세요 (타이머 없음)</p>
+      </div>
+    </div>
+    <div class="q-counter">문항 ${state.currentQ+1} / ${shuffledM3.length}</div>
+    ${content}
+  `;
+
+  if (q.type === 'hallucination') {
+    let selected = new Set();
+    q.choices.forEach((c, i) => {
+      const btn = document.createElement('button');
+      btn.className = 'choice-btn';
+      btn.textContent = `${['①','②','③','④'][i]} ${c}`;
+      btn.onclick = () => {
+        if (btn.classList.contains('disabled')) return;
+        if (selected.has(i)) { selected.delete(i); btn.classList.remove('highlight'); }
+        else { selected.add(i); btn.classList.add('highlight'); }
+        if (selected.size === q.choices.length) submitHallucination(selected, q);
+      };
+      document.getElementById('choices').appendChild(btn);
+    });
+    // confirm btn
+    const cfm = document.createElement('button');
+    cfm.className = 'next-btn';
+    cfm.style.display = 'inline-block';
+    cfm.style.marginTop = '12px';
+    cfm.textContent = '✅ 선택 완료';
+    cfm.onclick = () => submitHallucination(selected, q);
+    document.getElementById('choices').after(cfm);
+  } else {
+    q.choices.forEach((c, i) => {
+      const btn = document.createElement('button');
+      btn.className = 'choice-btn';
+      btn.textContent = `${['①','②','③','④'][i]} ${c}`;
+      btn.onclick = () => answerM3(i);
+      document.getElementById('choices').appendChild(btn);
+    });
+  }
+}
+
+function submitHallucination(selected, q) {
+  const btns = document.getElementById('choices').querySelectorAll('.choice-btn');
+  btns.forEach(b => b.classList.add('disabled'));
+  const allCorrect = q.correctMask.every((v,i) => v === selected.has(i));
+  const pts = Math.round(20 * DIFF_MULT[state.difficulty]);
+  const fb = document.getElementById('feedback');
+  fb.style.display = 'block';
+  if (allCorrect) {
+    sfxCorrect();
+    state.score += pts;
+    state.missionScores[2] += pts;
+    fb.className = 'feedback-box correct-fb';
+    fb.textContent = `✅ 완벽한 검증! +${pts}점 | ${q.feedback}`;
+  } else {
+    sfxWrong();
+    fb.className = 'feedback-box wrong-fb';
+    fb.textContent = `❌ ${q.feedback}`;
+  }
+  document.getElementById('nextBtn').style.display = 'inline-block';
+  document.getElementById('scoreDisplay').textContent = state.score;
+}
+
+function answerM3(idx) {
+  const q = shuffledM3[state.currentQ];
+  const btns = document.getElementById('choices').querySelectorAll('.choice-btn');
+  btns.forEach(b => b.classList.add('disabled'));
+  const pts = Math.round(20 * DIFF_MULT[state.difficulty]);
+  const fb = document.getElementById('feedback');
+  fb.style.display = 'block';
+  if (idx === q.answer) {
+    btns[idx].classList.add('correct');
+    sfxCorrect();
+    state.score += pts;
+    state.missionScores[2] += pts;
+    fb.className = 'feedback-box correct-fb';
+    fb.textContent = `✅ +${pts}점 | ${q.feedback}`;
+  } else {
+    btns[idx].classList.add('wrong');
+    btns[q.answer].classList.add('correct');
+    sfxWrong();
+    fb.className = 'feedback-box wrong-fb';
+    fb.textContent = `❌ ${q.feedback}`;
+  }
+  document.getElementById('nextBtn').style.display = 'inline-block';
+  document.getElementById('scoreDisplay').textContent = state.score;
+}
+
+function m3Next() {
+  state.currentQ++;
+  if (state.currentQ >= shuffledM3.length) {
+    state.currentQ = 0;
+    state.currentMission++;
+    sfxLevelUp();
+    renderMission();
+  } else {
+    renderM3(document.getElementById('missionBody'));
+  }
+}
+
+// ─── M4 ───
+function renderM4(body) {
+  const q = shuffledM4[state.currentQ];
+
+  body.innerHTML = `
+    <div class="mission-title-card">
+      <div class="mission-icon">🗺️</div>
+      <div class="mission-title-text">
+        <h2>미션4 · 미래 직업 설계사</h2>
+        <p>정답은 없습니다 — 근거 있는 선택이 모두 정답! (타이머 없음)</p>
+      </div>
+    </div>
+    <div class="q-counter">시나리오 ${state.currentQ+1} / ${shuffledM4.length}</div>
+    <div class="panel" style="margin-bottom:16px;">
+      <h3>📋 시나리오</h3>
+      <div style="font-size:15px;line-height:1.8;">${q.scenario}</div>
+    </div>
+    <div style="font-size:15px;font-weight:600;margin-bottom:12px;">❓ ${q.question}</div>
+    <div class="choices-grid" id="choices"></div>
+    <div class="feedback-box" id="feedback"></div>
+    <button class="next-btn" id="nextBtn" onclick="m4Next()">다음 →</button>
+  `;
+
+  q.choices.forEach((c, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'choice-btn';
+    btn.style.fontSize = '13px';
+    btn.textContent = c;
+    btn.onclick = () => answerM4(i);
+    document.getElementById('choices').appendChild(btn);
+  });
+}
+
+function answerM4(idx) {
+  const q = shuffledM4[state.currentQ];
+  const btns = document.getElementById('choices').querySelectorAll('.choice-btn');
+  btns.forEach(b => b.classList.add('disabled'));
+  btns[idx].classList.add('correct');
+  sfxCorrect();
+  const pts = Math.round(15 * DIFF_MULT[state.difficulty]);
+  state.score += pts;
+  state.missionScores[3] += pts;
+  state.choicePattern.push(idx);
+  const fb = document.getElementById('feedback');
+  fb.style.display = 'block';
+  fb.className = 'feedback-box correct-fb';
+  fb.textContent = `${q.feedback[idx]} | +${pts}점`;
+  document.getElementById('nextBtn').style.display = 'inline-block';
+  document.getElementById('scoreDisplay').textContent = state.score;
+}
+
+function m4Next() {
+  state.currentQ++;
+  if (state.currentQ >= shuffledM4.length) {
+    state.currentQ = 0;
+    state.currentMission++;
+    sfxLevelUp();
+    renderMission();
+  } else {
+    renderM4(document.getElementById('missionBody'));
+  }
+}
+
+// ─── M5 ───
+function renderM5(body) {
+  // Determine ending
+  const finalScore = Math.min(100, Math.round(state.score / (state.difficulty === 'hard' ? 1.3 : state.difficulty === 'easy' ? 0.7 : 1) / 1.5));
+  const ending = endings.find(e => finalScore >= e.range[0] && finalScore <= e.range[1]) || endings[4];
+
+  body.innerHTML = `
+    <div class="mission-title-card">
+      <div class="mission-icon">🎯</div>
+      <div class="mission-title-text">
+        <h2>미션5 · 나의 드론 커리어 로드맵</h2>
+        <p>4개 미션 결과를 종합한 맞춤 진로 경로를 확인하세요!</p>
+      </div>
+    </div>
+    <div class="roadmap-card">
+      <h3>📊 미션별 성과 요약</h3>
+      ${['📖 문해력 탐정','🌍 비교 분석','🤖 AI 검증','🗺️ 직업 설계'].map((n,i)=>`
+        <div class="roadmap-item">
+          <div class="roadmap-dot"></div>
+          <div><p><strong>${n}</strong></p><span>${state.missionScores[i]}점 획득</span></div>
+        </div>
+      `).join('')}
+    </div>
+    <div class="roadmap-card">
+      <h3>🌟 나의 드론 전문가 유형: <span style="color:var(--gold)">${ending.type}</span></h3>
+      <div style="font-size:14px;line-height:1.8;color:var(--text-dim);">${ending.desc}</div>
+    </div>
+    <div class="roadmap-card">
+      <h3>🚀 AI 시대 드론 직업 생존 전략</h3>
+      <div style="font-size:14px;line-height:1.8;">${ending.strategy}</div>
+    </div>
+    <div style="text-align:center;margin-top:10px;">
+      <button class="next-btn" style="display:inline-block;" onclick="showResult()">🎖 최종 결과 보기</button>
+    </div>
+  `;
+}
+
+function showResult() {
+  clearInterval(state.timerInterval);
+  sfxFanfare();
+  showScreen('result');
+
+  const finalScore = Math.min(100, Math.round(state.score / (state.difficulty === 'hard' ? 1.3 : state.difficulty === 'easy' ? 0.7 : 1) / 1.5));
+  const ending = endings.find(e => finalScore >= e.range[0] && finalScore <= e.range[1]) || endings[4];
+
+  document.getElementById('resultType').textContent = ending.type;
+  document.getElementById('resultTitle').textContent = ending.title;
+  document.getElementById('resultDesc').textContent = ending.desc;
+  document.getElementById('scoreRingNum').textContent = state.score + '점';
+
+  const pct = Math.min(100, (state.score / 200) * 100);
+  document.getElementById('scoreRing').style.setProperty('--pct', pct + '%');
+
+  // Careers
+  const ci = document.getElementById('careerItems');
+  const icons = ['🚁','🌐','💻'];
+  ending.careers.forEach((c, i) => {
+    ci.innerHTML += `<div class="career-item"><span class="career-icon">${icons[i]||'⭐'}</span><div>${c}</div></div>`;
+  });
+
+  // Subjects
+  const st = document.getElementById('subjectTags');
+  ending.subjects.forEach(s => {
+    st.innerHTML += `<span class="subject-tag">${s}</span>`;
+  });
+
+  // Leaderboard
+  const lbKey = 'milab_hs_025_lb';
+  let lb = JSON.parse(localStorage.getItem(lbKey) || '[]');
+  lb.push({ name: state.playerName, score: state.score, type: ending.type, diff: state.difficulty });
+  lb.sort((a,b) => b.score - a.score);
+  lb = lb.slice(0,5);
+  localStorage.setItem(lbKey, JSON.stringify(lb));
+
+  const lbList = document.getElementById('lbList');
+  lb.forEach((item, i) => {
+    lbList.innerHTML += `
+      <div class="lb-item">
+        <span class="lb-rank">#${i+1}</span>
+        <span>${item.name}</span>
+        <span style="margin-left:auto;color:var(--gold)">${item.score}점</span>
+        <span style="color:var(--text-dim);font-size:11px;">${item.type}</span>
+      </div>
+    `;
+  });
+
+  // QR
+  setTimeout(() => {
+    try {
+      new QRCode(document.getElementById('qrCode'), {
+        text: portfolioEntry.url,
+        width: 100, height: 100,
+        colorDark: "#F0C040", colorLight: "#0D1B2A"
+      });
+    } catch(e) {}
+  }, 300);
+}
+
+function retryGame() {
+  clearInterval(state.timerInterval);
+  state.score = 0; state.currentMission = 0; state.currentQ = 0;
+  state.missionScores = [0,0,0,0,0]; state.choicePattern = [];
+  showScreen('intro');
+}
+
+// Fix score ring CSS variable
+document.getElementById('scoreRing')?.style.setProperty('--pct', '0%');
+</script>
+</body>
+</html>

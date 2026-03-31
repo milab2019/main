@@ -1,0 +1,877 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>무인멀티콥터 4종 · 기출문제</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --sky: #1a6fa8;
+    --sky-light: #e6f1fb;
+    --sky-mid: #378add;
+    --sky-dark: #185fa5;
+    --correct-bg: #eaf3de;
+    --correct-text: #3b6d11;
+    --correct-border: #639922;
+    --wrong-bg: #fcebeb;
+    --wrong-text: #a32d2d;
+    --wrong-border: #e24b4a;
+    --bg: #f5f7fa;
+    --surface: #ffffff;
+    --surface2: #f0f4f8;
+    --text: #1a2433;
+    --text2: #4a5568;
+    --text3: #8a9ab0;
+    --border: rgba(0,0,0,0.10);
+    --border2: rgba(0,0,0,0.18);
+    --radius-sm: 8px;
+    --radius-md: 12px;
+    --radius-lg: 16px;
+    --radius-xl: 20px;
+    --shadow-sm: 0 1px 4px rgba(0,0,0,0.07);
+    --shadow-md: 0 4px 16px rgba(0,0,0,0.10);
+  }
+
+  body {
+    font-family: 'Noto Sans KR', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    padding: 24px 16px 48px;
+  }
+
+  #app {
+    width: 100%;
+    max-width: 600px;
+  }
+
+  .screen { display: none; }
+  .screen.active { display: block; }
+
+  /* ── 공통 카드 ── */
+  .card {
+    background: var(--surface);
+    border-radius: var(--radius-lg);
+    border: 0.5px solid var(--border);
+    box-shadow: var(--shadow-sm);
+  }
+
+  /* ══════════════════════════════
+     시작 화면
+  ══════════════════════════════ */
+  #start-screen {
+    text-align: center;
+    animation: fadeUp .4s ease both;
+  }
+
+  .hero {
+    background: linear-gradient(145deg, #0f4c81 0%, #378add 55%, #56b3e6 100%);
+    border-radius: var(--radius-xl);
+    padding: 40px 24px 36px;
+    margin-bottom: 20px;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero::before {
+    content: '';
+    position: absolute;
+    top: -30px; right: -30px;
+    width: 160px; height: 160px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.06);
+  }
+  .hero::after {
+    content: '';
+    position: absolute;
+    bottom: -20px; left: -20px;
+    width: 100px; height: 100px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.05);
+  }
+
+  .hero-icon {
+    font-size: 48px;
+    display: block;
+    margin-bottom: 14px;
+    filter: drop-shadow(0 4px 8px rgba(0,0,0,0.2));
+  }
+  .hero-title {
+    font-size: 22px;
+    font-weight: 700;
+    color: #fff;
+    letter-spacing: -0.3px;
+    margin-bottom: 6px;
+  }
+  .hero-sub {
+    font-size: 13px;
+    color: rgba(255,255,255,0.75);
+    letter-spacing: 0.2px;
+  }
+
+  .cat-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 20px;
+    text-align: left;
+  }
+  .cat-card {
+    background: var(--surface);
+    border: 0.5px solid var(--border);
+    border-radius: var(--radius-md);
+    padding: 14px 16px;
+    box-shadow: var(--shadow-sm);
+  }
+  .cat-name {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 3px;
+  }
+  .cat-count {
+    font-size: 11px;
+    color: var(--text3);
+  }
+
+  .filter-label {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text3);
+    letter-spacing: 0.5px;
+    margin-bottom: 10px;
+    text-align: left;
+  }
+  .filter-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 20px;
+  }
+  .filter-btn {
+    padding: 7px 16px;
+    border-radius: 20px;
+    border: 1px solid var(--border2);
+    background: var(--surface);
+    font-size: 13px;
+    cursor: pointer;
+    color: var(--text2);
+    font-family: inherit;
+    transition: all .18s;
+    font-weight: 500;
+  }
+  .filter-btn:hover { background: var(--surface2); }
+  .filter-btn.active {
+    background: var(--sky-mid);
+    border-color: var(--sky-mid);
+    color: #fff;
+    font-weight: 600;
+  }
+
+  .start-btn {
+    width: 100%;
+    padding: 16px;
+    background: linear-gradient(135deg, var(--sky-dark), var(--sky-mid));
+    color: #fff;
+    border: none;
+    border-radius: var(--radius-lg);
+    font-size: 16px;
+    font-weight: 700;
+    font-family: inherit;
+    cursor: pointer;
+    letter-spacing: 0.3px;
+    transition: opacity .18s, transform .15s;
+    box-shadow: 0 4px 14px rgba(55,138,221,0.35);
+  }
+  .start-btn:hover { opacity: .92; transform: translateY(-1px); }
+  .start-btn:active { transform: translateY(0); }
+
+  /* ══════════════════════════════
+     퀴즈 화면
+  ══════════════════════════════ */
+  #quiz-screen { animation: fadeUp .3s ease both; }
+
+  .progress-wrap {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 18px;
+  }
+  .progress-bar-bg {
+    flex: 1;
+    height: 5px;
+    background: var(--surface2);
+    border-radius: 3px;
+    overflow: hidden;
+  }
+  .progress-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--sky-dark), var(--sky-mid));
+    border-radius: 3px;
+    transition: width .35s ease;
+  }
+  .progress-txt {
+    font-size: 12px;
+    color: var(--text3);
+    font-weight: 600;
+    white-space: nowrap;
+  }
+
+  .quiz-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 14px;
+  }
+  .badge {
+    display: inline-block;
+    font-size: 11px;
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-weight: 600;
+    letter-spacing: 0.2px;
+  }
+  .badge-law    { background: #e6f1fb; color: #185fa5; }
+  .badge-weather{ background: #eaf3de; color: #3b6d11; }
+  .badge-theory { background: #faeeda; color: #854f0b; }
+  .badge-ops    { background: #fbeaf0; color: #993556; }
+  .badge-hard   { background: #fcebeb; color: #a32d2d; margin-left: 6px; }
+
+  .q-box {
+    background: var(--surface);
+    border: 0.5px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 20px;
+    margin-bottom: 16px;
+    font-size: 16px;
+    font-weight: 500;
+    line-height: 1.65;
+    color: var(--text);
+    box-shadow: var(--shadow-sm);
+  }
+
+  .options {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 14px;
+  }
+  .opt-btn {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 14px 16px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    background: var(--surface);
+    cursor: pointer;
+    font-size: 14px;
+    font-family: inherit;
+    color: var(--text);
+    text-align: left;
+    line-height: 1.5;
+    transition: all .16s;
+    box-shadow: var(--shadow-sm);
+  }
+  .opt-btn:hover:not(:disabled) {
+    background: var(--sky-light);
+    border-color: var(--sky-mid);
+    transform: translateX(2px);
+  }
+  .opt-num {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    border: 1.5px solid var(--border2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    font-weight: 700;
+    flex-shrink: 0;
+    transition: all .16s;
+    color: var(--text2);
+  }
+  .opt-btn.correct {
+    background: var(--correct-bg);
+    border-color: var(--correct-border);
+    transform: none;
+  }
+  .opt-btn.correct .opt-num {
+    background: var(--correct-border);
+    border-color: var(--correct-border);
+    color: #fff;
+  }
+  .opt-btn.wrong {
+    background: var(--wrong-bg);
+    border-color: var(--wrong-border);
+    transform: none;
+  }
+  .opt-btn.wrong .opt-num {
+    background: var(--wrong-border);
+    border-color: var(--wrong-border);
+    color: #fff;
+  }
+  .opt-btn:disabled { cursor: default; }
+
+  .result-box {
+    border-radius: var(--radius-md);
+    padding: 16px 18px;
+    font-size: 13px;
+    line-height: 1.65;
+    display: none;
+    margin-bottom: 14px;
+    animation: fadeUp .25s ease both;
+  }
+  .result-box.show { display: block; }
+  .result-box.correct {
+    background: var(--correct-bg);
+    border: 0.5px solid var(--correct-border);
+    color: var(--correct-text);
+  }
+  .result-box.wrong {
+    background: var(--wrong-bg);
+    border: 0.5px solid var(--wrong-border);
+    color: var(--wrong-text);
+  }
+  .result-label {
+    font-weight: 700;
+    font-size: 14px;
+    margin-bottom: 8px;
+  }
+  .ref-tag {
+    display: inline-block;
+    margin-top: 10px;
+    font-size: 11px;
+    padding: 3px 10px;
+    background: rgba(0,0,0,0.07);
+    border-radius: 10px;
+    color: var(--text2);
+  }
+
+  .next-btn {
+    width: 100%;
+    padding: 14px;
+    border: none;
+    background: linear-gradient(135deg, var(--sky-dark), var(--sky-mid));
+    color: #fff;
+    border-radius: var(--radius-lg);
+    font-size: 15px;
+    font-weight: 700;
+    font-family: inherit;
+    cursor: pointer;
+    display: none;
+    transition: opacity .18s, transform .15s;
+    box-shadow: 0 4px 14px rgba(55,138,221,0.3);
+    letter-spacing: 0.2px;
+  }
+  .next-btn:hover { opacity: .9; transform: translateY(-1px); }
+  .next-btn.show { display: block; animation: fadeUp .2s ease both; }
+
+  /* ══════════════════════════════
+     결과 화면
+  ══════════════════════════════ */
+  #result-screen { animation: fadeUp .4s ease both; }
+
+  .result-hero {
+    background: linear-gradient(145deg, #0f4c81 0%, #378add 60%, #56b3e6 100%);
+    border-radius: var(--radius-xl);
+    padding: 36px 24px;
+    text-align: center;
+    margin-bottom: 20px;
+    position: relative;
+    overflow: hidden;
+  }
+  .result-hero::before {
+    content: '';
+    position: absolute;
+    top: -40px; right: -40px;
+    width: 180px; height: 180px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.06);
+  }
+  .score-circle {
+    width: 110px;
+    height: 110px;
+    border-radius: 50%;
+    border: 3px solid rgba(255,255,255,0.4);
+    background: rgba(255,255,255,0.12);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 16px;
+  }
+  .score-big {
+    font-size: 34px;
+    font-weight: 800;
+    color: #fff;
+    line-height: 1;
+  }
+  .score-lbl {
+    font-size: 11px;
+    color: rgba(255,255,255,0.7);
+    margin-top: 2px;
+  }
+  .result-msg {
+    font-size: 15px;
+    font-weight: 600;
+    color: #fff;
+  }
+  .result-sub {
+    font-size: 12px;
+    color: rgba(255,255,255,0.7);
+    margin-top: 4px;
+  }
+
+  .stat-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+  .stat-card {
+    background: var(--surface);
+    border: 0.5px solid var(--border);
+    border-radius: var(--radius-md);
+    padding: 14px 10px;
+    text-align: center;
+    box-shadow: var(--shadow-sm);
+  }
+  .stat-val {
+    font-size: 22px;
+    font-weight: 800;
+    color: var(--text);
+  }
+  .stat-name {
+    font-size: 11px;
+    color: var(--text3);
+    margin-top: 3px;
+    font-weight: 500;
+  }
+
+  .section-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text2);
+    letter-spacing: 0.3px;
+    margin-bottom: 12px;
+    padding-bottom: 8px;
+    border-bottom: 0.5px solid var(--border);
+  }
+
+  .cat-result { margin-bottom: 24px; }
+  .cat-result-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+  }
+  .cat-result-name {
+    font-size: 12px;
+    color: var(--text2);
+    width: 76px;
+    flex-shrink: 0;
+    font-weight: 500;
+  }
+  .cat-bar-bg {
+    flex: 1;
+    height: 8px;
+    background: var(--surface2);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+  .cat-bar-fill {
+    height: 100%;
+    border-radius: 4px;
+    background: linear-gradient(90deg, var(--sky-dark), var(--sky-mid));
+    transition: width .6s .1s cubic-bezier(.34,1.3,.64,1);
+  }
+  .cat-bar-fill.mid  { background: linear-gradient(90deg, #ba7517, #ef9f27); }
+  .cat-bar-fill.low  { background: linear-gradient(90deg, #a32d2d, #e24b4a); }
+  .cat-score {
+    font-size: 12px;
+    color: var(--text3);
+    width: 42px;
+    text-align: right;
+    flex-shrink: 0;
+    font-weight: 600;
+  }
+
+  .wrong-list { margin-bottom: 24px; }
+  .wrong-item {
+    border: 0.5px solid var(--border);
+    border-radius: var(--radius-md);
+    padding: 16px;
+    margin-bottom: 10px;
+    background: var(--surface);
+    box-shadow: var(--shadow-sm);
+  }
+  .wrong-q {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 8px;
+    line-height: 1.55;
+  }
+  .wrong-ans {
+    font-size: 12px;
+    color: var(--correct-text);
+    font-weight: 600;
+    margin-bottom: 6px;
+  }
+  .wrong-exp {
+    font-size: 12px;
+    color: var(--text2);
+    line-height: 1.6;
+    padding-top: 6px;
+    border-top: 0.5px solid var(--border);
+  }
+
+  .btn-row {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 24px;
+  }
+  .btn-outline {
+    flex: 1;
+    padding: 13px;
+    border: 1px solid var(--border2);
+    background: var(--surface);
+    border-radius: var(--radius-md);
+    font-size: 14px;
+    font-family: inherit;
+    cursor: pointer;
+    color: var(--text);
+    font-weight: 600;
+    transition: all .16s;
+  }
+  .btn-outline:hover { background: var(--surface2); }
+  .btn-primary {
+    flex: 1;
+    padding: 13px;
+    border: none;
+    background: linear-gradient(135deg, var(--sky-dark), var(--sky-mid));
+    border-radius: var(--radius-md);
+    font-size: 14px;
+    font-family: inherit;
+    cursor: pointer;
+    color: #fff;
+    font-weight: 700;
+    transition: opacity .16s, transform .14s;
+    box-shadow: 0 4px 14px rgba(55,138,221,0.3);
+  }
+  .btn-primary:hover { opacity: .9; transform: translateY(-1px); }
+
+  .empty-msg {
+    background: var(--correct-bg);
+    border: 0.5px solid var(--correct-border);
+    border-radius: var(--radius-md);
+    padding: 18px;
+    text-align: center;
+    font-size: 14px;
+    color: var(--correct-text);
+    font-weight: 600;
+  }
+
+  /* 애니메이션 */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(14px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* 모바일 최적화 */
+  @media (max-width: 400px) {
+    .hero-title { font-size: 19px; }
+    .q-box { font-size: 15px; }
+    .opt-btn { font-size: 13px; padding: 12px 14px; }
+    .score-big { font-size: 28px; }
+    .cat-result-name { width: 62px; font-size: 11px; }
+  }
+</style>
+</head>
+<body>
+<div id="app">
+
+  <!-- ── 시작 화면 ── -->
+  <div id="start-screen" class="screen active">
+    <div class="hero">
+      <span class="hero-icon">🚁</span>
+      <div class="hero-title">무인멀티콥터 4종</div>
+      <div class="hero-sub">국가자격시험 기출문제 · 총 40문항</div>
+    </div>
+
+    <div class="cat-grid">
+      <div class="cat-card">
+        <div class="cat-name">📋 항공법규</div>
+        <div class="cat-count">16문항 · 법령 기준</div>
+      </div>
+      <div class="cat-card">
+        <div class="cat-name">🌤 항공기상</div>
+        <div class="cat-count">8문항 · 기상 이론</div>
+      </div>
+      <div class="cat-card">
+        <div class="cat-name">⚙️ 비행 이론</div>
+        <div class="cat-count">8문항 · 기체·배터리</div>
+      </div>
+      <div class="cat-card">
+        <div class="cat-name">🛩 비행 운용</div>
+        <div class="cat-count">8문항 · 안전 절차</div>
+      </div>
+    </div>
+
+    <div class="filter-label">CATEGORY FILTER</div>
+    <div class="filter-row" id="filter-row">
+      <button class="filter-btn active" data-cat="전체">전체 40문항</button>
+      <button class="filter-btn" data-cat="항공법규">항공법규</button>
+      <button class="filter-btn" data-cat="항공기상">항공기상</button>
+      <button class="filter-btn" data-cat="비행 이론">비행 이론</button>
+      <button class="filter-btn" data-cat="비행 운용">비행 운용</button>
+    </div>
+    <button class="start-btn" id="start-btn">🚀 시험 시작하기</button>
+  </div>
+
+  <!-- ── 퀴즈 화면 ── -->
+  <div id="quiz-screen" class="screen">
+    <div class="progress-wrap">
+      <div class="progress-bar-bg">
+        <div class="progress-bar-fill" id="progress-fill" style="width:0%"></div>
+      </div>
+      <span class="progress-txt" id="q-num">1 / 40</span>
+    </div>
+    <div class="quiz-meta">
+      <span class="badge" id="cat-badge"></span>
+      <span class="badge badge-hard" id="diff-badge" style="display:none">심화</span>
+    </div>
+    <div class="q-box" id="q-text"></div>
+    <div class="options" id="options"></div>
+    <div class="result-box" id="result-box">
+      <div class="result-label" id="result-label"></div>
+      <div id="result-exp"></div>
+      <span class="ref-tag" id="result-ref"></span>
+    </div>
+    <button class="next-btn" id="next-btn">다음 문제 →</button>
+  </div>
+
+  <!-- ── 결과 화면 ── -->
+  <div id="result-screen" class="screen">
+    <div class="result-hero">
+      <div class="score-circle">
+        <span class="score-big" id="final-score">-</span>
+        <span class="score-lbl">점수</span>
+      </div>
+      <div class="result-msg" id="result-msg"></div>
+      <div class="result-sub" id="result-sub"></div>
+    </div>
+
+    <div class="stat-grid">
+      <div class="stat-card">
+        <div class="stat-val" id="stat-correct">-</div>
+        <div class="stat-name">정답</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-val" id="stat-wrong">-</div>
+        <div class="stat-name">오답</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-val" id="stat-rate">-</div>
+        <div class="stat-name">정답률</div>
+      </div>
+    </div>
+
+    <div class="section-title">카테고리별 성적</div>
+    <div class="cat-result" id="cat-result"></div>
+
+    <div class="section-title">틀린 문제 복습</div>
+    <div class="wrong-list" id="wrong-list"></div>
+
+    <div class="btn-row">
+      <button class="btn-outline" id="retry-wrong-btn">틀린 문제만 다시</button>
+      <button class="btn-primary"  id="retry-all-btn">처음부터 다시</button>
+    </div>
+  </div>
+
+</div><!-- /#app -->
+
+<script>
+const QUESTIONS = [{"id":1,"category":"항공법규","difficulty":"기본","question":"초경량비행장치 중 무인멀티콥터의 최대이륙중량이 몇 kg 이하일 때 4종에 해당하는가?","options":{"1":"1kg 이하","2":"2kg 이하","3":"250g 이하","4":"500g 이하"},"answer":2,"explanation":"항공안전법 시행규칙 제5조에 따라 최대이륙중량 2kg 이하의 무인비행장치는 4종으로 분류됩니다. 2kg를 초과하면 3종 이상으로 분류되어 별도 자격이 요구됩니다.","reference":"항공안전법 시행규칙 제5조"},{"id":2,"category":"항공법규","difficulty":"기본","question":"무인비행장치 조종자 자격증명 없이 비행할 수 있는 경우는?","options":{"1":"최대이륙중량 250g 이하 취미용 비행","2":"비관제 공역에서의 비행","3":"야간 비행","4":"가시권 밖 자동비행"},"answer":1,"explanation":"최대이륙중량 250g 이하의 무인비행장치는 항공안전법 적용 대상에서 제외되어 자격증명 없이 비행할 수 있습니다. 단, 250g을 초과하면 4종 자격이 필요합니다.","reference":"항공안전법 제122조, 시행규칙 제5조"},{"id":3,"category":"항공법규","difficulty":"기본","question":"초경량비행장치 비행 시 신고 없이 비행할 수 있는 고도 기준은?","options":{"1":"지표면으로부터 100m 이하","2":"지표면으로부터 150m 이하","3":"지표면으로부터 50m 이하","4":"장애물 상단으로부터 300ft 이하"},"answer":2,"explanation":"초경량비행장치는 지표면으로부터 150m 이하에서 비행 시 별도의 비행승인 없이 비행할 수 있습니다. 150m를 초과하면 국토교통부의 비행승인을 받아야 합니다.","reference":"항공안전법 시행규칙 제308조"},{"id":4,"category":"항공법규","difficulty":"심화","question":"관제권(Control Zone) 내에서 드론을 비행하려면 어떤 절차가 필요한가?","options":{"1":"비행 후 24시간 내 신고","2":"국토교통부 또는 지방항공청의 비행승인 필요","3":"지자체에 신고하면 가능","4":"별도 절차 불필요"},"answer":2,"explanation":"관제권은 공항 주변 반경 약 9.3km 이내 공역으로, 이 구역에서 드론을 비행하려면 반드시 국토교통부 또는 관할 지방항공청의 비행승인을 받아야 합니다.","reference":"항공안전법 제127조, 공역의 구분에 관한 고시"},{"id":5,"category":"항공법규","difficulty":"기본","question":"비행금지구역(P-73 등)에서 드론 비행이 원칙적으로 금지되는 이유로 가장 적절한 것은?","options":{"1":"통신 장애 발생 가능","2":"국가 안보 및 주요 시설 보호","3":"배터리 성능 저하 우려","4":"기상 변화가 심하기 때문"},"answer":2,"explanation":"비행금지구역(P구역)은 청와대, 국방 시설 등 국가 안보와 주요 시설 보호를 위해 설정되며, 허가 없이는 어떤 항공기도 진입할 수 없습니다.","reference":"항공안전법 제78조, 공역의 구분에 관한 고시"},{"id":6,"category":"항공법규","difficulty":"기본","question":"4종 무인멀티콥터 조종자 자격을 취득하려면 어떤 교육을 이수해야 하는가?","options":{"1":"한국교통안전공단에서 실시하는 온라인 교육 6시간","2":"전문교육기관에서 20시간 비행 실습","3":"필기시험과 실기시험 모두 합격","4":"온라인 이론 교육 이수 후 필기시험 합격"},"answer":4,"explanation":"4종 자격은 온라인 이론 교육(6시간)을 이수하고 필기시험에 합격하면 취득할 수 있습니다. 실기시험은 4종에 해당하지 않으며, 3종 이상부터 실기시험이 요구됩니다.","reference":"항공안전법 시행규칙 제306조의2"},{"id":7,"category":"항공법규","difficulty":"심화","question":"야간 비행(일몰 후~일출 전)을 위해 반드시 갖추어야 할 조건은?","options":{"1":"충전된 보조 배터리 탑재","2":"특별비행승인 및 야간 비행등 장착","3":"조종자 2인 이상 운용","4":"ADS-B 수신기 설치"},"answer":2,"explanation":"야간 비행은 특별비행승인 대상으로, 국토교통부에 특별비행승인을 신청해야 하며 비행 중 충돌 방지등(항법등) 등 야간 비행등을 장착해야 합니다.","reference":"항공안전법 제129조, 시행규칙 제310조의2"},{"id":8,"category":"항공법규","difficulty":"기본","question":"조종자가 드론 비행 중 반드시 유지해야 하는 원칙은?","options":{"1":"GPS 자동비행 유지","2":"항상 육안으로 드론을 직접 확인(가시권 내 비행)","3":"고도 50m 이상 유지","4":"스마트폰 앱으로 실시간 위치 확인"},"answer":2,"explanation":"조종자는 원칙적으로 드론을 육안으로 직접 볼 수 있는 가시권 내에서 비행해야 합니다. 가시권 밖 비행은 특별비행승인 대상입니다.","reference":"항공안전법 제129조 제1항"},{"id":9,"category":"항공법규","difficulty":"기본","question":"다음 중 초경량비행장치 신고가 면제되는 경우는?","options":{"1":"최대이륙중량 12kg 이하 사업용 드론","2":"군사 목적으로 사용되는 무인비행장치","3":"최대이륙중량 2kg 이하 비사업용 드론","4":"농업용 방제 드론"},"answer":3,"explanation":"비사업용으로 사용하는 최대이륙중량 2kg 이하의 무인비행장치는 신고 의무가 면제됩니다. 사업용이거나 2kg을 초과하면 신고해야 합니다.","reference":"항공안전법 제122조, 시행규칙 제301조"},{"id":10,"category":"항공법규","difficulty":"심화","question":"드론을 이용한 사업을 영위하려면 어떤 절차가 필요한가?","options":{"1":"지자체 허가만 받으면 가능","2":"초경량비행장치 사용사업 등록 필요","3":"항공사업법에 따라 면허 취득","4":"별도 절차 없이 영업 가능"},"answer":2,"explanation":"드론을 활용한 촬영, 측량, 농약살포 등의 사업을 하려면 국토교통부에 초경량비행장치 사용사업 등록을 해야 합니다. 미등록 사업 운영은 법령 위반입니다.","reference":"항공사업법 제48조"},{"id":11,"category":"항공법규","difficulty":"기본","question":"주거지역, 상업지역 등 인구밀집지역 상공 비행 시 필요한 것은?","options":{"1":"관할 경찰서 신고","2":"비행승인 신청 필요","3":"고도 30m 이상 비행 금지","4":"야간에만 비행 허용"},"answer":2,"explanation":"인구밀집지역 상공은 안전 위험이 높아 비행승인을 받아야 합니다. 지방항공청 또는 국토교통부에 사전 승인을 득해야 합니다.","reference":"항공안전법 제127조"},{"id":12,"category":"항공법규","difficulty":"기본","question":"드론 조종자가 음주 상태에서 비행을 하면 어떤 처벌을 받는가?","options":{"1":"경고 조치만 받음","2":"자격증 취소 및 형사처벌 가능","3":"벌금 5만원 부과","4":"다음 비행 시 경고 누적"},"answer":2,"explanation":"음주 상태에서의 드론 비행은 항공안전법에서 엄격히 금지되며, 자격증 취소뿐만 아니라 형사처벌(징역 또는 벌금)을 받을 수 있습니다.","reference":"항공안전법 제57조, 제161조"},{"id":13,"category":"항공법규","difficulty":"심화","question":"비행제한구역(R구역)에서 비행하려면?","options":{"1":"비행 불가, 어떤 경우도 허용 안 됨","2":"관할 기관의 허가를 받으면 비행 가능","3":"기상 조건이 양호하면 자유비행 가능","4":"500g 이하 드론은 제한 없음"},"answer":2,"explanation":"비행제한구역(R구역)은 군 작전, 훈련 등을 위해 설정되지만, 완전 금지는 아닙니다. 관할 기관(군 또는 항공청)의 허가를 받으면 비행할 수 있습니다.","reference":"항공안전법 제78조"},{"id":14,"category":"항공법규","difficulty":"기본","question":"드론 사고가 발생했을 때 조종자가 취해야 할 첫 번째 조치는?","options":{"1":"현장을 촬영하여 증거 확보","2":"인명 구조 및 사고 신고","3":"드론 수거 후 귀환","4":"보험사에 먼저 연락"},"answer":2,"explanation":"사고 발생 시 가장 먼저 인명 피해 구조를 최우선으로 해야 하고, 즉시 관할 기관(국토교통부 등)에 신고해야 합니다. 사고 은폐나 현장 이탈은 법령 위반입니다.","reference":"항공안전법 제134조"},{"id":15,"category":"항공법규","difficulty":"심화","question":"국토교통부에 초경량비행장치 사고를 보고해야 하는 기준으로 옳은 것은?","options":{"1":"재산 피해 100만원 이상","2":"사람이 사망하거나 중상을 입은 경우","3":"비행장치 전파 여부와 무관하게 항상","4":"조종자 부상 시에만 해당"},"answer":2,"explanation":"항공안전법에 따라 드론 운용 중 사람이 사망하거나 중상을 입은 경우, 또는 드론이 다른 항공기와 충돌한 경우 즉시 국토교통부에 보고해야 합니다.","reference":"항공안전법 제134조, 시행규칙 제313조"},{"id":16,"category":"항공기상","difficulty":"기본","question":"바람의 세기를 나타내는 단위로 드론 비행에서 주로 사용되는 것은?","options":{"1":"hPa","2":"m/s 또는 knot","3":"°C","4":"lux"},"answer":2,"explanation":"바람의 세기(풍속)는 m/s(미터/초) 또는 knot(해리/시간)로 표현합니다. 일반적으로 드론 비행 가능한 풍속은 10m/s(약 20knots) 이하를 권장합니다.","reference":"기상청 기상관측 표준, 드론 조종자 교재 기상 편"},{"id":17,"category":"항공기상","difficulty":"기본","question":"METAR 보고서에서 'CAVOK'이 의미하는 것은?","options":{"1":"강풍 경보","2":"시정·구름·기상 모두 양호","3":"착륙 금지 상태","4":"안개 발생 중"},"answer":2,"explanation":"CAVOK(Ceiling And Visibility OK)은 시정 10km 이상, 구름 없음, 강수 없음 등 비행에 적합한 최상의 기상 조건을 의미합니다.","reference":"항공기상 교재, ICAO METAR 해석 기준"},{"id":18,"category":"항공기상","difficulty":"심화","question":"역전층(Temperature Inversion)이 드론 비행에 미치는 영향으로 옳은 것은?","options":{"1":"양력 증가로 비행 효율 향상","2":"안개 또는 스모그가 지면에 갇혀 시정 악화","3":"상승기류 발생으로 비행 안정","4":"배터리 충전 효율 향상"},"answer":2,"explanation":"역전층은 고도가 높아질수록 기온이 상승하는 비정상적 상태로, 지표 근처의 습기와 오염물질이 갇혀 안개·스모그가 발생하여 시정이 크게 악화됩니다.","reference":"항공기상 교재, 기상현상과 비행 영향 챕터"},{"id":19,"category":"항공기상","difficulty":"기본","question":"강한 측풍(Cross Wind)이 드론 비행에 미치는 주된 영향은?","options":{"1":"배터리 소모 감소","2":"드론의 위치 편류 및 자세 불안정","3":"상승 속도 향상","4":"GPS 수신 개선"},"answer":2,"explanation":"측풍은 드론을 의도한 경로에서 벗어나게 하는 편류를 유발하고 자세를 불안정하게 만듭니다. 강한 측풍에서는 비행을 자제하거나 풍속에 따른 안전 비행 여부를 판단해야 합니다.","reference":"드론 조종자 교재, 기상과 비행 운용 챕터"},{"id":20,"category":"항공기상","difficulty":"심화","question":"METAR에서 '9999'로 표기된 시정은 무엇을 의미하는가?","options":{"1":"시정 불량으로 비행 금지","2":"시정 10km 이상(측정 최대값)","3":"시정 99m 미만의 극도 불량","4":"레이더 측정 불가"},"answer":2,"explanation":"METAR에서 시정이 9999로 표기되면 10km 이상으로 측정되어 표기 최대값을 나타냅니다. 이는 매우 양호한 시정 조건을 의미합니다.","reference":"ICAO METAR 코드 해설, 항공기상 교재"},{"id":21,"category":"항공기상","difficulty":"기본","question":"구름의 양을 나타내는 단위 중 '하늘 전체를 8등분'할 때 SCT(Scattered)는 몇 okta인가?","options":{"1":"1~2okta","2":"3~4okta","3":"5~7okta","4":"8okta"},"answer":2,"explanation":"구름량은 하늘을 8등분(okta)으로 표현하며, SCT(산재)는 3~4okta에 해당합니다. FEW은 1~2, BKN(부분흐림)은 5~7, OVC(흐림)은 8okta입니다.","reference":"항공기상 교재, 구름 관측 표준"},{"id":22,"category":"항공기상","difficulty":"기본","question":"드론 비행을 피해야 하는 기상 조건으로 가장 적절한 것은?","options":{"1":"맑고 무풍인 날","2":"시정 5km 이상, 구름 고도 300m 이상","3":"천둥·번개를 동반한 뇌우 발생 시","4":"기온 20°C 내외의 쾌청한 날"},"answer":3,"explanation":"뇌우(천둥·번개)는 강한 상승기류, 우박, 낙뢰를 동반하여 드론에 치명적인 손상을 줄 수 있습니다. 뇌우 발생 시에는 즉시 비행을 중단하고 안전한 장소로 대피해야 합니다.","reference":"드론 조종자 교재, 위험기상 챕터"},{"id":23,"category":"항공기상","difficulty":"심화","question":"기압이 낮아지면 드론 비행에 어떤 영향이 생기는가?","options":{"1":"양력이 증가하여 비행 효율 향상","2":"공기 밀도 감소로 양력이 줄어 비행 성능 저하","3":"배터리 수명이 연장됨","4":"GPS 신호가 강해짐"},"answer":2,"explanation":"기압이 낮으면 공기 밀도가 낮아지고, 프로펠러가 밀어내는 공기량이 줄어 양력이 감소합니다. 고고도나 저기압 지역에서는 같은 출력으로도 비행 성능이 저하됩니다.","reference":"비행 이론 교재, 대기와 비행 성능 챕터"},{"id":24,"category":"항공법규","difficulty":"기본","question":"초경량비행장치 조종자가 비행 전 확인해야 할 공역 정보를 제공하는 공식 앱·서비스는?","options":{"1":"네이버 지도","2":"원스톱 민원처리 시스템(Ready to fly)","3":"카카오맵","4":"구글 어스"},"answer":2,"explanation":"국토교통부의 '원스톱 민원처리 시스템(Ready to fly)' 또는 'DroneOne' 앱을 통해 비행 구역의 공역 정보, 승인 여부를 확인하고 비행승인을 신청할 수 있습니다.","reference":"국토교통부 무인비행장치 비행승인 안내"},{"id":25,"category":"비행 이론","difficulty":"기본","question":"멀티콥터가 공중에 뜨기 위해 프로펠러가 생성하는 힘은?","options":{"1":"항력(Drag)","2":"양력(Lift)","3":"추력(Thrust)","4":"중력(Gravity)"},"answer":2,"explanation":"프로펠러가 회전하면서 아래로 공기를 밀어내면 반작용으로 위를 향한 양력이 발생합니다. 이 양력이 중력보다 크면 드론이 상승하게 됩니다.","reference":"비행 이론 교재, 멀티콥터 비행 원리 챕터"},{"id":26,"category":"비행 이론","difficulty":"기본","question":"쿼드콥터(4개 모터)에서 기체를 좌우로 회전(Yaw)시키는 원리는?","options":{"1":"전방 모터 속도를 높임","2":"대각선 방향 모터 쌍의 속도 차이를 이용","3":"모든 모터를 동일하게 증속","4":"후방 모터를 정지"},"answer":2,"explanation":"쿼드콥터는 시계방향(CW)과 반시계방향(CCW) 프로펠러가 쌍을 이루며, 같은 방향 회전 모터 쌍의 속도 차이를 통해 반작용 토크를 이용해 Yaw(좌우 회전)을 만듭니다.","reference":"비행 이론 교재, 멀티콥터 제어 원리"},{"id":27,"category":"비행 이론","difficulty":"기본","question":"리튬폴리머(LiPo) 배터리 보관 시 가장 적절한 보관 전압은?","options":{"1":"셀당 4.2V(완충)","2":"셀당 3.7~3.85V(보관 전압)","3":"셀당 3.0V(완방)","4":"셀당 5.0V"},"answer":2,"explanation":"LiPo 배터리를 장기 보관할 때는 셀당 3.7~3.85V(보관 전압)이 적정합니다. 완충(4.2V) 또는 완방(3.0V 이하) 상태로 보관하면 배터리 수명이 급격히 단축됩니다.","reference":"비행 이론 교재, 배터리 관리 챕터"},{"id":28,"category":"비행 이론","difficulty":"심화","question":"드론 프로펠러의 피치(Pitch)가 높을수록 나타나는 현상은?","options":{"1":"저속에서 효율이 높아짐","2":"같은 회전수에서 더 많은 추력과 더 큰 전류 소모","3":"배터리 수명이 길어짐","4":"소음이 줄어듦"},"answer":2,"explanation":"피치가 높으면 한 번 회전할 때 공기를 더 많이 밀어내므로 추력이 증가하지만, 더 큰 전류를 소모합니다. 따라서 고피치 프로펠러는 배터리를 빨리 소모시킵니다.","reference":"비행 이론 교재, 프로펠러 특성 챕터"},{"id":29,"category":"비행 이론","difficulty":"기본","question":"비행 전 점검(Pre-flight check) 항목으로 가장 거리가 먼 것은?","options":{"1":"배터리 충전 상태 확인","2":"프로펠러 균열 및 장착 상태 확인","3":"조종기 신호 연결 확인","4":"드론 외관 도색 상태 확인"},"answer":4,"explanation":"비행 전 점검은 안전과 직결된 항목을 중심으로 이루어집니다. 배터리, 프로펠러, 조종기 연결, 기체 구조 이상 유무 등이 핵심이며, 외관 도색은 안전 점검 대상이 아닙니다.","reference":"비행 이론 교재, 비행 전 점검 절차"},{"id":30,"category":"비행 이론","difficulty":"심화","question":"모터(ESC 포함)가 과열될 경우 발생할 수 있는 현상은?","options":{"1":"양력 증가","2":"모터 출력 저하 또는 강제 정지(Thermal Shutdown)","3":"배터리 충전 시작","4":"GPS 정밀도 향상"},"answer":2,"explanation":"모터나 ESC가 과열되면 출력이 급격히 떨어지거나 열보호 회로가 작동해 모터가 정지(Thermal Shutdown)할 수 있습니다. 이 경우 기체가 추락할 위험이 있어 과열 방지가 중요합니다.","reference":"비행 이론 교재, 모터·ESC 관리 챕터"},{"id":31,"category":"비행 이론","difficulty":"기본","question":"멀티콥터 기체에서 짐벌(Gimbal)의 역할은?","options":{"1":"GPS 신호 증폭","2":"카메라를 수평으로 안정화","3":"배터리 전압 조절","4":"모터 회전수 제어"},"answer":2,"explanation":"짐벌은 드론의 움직임과 진동을 흡수하여 카메라가 항상 수평을 유지하도록 안정화하는 장치입니다. 항공촬영 시 흔들림 없는 영상을 얻기 위해 사용됩니다.","reference":"비행 이론 교재, 드론 구성요소 챕터"},{"id":32,"category":"비행 이론","difficulty":"기본","question":"GPS 신호가 약하거나 없을 때 드론이 취하는 기본 동작은?","options":{"1":"자동으로 이륙 지점으로 복귀","2":"에티(Atti) 모드로 전환되어 조종자가 직접 자세 제어","3":"즉시 착륙","4":"제자리 호버링 유지"},"answer":2,"explanation":"GPS 신호가 불충분하면 드론은 Atti(자세) 모드로 전환됩니다. 이 상태에서는 위치 고정이 되지 않아 바람에 의해 드리프트가 발생하므로 조종자가 직접 자세를 제어해야 합니다.","reference":"비행 이론 교재, 비행 모드 및 GPS 챕터"},{"id":33,"category":"비행 운용","difficulty":"기본","question":"이착륙 장소 선택 시 가장 우선적으로 고려해야 할 사항은?","options":{"1":"촬영 각도가 좋은 위치","2":"평탄하고 장애물이 없는 안전한 장소","3":"주차하기 편한 도로변","4":"Wi-Fi 신호가 강한 위치"},"answer":2,"explanation":"이착륙 장소는 드론의 안정적인 이착륙과 주변 사람의 안전을 위해 평탄하고 장애물이 없는 곳을 선택해야 합니다. 안전이 모든 비행 운용의 최우선입니다.","reference":"비행 운용 교재, 안전 비행 절차 챕터"},{"id":34,"category":"비행 운용","difficulty":"기본","question":"Return to Home(RTH) 기능이 작동하는 조건으로 옳은 것은?","options":{"1":"배터리가 50% 이하일 때","2":"조종기 신호 두절 또는 배터리 임계값 도달 시","3":"비가 내리기 시작할 때","4":"고도가 100m를 초과할 때"},"answer":2,"explanation":"RTH(홈 복귀) 기능은 조종기와의 통신이 두절되거나 배터리가 설정된 임계값(일반적으로 15~20%) 이하로 떨어지면 자동으로 이륙 지점으로 복귀하는 기능입니다.","reference":"비행 운용 교재, RTH 및 비상기능 챕터"},{"id":35,"category":"비행 운용","difficulty":"심화","question":"비행 중 모터 하나가 멈추는 비상상황 발생 시 올바른 대처 방법은?","options":{"1":"즉시 전력을 최대로 올려 안정 시도","2":"주변 안전 구역에 신속히 불시착","3":"그대로 비행 지속","4":"조종기를 껐다 켜 재부팅"},"answer":2,"explanation":"모터 하나가 고장 나면 드론의 균형을 잡기 어렵고 추락 위험이 매우 높습니다. 즉시 주변 안전 구역(사람이 없는 장소)을 찾아 신속하게 불시착시켜 추가 사고를 방지해야 합니다.","reference":"비행 운용 교재, 비상상황 대처 챕터"},{"id":36,"category":"비행 운용","difficulty":"기본","question":"드론 비행 전 조종기(송신기)에서 반드시 확인해야 할 사항은?","options":{"1":"조종기 외관 색상","2":"배터리 잔량과 드론과의 연결(바인딩) 상태","3":"주변 Wi-Fi 채널 수","4":"조종기 제조 년도"},"answer":2,"explanation":"비행 전 조종기의 배터리 잔량이 충분한지, 드론과 정상적으로 바인딩(연결)되어 있는지를 반드시 확인해야 합니다. 조종기 배터리 부족이나 연결 불량은 통제력 상실로 이어질 수 있습니다.","reference":"비행 운용 교재, 비행 전 점검 절차"},{"id":37,"category":"비행 운용","difficulty":"심화","question":"전자기 간섭(EMI)이 드론에 미치는 영향으로 옳은 것은?","options":{"1":"배터리 충전이 빨라짐","2":"조종 신호 교란 및 GPS 수신 오류 발생","3":"프로펠러 회전수 향상","4":"카메라 해상도 향상"},"answer":2,"explanation":"전자기 간섭(EMI)은 조종기와 드론 간의 통신을 교란하거나 GPS 수신 오류를 일으킬 수 있습니다. 고압선, 대형 철구조물, 방송 시설 근처에서는 특히 주의해야 합니다.","reference":"비행 운용 교재, 환경 및 안전 요인 챕터"},{"id":38,"category":"비행 운용","difficulty":"기본","question":"드론 비행 후 기체 보관 시 올바른 방법은?","options":{"1":"배터리를 완충 상태로 연결한 채 보관","2":"배터리를 분리하고 서늘하고 건조한 곳에 보관","3":"직사광선이 드는 차 안에 보관","4":"비행 직후 바로 가방에 넣어 보관"},"answer":2,"explanation":"드론 보관 시 배터리는 반드시 분리하고, 서늘하고 건조한 장소에 보관해야 합니다. 완충 상태로 장기 보관하거나 고온의 차 안에 두면 배터리 팽창 및 화재 위험이 있습니다.","reference":"비행 운용 교재, 기체 보관 및 유지관리 챕터"},{"id":39,"category":"비행 운용","difficulty":"기본","question":"조종자가 드론을 잃어버렸을(Signal Lost) 때 가장 먼저 해야 할 행동은?","options":{"1":"현장을 떠남","2":"조종기를 켜서 신호를 재연결 시도 및 RTH 작동 확인","3":"경찰에 신고","4":"새 드론 구매 검토"},"answer":2,"explanation":"신호가 두절되면 즉시 조종기로 재연결을 시도하고, RTH(홈 복귀) 기능이 정상 작동하는지 확인합니다. 미리 설정된 홈포인트로 드론이 복귀할 수 있도록 조치해야 합니다.","reference":"비행 운용 교재, 비상상황 대처 챕터"},{"id":40,"category":"비행 운용","difficulty":"심화","question":"드론 비행 중 배터리 경고등이 점등되었을 때 즉시 취해야 할 행동은?","options":{"1":"비행을 계속하며 임무 완료 후 착륙","2":"즉시 안전한 장소로 귀환 및 착륙","3":"고도를 높여 배터리 소모를 줄임","4":"자동 비행 모드로 전환하여 대기"},"answer":2,"explanation":"배터리 경고등은 잔량이 위험 수준임을 알립니다. 즉시 비행을 중단하고 안전한 장소로 귀환하여 착륙해야 합니다. 무리하게 비행을 지속하면 배터리 과방전으로 추락할 수 있습니다.","reference":"비행 운용 교재, 배터리 관리 및 비상상황 챕터"}];
+
+const CAT_BADGE = {
+  '항공법규':'badge-law', '항공기상':'badge-weather',
+  '비행 이론':'badge-theory', '비행 운용':'badge-ops'
+};
+const CAT_LABEL = {
+  '항공법규':'📋 항공법규', '항공기상':'🌤 항공기상',
+  '비행 이론':'⚙️ 비행 이론', '비행 운용':'🛩 비행 운용'
+};
+const SCORE_MSG = [
+  [90, '🏆 합격권 진입!', '실전 시험도 자신있게 도전하세요.'],
+  [70, '👍 준수한 실력!', '취약 단원을 한 번 더 복습해보세요.'],
+  [50, '📚 조금 더 공부가 필요해요', '틀린 문제를 꼭 복습하세요!'],
+  [0,  '💪 다시 도전해봐요!', '하나씩 이해하면 반드시 합격할 수 있어요.']
+];
+
+let questions = [], current = 0, score = 0, wrongs = [], answered = false;
+let selectedCat = '전체';
+
+function filterQ(cat) {
+  return cat === '전체' ? [...QUESTIONS] : QUESTIONS.filter(q => q.category === cat);
+}
+function shuffle(arr) {
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+}
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo(0, 0);
+}
+
+// 필터
+document.querySelectorAll('.filter-btn').forEach(btn => {
+  btn.addEventListener('click', function() {
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    this.classList.add('active');
+    selectedCat = this.dataset.cat;
+  });
+});
+
+document.getElementById('start-btn').addEventListener('click', () => {
+  questions = filterQ(selectedCat);
+  shuffle(questions);
+  current = 0; score = 0; wrongs = [];
+  showScreen('quiz-screen');
+  loadQ();
+});
+
+function loadQ() {
+  answered = false;
+  const q = questions[current];
+  const total = questions.length;
+  document.getElementById('progress-fill').style.width = (current / total * 100) + '%';
+  document.getElementById('q-num').textContent = (current + 1) + ' / ' + total;
+  const cb = document.getElementById('cat-badge');
+  cb.textContent = CAT_LABEL[q.category] || q.category;
+  cb.className = 'badge ' + (CAT_BADGE[q.category] || '');
+  const db = document.getElementById('diff-badge');
+  db.style.display = q.difficulty === '심화' ? 'inline' : 'none';
+  document.getElementById('q-text').textContent = q.question;
+  const optWrap = document.getElementById('options');
+  optWrap.innerHTML = '';
+  [1,2,3,4].forEach(n => {
+    const btn = document.createElement('button');
+    btn.className = 'opt-btn';
+    btn.innerHTML = `<span class="opt-num">${n}</span><span>${q.options[n]}</span>`;
+    btn.addEventListener('click', () => checkAnswer(n, q));
+    optWrap.appendChild(btn);
+  });
+  const rb = document.getElementById('result-box');
+  rb.className = 'result-box';
+  document.getElementById('next-btn').className = 'next-btn';
+}
+
+function checkAnswer(selected, q) {
+  if (answered) return;
+  answered = true;
+  const opts = document.querySelectorAll('.opt-btn');
+  opts.forEach((btn, i) => {
+    btn.disabled = true;
+    if (i + 1 === q.answer) btn.classList.add('correct');
+    if (i + 1 === selected && selected !== q.answer) btn.classList.add('wrong');
+  });
+  const isRight = selected === q.answer;
+  if (isRight) { score++; } else { wrongs.push({ q, selected }); }
+  const rb = document.getElementById('result-box');
+  rb.className = 'result-box show ' + (isRight ? 'correct' : 'wrong');
+  document.getElementById('result-label').textContent = isRight
+    ? '✅ 정답입니다!'
+    : '❌ 오답 — 정답은 ' + q.answer + '번';
+  document.getElementById('result-exp').textContent = q.explanation;
+  document.getElementById('result-ref').textContent = '📌 ' + q.reference;
+  document.getElementById('next-btn').className = 'next-btn show';
+}
+
+document.getElementById('next-btn').addEventListener('click', () => {
+  current++;
+  if (current < questions.length) { loadQ(); } else { showResult(); }
+});
+
+function showResult() {
+  showScreen('result-screen');
+  const total = questions.length;
+  const pct = Math.round(score / total * 100);
+  document.getElementById('final-score').textContent = pct + '점';
+  document.getElementById('stat-correct').textContent = score;
+  document.getElementById('stat-wrong').textContent = total - score;
+  document.getElementById('stat-rate').textContent = pct + '%';
+  const [, msg, sub] = SCORE_MSG.find(([t]) => pct >= t);
+  document.getElementById('result-msg').textContent = msg;
+  document.getElementById('result-sub').textContent = sub;
+
+  // 카테고리별
+  const cats = ['항공법규','항공기상','비행 이론','비행 운용'];
+  const catDiv = document.getElementById('cat-result');
+  catDiv.innerHTML = '';
+  cats.forEach(cat => {
+    const catQs = questions.filter(q => q.category === cat);
+    if (!catQs.length) return;
+    const catScore = catQs.filter(q => !wrongs.find(w => w.q.id === q.id)).length;
+    const catPct = Math.round(catScore / catQs.length * 100);
+    const fillCls = catPct >= 80 ? '' : catPct >= 50 ? 'mid' : 'low';
+    catDiv.innerHTML += `<div class="cat-result-item">
+      <span class="cat-result-name">${CAT_LABEL[cat] || cat}</span>
+      <div class="cat-bar-bg"><div class="cat-bar-fill ${fillCls}" style="width:${catPct}%"></div></div>
+      <span class="cat-score">${catScore}/${catQs.length}</span>
+    </div>`;
+  });
+
+  // 틀린 문제
+  const wl = document.getElementById('wrong-list');
+  wl.innerHTML = '';
+  if (!wrongs.length) {
+    wl.innerHTML = '<div class="empty-msg">틀린 문제가 없습니다! 🎉 만점입니다!</div>';
+  } else {
+    wrongs.forEach(({ q }) => {
+      wl.innerHTML += `<div class="wrong-item">
+        <div class="wrong-q">${q.question}</div>
+        <div class="wrong-ans">✅ 정답: ${q.answer}번 — ${q.options[q.answer]}</div>
+        <div class="wrong-exp">${q.explanation}</div>
+      </div>`;
+    });
+  }
+}
+
+document.getElementById('retry-all-btn').addEventListener('click', () => {
+  showScreen('start-screen');
+});
+document.getElementById('retry-wrong-btn').addEventListener('click', () => {
+  if (!wrongs.length) { alert('틀린 문제가 없습니다!'); return; }
+  questions = wrongs.map(w => w.q);
+  shuffle(questions);
+  current = 0; score = 0; wrongs = [];
+  showScreen('quiz-screen');
+  loadQ();
+});
+
+// ── 포트폴리오 엔트리 자동 출력 ──
+console.log(JSON.stringify({
+  id: "026",
+  title: "무인멀티콥터 4종 기출문제",
+  grade: "중학교",
+  gradeDetail: "중학교 1-3학년",
+  subject: ["드론", "항공법규", "비행안전", "진로체험"],
+  description: "무인멀티콥터 4종 자격증 대비 기출문제 퀴즈. 항공법규·항공기상·비행이론·비행운용 4개 영역 40문항을 카테고리·난이도별로 학습하고 즉각적인 해설로 개념을 확인합니다.",
+  aiFeature: "카테고리별 성적 분석 및 틀린 문제 자동 복습",
+  date: new Date().toISOString().slice(0,10),
+  url: "https://milab2019.github.io/main/drone_quiz_4jong_026.html",
+  tags: ["드론", "4종자격증", "항공법규", "기출문제", "중학교", "진로체험"]
+}, null, 2));
+</script>
+</body>
+</html>
