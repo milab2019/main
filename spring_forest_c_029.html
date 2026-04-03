@@ -1,0 +1,1185 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>🌸 봄 숲 탐험대 — 꽃씨를 찾아라!</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<style>
+  :root {
+    --green: #4caf50;
+    --light-green: #a5d6a7;
+    --peach: #ffccbc;
+    --yellow: #fff9c4;
+    --orange: #ffb74d;
+    --brown: #8d6e63;
+    --pink: #f48fb1;
+    --sky: #b3e5fc;
+    --white: #ffffff;
+    --text: #4e342e;
+    --shadow: rgba(0,0,0,0.12);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Nanum Gothic', 'Apple SD Gothic Neo', sans-serif;
+    background: linear-gradient(160deg, #e8f5e9 0%, #fff8e1 50%, #fce4ec 100%);
+    min-height: 100vh;
+    color: var(--text);
+    overflow-x: hidden;
+  }
+  /* ── 헤더 ── */
+  #header {
+    background: linear-gradient(90deg, #66bb6a, #ffb74d);
+    color: white;
+    padding: 14px 20px;
+    display: flex; align-items: center; justify-content: space-between;
+    box-shadow: 0 3px 8px var(--shadow);
+    position: sticky; top: 0; z-index: 100;
+  }
+  #header h1 { font-size: 20px; }
+  #musicBtn {
+    background: white; border: none; border-radius: 50%;
+    width: 44px; height: 44px; font-size: 22px; cursor: pointer;
+    box-shadow: 0 2px 6px var(--shadow);
+  }
+  /* ── 진행 표시 ── */
+  #progressBar {
+    height: 10px;
+    background: linear-gradient(90deg, var(--green), var(--orange));
+    transition: width 0.6s ease;
+    border-radius: 0 5px 5px 0;
+  }
+  #progressWrap { background: #e0e0e0; height: 10px; }
+  /* ── 공통 화면 ── */
+  .screen {
+    display: none;
+    padding: 20px 16px 30px;
+    max-width: 700px; margin: 0 auto;
+    animation: fadeIn 0.4s ease;
+  }
+  .screen.active { display: block; }
+  @keyframes fadeIn { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
+
+  /* ── 시작 화면 ── */
+  #startScreen { text-align: center; }
+  .story-box {
+    background: white; border-radius: 24px; padding: 24px 20px;
+    box-shadow: 0 4px 16px var(--shadow); margin: 20px 0;
+    font-size: 20px; line-height: 1.8;
+  }
+  .story-box .emoji-big { font-size: 64px; display: block; margin-bottom: 12px; }
+  .start-btn {
+    background: linear-gradient(135deg, #66bb6a, #43a047);
+    color: white; border: none; border-radius: 50px;
+    padding: 20px 48px; font-size: 22px; cursor: pointer;
+    box-shadow: 0 4px 14px rgba(76,175,80,0.4);
+    transition: transform 0.15s;
+    min-width: 200px; min-height: 64px;
+  }
+  .start-btn:active { transform: scale(0.96); }
+
+  /* ── 미션 공통 ── */
+  .mission-title {
+    background: linear-gradient(135deg, #66bb6a, #ffb74d);
+    color: white; border-radius: 20px; padding: 14px 20px;
+    text-align: center; font-size: 22px; font-weight: bold;
+    margin-bottom: 16px; box-shadow: 0 3px 10px var(--shadow);
+  }
+  .mission-subtitle { font-size: 16px; opacity: 0.9; }
+
+  /* ── 타이머 ── */
+  #timerBox {
+    text-align: center; font-size: 26px; font-weight: bold;
+    margin: 8px 0; transition: color 0.3s;
+  }
+  #timerBox.warn { color: var(--orange); }
+
+  /* ── 캐릭터 ── */
+  #mascot {
+    width: 120px; height: 120px; margin: 0 auto 12px;
+    display: block;
+  }
+  #speechBubble {
+    background: white; border-radius: 16px; padding: 12px 16px;
+    font-size: 18px; text-align: center; line-height: 1.6;
+    box-shadow: 0 2px 8px var(--shadow); min-height: 56px;
+    margin-bottom: 14px;
+    position: relative;
+  }
+  #speechBubble::after {
+    content: ''; position: absolute; top: -12px; left: 50%;
+    transform: translateX(-50%);
+    border: 6px solid transparent; border-bottom-color: white;
+  }
+
+  /* ── 문제 카드 ── */
+  .q-card {
+    background: white; border-radius: 20px; padding: 20px;
+    box-shadow: 0 4px 14px var(--shadow); margin-bottom: 16px;
+    font-size: 22px; line-height: 1.7; text-align: center;
+  }
+  .q-img { font-size: 56px; display: block; margin: 8px auto; }
+
+  /* ── 선택지 버튼 ── */
+  .choices { display: flex; flex-direction: column; gap: 14px; margin-top: 8px; }
+  .choice-btn {
+    background: var(--white); border: 3px solid var(--light-green);
+    border-radius: 18px; padding: 18px 16px;
+    font-size: 20px; cursor: pointer; text-align: center;
+    transition: all 0.18s; min-height: 64px;
+    box-shadow: 0 2px 8px var(--shadow);
+  }
+  .choice-btn:active { transform: scale(0.97); }
+  .choice-btn.correct {
+    background: #e8f5e9; border-color: #43a047;
+    animation: correctPulse 0.5s ease;
+  }
+  .choice-btn.wrong {
+    background: #fff3e0; border-color: #ffb74d;
+  }
+  .choice-btn.hint-glow {
+    animation: hintGlow 0.8s ease infinite alternate;
+  }
+  @keyframes correctPulse {
+    0%{transform:scale(1)} 40%{transform:scale(1.05)} 100%{transform:scale(1)}
+  }
+  @keyframes hintGlow {
+    from{box-shadow:0 0 0 0 rgba(255,183,77,0.4)}
+    to{box-shadow:0 0 0 12px rgba(255,183,77,0)}
+  }
+
+  /* ── 피드백 오버레이 ── */
+  #feedbackOverlay {
+    display: none; position: fixed; inset: 0;
+    background: rgba(0,0,0,0.35); z-index: 200;
+    align-items: center; justify-content: center;
+  }
+  #feedbackOverlay.show { display: flex; }
+  #feedbackBox {
+    background: white; border-radius: 28px; padding: 32px 28px;
+    text-align: center; max-width: 340px; width: 90%;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+    animation: popIn 0.3s cubic-bezier(.34,1.56,.64,1);
+  }
+  @keyframes popIn { from{transform:scale(0.7);opacity:0} to{transform:scale(1);opacity:1} }
+  #feedbackBox .fb-emoji { font-size: 72px; }
+  #feedbackBox .fb-msg { font-size: 22px; margin: 12px 0 8px; font-weight: bold; }
+  #feedbackBox .fb-hint { font-size: 17px; color: #6d4c41; line-height: 1.6; }
+  #feedbackBox .fb-btn {
+    background: linear-gradient(135deg, #66bb6a, #43a047);
+    color: white; border: none; border-radius: 50px;
+    padding: 16px 36px; font-size: 20px; cursor: pointer;
+    margin-top: 18px; min-height: 64px; min-width: 160px;
+    box-shadow: 0 4px 12px rgba(76,175,80,0.35);
+  }
+
+  /* ── 미션3 드래그 (짝 맞추기) ── */
+  .match-area {
+    display: flex; flex-direction: column; gap: 14px;
+    margin: 12px 0;
+  }
+  .match-row {
+    display: flex; align-items: center; gap: 10px;
+    justify-content: center;
+  }
+  .match-item {
+    background: white; border: 3px solid var(--light-green);
+    border-radius: 16px; padding: 14px 12px;
+    font-size: 24px; cursor: pointer; text-align: center;
+    min-width: 80px; min-height: 64px;
+    transition: all 0.2s; box-shadow: 0 2px 8px var(--shadow);
+  }
+  .match-item.selected { border-color: #43a047; background: #e8f5e9; transform: scale(1.06); }
+  .match-item.matched { border-color: #43a047; background: #c8e6c9; pointer-events: none; }
+  .match-item.wrong-flash { border-color: #ffb74d; animation: wrongFlash 0.5s; }
+  @keyframes wrongFlash { 0%,100%{background:white} 50%{background:#fff3e0} }
+  .match-arrow { font-size: 28px; color: #bdbdbd; }
+
+  /* ── 점수 바 ── */
+  #scoreBar {
+    background: white; border-radius: 50px; padding: 10px 20px;
+    display: flex; align-items: center; gap: 12px;
+    box-shadow: 0 2px 8px var(--shadow); margin-bottom: 14px; font-size: 18px;
+  }
+  #stickers { font-size: 22px; letter-spacing: 2px; }
+
+  /* ── 결과 화면 ── */
+  #resultScreen { text-align: center; }
+  .result-card {
+    background: white; border-radius: 24px; padding: 28px 20px;
+    box-shadow: 0 4px 18px var(--shadow); margin: 16px 0;
+  }
+  .result-emoji { font-size: 80px; }
+  .result-title { font-size: 26px; font-weight: bold; margin: 14px 0 8px; }
+  .result-msg { font-size: 18px; line-height: 1.8; color: #6d4c41; }
+  .badge-row { display: flex; justify-content: center; gap: 16px; margin: 18px 0; font-size: 36px; }
+  .total-score { font-size: 28px; font-weight: bold; color: var(--green); margin: 10px 0; }
+  .retry-btn {
+    background: linear-gradient(135deg, #ffb74d, #ff8a65);
+    color: white; border: none; border-radius: 50px;
+    padding: 18px 40px; font-size: 20px; cursor: pointer;
+    box-shadow: 0 4px 12px rgba(255,152,0,0.35);
+    min-height: 64px; margin: 8px;
+  }
+  #qrSection { margin-top: 20px; }
+  #qrSection p { font-size: 16px; color: #888; margin-bottom: 8px; }
+  #qrcode { display: inline-block; }
+
+  /* ── 난이도 탭 ── */
+  .diff-tabs { display: flex; gap: 10px; margin-bottom: 14px; }
+  .diff-tab {
+    flex: 1; padding: 14px; border: 3px solid #e0e0e0;
+    border-radius: 14px; background: white; font-size: 18px;
+    cursor: pointer; text-align: center; transition: all 0.2s;
+    min-height: 64px;
+  }
+  .diff-tab.active { border-color: var(--green); background: #e8f5e9; font-weight: bold; }
+
+  /* ── 미션 완료 배지 ── */
+  .mission-badge {
+    text-align: center; font-size: 36px; margin: 10px 0;
+  }
+
+  /* ── 다음 미션 버튼 ── */
+  .next-btn {
+    background: linear-gradient(135deg, #42a5f5, #1976d2);
+    color: white; border: none; border-radius: 50px;
+    padding: 18px 40px; font-size: 20px; cursor: pointer;
+    display: block; margin: 18px auto 0;
+    box-shadow: 0 4px 12px rgba(33,150,243,0.35);
+    min-height: 64px; min-width: 200px;
+  }
+  .counter-text { font-size: 17px; color: #888; text-align: center; margin-top: 6px; }
+
+  /* ── 꽃잎 애니메이션 ── */
+  .petal {
+    position: fixed; top: -20px; font-size: 20px;
+    animation: fall linear forwards;
+    pointer-events: none; z-index: 300;
+  }
+  @keyframes fall {
+    to { transform: translateY(110vh) rotate(360deg); opacity: 0; }
+  }
+</style>
+</head>
+<body>
+
+<!-- 헤더 -->
+<div id="header">
+  <h1>🌸 봄 숲 탐험대</h1>
+  <button id="musicBtn" onclick="toggleMusic()">🎵</button>
+</div>
+<div id="progressWrap"><div id="progressBar" style="width:0%"></div></div>
+
+<!-- 피드백 오버레이 -->
+<div id="feedbackOverlay">
+  <div id="feedbackBox">
+    <div class="fb-emoji" id="fbEmoji">⭐</div>
+    <div class="fb-msg" id="fbMsg"></div>
+    <div class="fb-hint" id="fbHint"></div>
+    <button class="fb-btn" onclick="closeFeedback()">계속하기 ➡️</button>
+  </div>
+</div>
+
+<!-- ══ 시작 화면 ══ -->
+<div id="startScreen" class="screen active">
+  <div style="text-align:center; margin-top:10px;">
+    <svg id="mascotStart" width="140" height="140" viewBox="0 0 140 140">
+      <!-- 다람쥐 다미 -->
+      <ellipse cx="70" cy="105" rx="38" ry="25" fill="#a0522d"/>
+      <ellipse cx="70" cy="80" rx="32" ry="30" fill="#d2691e"/>
+      <!-- 꼬리 -->
+      <ellipse cx="108" cy="88" rx="18" ry="12" fill="#c8862a" transform="rotate(-20 108 88)"/>
+      <ellipse cx="108" cy="86" rx="12" ry="8" fill="#f5deb3" transform="rotate(-20 108 88)"/>
+      <!-- 얼굴 -->
+      <ellipse cx="70" cy="62" rx="28" ry="26" fill="#d2691e"/>
+      <!-- 귀 -->
+      <ellipse cx="48" cy="40" rx="12" ry="16" fill="#d2691e"/>
+      <ellipse cx="92" cy="40" rx="12" ry="16" fill="#d2691e"/>
+      <ellipse cx="48" cy="40" rx="6" ry="10" fill="#ffb6a0"/>
+      <ellipse cx="92" cy="40" rx="6" ry="10" fill="#ffb6a0"/>
+      <!-- 눈 -->
+      <ellipse cx="60" cy="60" rx="7" ry="8" fill="white"/>
+      <ellipse cx="80" cy="60" rx="7" ry="8" fill="white"/>
+      <circle cx="62" cy="62" r="4" fill="#3e2723"/>
+      <circle cx="82" cy="62" r="4" fill="#3e2723"/>
+      <circle cx="63" cy="60" r="1.5" fill="white"/>
+      <circle cx="83" cy="60" r="1.5" fill="white"/>
+      <!-- 코 -->
+      <ellipse cx="70" cy="72" rx="5" ry="4" fill="#8b4513"/>
+      <!-- 입 (웃음) -->
+      <path d="M63 78 Q70 85 77 78" stroke="#8b4513" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+      <!-- 볼터치 -->
+      <ellipse cx="52" cy="73" rx="8" ry="5" fill="#ffb6a0" opacity="0.6"/>
+      <ellipse cx="88" cy="73" rx="8" ry="5" fill="#ffb6a0" opacity="0.6"/>
+      <!-- 꽃씨 들기 -->
+      <circle cx="50" cy="100" r="8" fill="#fff9c4" stroke="#ffcc80" stroke-width="2"/>
+      <text x="50" y="104" text-anchor="middle" font-size="10">🌱</text>
+    </svg>
+  </div>
+
+  <div class="story-box">
+    <span class="emoji-big">🌸</span>
+    <strong style="font-size:24px;">다미의 꽃씨를 찾아요!</strong><br><br>
+    다람쥐 <strong>다미</strong>가 봄에 심을 꽃씨를 잃어버렸어요 😢<br>
+    숲 친구들이 슬퍼하고 있어요.<br><br>
+    <strong>3가지 미션</strong>을 도와주면<br>
+    봄 숲에 꽃이 피어날 거예요! 🌺
+  </div>
+
+  <div style="text-align:center; margin:10px 0 20px;">
+    <div style="font-size:18px; color:#6d4c41; margin-bottom:14px;">
+      ⭐ 스티커를 모아서 다미를 도와주세요!
+    </div>
+    <button class="start-btn" onclick="startGame()">
+      🌿 탐험 시작! 🌿
+    </button>
+  </div>
+
+  <div id="qrStart" style="text-align:center; margin-top:20px;">
+    <p style="font-size:15px;color:#aaa;">📱 QR로 친구에게 알려주세요</p>
+    <div id="qrcodeStart"></div>
+  </div>
+</div>
+
+<!-- ══ 미션1 화면: 그림 보고 고르기 ══ -->
+<div id="mission1Screen" class="screen">
+  <div class="mission-title">
+    🌿 미션 1 — 봄 친구를 찾아요!
+    <div class="mission-subtitle">그림을 보고 맞는 것을 골라요</div>
+  </div>
+
+  <div id="scoreBar">
+    <span>⭐ 점수: <strong id="score1">0</strong></span>
+    <span id="stickers">🌸</span>
+  </div>
+
+  <svg id="mascot1" width="100" height="100" viewBox="0 0 140 140" style="display:block;margin:0 auto 6px">
+    <!-- 기본 다미 -->
+    <ellipse cx="70" cy="105" rx="38" ry="25" fill="#a0522d"/>
+    <ellipse cx="70" cy="80" rx="32" ry="30" fill="#d2691e"/>
+    <ellipse cx="108" cy="88" rx="18" ry="12" fill="#c8862a" transform="rotate(-20 108 88)"/>
+    <ellipse cx="108" cy="86" rx="12" ry="8" fill="#f5deb3" transform="rotate(-20 108 88)"/>
+    <ellipse cx="70" cy="62" rx="28" ry="26" fill="#d2691e"/>
+    <ellipse cx="48" cy="40" rx="12" ry="16" fill="#d2691e"/>
+    <ellipse cx="92" cy="40" rx="12" ry="16" fill="#d2691e"/>
+    <ellipse cx="48" cy="40" rx="6" ry="10" fill="#ffb6a0"/>
+    <ellipse cx="92" cy="40" rx="6" ry="10" fill="#ffb6a0"/>
+    <ellipse cx="60" cy="60" rx="7" ry="8" fill="white"/>
+    <ellipse cx="80" cy="60" rx="7" ry="8" fill="white"/>
+    <circle cx="62" cy="62" r="4" fill="#3e2723" id="eye1L"/>
+    <circle cx="82" cy="62" r="4" fill="#3e2723" id="eye1R"/>
+    <circle cx="63" cy="60" r="1.5" fill="white"/>
+    <circle cx="83" cy="60" r="1.5" fill="white"/>
+    <ellipse cx="70" cy="72" rx="5" ry="4" fill="#8b4513"/>
+    <path d="M63 78 Q70 85 77 78" stroke="#8b4513" stroke-width="2.5" fill="none" stroke-linecap="round" id="mouth1"/>
+    <ellipse cx="52" cy="73" rx="8" ry="5" fill="#ffb6a0" opacity="0.6"/>
+    <ellipse cx="88" cy="73" rx="8" ry="5" fill="#ffb6a0" opacity="0.6"/>
+  </svg>
+
+  <div id="speechBubble1" class="speechBubble" style="background:white;border-radius:16px;padding:12px 16px;font-size:18px;text-align:center;line-height:1.6;box-shadow:0 2px 8px rgba(0,0,0,0.1);margin-bottom:14px;">
+    🌿 그림을 보고 맞는 것을 골라요!
+  </div>
+
+  <!-- 난이도 탭 -->
+  <div class="diff-tabs">
+    <button class="diff-tab active" id="tab1Basic" onclick="setDiff1('basic')">🌱 기본</button>
+    <button class="diff-tab" id="tab1Hard" onclick="setDiff1('hard')">🌸 도전</button>
+  </div>
+
+  <div id="timerBox" class="timerBox">⏰ <span id="timer1">60</span>초</div>
+
+  <div class="q-card" id="qCard1">
+    <div class="q-img" id="qImg1">🌸</div>
+    <div id="qText1" style="font-size:20px;"></div>
+  </div>
+
+  <div class="choices" id="choices1"></div>
+  <div class="counter-text" id="counter1">1 / 6</div>
+</div>
+
+<!-- ══ 미션2 화면: 개념 퀴즈 ══ -->
+<div id="mission2Screen" class="screen">
+  <div class="mission-title">
+    🐦 미션 2 — 봄 이야기 퀴즈!
+    <div class="mission-subtitle">짧은 글을 읽고 맞는 것을 골라요</div>
+  </div>
+
+  <div id="scoreBar2" style="background:white;border-radius:50px;padding:10px 20px;display:flex;align-items:center;gap:12px;box-shadow:0 2px 8px rgba(0,0,0,0.1);margin-bottom:14px;font-size:18px;">
+    <span>⭐ 점수: <strong id="score2">0</strong></span>
+    <span id="stickers2">🌸</span>
+  </div>
+
+  <svg id="mascot2" width="100" height="100" viewBox="0 0 140 140" style="display:block;margin:0 auto 6px">
+    <ellipse cx="70" cy="105" rx="38" ry="25" fill="#a0522d"/>
+    <ellipse cx="70" cy="80" rx="32" ry="30" fill="#d2691e"/>
+    <ellipse cx="108" cy="88" rx="18" ry="12" fill="#c8862a" transform="rotate(-20 108 88)"/>
+    <ellipse cx="108" cy="86" rx="12" ry="8" fill="#f5deb3" transform="rotate(-20 108 88)"/>
+    <ellipse cx="70" cy="62" rx="28" ry="26" fill="#d2691e"/>
+    <ellipse cx="48" cy="40" rx="12" ry="16" fill="#d2691e"/>
+    <ellipse cx="92" cy="40" rx="12" ry="16" fill="#d2691e"/>
+    <ellipse cx="48" cy="40" rx="6" ry="10" fill="#ffb6a0"/>
+    <ellipse cx="92" cy="40" rx="6" ry="10" fill="#ffb6a0"/>
+    <ellipse cx="60" cy="60" rx="7" ry="8" fill="white"/>
+    <ellipse cx="80" cy="60" rx="7" ry="8" fill="white"/>
+    <circle cx="62" cy="62" r="4" fill="#3e2723"/>
+    <circle cx="82" cy="62" r="4" fill="#3e2723"/>
+    <circle cx="63" cy="60" r="1.5" fill="white"/>
+    <circle cx="83" cy="60" r="1.5" fill="white"/>
+    <ellipse cx="70" cy="72" rx="5" ry="4" fill="#8b4513"/>
+    <path d="M63 78 Q70 85 77 78" stroke="#8b4513" stroke-width="2.5" fill="none" stroke-linecap="round" id="mouth2"/>
+    <ellipse cx="52" cy="73" rx="8" ry="5" fill="#ffb6a0" opacity="0.6"/>
+    <ellipse cx="88" cy="73" rx="8" ry="5" fill="#ffb6a0" opacity="0.6"/>
+  </svg>
+
+  <div id="speechBubble2" style="background:white;border-radius:16px;padding:12px 16px;font-size:18px;text-align:center;line-height:1.6;box-shadow:0 2px 8px rgba(0,0,0,0.1);margin-bottom:14px;">
+    🐦 봄에 대해 얼마나 알고 있나요?
+  </div>
+
+  <div class="diff-tabs">
+    <button class="diff-tab active" id="tab2Basic" onclick="setDiff2('basic')">🌱 기본</button>
+    <button class="diff-tab" id="tab2Hard" onclick="setDiff2('hard')">🌸 도전</button>
+  </div>
+
+  <div id="timerBox2" style="text-align:center;font-size:26px;font-weight:bold;margin:8px 0;">⏰ <span id="timer2">60</span>초</div>
+
+  <div class="q-card" id="qCard2">
+    <div class="q-img" id="qImg2">🌺</div>
+    <div id="qText2" style="font-size:20px;line-height:1.7;"></div>
+  </div>
+
+  <div class="choices" id="choices2"></div>
+  <div class="counter-text" id="counter2">1 / 9</div>
+</div>
+
+<!-- ══ 미션3 화면: 짝 맞추기 ══ -->
+<div id="mission3Screen" class="screen">
+  <div class="mission-title">
+    🌺 미션 3 — 봄 짝꿍을 찾아요!
+    <div class="mission-subtitle">서로 어울리는 것을 골라 연결해요 (타이머 없음 🙂)</div>
+  </div>
+
+  <div id="scoreBar3" style="background:white;border-radius:50px;padding:10px 20px;display:flex;align-items:center;gap:12px;box-shadow:0 2px 8px rgba(0,0,0,0.1);margin-bottom:14px;font-size:18px;">
+    <span>⭐ 점수: <strong id="score3">0</strong></span>
+    <span id="stickers3">🌸</span>
+  </div>
+
+  <svg id="mascot3" width="100" height="100" viewBox="0 0 140 140" style="display:block;margin:0 auto 6px">
+    <ellipse cx="70" cy="105" rx="38" ry="25" fill="#a0522d"/>
+    <ellipse cx="70" cy="80" rx="32" ry="30" fill="#d2691e"/>
+    <ellipse cx="108" cy="88" rx="18" ry="12" fill="#c8862a" transform="rotate(-20 108 88)"/>
+    <ellipse cx="108" cy="86" rx="12" ry="8" fill="#f5deb3" transform="rotate(-20 108 88)"/>
+    <ellipse cx="70" cy="62" rx="28" ry="26" fill="#d2691e"/>
+    <ellipse cx="48" cy="40" rx="12" ry="16" fill="#d2691e"/>
+    <ellipse cx="92" cy="40" rx="12" ry="16" fill="#d2691e"/>
+    <ellipse cx="48" cy="40" rx="6" ry="10" fill="#ffb6a0"/>
+    <ellipse cx="92" cy="40" rx="6" ry="10" fill="#ffb6a0"/>
+    <ellipse cx="60" cy="60" rx="7" ry="8" fill="white"/>
+    <ellipse cx="80" cy="60" rx="7" ry="8" fill="white"/>
+    <circle cx="62" cy="62" r="4" fill="#3e2723"/>
+    <circle cx="82" cy="62" r="4" fill="#3e2723"/>
+    <circle cx="63" cy="60" r="1.5" fill="white"/>
+    <circle cx="83" cy="60" r="1.5" fill="white"/>
+    <ellipse cx="70" cy="72" rx="5" ry="4" fill="#8b4513"/>
+    <path d="M63 78 Q70 85 77 78" stroke="#8b4513" stroke-width="2.5" fill="none" stroke-linecap="round" id="mouth3"/>
+    <ellipse cx="52" cy="73" rx="8" ry="5" fill="#ffb6a0" opacity="0.6"/>
+    <ellipse cx="88" cy="73" rx="8" ry="5" fill="#ffb6a0" opacity="0.6"/>
+  </svg>
+
+  <div id="speechBubble3" style="background:white;border-radius:16px;padding:12px 16px;font-size:18px;text-align:center;line-height:1.6;box-shadow:0 2px 8px rgba(0,0,0,0.1);margin-bottom:14px;">
+    🌺 서로 어울리는 것끼리 연결해요!
+  </div>
+
+  <div class="q-card" id="matchDesc" style="font-size:19px;"></div>
+
+  <div id="matchArea" class="match-area"></div>
+  <div class="counter-text" id="counter3">세트 1 / 3</div>
+  <button class="next-btn" id="m3NextBtn" onclick="nextMatchSet()" style="display:none;">다음 짝꿍 찾기 ➡️</button>
+</div>
+
+<!-- ══ 결과 화면 ══ -->
+<div id="resultScreen" class="screen">
+  <div class="result-card">
+    <div class="result-emoji" id="resultEmoji">🌸</div>
+    <div class="result-title" id="resultTitle">봄 숲을 구했어요!</div>
+    <div class="total-score">총 점수: <span id="totalScore">0</span>점</div>
+    <div class="badge-row" id="badgeRow"></div>
+    <div class="result-msg" id="resultMsg"></div>
+  </div>
+
+  <!-- 꽃 피어나는 애니메이션 -->
+  <div id="flowerGarden" style="text-align:center;font-size:40px;margin:16px 0;min-height:60px;"></div>
+
+  <div style="text-align:center;">
+    <button class="retry-btn" onclick="retryGame()">🔄 다시 도전!</button>
+    <button class="retry-btn" style="background:linear-gradient(135deg,#66bb6a,#43a047);" onclick="location.reload()">🏠 처음으로</button>
+  </div>
+
+  <div id="qrSection" style="text-align:center;margin-top:20px;">
+    <p style="font-size:15px;color:#aaa;">📱 친구에게 알려주세요!</p>
+    <div id="qrcodeResult"></div>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════
+//  상태
+// ═══════════════════════════════════════════
+const STATE = {
+  score: [0, 0, 0],
+  badges: ['', '', ''],
+  diff1: 'basic', diff2: 'basic',
+  m1Idx: 0, m1Retry: false,
+  m2Idx: 0, m2Retry: false,
+  m3Set: 0, m3Selected: null,
+  timerInterval: null,
+  musicOn: true,
+  audioCtx: null
+};
+
+// ═══════════════════════════════════════════
+//  문제 데이터
+// ═══════════════════════════════════════════
+const M1_BASIC = [
+  { img:'🌸', q:'이것은 봄에 피어나는 꽃이에요. 무엇인가요?', choices:['🌸 꽃','⛄ 눈사람','🍂 낙엽'], ans:0, hint:'봄에 피어나는 꽃을 찾아요!' },
+  { img:'🐝', q:'꽃에서 꿀을 모으는 곤충은 무엇인가요?', choices:['🐸 개구리','🐝 꿀벌','🐟 물고기'], ans:1, hint:'꿀을 모으는 친구를 찾아요!' },
+  { img:'🌱', q:'씨앗이 자라면 이것이 나와요. 무엇인가요?', choices:['🍎 사과','🌱 새싹','🧊 얼음'], ans:1, hint:'씨앗에서 나오는 것을 찾아요!' },
+  { img:'🌧️', q:'봄에 내리는 빗물을 먹고 꽃이 자라요. 이것은 무엇인가요?', choices:['🌧️ 비','🌩️ 번개','🌪️ 바람'], ans:0, hint:'꽃을 키워주는 것을 찾아요!' },
+  { img:'🐛', q:'봄에 나비가 되기 전 모습이에요. 무엇인가요?', choices:['🐣 병아리','🐛 애벌레','🐠 열대어'], ans:1, hint:'나비가 되기 전 친구를 찾아요!' },
+  { img:'🌿', q:'봄에 나무에서 새로 나오는 것이에요. 무엇인가요?', choices:['🍁 단풍잎','🌿 새잎','❄️ 눈꽃'], ans:1, hint:'새로 나오는 잎을 찾아요!' }
+];
+const M1_HARD = [
+  { img:'🌸🌺🌼', q:'봄에 피는 꽃이 아닌 것은 무엇인가요?', choices:['🌸 벚꽃','❄️ 눈꽃','🌼 민들레'], ans:1, hint:'봄에 피지 않는 꽃을 찾아봐요!' },
+  { img:'🐝🌸', q:'꿀벌은 꽃에서 무엇을 모으나요?', choices:['🧊 얼음','🍯 꿀','💧 물'], ans:1, hint:'꿀벌이 모으는 것을 생각해봐요!' },
+  { img:'🌱', q:'씨앗에 물을 주면 어떻게 되나요?', choices:['🌱 싹이 나요','🧊 얼어요','💨 날아가요'], ans:0, hint:'물을 주면 씨앗이 어떻게 될까요?' },
+  { img:'🦋', q:'나비는 어떻게 태어나나요?', choices:['알에서 바로 나와요','🐛 애벌레를 거쳐요','🌱 씨앗에서 나와요'], ans:1, hint:'나비가 되기 전 모습을 생각해봐요!' },
+  { img:'🌲', q:'봄에 나무가 변하는 모습은?', choices:['잎이 떨어져요','🌿 새잎이 나요','눈이 쌓여요'], ans:1, hint:'봄에 나무에서 무엇이 나오나요?' },
+  { img:'🌧️🌸', q:'봄비가 내리면 꽃이 어떻게 되나요?', choices:['🌸 더 잘 자라요','❄️ 얼어요','💨 날아가요'], ans:0, hint:'봄비는 꽃에게 어떤 도움을 줄까요?' }
+];
+
+const M2_BASIC = [
+  { img:'🌸', q:'봄은 어느 계절인가요?', choices:['겨울','봄','여름'], ans:1, hint:'4계절 중 따뜻한 계절이에요!' },
+  { img:'🌡️', q:'봄에 날씨는 어떤가요?', choices:['추워요','따뜻해요','더워요'], ans:1, hint:'봄 날씨를 떠올려봐요!' },
+  { img:'🌺', q:'봄에 꽃이 피는 이유는 무엇인가요?', choices:['눈이 와서','날씨가 따뜻해져서','바람이 불어서'], ans:1, hint:'꽃이 피려면 어떤 날씨가 필요할까요?' }
+];
+const M2_MID = [
+  { img:'🌱', q:'씨앗이 자라려면 무엇이 필요한가요?', choices:['얼음','물과 햇빛','어둠'], ans:1, hint:'식물이 자라는 데 필요한 것을 생각해봐요!' },
+  { img:'🌿', q:'봄에 나물을 캘 수 있는 곳은 어디인가요?', choices:['바다','산과 들','사막'], ans:1, hint:'봄나물은 어디에서 자랄까요?' },
+  { img:'🐝', q:'봄에 꿀벌이 꽃을 찾아다니는 이유는?', choices:['놀려고','꿀을 모으려고','잠을 자려고'], ans:1, hint:'꿀벌이 꽃에서 무엇을 얻나요?' }
+];
+const M2_HARD = [
+  { img:'🌍', q:'봄이 되면 낮의 길이는 어떻게 되나요?', choices:['짧아져요','변하지 않아요','길어져요'], ans:2, hint:'봄이 되면 해가 뜨고 지는 시간을 생각해봐요!' },
+  { img:'🌱', q:'식물이 봄에 새싹을 내는 이유는?', choices:['비가 와서','기온이 올라가서','바람이 강해서'], ans:1, hint:'새싹이 나오려면 어떤 환경이 필요한가요?' },
+  { img:'🦋', q:'봄에 나비가 많아지는 까닭은?', choices:['눈이 녹아서','꽃이 피어 먹이가 생겨서','바람이 불어서'], ans:1, hint:'나비의 먹이는 무엇일까요?' }
+];
+
+const M3_SETS = [
+  {
+    desc: '🌸 봄 꽃과 색깔을 연결해요!',
+    left: ['🌸 벚꽃','🌼 민들레','🌺 진달래'],
+    right: ['분홍색 🎀','노란색 💛','보라색 💜'],
+    pairs: [0,1,2]
+  },
+  {
+    desc: '🌱 씨앗과 자란 모습을 연결해요!',
+    left: ['🌰 도토리','🫘 콩씨앗','🌾 벼씨앗'],
+    right: ['🌳 참나무','🥦 콩나물','🍚 쌀'],
+    pairs: [0,1,2]
+  },
+  {
+    desc: '🐝 봄 친구와 사는 곳을 연결해요!',
+    left: ['🐝 꿀벌','🐟 물고기','🐦 새'],
+    right: ['🌸 꽃밭','🌊 강','🌲 나무'],
+    pairs: [0,1,2]
+  }
+];
+
+// ═══════════════════════════════════════════
+//  오디오
+// ═══════════════════════════════════════════
+function getAudioCtx() {
+  if (!STATE.audioCtx) STATE.audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  return STATE.audioCtx;
+}
+function playTone(freq, type='sine', dur=0.2, vol=0.25) {
+  if (!STATE.musicOn) return;
+  try {
+    const ctx = getAudioCtx();
+    const osc = ctx.createOscillator();
+    const g = ctx.createGain();
+    osc.connect(g); g.connect(ctx.destination);
+    osc.type = type; osc.frequency.value = freq;
+    g.gain.setValueAtTime(vol, ctx.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + dur);
+    osc.start(); osc.stop(ctx.currentTime + dur);
+  } catch(e){}
+}
+function playCorrect() {
+  [523,659,784].forEach((f,i)=>setTimeout(()=>playTone(f,'triangle',0.25,0.3),i*100));
+}
+function playWrong() {
+  playTone(300,'sawtooth',0.3,0.2);
+}
+function playMissionClear() {
+  [523,587,659,698,784].forEach((f,i)=>setTimeout(()=>playTone(f,'triangle',0.3,0.35),i*120));
+}
+function playBGM() {
+  if (!STATE.musicOn) return;
+  // 간단한 봄 멜로디
+  const notes = [523,587,659,698,784,698,659,587,523];
+  notes.forEach((f,i) => setTimeout(()=>playTone(f,'sine',0.4,0.18), i*350));
+  STATE.bgmTimer = setTimeout(playBGM, notes.length*350 + 800);
+}
+function toggleMusic() {
+  STATE.musicOn = !STATE.musicOn;
+  document.getElementById('musicBtn').textContent = STATE.musicOn ? '🎵' : '🔇';
+  if (STATE.musicOn) playBGM();
+  else { clearTimeout(STATE.bgmTimer); }
+}
+
+// ═══════════════════════════════════════════
+//  진행 바
+// ═══════════════════════════════════════════
+function setProgress(pct) {
+  document.getElementById('progressBar').style.width = pct + '%';
+}
+
+// ═══════════════════════════════════════════
+//  화면 전환
+// ═══════════════════════════════════════════
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+// ═══════════════════════════════════════════
+//  QR코드 생성
+// ═══════════════════════════════════════════
+function makeQR(containerId) {
+  const el = document.getElementById(containerId);
+  if (!el || el.dataset.done) return;
+  try {
+    new QRCode(el, { text: location.href, width:100, height:100 });
+    el.dataset.done = '1';
+  } catch(e){}
+}
+
+// ═══════════════════════════════════════════
+//  시작
+// ═══════════════════════════════════════════
+function startGame() {
+  showScreen('mission1Screen');
+  setProgress(5);
+  playBGM();
+  initMission1();
+  makeQR('qrcodeStart');
+}
+
+// ═══════════════════════════════════════════
+//  마스코트 표정
+// ═══════════════════════════════════════════
+function setFace(mouthId, mood) {
+  const el = document.getElementById(mouthId);
+  if (!el) return;
+  if (mood === 'happy') el.setAttribute('d','M60 78 Q70 88 80 78');
+  else if (mood === 'sad') el.setAttribute('d','M62 82 Q70 76 78 82');
+  else el.setAttribute('d','M63 78 Q70 85 77 78');
+}
+
+// ═══════════════════════════════════════════
+//  피드백 팝업
+// ═══════════════════════════════════════════
+let fbCallback = null;
+function showFeedback(emoji, msg, hint, cb) {
+  document.getElementById('fbEmoji').textContent = emoji;
+  document.getElementById('fbMsg').textContent = msg;
+  document.getElementById('fbHint').textContent = hint;
+  document.getElementById('feedbackOverlay').classList.add('show');
+  fbCallback = cb;
+}
+function closeFeedback() {
+  document.getElementById('feedbackOverlay').classList.remove('show');
+  if (fbCallback) { fbCallback(); fbCallback = null; }
+}
+
+// ═══════════════════════════════════════════
+//  꽃잎 떨어지기
+// ═══════════════════════════════════════════
+function petals(n=8) {
+  const emojis = ['🌸','🌺','🌼','🍃','🌿'];
+  for (let i=0;i<n;i++) {
+    setTimeout(()=>{
+      const el = document.createElement('span');
+      el.className = 'petal';
+      el.textContent = emojis[Math.floor(Math.random()*emojis.length)];
+      el.style.left = Math.random()*100 + 'vw';
+      el.style.animationDuration = (1.5+Math.random()*2) + 's';
+      document.body.appendChild(el);
+      setTimeout(()=>el.remove(), 4000);
+    }, i*150);
+  }
+}
+
+// ═══════════════════════════════════════════
+//  스티커 업데이트
+// ═══════════════════════════════════════════
+function updateStickers(stickerElId, score) {
+  const s = document.getElementById(stickerElId);
+  if (!s) return;
+  const count = Math.floor(score / 10);
+  s.textContent = '🌸'.repeat(Math.min(count, 10));
+}
+
+// ═══════════════════════════════════════════
+//  타이머
+// ═══════════════════════════════════════════
+function startTimer(spanId, boxId, sec, onEnd) {
+  clearInterval(STATE.timerInterval);
+  let t = sec;
+  const span = document.getElementById(spanId);
+  const box = document.getElementById(boxId);
+  if (span) span.textContent = t;
+  if (box) box.classList.remove('warn');
+  STATE.timerInterval = setInterval(()=>{
+    t--;
+    if (span) span.textContent = t;
+    if (t <= 15 && box) box.classList.add('warn');
+    if (t <= 0) {
+      clearInterval(STATE.timerInterval);
+      if (onEnd) onEnd();
+    }
+  }, 1000);
+}
+function stopTimer() { clearInterval(STATE.timerInterval); }
+
+// ═══════════════════════════════════════════
+//  ██ 미션 1
+// ═══════════════════════════════════════════
+function setDiff1(d) {
+  STATE.diff1 = d;
+  document.getElementById('tab1Basic').classList.toggle('active', d==='basic');
+  document.getElementById('tab1Hard').classList.toggle('active', d==='hard');
+  STATE.m1Idx = 0; STATE.m1Retry = false;
+  STATE.score[0] = 0;
+  document.getElementById('score1').textContent = 0;
+  document.getElementById('stickers').textContent = '🌸';
+  initMission1();
+}
+
+function initMission1() {
+  STATE.m1Idx = 0; STATE.m1Retry = false;
+  renderQ1();
+}
+
+function getM1Data() { return STATE.diff1 === 'basic' ? M1_BASIC : M1_HARD; }
+
+function renderQ1() {
+  const data = getM1Data();
+  if (STATE.m1Idx >= data.length) { endMission1(); return; }
+  const q = data[STATE.m1Idx];
+  document.getElementById('qImg1').textContent = q.img;
+  document.getElementById('qText1').textContent = q.q;
+  document.getElementById('counter1').textContent = `${STATE.m1Idx+1} / ${data.length}`;
+  document.getElementById('speechBubble1').textContent = '🌿 그림을 잘 보고 골라봐요!';
+  setFace('mouth1','normal');
+
+  const ch = document.getElementById('choices1');
+  ch.innerHTML = '';
+  q.choices.forEach((c,i)=>{
+    const b = document.createElement('button');
+    b.className = 'choice-btn';
+    b.textContent = c;
+    b.onclick = ()=>answerQ1(i, b);
+    ch.appendChild(b);
+  });
+
+  startTimer('timer1','timerBox',60,()=>{
+    document.getElementById('speechBubble1').textContent = '⏰ 시간이 다 됐어요! 다음에 더 잘할 수 있어요! 💛';
+    setFace('mouth1','sad');
+    STATE.m1Retry = false;
+    setTimeout(()=>{ STATE.m1Idx++; STATE.m1Retry=false; renderQ1(); }, 1800);
+  });
+}
+
+function answerQ1(idx, btn) {
+  stopTimer();
+  const data = getM1Data();
+  const q = data[STATE.m1Idx];
+  const btns = document.querySelectorAll('#choices1 .choice-btn');
+  btns.forEach(b => b.onclick = null);
+
+  if (idx === q.ans) {
+    btn.classList.add('correct');
+    playCorrect();
+    setFace('mouth1','happy');
+    petals(5);
+    const pts = STATE.diff1 === 'basic' ? 10 : 15;
+    STATE.score[0] += pts;
+    document.getElementById('score1').textContent = STATE.score[0];
+    updateStickers('stickers', STATE.score[0]);
+    showFeedback('🌟','잘 했어요! 멋져요!', `💡 ${q.choices[q.ans]}이(가) 정답이에요!`, ()=>{
+      STATE.m1Idx++; STATE.m1Retry = false; renderQ1();
+    });
+  } else {
+    btn.classList.add('wrong');
+    playWrong();
+    setFace('mouth1','sad');
+    if (!STATE.m1Retry) {
+      STATE.m1Retry = true;
+      document.getElementById('speechBubble1').textContent = `💛 한 번 더 생각해봐요! 힌트: ${q.hint}`;
+      // 오답 버튼 비활성화, 나머지(정답 포함) 모두 재연결
+      btns.forEach((b,i)=>{
+        if (i === idx) {
+          b.style.opacity = '0.4';
+          b.onclick = null;
+        } else {
+          b.onclick = ()=>answerQ1(i, b);
+        }
+      });
+      setTimeout(()=>{
+        if (btns[q.ans]) btns[q.ans].classList.add('hint-glow');
+      }, 3000);
+      startTimer('timer1','timerBox',60,()=>{
+        STATE.m1Idx++; STATE.m1Retry=false; renderQ1();
+      });
+    } else {
+      // 2번째 오답 → 정답 자동 표시
+      btns[q.ans].classList.add('correct');
+      showFeedback('💛','괜찮아요! 함께 배워요!', `✅ 정답은 ${q.choices[q.ans]}이에요!`, ()=>{
+        STATE.m1Idx++; STATE.m1Retry=false; renderQ1();
+      });
+    }
+  }
+}
+
+function endMission1() {
+  stopTimer();
+  const pts = STATE.score[0];
+  STATE.badges[0] = pts >= 40 ? '⭐⭐' : '⭐';
+  playMissionClear(); petals(10);
+  showFeedback('🌿', `미션1 완료! ${STATE.badges[0]}`, `점수: ${pts}점! 다미가 기뻐해요!`, ()=>{
+    setProgress(35);
+    showScreen('mission2Screen');
+    initMission2();
+  });
+}
+
+// ═══════════════════════════════════════════
+//  ██ 미션 2
+// ═══════════════════════════════════════════
+function setDiff2(d) {
+  STATE.diff2 = d;
+  document.getElementById('tab2Basic').classList.toggle('active', d==='basic');
+  document.getElementById('tab2Hard').classList.toggle('active', d==='hard');
+  initMission2();
+}
+
+function initMission2() {
+  STATE.m2Idx = 0; STATE.m2Retry = false;
+  STATE.score[1] = 0;
+  document.getElementById('score2').textContent = 0;
+  document.getElementById('stickers2').textContent = '🌸';
+  renderQ2();
+}
+
+function getM2Questions() {
+  if (STATE.diff2 === 'basic') return [...M2_BASIC, ...M2_BASIC]; // 반복 학습
+  return [...M2_MID, ...M2_HARD];
+}
+
+function renderQ2() {
+  const data = getM2Questions();
+  if (STATE.m2Idx >= data.length) { endMission2(); return; }
+  const q = data[STATE.m2Idx];
+  document.getElementById('qImg2').textContent = q.img;
+  document.getElementById('qText2').textContent = q.q;
+  document.getElementById('counter2').textContent = `${STATE.m2Idx+1} / ${data.length}`;
+  document.getElementById('speechBubble2').textContent = '🐦 잘 읽고 골라봐요!';
+  setFace('mouth2','normal');
+
+  const ch = document.getElementById('choices2');
+  ch.innerHTML = '';
+  q.choices.forEach((c,i)=>{
+    const b = document.createElement('button');
+    b.className = 'choice-btn';
+    b.textContent = c;
+    b.onclick = ()=>answerQ2(i,b);
+    ch.appendChild(b);
+  });
+
+  startTimer('timer2','timerBox2',60,()=>{
+    document.getElementById('speechBubble2').textContent = '⏰ 시간이 다 됐어요! 다음에 더 잘할 수 있어요! 💛';
+    setTimeout(()=>{ STATE.m2Idx++; STATE.m2Retry=false; renderQ2(); }, 1800);
+  });
+}
+
+function answerQ2(idx, btn) {
+  stopTimer();
+  const data = getM2Questions();
+  const q = data[STATE.m2Idx];
+  const btns = document.querySelectorAll('#choices2 .choice-btn');
+  btns.forEach(b => b.onclick = null);
+
+  if (idx === q.ans) {
+    btn.classList.add('correct');
+    playCorrect(); petals(4);
+    setFace('mouth2','happy');
+    const pts = STATE.diff2 === 'basic' ? 10 : 15;
+    STATE.score[1] += pts;
+    document.getElementById('score2').textContent = STATE.score[1];
+    updateStickers('stickers2', STATE.score[1]);
+    showFeedback('🌟','잘 했어요! 멋져요!', `💡 ${q.choices[q.ans]}`, ()=>{
+      STATE.m2Idx++; STATE.m2Retry=false; renderQ2();
+    });
+  } else {
+    btn.classList.add('wrong');
+    playWrong();
+    setFace('mouth2','sad');
+    if (!STATE.m2Retry) {
+      STATE.m2Retry = true;
+      document.getElementById('speechBubble2').textContent = `💛 한 번 더 생각해봐요! 힌트: ${q.hint}`;
+      btns.forEach((b,i)=>{
+        if (i === idx) {
+          b.style.opacity = '0.4';
+          b.onclick = null;
+        } else {
+          b.onclick = ()=>answerQ2(i, b);
+        }
+      });
+      setTimeout(()=>{ if (btns[q.ans]) btns[q.ans].classList.add('hint-glow'); }, 3000);
+      startTimer('timer2','timerBox2',60,()=>{
+        STATE.m2Idx++; STATE.m2Retry=false; renderQ2();
+      });
+    } else {
+      btns[q.ans].classList.add('correct');
+      showFeedback('💛','괜찮아요! 함께 배워요!', `✅ 정답은 ${q.choices[q.ans]}이에요!`, ()=>{
+        STATE.m2Idx++; STATE.m2Retry=false; renderQ2();
+      });
+    }
+  }
+}
+
+function endMission2() {
+  stopTimer();
+  const pts = STATE.score[1];
+  STATE.badges[1] = pts >= 60 ? '⭐⭐' : '⭐';
+  playMissionClear(); petals(10);
+  showFeedback('🐦','미션2 완료! ' + STATE.badges[1], `점수: ${pts}점! 꽃씨를 발견했어요!`, ()=>{
+    setProgress(68);
+    showScreen('mission3Screen');
+    initMission3();
+  });
+}
+
+// ═══════════════════════════════════════════
+//  ██ 미션 3 — 짝 맞추기 (탭 선택 방식)
+// ═══════════════════════════════════════════
+function initMission3() {
+  STATE.m3Set = 0;
+  STATE.score[2] = 0;
+  document.getElementById('score3').textContent = 0;
+  document.getElementById('stickers3').textContent = '🌸';
+  renderMatchSet();
+}
+
+function renderMatchSet() {
+  const set = M3_SETS[STATE.m3Set];
+  document.getElementById('matchDesc').textContent = set.desc;
+  document.getElementById('counter3').textContent = `세트 ${STATE.m3Set+1} / ${M3_SETS.length}`;
+  document.getElementById('m3NextBtn').style.display = 'none';
+  document.getElementById('speechBubble3').textContent = '🌺 서로 어울리는 것끼리 연결해요!';
+  setFace('mouth3','normal');
+
+  // 짝 맞추기: 왼쪽 고르고 오른쪽 고르면 연결
+  const matchArea = document.getElementById('matchArea');
+  matchArea.innerHTML = '';
+
+  // 오른쪽 셔플
+  const rightOrder = [...set.pairs]; // 정답 인덱스 배열 (셔플)
+  const shuffled = [0,1,2].sort(()=>Math.random()-0.5);
+
+  const leftState = set.left.map((_,i)=>({ idx:i, matched:false }));
+  const rightState = shuffled.map(i=>({ origIdx:i, item:set.right[i], matched:false }));
+
+  let selLeft = null;
+
+  function render() {
+    matchArea.innerHTML = '';
+    // 왼쪽 열 + 오른쪽 열
+    const table = document.createElement('div');
+    table.style.cssText='display:grid;grid-template-columns:1fr auto 1fr;gap:12px;align-items:start;';
+    matchArea.appendChild(table);
+
+    // 왼쪽 아이템들
+    const leftCol = document.createElement('div');
+    leftCol.style.cssText='display:flex;flex-direction:column;gap:12px;';
+    leftState.forEach((ls,i)=>{
+      const b = document.createElement('div');
+      b.className = 'match-item' + (ls.matched?' matched':'') + (selLeft===i?' selected':'');
+      b.textContent = set.left[i];
+      if (!ls.matched) b.onclick = ()=>{ selLeft=(selLeft===i?null:i); render(); };
+      leftCol.appendChild(b);
+    });
+
+    const arrowCol = document.createElement('div');
+    arrowCol.style.cssText='display:flex;flex-direction:column;gap:12px;justify-content:center;align-items:center;padding-top:8px;';
+    for(let i=0;i<3;i++){
+      const a=document.createElement('div');
+      a.className='match-arrow'; a.style.height='64px'; a.style.lineHeight='64px';
+      a.textContent = leftState[i].matched ? '✅' : '➡️';
+      arrowCol.appendChild(a);
+    }
+
+    const rightCol = document.createElement('div');
+    rightCol.style.cssText='display:flex;flex-direction:column;gap:12px;';
+    rightState.forEach((rs,j)=>{
+      const b = document.createElement('div');
+      b.className = 'match-item' + (rs.matched?' matched':'');
+      b.textContent = rs.item;
+      if (!rs.matched && selLeft !== null) {
+        b.onclick = ()=>tryMatch(selLeft, j, rightState, leftState, render, set);
+      }
+      rightCol.appendChild(b);
+    });
+
+    table.appendChild(leftCol);
+    table.appendChild(arrowCol);
+    table.appendChild(rightCol);
+  }
+
+  render();
+}
+
+function tryMatch(lIdx, rIdx, rightState, leftState, renderFn, set) {
+  const rs = rightState[rIdx];
+  const correctRight = set.pairs[lIdx]; // 이 왼쪽 아이템의 정답 origIdx
+  if (rs.origIdx === correctRight) {
+    // 정답
+    leftState[lIdx].matched = true;
+    rightState[rIdx].matched = true;
+    STATE.score[2] += 15;
+    document.getElementById('score3').textContent = STATE.score[2];
+    updateStickers('stickers3', STATE.score[2]);
+    playCorrect(); petals(4);
+    setFace('mouth3','happy');
+    document.getElementById('speechBubble3').textContent = '🌟 맞았어요! 잘했어요!';
+    const allDone = leftState.every(s=>s.matched);
+    renderFn();
+    if (allDone) {
+      setTimeout(()=>{
+        document.getElementById('m3NextBtn').style.display = 'block';
+      }, 600);
+    }
+  } else {
+    // 오답
+    playWrong();
+    setFace('mouth3','sad');
+    document.getElementById('speechBubble3').textContent = `💛 한 번 더 생각해봐요! 힌트: 잘 살펴봐요!`;
+    renderFn();
+  }
+  // 선택 초기화
+  // (전역 selLeft 접근 불가 → 렌더에서 selLeft 재설정)
+}
+
+// nextMatchSet을 위한 전역 핸들러
+function nextMatchSet() {
+  STATE.m3Set++;
+  if (STATE.m3Set >= M3_SETS.length) { endMission3(); return; }
+  renderMatchSet();
+}
+
+function endMission3() {
+  stopTimer();
+  const pts = STATE.score[2];
+  STATE.badges[2] = pts >= 30 ? '⭐⭐' : '⭐';
+  playMissionClear(); petals(16);
+  showFeedback('🌺','미션3 완료! ' + STATE.badges[2], `점수: ${pts}점! 모든 꽃씨를 찾았어요!`, ()=>{
+    setProgress(100);
+    showResult();
+  });
+}
+
+// ═══════════════════════════════════════════
+//  결과
+// ═══════════════════════════════════════════
+function showResult() {
+  showScreen('resultScreen');
+  clearTimeout(STATE.bgmTimer);
+
+  const total = STATE.score[0] + STATE.score[1] + STATE.score[2];
+  document.getElementById('totalScore').textContent = total;
+  document.getElementById('badgeRow').textContent = STATE.badges.join(' ');
+
+  let emoji, title, msg, garden;
+  if (total >= 100) {
+    emoji='🌸🌺🌼'; title='봄 숲의 영웅!';
+    msg='우와! 다미가 꽃씨를 모두 찾았어요!\n봄 숲이 꽃으로 가득해요! 🌈';
+    garden='🌸🌺🌼🌻🌹🌷';
+  } else if (total >= 60) {
+    emoji='🌿'; title='숲 탐험가!';
+    msg='정말 잘했어요! 다미가 꽃씨를 찾고 있어요!\n꽃이 조금씩 피어나고 있어요 🌱';
+    garden='🌸🌺🌿';
+  } else {
+    emoji='🌱'; title='새싹 탐험가!';
+    msg='열심히 했어요! 다시 도전하면 더 잘할 수 있어요!\n다미가 응원해요! 💛';
+    garden='🌱💛';
+  }
+
+  document.getElementById('resultEmoji').textContent = emoji;
+  document.getElementById('resultTitle').textContent = title;
+  document.getElementById('resultMsg').textContent = msg;
+  document.getElementById('flowerGarden').textContent = garden;
+
+  petals(20);
+
+  // LocalStorage 저장
+  try {
+    const key = 'milab_game_029_badges';
+    const prev = JSON.parse(localStorage.getItem(key)||'{}');
+    prev[new Date().toLocaleDateString()] = { total, badges: STATE.badges };
+    localStorage.setItem(key, JSON.stringify(prev));
+  } catch(e){}
+
+  setTimeout(()=>makeQR('qrcodeResult'), 500);
+
+  // portfolioEntry 콘솔 출력
+  const portfolioEntry = {
+    id: "029",
+    title: "🌸 봄 숲 탐험대 — 꽃씨를 찾아라!",
+    target: "특수학급 Level C (발달나이 8~9세, 느린학습자/발달장애 경도)",
+    level: "특수",
+    category: "special",
+    subject: "국어, 바른생활",
+    missions: 3,
+    difficulty: ["기본","도전"],
+    theme: "봄 숲 / 봄 계절 교육",
+    mascot: "다람쥐 다미",
+    date: "2026-04-02",
+    url: "https://milab2019.github.io/main/spring_forest_c.html",
+    features: ["60초 숫자 타이머","오답 재도전 1회","정답 힌트 깜빡임","스티커 보상","꽃잎 파티클","3종 멀티엔딩","LocalStorage 뱃지","QRCode.js 공유"]
+  };
+  console.log('%c🌸 MILAB Portfolio Entry #029', 'color:#4caf50;font-size:14px;font-weight:bold;');
+  console.log(portfolioEntry);
+}
+
+function retryGame() {
+  STATE.score = [0,0,0];
+  STATE.badges = ['','',''];
+  STATE.m1Idx = 0; STATE.m1Retry = false;
+  STATE.m2Idx = 0; STATE.m2Retry = false;
+  STATE.m3Set = 0;
+  setProgress(5);
+  showScreen('mission1Screen');
+  initMission1();
+  if (STATE.musicOn) playBGM();
+}
+
+// ═══════════════════════════════════════════
+//  초기 QR
+// ═══════════════════════════════════════════
+window.addEventListener('load', ()=>{
+  setTimeout(()=>makeQR('qrcodeStart'), 300);
+});
+</script>
+</body>
+</html>
