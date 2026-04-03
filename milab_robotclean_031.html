@@ -1,0 +1,1267 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-WTY6YJQ1NS"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-WTY6YJQ1NS');
+</script>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>🤖 로봇 클린 어드벤처 | MILAB</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<style>
+  :root {
+    --bg: #0a0e1a;
+    --bg2: #0f1628;
+    --wall: #1a3a6e;
+    --wall-glow: #2255aa;
+    --dot: #00e5ff;
+    --robot: #00ff88;
+    --robot-glow: #00ffaa;
+    --bomb: #ff4444;
+    --trash: #ffaa00;
+    --toxic: #aaff00;
+    --monster1: #ff00ff;
+    --monster2: #ff6600;
+    --monster3: #ff0055;
+    --monster4: #aa00ff;
+    --monster5: #ff3300;
+    --ui-bg: rgba(10,14,26,0.92);
+    --accent: #00e5ff;
+    --gold: #ffd700;
+    --panel: rgba(15,22,40,0.95);
+  }
+
+  * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+
+  body {
+    background: var(--bg);
+    color: #e0eeff;
+    font-family: 'Courier New', monospace;
+    overflow: hidden;
+    height: 100dvh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    user-select: none;
+  }
+
+  /* ===== SCREENS ===== */
+  .screen { display:none; width:100%; height:100dvh; flex-direction:column; align-items:center; justify-content:center; }
+  .screen.active { display:flex; }
+
+  /* ===== INTRO ===== */
+  #introScreen {
+    background: radial-gradient(ellipse at 50% 30%, #0d2040 0%, #0a0e1a 70%);
+    gap: 12px;
+    padding: 20px;
+    position: relative;
+    overflow: hidden;
+  }
+  #introScreen::before {
+    content:'';
+    position:absolute;
+    inset:0;
+    background: repeating-linear-gradient(0deg, transparent, transparent 30px, rgba(0,229,255,0.03) 31px),
+                repeating-linear-gradient(90deg, transparent, transparent 30px, rgba(0,229,255,0.03) 31px);
+    pointer-events:none;
+  }
+
+  .logo-box {
+    text-align:center;
+    position:relative;
+    z-index:1;
+  }
+  .logo-robot {
+    font-size: clamp(60px,15vw,90px);
+    line-height:1;
+    filter: drop-shadow(0 0 20px var(--robot-glow));
+    animation: robotBob 2s ease-in-out infinite;
+  }
+  @keyframes robotBob {
+    0%,100% { transform: translateY(0) rotate(-3deg); }
+    50% { transform: translateY(-8px) rotate(3deg); }
+  }
+
+  .game-title {
+    font-size: clamp(20px,6vw,32px);
+    font-weight:900;
+    letter-spacing: 2px;
+    color: var(--robot);
+    text-shadow: 0 0 20px var(--robot-glow), 0 0 40px rgba(0,255,136,0.3);
+    text-align:center;
+  }
+  .game-subtitle {
+    font-size: clamp(11px,3vw,14px);
+    color: var(--accent);
+    letter-spacing:3px;
+    opacity:0.8;
+    text-align:center;
+  }
+
+  .story-box {
+    background: rgba(0,229,255,0.05);
+    border: 1px solid rgba(0,229,255,0.2);
+    border-radius: 12px;
+    padding: 14px 18px;
+    max-width: 400px;
+    font-size: clamp(12px,3.2vw,14px);
+    line-height:1.7;
+    color: #a0c8ff;
+    text-align:center;
+    position:relative;
+    z-index:1;
+  }
+
+  .mode-btns {
+    display:flex;
+    gap:10px;
+    flex-wrap:wrap;
+    justify-content:center;
+    position:relative;
+    z-index:1;
+  }
+  .mode-btn {
+    background: rgba(0,229,255,0.1);
+    border: 1.5px solid var(--accent);
+    color: var(--accent);
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-family: inherit;
+    cursor: pointer;
+    transition: all 0.2s;
+    letter-spacing:1px;
+  }
+  .mode-btn:hover, .mode-btn.selected {
+    background: var(--accent);
+    color: var(--bg);
+    box-shadow: 0 0 15px rgba(0,229,255,0.5);
+  }
+
+  .nickname-row {
+    display:flex;
+    gap:8px;
+    align-items:center;
+    position:relative;
+    z-index:1;
+  }
+  .nick-input {
+    background: rgba(0,229,255,0.08);
+    border: 1.5px solid rgba(0,229,255,0.4);
+    color: #fff;
+    padding: 10px 14px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-family: inherit;
+    width: 160px;
+    outline: none;
+  }
+  .nick-input:focus { border-color: var(--accent); box-shadow: 0 0 10px rgba(0,229,255,0.3); }
+
+  .start-btn {
+    background: linear-gradient(135deg, var(--robot), #00cc66);
+    border: none;
+    color: var(--bg);
+    padding: 14px 36px;
+    border-radius: 40px;
+    font-size: clamp(16px,4vw,20px);
+    font-family: inherit;
+    font-weight:900;
+    cursor: pointer;
+    letter-spacing:2px;
+    box-shadow: 0 0 30px rgba(0,255,136,0.4), 0 4px 15px rgba(0,0,0,0.5);
+    transition: all 0.2s;
+    position:relative;
+    z-index:1;
+    animation: pulse 2s ease-in-out infinite;
+  }
+  .start-btn:hover { transform: scale(1.05); box-shadow: 0 0 45px rgba(0,255,136,0.6); }
+  @keyframes pulse { 0%,100%{box-shadow:0 0 30px rgba(0,255,136,0.4)} 50%{box-shadow:0 0 50px rgba(0,255,136,0.7)} }
+
+  .milab-badge {
+    font-size:11px;
+    color:rgba(255,255,255,0.3);
+    letter-spacing:3px;
+    position:relative;
+    z-index:1;
+  }
+
+  /* ===== GAME SCREEN ===== */
+  #gameScreen {
+    flex-direction:column;
+    padding:0;
+    gap:0;
+  }
+
+  /* HUD */
+  .hud {
+    width:100%;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding: 6px 12px;
+    background: rgba(0,0,0,0.7);
+    border-bottom: 1px solid rgba(0,229,255,0.2);
+    flex-shrink:0;
+    z-index:10;
+  }
+  .hud-item { display:flex; flex-direction:column; align-items:center; gap:1px; }
+  .hud-label { font-size:9px; color: rgba(0,229,255,0.6); letter-spacing:1px; }
+  .hud-val { font-size: clamp(14px,4vw,20px); font-weight:900; color:#fff; }
+  .hud-timer { color: var(--accent); }
+  .hud-timer.warn { color: #ff4444; animation: blink 0.5s infinite; }
+  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
+  .hud-score { color: var(--gold); }
+
+  /* Mascot HUD */
+  .mascot-hud {
+    font-size: clamp(24px,6vw,32px);
+    transition: all 0.3s;
+    filter: drop-shadow(0 0 8px var(--robot-glow));
+  }
+
+  /* Stage badge */
+  .stage-badge {
+    background: rgba(0,229,255,0.15);
+    border: 1px solid rgba(0,229,255,0.3);
+    border-radius: 20px;
+    padding: 2px 10px;
+    font-size: 11px;
+    color: var(--accent);
+  }
+
+  /* Canvas wrapper */
+  .canvas-wrap {
+    flex:1;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    overflow:hidden;
+    position:relative;
+  }
+
+  canvas {
+    display:block;
+    image-rendering: pixelated;
+    touch-action: none;
+  }
+
+  /* Level up flash */
+  .level-flash {
+    position:absolute;
+    top:50%;
+    left:50%;
+    transform:translate(-50%,-50%);
+    font-size: clamp(20px,6vw,28px);
+    font-weight:900;
+    color: var(--gold);
+    text-shadow: 0 0 20px var(--gold);
+    pointer-events:none;
+    opacity:0;
+    letter-spacing:2px;
+    z-index:20;
+  }
+  .level-flash.show {
+    animation: flashAnim 1.5s ease-out forwards;
+  }
+  @keyframes flashAnim {
+    0%{opacity:1;transform:translate(-50%,-60%);} 
+    70%{opacity:1;} 
+    100%{opacity:0;transform:translate(-50%,-80%);}
+  }
+
+  /* Mascot message */
+  .mascot-msg {
+    position:absolute;
+    bottom: 10px;
+    left:50%;
+    transform:translateX(-50%);
+    background: rgba(0,10,30,0.9);
+    border: 1px solid var(--accent);
+    border-radius:20px;
+    padding: 6px 16px;
+    font-size: 13px;
+    color: var(--accent);
+    white-space:nowrap;
+    pointer-events:none;
+    opacity:0;
+    transition: opacity 0.3s;
+    z-index:20;
+  }
+  .mascot-msg.show { opacity:1; }
+
+  /* Controls */
+  .dpad {
+    display:grid;
+    grid-template: repeat(3,56px) / repeat(3,56px);
+    gap:4px;
+    padding: 8px;
+    background: rgba(0,0,0,0.5);
+    border-top: 1px solid rgba(0,229,255,0.15);
+    flex-shrink:0;
+    justify-content:center;
+    position:relative;
+    z-index:10;
+  }
+  .dpad-btn {
+    background: rgba(0,229,255,0.1);
+    border: 1.5px solid rgba(0,229,255,0.3);
+    border-radius: 10px;
+    font-size: 22px;
+    cursor:pointer;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    transition: all 0.1s;
+    color:#fff;
+    -webkit-tap-highlight-color:transparent;
+  }
+  .dpad-btn:active { background: rgba(0,229,255,0.35); transform:scale(0.92); }
+  .dpad-center { background: rgba(0,229,255,0.05); border-color:rgba(0,229,255,0.1); font-size:14px; color:rgba(255,255,255,0.3); }
+
+  /* ===== RESULT SCREEN ===== */
+  #resultScreen {
+    background: radial-gradient(ellipse at 50% 0%, #0d2040 0%, #0a0e1a 70%);
+    gap:14px;
+    padding:20px;
+    overflow-y:auto;
+    justify-content:flex-start;
+    padding-top:40px;
+  }
+  .result-emoji {
+    font-size: clamp(60px,18vw,90px);
+    line-height:1;
+    animation: resultBounce 0.6s cubic-bezier(0.36,0.07,0.19,0.97) both;
+    filter: drop-shadow(0 0 20px rgba(0,255,136,0.5));
+  }
+  @keyframes resultBounce {
+    0%{transform:scale(0)} 60%{transform:scale(1.1)} 100%{transform:scale(1)}
+  }
+  .result-ending {
+    font-size: clamp(18px,5vw,26px);
+    font-weight:900;
+    color: var(--gold);
+    text-shadow: 0 0 20px var(--gold);
+    text-align:center;
+    letter-spacing:2px;
+  }
+  .result-msg {
+    font-size: clamp(13px,3.5vw,15px);
+    color: #a0c8ff;
+    text-align:center;
+    line-height:1.6;
+    max-width:360px;
+  }
+  .result-score-box {
+    background: rgba(0,229,255,0.05);
+    border: 1px solid rgba(0,229,255,0.2);
+    border-radius:16px;
+    padding:16px 28px;
+    display:flex;
+    flex-direction:column;
+    gap:8px;
+    align-items:center;
+    min-width:220px;
+  }
+  .result-score-label { font-size:11px; color:rgba(0,229,255,0.7); letter-spacing:2px; }
+  .result-score-val { font-size: clamp(32px,10vw,52px); font-weight:900; color:var(--gold); text-shadow:0 0 20px var(--gold); }
+
+  .stats-row {
+    display:flex;
+    gap:12px;
+    flex-wrap:wrap;
+    justify-content:center;
+  }
+  .stat-item {
+    background: rgba(255,255,255,0.05);
+    border-radius:10px;
+    padding:8px 14px;
+    text-align:center;
+  }
+  .stat-item .si-val { font-size:20px; font-weight:900; }
+  .stat-item .si-label { font-size:10px; color:rgba(255,255,255,0.5); letter-spacing:1px; }
+
+  .btn-row { display:flex; gap:10px; flex-wrap:wrap; justify-content:center; }
+  .re-btn {
+    background: linear-gradient(135deg,var(--robot),#00cc66);
+    border:none;
+    color:var(--bg);
+    padding:12px 28px;
+    border-radius:30px;
+    font-size:15px;
+    font-family:inherit;
+    font-weight:900;
+    cursor:pointer;
+    letter-spacing:1px;
+  }
+  .share-btn {
+    background: rgba(0,229,255,0.1);
+    border:1.5px solid var(--accent);
+    color:var(--accent);
+    padding:12px 28px;
+    border-radius:30px;
+    font-size:15px;
+    font-family:inherit;
+    font-weight:700;
+    cursor:pointer;
+  }
+
+  /* QR */
+  .qr-wrap {
+    background:#fff;
+    border-radius:12px;
+    padding:10px;
+    display:inline-block;
+  }
+  .qr-wrap img { display:none!important; }
+
+  /* Leaderboard */
+  .lb-title { font-size:13px; color:var(--accent); letter-spacing:2px; margin-top:4px; }
+  .lb-list { width:100%; max-width:340px; }
+  .lb-item {
+    display:flex;
+    align-items:center;
+    gap:10px;
+    padding:6px 10px;
+    border-bottom:1px solid rgba(255,255,255,0.05);
+    font-size:13px;
+  }
+  .lb-rank { color:var(--gold); font-weight:900; width:22px; }
+  .lb-name { flex:1; color:#cce; }
+  .lb-pts { color:var(--accent); font-weight:700; }
+
+  /* PAUSE overlay */
+  .pause-overlay {
+    display:none;
+    position:fixed;
+    inset:0;
+    background:rgba(0,0,0,0.8);
+    z-index:100;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    gap:16px;
+  }
+  .pause-overlay.active { display:flex; }
+  .pause-title { font-size:28px; font-weight:900; color:var(--accent); letter-spacing:3px; }
+  .pause-btn {
+    background:var(--accent);
+    border:none;
+    color:var(--bg);
+    padding:12px 30px;
+    border-radius:24px;
+    font-size:16px;
+    font-family:inherit;
+    font-weight:900;
+    cursor:pointer;
+  }
+</style>
+</head>
+<body>
+
+<!-- ===== INTRO ===== -->
+<div id="introScreen" class="screen active">
+  <div class="logo-box">
+    <div class="logo-robot">🤖</div>
+  </div>
+  <div class="game-title">ROBO CLEAN ADVENTURE</div>
+  <div class="game-subtitle">로봇 클린 어드벤처</div>
+
+  <div class="story-box">
+    💀 오염된 미래 도시! 환경정화 로봇 <strong style="color:var(--robot)">클리니(CLEANY)</strong>가<br>
+    미로를 누비며 💣폭탄 · 🗑️쓰레기 · ☢️오염물질을 제거합니다.<br>
+    시간이 갈수록 👻방해 몬스터가 나타납니다!<br>
+    <strong>3분 안에 미로를 완전히 정화하세요!</strong>
+  </div>
+
+  <div class="mode-btns">
+    <button class="mode-btn selected" onclick="selectMode('solo',this)">🎮 솔로</button>
+    <button class="mode-btn" onclick="selectMode('relay',this)">🔄 릴레이</button>
+  </div>
+
+  <div class="nickname-row">
+    <input class="nick-input" id="nickInput" type="text" placeholder="닉네임 입력" maxlength="8">
+    <button class="mode-btn" onclick="setNick()">✓ 확인</button>
+  </div>
+
+  <button class="start-btn" onclick="startGame()">🚀 게임 시작!</button>
+  <div class="milab-badge">MILAB © 2026</div>
+</div>
+
+<!-- ===== GAME ===== -->
+<div id="gameScreen" class="screen">
+  <div class="hud">
+    <div class="hud-item">
+      <div class="hud-label">SCORE</div>
+      <div class="hud-val hud-score" id="hudScore">0</div>
+    </div>
+    <div class="hud-item">
+      <div class="mascot-hud" id="hudMascot">🤖</div>
+    </div>
+    <div class="hud-item">
+      <div class="hud-label">TIME</div>
+      <div class="hud-val hud-timer" id="hudTimer">3:00</div>
+    </div>
+    <div class="hud-item">
+      <div class="stage-badge" id="stageBadge">STAGE 1</div>
+      <div class="hud-label" id="hudLives">❤️❤️❤️</div>
+    </div>
+  </div>
+
+  <div class="canvas-wrap" id="canvasWrap">
+    <canvas id="gameCanvas"></canvas>
+    <div class="level-flash" id="levelFlash">⚡ LEVEL UP!</div>
+    <div class="mascot-msg" id="mascotMsg">화이팅! 💪</div>
+  </div>
+
+  <div class="dpad">
+    <div></div>
+    <button class="dpad-btn" id="dUp" ontouchstart="pressDir('up')" ontouchend="releaseDir()">▲</button>
+    <div></div>
+    <button class="dpad-btn" id="dLeft" ontouchstart="pressDir('left')" ontouchend="releaseDir()">◀</button>
+    <button class="dpad-btn dpad-center" onclick="togglePause()">⏸</button>
+    <button class="dpad-btn" id="dRight" ontouchstart="pressDir('right')" ontouchend="releaseDir()">▶</button>
+    <div></div>
+    <button class="dpad-btn" id="dDown" ontouchstart="pressDir('down')" ontouchend="releaseDir()">▼</button>
+    <div></div>
+  </div>
+</div>
+
+<!-- ===== RESULT ===== -->
+<div id="resultScreen" class="screen">
+  <div class="result-emoji" id="resultEmoji">🏆</div>
+  <div class="result-ending" id="resultEnding">MISSION COMPLETE!</div>
+  <div class="result-msg" id="resultMsg">대단해요!</div>
+
+  <div class="result-score-box">
+    <div class="result-score-label">FINAL SCORE</div>
+    <div class="result-score-val" id="resultScore">0</div>
+  </div>
+
+  <div class="stats-row">
+    <div class="stat-item">
+      <div class="si-val" id="statCollected" style="color:var(--robot)">0</div>
+      <div class="si-label">수거 완료</div>
+    </div>
+    <div class="stat-item">
+      <div class="si-val" id="statLevel" style="color:var(--accent)">1</div>
+      <div class="si-label">최고 레벨</div>
+    </div>
+    <div class="stat-item">
+      <div class="si-val" id="statTime" style="color:var(--gold)">0s</div>
+      <div class="si-label">생존 시간</div>
+    </div>
+  </div>
+
+  <div class="btn-row">
+    <button class="re-btn" onclick="restartGame()">🔄 다시 도전!</button>
+    <button class="share-btn" onclick="showShare()">📱 공유하기</button>
+  </div>
+
+  <div class="lb-title">🏅 MILAB 리더보드</div>
+  <div class="lb-list" id="lbList"></div>
+
+  <div class="qr-wrap" id="qrDiv"></div>
+  <div style="font-size:10px;color:rgba(255,255,255,0.3);letter-spacing:2px">MILAB 031 ROBO CLEAN</div>
+</div>
+
+<!-- PAUSE -->
+<div class="pause-overlay" id="pauseOverlay">
+  <div style="font-size:48px">⏸️</div>
+  <div class="pause-title">PAUSED</div>
+  <button class="pause-btn" onclick="togglePause()">▶ 계속하기</button>
+  <button class="pause-btn" style="background:rgba(255,68,68,0.8);color:#fff" onclick="endGameEarly()">🚪 그만하기</button>
+</div>
+
+<script>
+// ===================== CONSTANTS =====================
+const GAME_DURATION = 180;
+const CELL = 20; // pixels per cell
+const COLS = 38;
+const ROWS = 30;
+
+// 4배 확장 미로 (38x30) — 기본 19x15 패턴을 2x2로 타일링
+const TILE = [
+  [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+  [1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1],
+  [1,0,1,1,0,1,1,1,0,1,0,1,1,1,0,1,1,0,1],
+  [1,0,1,1,0,1,1,1,0,1,0,1,1,1,0,1,1,0,1],
+  [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+  [1,0,1,1,0,1,0,1,1,1,1,1,0,1,0,1,1,0,1],
+  [1,0,0,0,0,1,0,0,0,1,0,0,0,1,0,0,0,0,1],
+  [1,1,1,1,0,1,1,1,0,0,0,1,1,1,0,1,1,1,1],
+  [1,0,0,0,0,1,0,0,0,0,0,0,0,1,0,0,0,0,1],
+  [1,0,1,1,0,1,0,1,1,1,1,1,0,1,0,1,1,0,1],
+  [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+  [1,0,1,1,0,1,1,1,0,1,0,1,1,1,0,1,1,0,1],
+  [1,0,1,1,0,1,1,1,0,1,0,1,1,1,0,1,1,0,1],
+  [1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1],
+  [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+];
+// 타일 2x2 병합 → 38x30, 내부 경계 벽 제거로 연결
+function buildMaze() {
+  const H = ROWS, W = COLS;
+  const m = [];
+  for(let r=0;r<H;r++) m.push(new Array(W).fill(1));
+
+  const TH = TILE.length, TW = TILE[0].length;
+  // 4개 타일 배치 (top-left, top-right, bottom-left, bottom-right)
+  const offsets = [{or:0,oc:0},{or:0,oc:TW-1},{or:TH-1,oc:0},{or:TH-1,oc:TW-1}];
+  // top-left
+  for(let r=0;r<TH;r++) for(let c=0;c<TW;c++) m[r][c]=TILE[r][c];
+  // top-right
+  for(let r=0;r<TH;r++) for(let c=0;c<TW;c++) m[r][TW-1+c]=TILE[r][c];
+  // bottom-left
+  for(let r=0;r<TH;r++) for(let c=0;c<TW;c++) m[TH-1+r][c]=TILE[r][c];
+  // bottom-right
+  for(let r=0;r<TH;r++) for(let c=0;c<TW;c++) m[TH-1+r][TW-1+c]=TILE[r][c];
+
+  // 중앙 연결 통로 (가로/세로 이음새 벽 뚫기)
+  const midR = TH-1;
+  const midC = TW-1;
+  // 가로 연결
+  for(let r=1;r<H-1;r++) { if(m[r][midC]===1 && (m[r][midC-1]===0||m[r][midC+1]===0)) m[r][midC]=0; }
+  // 세로 연결
+  for(let c=1;c<W-1;c++) { if(m[midR][c]===1 && (m[midR-1][c]===0||m[midR+1][c]===0)) m[midR][c]=0; }
+  return m;
+}
+const BASE_MAZE = buildMaze();
+
+// ===================== AUDIO =====================
+const AC = new (window.AudioContext || window.webkitAudioContext)();
+
+function playTone(freq, dur, type='sine', vol=0.3) {
+  try {
+    const o = AC.createOscillator();
+    const g = AC.createGain();
+    o.connect(g); g.connect(AC.destination);
+    o.type = type; o.frequency.value = freq;
+    g.gain.setValueAtTime(vol, AC.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.001, AC.currentTime + dur);
+    o.start(); o.stop(AC.currentTime + dur);
+  } catch(e){}
+}
+
+function playCollect(type) {
+  if(type==='bomb') { playTone(880,0.12,'square',0.25); playTone(660,0.1,'square',0.2); }
+  else if(type==='trash') { playTone(440,0.15,'triangle',0.3); playTone(550,0.1,'triangle',0.25); }
+  else { playTone(660,0.1,'sine',0.3); playTone(880,0.12,'sine',0.25); }
+}
+function playDeath() {
+  playTone(300,0.1,'sawtooth',0.4);
+  setTimeout(()=>playTone(200,0.15,'sawtooth',0.35),120);
+  setTimeout(()=>playTone(100,0.3,'sawtooth',0.3),250);
+}
+function playLevelUp() {
+  [523,659,784,1047].forEach((f,i)=>setTimeout(()=>playTone(f,0.15,'square',0.3),i*100));
+}
+function bgmTick(beat) {
+  if(beat%8===0) playTone(110,0.08,'sine',0.06);
+  if(beat%4===0) playTone(165,0.06,'sine',0.04);
+}
+
+// ===================== STATE =====================
+let G = {};
+let nickname = '클리니';
+let playMode = 'solo';
+let gameLoopId = null;
+let lastTime = 0;
+let bgmBeat = 0;
+let paused = false;
+let swipeStart = null;
+
+function resetState() {
+  const maze = BASE_MAZE.map(r=>[...r]);
+  // Build items on path cells
+  const items = [];
+  const pathCells = [];
+  for(let r=0;r<ROWS;r++) for(let c=0;c<COLS;c++) if(maze[r][c]===0) pathCells.push({r,c});
+  // Shuffle
+  for(let i=pathCells.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[pathCells[i],pathCells[j]]=[pathCells[j],pathCells[i]];}
+  
+  const robotStart = {r:1,c:1};
+  const taken = new Set([`${robotStart.r},${robotStart.c}`]);
+  
+  // Place items
+  const types = ['bomb','trash','toxic'];
+  const itemPool = [...pathCells].filter(p=>!taken.has(`${p.r},${p.c}`));
+  for(let i=0;i<Math.min(30,itemPool.length);i++){
+    const cell = itemPool[i];
+    const t = types[Math.floor(Math.random()*3)];
+    items.push({r:cell.r,c:cell.c,type:t,active:true});
+    taken.add(`${cell.r},${cell.c}`);
+  }
+
+  G = {
+    maze,
+    items,
+    totalItems: items.length,
+    roundItems: items.length,   // 현재 라운드 배치 수
+    roundCollected: 0,          // 이번 라운드 수거 수
+    robot: {r:robotStart.r, c:robotStart.c, dir:'right', animFrame:0, dead:false, blinkTime:0, invincible:0},
+    monsters: [],
+    score: 0,
+    lives: 3,
+    timer: GAME_DURATION,
+    level: 1,
+    nextLevelTime: GAME_DURATION - 20,
+    collected: 0,
+    moveQueue: null,
+    heldDir: null,              // 현재 누르고 있는 방향
+    robotMoveCooldown: 0,
+    monsterMoveCooldowns: [],
+    mascotState: '😊',
+    gameOver: false,
+    survived: 0,
+    lastBgmBeat: 0,
+    animTick: 0,
+    cam: {x:0, y:0},            // 카메라 오프셋 (픽셀)
+  };
+}
+
+// ===================== MONSTER SPAWNING =====================
+const MONSTER_COLORS = ['#ff00ff','#ff6600','#ff0055','#aa00ff','#ff3300'];
+const MONSTER_EMOJIS = ['👾','💀','🎃','👿','🔥'];
+function spawnMonster(count) {
+  const validSpawns = [];
+  for(let r=0;r<ROWS;r++) for(let c=0;c<COLS;c++) {
+    if(G.maze[r][c]===0 && Math.abs(r-G.robot.r)>4 && Math.abs(c-G.robot.c)>4) validSpawns.push({r,c});
+  }
+  for(let i=0;i<count;i++){
+    if(validSpawns.length===0) break;
+    const idx = Math.floor(Math.random()*validSpawns.length);
+    const pos = validSpawns.splice(idx,1)[0];
+    const ci = G.monsters.length % MONSTER_COLORS.length;
+    G.monsters.push({r:pos.r, c:pos.c, color:MONSTER_COLORS[ci], emoji:MONSTER_EMOJIS[ci], dir:['up','down','left','right'][Math.floor(Math.random()*4)]});
+    G.monsterMoveCooldowns.push(0);
+  }
+}
+
+// ===================== MOVEMENT =====================
+const DIRS = {up:{dr:-1,dc:0}, down:{dr:1,dc:0}, left:{dr:0,dc:-1}, right:{dr:0,dc:1}};
+
+function tryMove(entity, dir) {
+  const d = DIRS[dir];
+  if(!d) return false;
+  const nr = entity.r + d.dr;
+  const nc = entity.c + d.dc;
+  if(nr<0||nr>=ROWS||nc<0||nc>=COLS) return false;
+  if(G.maze[nr][nc]===1) return false;
+  entity.r = nr; entity.c = nc; entity.dir = dir;
+  return true;
+}
+
+function moveMonsterSmart(m, idx) {
+  // Simple pathfinding: try to move toward robot, with randomness
+  const dr = G.robot.r - m.r;
+  const dc = G.robot.c - m.c;
+  let preferred = [];
+  if(Math.abs(dr)>Math.abs(dc)) {
+    preferred.push(dr>0?'down':'up');
+    preferred.push(dc>0?'right':'left');
+  } else {
+    preferred.push(dc>0?'right':'left');
+    preferred.push(dr>0?'down':'up');
+  }
+  // Add some randomness for level < 4
+  if(G.level < 4 && Math.random()<0.4) {
+    const allDirs=['up','down','left','right'];
+    preferred = [allDirs[Math.floor(Math.random()*4)], ...preferred];
+  }
+  const allDirs=['up','down','left','right'];
+  preferred = [...preferred, ...allDirs.filter(d=>!preferred.includes(d))];
+  
+  for(const d of preferred) {
+    if(tryMove(m, d)) break;
+  }
+}
+
+// ===================== ITEM RESPAWN =====================
+function respawnItems() {
+  const pathCells = [];
+  const robotKey = `${G.robot.r},${G.robot.c}`;
+  for(let r=0;r<ROWS;r++) for(let c=0;c<COLS;c++)
+    if(G.maze[r][c]===0 && `${r},${c}`!==robotKey) pathCells.push({r,c});
+  // 몬스터 위치 제외
+  const monsterKeys = new Set(G.monsters.map(m=>`${m.r},${m.c}`));
+  const available = pathCells.filter(p=>!monsterKeys.has(`${p.r},${p.c}`));
+  // Fisher-Yates 셔플
+  for(let i=available.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[available[i],available[j]]=[available[j],available[i]];}
+  
+  const types = ['bomb','trash','toxic'];
+  const count = Math.min(40, available.length);
+  G.items = [];
+  for(let i=0;i<count;i++){
+    G.items.push({r:available[i].r, c:available[i].c, type:types[Math.floor(Math.random()*3)], active:true});
+  }
+  G.roundItems = G.items.length;
+  G.roundCollected = 0;
+
+  // 재생성 알림
+  const fl = document.getElementById('levelFlash');
+  fl.textContent = '♻️ 재생성! +300점!';
+  fl.classList.remove('show');
+  void fl.offsetWidth;
+  fl.classList.add('show');
+  G.score += 300;
+  playLevelUp();
+}
+
+// ===================== COLLISION =====================
+function checkCollisions() {
+  if(G.robot.invincible > 0) return;
+  // Item collection
+  for(const item of G.items) {
+    if(item.active && item.r===G.robot.r && item.c===G.robot.c) {
+      item.active = false;
+      G.collected++;
+      G.roundCollected++;
+      const pts = item.type==='toxic'?30:item.type==='bomb'?20:10;
+      G.score += pts;
+      playCollect(item.type);
+      updateMascot('collect');
+    }
+  }
+  // Monster collision
+  for(const m of G.monsters) {
+    if(m.r===G.robot.r && m.c===G.robot.c) {
+      G.lives--;
+      G.robot.invincible = 120;
+      playDeath();
+      updateMascot('hit');
+      if(G.lives<=0) {
+        G.gameOver = true;
+        G.robot.dead = true;
+      }
+      return;
+    }
+  }
+}
+
+// ===================== MASCOT =====================
+function updateMascot(event) {
+  const msgs = {
+    collect: ['잘했어요! 💪','최고예요! ⭐','굿잡! 🎉','수거 완료! ✅'],
+    hit: ['괜찮아요! 💪','힘내세요! 😰','조심해요! ⚠️'],
+    levelup: ['레벨업! 🔥','더 강해져요! ⚡','몬스터 조심! 👾'],
+    halfDone: ['절반 완료! 🎊','계속해요! 💫'],
+  };
+  const m = msgs[event];
+  const msg = m[Math.floor(Math.random()*m.length)];
+  const el = document.getElementById('mascotMsg');
+  el.textContent = msg;
+  el.classList.add('show');
+  setTimeout(()=>el.classList.remove('show'), 2000);
+
+  const mascotEl = document.getElementById('hudMascot');
+  if(event==='collect') { mascotEl.textContent='😄'; G.mascotState='😄'; }
+  else if(event==='hit') { mascotEl.textContent='😱'; G.mascotState='😱'; }
+  else if(event==='levelup') { mascotEl.textContent='🔥'; G.mascotState='🔥'; }
+  setTimeout(()=>{ mascotEl.textContent='🤖'; G.mascotState='🤖'; }, 1500);
+}
+
+// ===================== CAMERA =====================
+function updateCamera() {
+  if(!canvas) return;
+  const vw = canvas.width;
+  const vh = canvas.height;
+  const targetX = G.robot.c * CELL + CELL/2 - vw/2;
+  const targetY = G.robot.r * CELL + CELL/2 - vh/2;
+  const maxX = COLS * CELL - vw;
+  const maxY = ROWS * CELL - vh;
+  const clampedX = Math.max(0, Math.min(maxX, targetX));
+  const clampedY = Math.max(0, Math.min(maxY, targetY));
+  // 부드러운 이동
+  G.cam.x += (clampedX - G.cam.x) * 0.12;
+  G.cam.y += (clampedY - G.cam.y) * 0.12;
+}
+
+// ===================== DRAWING =====================
+let canvas, ctx;
+
+function initCanvas() {
+  canvas = document.getElementById('gameCanvas');
+  ctx = canvas.getContext('2d');
+  resizeCanvas();
+}
+
+function resizeCanvas() {
+  const wrap = document.getElementById('canvasWrap');
+  const maxW = wrap.clientWidth;
+  const maxH = wrap.clientHeight;
+  // 뷰포트 크기를 캔버스 해상도로 사용 (맵 전체가 아닌 보이는 영역)
+  canvas.width = maxW;
+  canvas.height = maxH;
+  canvas.style.width = maxW + 'px';
+  canvas.style.height = maxH + 'px';
+  // 카메라 즉시 보정
+  if(G.cam) {
+    const targetX = G.robot.c * CELL + CELL/2 - maxW/2;
+    const targetY = G.robot.r * CELL + CELL/2 - maxH/2;
+    G.cam.x = Math.max(0, Math.min(COLS*CELL - maxW, targetX));
+    G.cam.y = Math.max(0, Math.min(ROWS*CELL - maxH, targetY));
+  }
+}
+
+function drawGame() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.fillStyle = '#050810';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  const cx = Math.round(G.cam.x);
+  const cy = Math.round(G.cam.y);
+
+  // 보이는 셀 범위만 계산
+  const startC = Math.max(0, Math.floor(cx / CELL));
+  const endC   = Math.min(COLS-1, Math.ceil((cx + canvas.width) / CELL));
+  const startR = Math.max(0, Math.floor(cy / CELL));
+  const endR   = Math.min(ROWS-1, Math.ceil((cy + canvas.height) / CELL));
+
+  ctx.save();
+  ctx.translate(-cx, -cy);
+
+  // Draw walls (보이는 영역만)
+  for(let r=startR;r<=endR;r++) {
+    for(let c=startC;c<=endC;c++) {
+      if(G.maze[r][c]===1) {
+        const x = c*CELL, y = r*CELL;
+        ctx.fillStyle = '#0d2050';
+        ctx.fillRect(x,y,CELL,CELL);
+        ctx.strokeStyle = '#1a4090';
+        ctx.lineWidth = 1;
+        ctx.strokeRect(x+0.5,y+0.5,CELL-1,CELL-1);
+      }
+    }
+  }
+
+  // Draw items
+  G.items.forEach(item => {
+    if(!item.active) return;
+    if(item.c < startC-1 || item.c > endC+1 || item.r < startR-1 || item.r > endR+1) return;
+    const x = item.c*CELL + CELL/2;
+    const y = item.r*CELL + CELL/2;
+    const emoji = item.type==='bomb'?'💣':item.type==='trash'?'🗑️':'☢️';
+    ctx.font = `${CELL*0.75}px serif`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    const pulse = 1 + 0.1*Math.sin(G.animTick*0.1 + item.c + item.r);
+    ctx.save();
+    ctx.translate(x,y);
+    ctx.scale(pulse,pulse);
+    ctx.fillText(emoji, 0, 1);
+    ctx.restore();
+  });
+
+  // Draw monsters
+  G.monsters.forEach((m,i) => {
+    if(m.c < startC-1 || m.c > endC+1 || m.r < startR-1 || m.r > endR+1) return;
+    const x = m.c*CELL + CELL/2;
+    const y = m.r*CELL + CELL/2;
+    const bounce = Math.sin(G.animTick*0.15 + i) * 2;
+    ctx.font = `${CELL*0.8}px serif`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.save();
+    ctx.translate(x, y+bounce);
+    ctx.fillText(m.emoji, 0, 1);
+    ctx.restore();
+  });
+
+  // Draw robot
+  if(!G.robot.dead) {
+    const rx = G.robot.c*CELL + CELL/2;
+    const ry = G.robot.r*CELL + CELL/2;
+    const blink = G.robot.invincible > 0 && Math.floor(G.animTick/5)%2===0;
+    if(!blink) {
+      ctx.save();
+      ctx.shadowColor = '#00ff88';
+      ctx.shadowBlur = 12;
+      ctx.font = `${CELL*0.9}px serif`;
+      ctx.textAlign='center';
+      ctx.textBaseline='middle';
+      ctx.translate(rx,ry);
+      const angle = G.robot.dir==='right'?0:G.robot.dir==='left'?Math.PI:G.robot.dir==='up'?-Math.PI/2:Math.PI/2;
+      ctx.rotate(angle);
+      ctx.fillText('🤖', 0, 1);
+      ctx.restore();
+    }
+  }
+
+  ctx.restore(); // 카메라 transform 해제
+
+  // HUD update
+  document.getElementById('hudScore').textContent = G.score;
+  const m = Math.floor(G.timer/60), s = G.timer%60;
+  const timerEl = document.getElementById('hudTimer');
+  timerEl.textContent = `${m}:${s<10?'0':''}${s}`;
+  timerEl.className = 'hud-val hud-timer' + (G.timer<=30?' warn':'');
+  document.getElementById('hudLives').textContent = '❤️'.repeat(Math.max(0,G.lives));
+  const activeItems = G.items.filter(it=>it.active).length;
+  document.getElementById('stageBadge').textContent = `STAGE ${G.level} | 남은 ${activeItems}개`;
+  updateCamera();
+}
+
+// ===================== GAME LOOP =====================
+const ROBOT_SPEED = 10; // frames between moves
+const MONSTER_SPEED_BASE = 20;
+
+function gameLoop(ts) {
+  if(!lastTime) lastTime = ts;
+  const dt = ts - lastTime;
+  lastTime = ts;
+
+  if(paused || G.gameOver) {
+    gameLoopId = requestAnimationFrame(gameLoop);
+    return;
+  }
+
+  G.animTick++;
+
+  // Timer (60fps → 1 second per 60 frames)
+  if(G.animTick % 60 === 0 && G.timer > 0) {
+    G.timer--;
+    G.survived++;
+    // BGM
+    bgmBeat++;
+    bgmTick(bgmBeat);
+
+    // Level up check
+    if(G.timer === G.nextLevelTime && G.level < 6) {
+      G.level++;
+      G.nextLevelTime -= 20;
+      const newMonsters = Math.min(G.level - 1, 5) - G.monsters.length;
+      if(newMonsters > 0) spawnMonster(newMonsters);
+      playLevelUp();
+      updateMascot('levelup');
+      // Flash
+      const fl = document.getElementById('levelFlash');
+      fl.textContent = `⚡ LEVEL ${G.level}!`;
+      fl.classList.remove('show');
+      void fl.offsetWidth;
+      fl.classList.add('show');
+    }
+
+    if(G.timer <= 0) { endGame(); return; }
+  }
+
+  // Robot invincibility
+  if(G.robot.invincible > 0) G.robot.invincible--;
+
+  // Robot move — heldDir이 있을 때만 이동
+  G.robotMoveCooldown--;
+  if(G.robotMoveCooldown <= 0) {
+    if(G.heldDir) {
+      tryMove(G.robot, G.heldDir);
+      G.robotMoveCooldown = Math.max(4, ROBOT_SPEED - G.level);
+    } else {
+      G.robotMoveCooldown = 0;
+    }
+  }
+
+  // Monster move
+  G.monsters.forEach((m,i) => {
+    G.monsterMoveCooldowns[i] = (G.monsterMoveCooldowns[i]||0) - 1;
+    if(G.monsterMoveCooldowns[i] <= 0) {
+      moveMonsterSmart(m, i);
+      G.monsterMoveCooldowns[i] = Math.max(6, MONSTER_SPEED_BASE - G.level * 2);
+    }
+  });
+
+  checkCollisions();
+
+  // Half done
+  if(!G._halfDone && G.collected >= Math.floor(G.totalItems/2)) {
+    G._halfDone = true;
+    updateMascot('halfDone');
+  }
+
+  // 현재 라운드 아이템 전부 수거 → 재생성
+  if(G.items.length > 0 && G.items.every(it=>!it.active)) {
+    respawnItems();
+  }
+
+  drawGame();
+
+  if(G.gameOver) { setTimeout(endGame, 1000); return; }
+  gameLoopId = requestAnimationFrame(gameLoop);
+}
+
+// ===================== GAME FLOW =====================
+function startGame() {
+  AC.resume();
+  resetState();
+  showScreen('gameScreen');
+  initCanvas();
+  resizeCanvas();
+  lastTime = 0;
+  paused = false;
+  document.getElementById('pauseOverlay').classList.remove('active');
+  if(gameLoopId) cancelAnimationFrame(gameLoopId);
+  gameLoopId = requestAnimationFrame(gameLoop);
+}
+
+function endGame() {
+  if(gameLoopId) { cancelAnimationFrame(gameLoopId); gameLoopId = null; }
+  saveScore();
+  showResult();
+}
+
+function endGameEarly() {
+  paused = false;
+  document.getElementById('pauseOverlay').classList.remove('active');
+  endGame();
+}
+
+function restartGame() {
+  startGame();
+}
+
+function togglePause() {
+  paused = !paused;
+  document.getElementById('pauseOverlay').classList.toggle('active', paused);
+}
+
+// ===================== RESULT =====================
+function showResult() {
+  const pct = G.collected / G.totalItems;
+  let emoji, ending, msg;
+
+  if(G.lives <= 0) {
+    emoji='😵'; ending='게임 오버...'; msg='몬스터에게 잡혔어요!\n다시 도전해서 미래 도시를 구해보세요! 💪';
+  } else if(pct >= 1.0) {
+    emoji='🏆'; ending='완전 정화 달성!'; msg='완벽해요! 미래 도시가 완전히 깨끗해졌습니다!\n클리니가 최고의 환경정화 로봇이에요! 🤖✨';
+  } else if(pct >= 0.7) {
+    emoji='🌟'; ending='훌륭한 정화 임무!'; msg='70% 이상 정화 성공!\n조금만 더 하면 완벽한 도시가 될 거예요! 🌍';
+  } else if(pct >= 0.4) {
+    emoji='😊'; ending='절반 정화 완료!'; msg='잘 하고 있어요!\n더 빠르게 움직이면 몬스터를 피할 수 있어요! 🏃';
+  } else {
+    emoji='🤔'; ending='임무 미완료...'; msg='아직 많은 쓰레기가 남았어요!\n몬스터를 피해 더 많이 수거해봐요! 💪';
+  }
+
+  document.getElementById('resultEmoji').textContent = emoji;
+  document.getElementById('resultEnding').textContent = ending;
+  document.getElementById('resultMsg').textContent = msg;
+  document.getElementById('resultScore').textContent = G.score;
+  document.getElementById('statCollected').textContent = G.collected + '/' + G.totalItems;
+  document.getElementById('statLevel').textContent = G.level;
+  document.getElementById('statTime').textContent = G.survived + 's';
+
+  renderLeaderboard();
+  showScreen('resultScreen');
+
+  // QR
+  const qrDiv = document.getElementById('qrDiv');
+  qrDiv.innerHTML = '';
+  try {
+    new QRCode(qrDiv, {
+      text: 'https://milab2019.github.io/main/milab_robotclean_031.html',
+      width:100, height:100,
+      colorDark:'#000000', colorLight:'#ffffff',
+      correctLevel:QRCode.CorrectLevel.M
+    });
+  } catch(e){}
+}
+
+function showShare() {
+  const text = `🤖 로봇 클린 어드벤처\n닉네임: ${nickname}\n점수: ${G.score}점\n수거: ${G.collected}/${G.totalItems}\nMILAB 진로체험교육 미래도시 정화 게임!`;
+  if(navigator.share) { navigator.share({title:'로봇 클린 어드벤처', text}); }
+  else { navigator.clipboard.writeText(text).then(()=>alert('결과가 복사되었습니다!')); }
+}
+
+// ===================== LEADERBOARD =====================
+function saveScore() {
+  let lb = JSON.parse(localStorage.getItem('milab031_lb')||'[]');
+  lb.push({name:nickname, score:G.score, date:new Date().toLocaleDateString()});
+  lb.sort((a,b)=>b.score-a.score);
+  lb = lb.slice(0,10);
+  localStorage.setItem('milab031_lb', JSON.stringify(lb));
+}
+
+function renderLeaderboard() {
+  const lb = JSON.parse(localStorage.getItem('milab031_lb')||'[]');
+  const el = document.getElementById('lbList');
+  el.innerHTML = lb.slice(0,5).map((item,i)=>`
+    <div class="lb-item">
+      <div class="lb-rank">${['🥇','🥈','🥉','4️⃣','5️⃣'][i]}</div>
+      <div class="lb-name">${item.name}</div>
+      <div class="lb-pts">${item.score}pt</div>
+    </div>
+  `).join('');
+}
+
+// ===================== INPUT =====================
+const KEY_MAP = {ArrowUp:'up',ArrowDown:'down',ArrowLeft:'left',ArrowRight:'right',
+                 w:'up',s:'down',a:'left',d:'right'};
+
+document.addEventListener('keydown', e => {
+  if(KEY_MAP[e.key]) { e.preventDefault(); if(G) G.heldDir = KEY_MAP[e.key]; }
+  if(e.key==='Escape' || e.key===' ') togglePause();
+});
+document.addEventListener('keyup', e => {
+  if(KEY_MAP[e.key] && G && G.heldDir === KEY_MAP[e.key]) G.heldDir = null;
+});
+
+// D-PAD: touchstart → set heldDir, touchend/touchcancel → clear
+function pressDir(dir) { if(G && !G.gameOver) G.heldDir = dir; }
+function releaseDir() { if(G) G.heldDir = null; }
+
+// D-PAD 버튼에 mousedown/mouseup도 지원 (데스크탑)
+document.querySelectorAll('.dpad-btn[id]').forEach(btn=>{
+  btn.addEventListener('mousedown', ()=>{ const d={dUp:'up',dDown:'down',dLeft:'left',dRight:'right'}[btn.id]; if(d) pressDir(d); });
+  btn.addEventListener('mouseup', releaseDir);
+  btn.addEventListener('mouseleave', releaseDir);
+});
+
+// 스와이프는 제거 (누르는 동안 이동 방식과 호환 안됨)
+
+// ===================== UI HELPERS =====================
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+function selectMode(mode, btn) {
+  playMode = mode;
+  document.querySelectorAll('.mode-btn').forEach(b=>b.classList.remove('selected'));
+  btn.classList.add('selected');
+}
+
+function setNick() {
+  const v = document.getElementById('nickInput').value.trim();
+  if(v) { nickname = v; }
+  playTone(880,0.1,'sine',0.2);
+}
+
+// Nickname from localStorage
+const savedNick = localStorage.getItem('milab031_nick');
+if(savedNick) { nickname = savedNick; document.getElementById('nickInput').value = savedNick; }
+document.getElementById('nickInput').addEventListener('change', ()=>{
+  const v = document.getElementById('nickInput').value.trim();
+  if(v) { nickname = v; localStorage.setItem('milab031_nick',v); }
+});
+
+window.addEventListener('resize', ()=>{ if(canvas) resizeCanvas(); });
+
+// ===================== PORTFOLIO ENTRY =====================
+const portfolioEntry = {
+  id: "031",
+  title: "로봇 클린 어드벤처",
+  category: "모두의 학급",
+  target: "전체",
+  duration: "3분",
+  playMode: "솔로 | 릴레이",
+  topic: "환경정화 로봇 미로 탐험 아이스브레이킹",
+  filename: "milab_robotclean_031.html",
+  url: "https://milab2019.github.io/main/milab_robotclean_031.html",
+  date: "2026.04.04 개발",
+  skills: ["Web Audio API", "Canvas 2D", "LocalStorage", "QRCode.js"],
+  description: "팩맨 기반 환경정화 로봇 게임 – 미로를 누비며 폭탄·쓰레기·오염물질 수거, 레벨별 몬스터 등장"
+};
+console.log(JSON.stringify(portfolioEntry, null, 2));
+</script>
+</body>
+</html>
