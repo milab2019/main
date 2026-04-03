@@ -1,0 +1,1388 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>🚁 드론 클린 미션 | MILAB #030</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<style>
+  :root {
+    --sky1: #0a1628;
+    --sky2: #1a3a5c;
+    --accent: #00e5ff;
+    --danger: #ff4444;
+    --warn: #ffaa00;
+    --green: #44ff88;
+    --purple: #aa44ff;
+    --white: #ffffff;
+    --panel: rgba(0,20,50,0.85);
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  html, body {
+    width:100%; height:100%; overflow:hidden;
+    background:#000;
+    font-family: 'Courier New', monospace;
+    touch-action: none;
+  }
+  #app {
+    width:100%; height:100%; display:flex;
+    flex-direction:column; align-items:center; justify-content:center;
+    position:relative;
+  }
+
+  /* ── SCREENS ── */
+  .screen { display:none; width:100%; height:100%; position:absolute; top:0; left:0; }
+  .screen.active { display:flex; flex-direction:column; align-items:center; justify-content:center; }
+
+  /* ── TITLE SCREEN ── */
+  #titleScreen {
+    background: radial-gradient(ellipse at center, #0a2040 0%, #000510 100%);
+    overflow:hidden;
+  }
+  .star-field { position:absolute; width:100%; height:100%; }
+  .title-logo {
+    font-size: clamp(2rem, 8vw, 4rem);
+    font-weight: 900;
+    color: var(--accent);
+    text-shadow: 0 0 20px var(--accent), 0 0 40px rgba(0,229,255,0.4);
+    letter-spacing: 0.1em;
+    text-align: center;
+    animation: pulse 2s ease-in-out infinite;
+  }
+  .title-sub {
+    font-size: clamp(0.9rem, 3vw, 1.2rem);
+    color: var(--warn);
+    margin-top: 8px;
+    text-align: center;
+    letter-spacing: 0.2em;
+  }
+  .title-drone {
+    font-size: clamp(4rem, 15vw, 8rem);
+    margin: 20px 0;
+    animation: hover-drone 2s ease-in-out infinite;
+    filter: drop-shadow(0 0 20px rgba(0,229,255,0.6));
+  }
+  @keyframes hover-drone {
+    0%,100% { transform: translateY(0) rotate(-3deg); }
+    50% { transform: translateY(-15px) rotate(3deg); }
+  }
+  @keyframes pulse {
+    0%,100% { opacity:1; } 50% { opacity:0.7; }
+  }
+  .milab-badge {
+    background: linear-gradient(135deg, var(--accent), var(--purple));
+    color: #000;
+    font-weight: 900;
+    padding: 4px 16px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    letter-spacing: 0.15em;
+    margin-bottom: 10px;
+  }
+  .nickname-box {
+    margin: 20px 0;
+    display: flex; flex-direction: column; align-items: center; gap: 10px;
+  }
+  .nickname-box input {
+    background: rgba(0,229,255,0.1);
+    border: 2px solid var(--accent);
+    border-radius: 12px;
+    color: var(--white);
+    font-size: 1.2rem;
+    padding: 10px 20px;
+    text-align: center;
+    outline: none;
+    font-family: 'Courier New', monospace;
+    width: 220px;
+  }
+  .nickname-box input::placeholder { color: rgba(255,255,255,0.3); }
+  .btn-start {
+    background: linear-gradient(135deg, var(--accent), #0088aa);
+    border: none;
+    border-radius: 16px;
+    color: #000;
+    font-size: clamp(1rem, 4vw, 1.4rem);
+    font-weight: 900;
+    padding: 16px 48px;
+    cursor: pointer;
+    letter-spacing: 0.1em;
+    transition: transform 0.1s, box-shadow 0.1s;
+    font-family: 'Courier New', monospace;
+    min-height: 60px;
+    box-shadow: 0 0 20px rgba(0,229,255,0.4);
+  }
+  .btn-start:active { transform: scale(0.96); }
+  .how-to {
+    margin-top: 16px;
+    color: rgba(255,255,255,0.5);
+    font-size: 0.85rem;
+    text-align: center;
+    line-height: 1.8;
+  }
+
+  /* ── GAME SCREEN ── */
+  #gameScreen { background: #000; flex-direction: column; }
+  #gameCanvas {
+    display: block;
+    touch-action: none;
+    cursor: none;
+  }
+  #hud {
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 14px;
+    background: rgba(0,0,0,0.7);
+    border-bottom: 1px solid rgba(0,229,255,0.2);
+    z-index: 10;
+    gap: 8px;
+    flex-wrap: nowrap;
+  }
+  .hud-item { display: flex; flex-direction: column; align-items: center; }
+  .hud-label { font-size: 0.6rem; color: var(--accent); letter-spacing: 0.1em; }
+  .hud-value { font-size: 1rem; font-weight: 900; color: var(--white); }
+  #timerBar {
+    position: absolute;
+    bottom: 0; left: 0;
+    height: 4px;
+    background: linear-gradient(90deg, var(--accent), var(--purple));
+    transition: width 0.5s linear;
+    z-index: 10;
+  }
+  #zoneLabel {
+    position: absolute;
+    top: 60px; left: 50%;
+    transform: translateX(-50%);
+    font-size: 0.9rem;
+    color: var(--warn);
+    letter-spacing: 0.15em;
+    z-index: 10;
+    opacity: 0;
+    transition: opacity 0.5s;
+    text-shadow: 0 0 10px var(--warn);
+    pointer-events: none;
+    white-space: nowrap;
+  }
+  #mascot {
+    position: absolute;
+    bottom: 20px;
+    right: 14px;
+    font-size: 2.2rem;
+    z-index: 10;
+    transition: transform 0.2s;
+    pointer-events: none;
+    filter: drop-shadow(0 0 8px rgba(0,229,255,0.5));
+  }
+  #mascotMsg {
+    position: absolute;
+    bottom: 70px;
+    right: 14px;
+    background: var(--panel);
+    border: 1px solid var(--accent);
+    border-radius: 10px;
+    padding: 4px 10px;
+    font-size: 0.7rem;
+    color: var(--accent);
+    z-index: 10;
+    pointer-events: none;
+    white-space: nowrap;
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+  #livesDisplay {
+    display: flex; gap: 4px;
+  }
+  .life-icon { font-size: 1rem; }
+
+  /* ── RESULT SCREEN ── */
+  #resultScreen {
+    background: radial-gradient(ellipse at center, #0a2040 0%, #000510 100%);
+    padding: 20px;
+    overflow-y: auto;
+  }
+  .result-title {
+    font-size: clamp(1.8rem, 7vw, 3rem);
+    font-weight: 900;
+    text-align: center;
+    margin-bottom: 8px;
+  }
+  .result-emoji { font-size: clamp(3rem, 12vw, 6rem); margin: 10px 0; }
+  .result-score {
+    font-size: clamp(1.2rem, 5vw, 2rem);
+    color: var(--accent);
+    text-align: center;
+    margin: 8px 0;
+  }
+  .result-desc {
+    color: rgba(255,255,255,0.7);
+    text-align: center;
+    max-width: 340px;
+    line-height: 1.6;
+    font-size: 0.9rem;
+    margin: 8px auto;
+  }
+  .rank-box {
+    background: var(--panel);
+    border: 1px solid var(--accent);
+    border-radius: 16px;
+    padding: 14px;
+    width: 100%;
+    max-width: 340px;
+    margin: 10px auto;
+  }
+  .rank-box h3 { color: var(--warn); text-align:center; margin-bottom:8px; font-size:0.9rem; }
+  .rank-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 4px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+    font-size: 0.85rem;
+  }
+  .rank-item:last-child { border-bottom: none; }
+  .rank-medal { width: 28px; }
+  .rank-name { flex:1; color: var(--white); }
+  .rank-pts { color: var(--accent); font-weight: 900; }
+  .btn-retry {
+    background: linear-gradient(135deg, var(--green), #008844);
+    border: none; border-radius: 16px;
+    color: #000; font-size: 1.1rem; font-weight: 900;
+    padding: 14px 40px;
+    cursor: pointer; margin: 8px 6px;
+    font-family: 'Courier New', monospace;
+    min-height: 56px;
+    box-shadow: 0 0 15px rgba(68,255,136,0.3);
+  }
+  .btn-share {
+    background: linear-gradient(135deg, var(--purple), #6600cc);
+    border: none; border-radius: 16px;
+    color: var(--white); font-size: 1.1rem; font-weight: 900;
+    padding: 14px 40px;
+    cursor: pointer; margin: 8px 6px;
+    font-family: 'Courier New', monospace;
+    min-height: 56px;
+  }
+  #qrContainer { margin: 10px auto; }
+  #qrContainer canvas, #qrContainer img { border-radius: 8px; }
+
+  /* ── PAUSE OVERLAY ── */
+  #pauseOverlay {
+    position: absolute; top:0; left:0; width:100%; height:100%;
+    background: rgba(0,0,0,0.75);
+    display: none;
+    flex-direction: column;
+    align-items: center; justify-content: center;
+    z-index: 20;
+    color: var(--white);
+    font-size: 2rem;
+    font-weight: 900;
+    gap: 20px;
+  }
+  #pauseOverlay.show { display: flex; }
+  .btn-pause-resume {
+    background: var(--accent);
+    border: none; border-radius: 12px;
+    color: #000; font-size: 1.1rem; font-weight: 900;
+    padding: 14px 36px; cursor: pointer;
+    font-family: 'Courier New', monospace;
+  }
+
+  /* ── ZONE TRANSITION ── */
+  #zoneTransition {
+    position: absolute; top:0; left:0; width:100%; height:100%;
+    background: rgba(0,0,0,0);
+    z-index: 15;
+    display: flex; align-items: center; justify-content: center;
+    pointer-events: none;
+    opacity: 0;
+  }
+  .zone-text {
+    font-size: clamp(1.5rem, 7vw, 3rem);
+    font-weight: 900;
+    color: var(--warn);
+    text-shadow: 0 0 30px var(--warn);
+    text-align: center;
+    letter-spacing: 0.1em;
+  }
+
+  /* ── COMBO POPUP ── */
+  .combo-pop {
+    position: absolute;
+    font-size: 1.2rem;
+    font-weight: 900;
+    color: var(--warn);
+    text-shadow: 0 0 10px var(--warn);
+    pointer-events: none;
+    animation: combo-float 0.8s ease-out forwards;
+    z-index: 12;
+  }
+  @keyframes combo-float {
+    0% { opacity:1; transform: translateY(0) scale(1); }
+    100% { opacity:0; transform: translateY(-60px) scale(1.3); }
+  }
+  .damage-flash {
+    position: absolute; top:0; left:0; width:100%; height:100%;
+    background: rgba(255,0,0,0.25);
+    pointer-events: none;
+    z-index: 11;
+    animation: flash-out 0.3s ease-out forwards;
+  }
+  @keyframes flash-out {
+    0% { opacity:1; } 100% { opacity:0; }
+  }
+
+  /* Stars animation */
+  @keyframes twinkle {
+    0%,100% { opacity: 0.3; } 50% { opacity: 1; }
+  }
+</style>
+</head>
+<body>
+<div id="app">
+
+  <!-- TITLE SCREEN -->
+  <div id="titleScreen" class="screen active">
+    <canvas class="star-field" id="starCanvas"></canvas>
+    <div style="position:relative;z-index:2;display:flex;flex-direction:column;align-items:center;">
+      <div class="milab-badge">MILAB #030</div>
+      <div class="title-logo">🚁 드론 클린 미션</div>
+      <div class="title-sub">DRONE CLEAN MISSION</div>
+      <div class="title-drone">🚁</div>
+      <div class="nickname-box">
+        <input id="nicknameInput" type="text" maxlength="10" placeholder="닉네임 입력" autocomplete="off">
+      </div>
+      <button class="btn-start" onclick="startGame()">▶ 미션 시작!</button>
+      <div class="how-to">
+        📱 터치/드래그 → 드론 이동<br>
+        🎯 자동 발사 | 💥 오염물 격추<br>
+        ⏱ 3분 안에 하늘을 정화하세요!
+      </div>
+    </div>
+  </div>
+
+  <!-- GAME SCREEN -->
+  <div id="gameScreen" class="screen">
+    <div id="hud">
+      <div class="hud-item">
+        <span class="hud-label">점수</span>
+        <span class="hud-value" id="hudScore">0</span>
+      </div>
+      <div class="hud-item">
+        <span class="hud-label">정화율</span>
+        <span class="hud-value" id="hudClean">0%</span>
+      </div>
+      <div class="hud-item">
+        <span class="hud-label">콤보</span>
+        <span class="hud-value" id="hudCombo">x1</span>
+      </div>
+      <div class="hud-item">
+        <span class="hud-label">시간</span>
+        <span class="hud-value" id="hudTime">3:00</span>
+      </div>
+      <div class="hud-item">
+        <div id="livesDisplay">
+          <span class="life-icon">🚁</span>
+          <span class="life-icon">🚁</span>
+          <span class="life-icon">🚁</span>
+        </div>
+        <span class="hud-label">라이프</span>
+      </div>
+    </div>
+    <canvas id="gameCanvas"></canvas>
+    <div id="timerBar" style="width:100%"></div>
+    <div id="zoneLabel"></div>
+    <div id="mascot">🤖</div>
+    <div id="mascotMsg"></div>
+    <div id="zoneTransition"><div class="zone-text" id="zoneTransText"></div></div>
+    <div id="pauseOverlay">
+      <div>⏸ 일시정지</div>
+      <button class="btn-pause-resume" onclick="togglePause()">▶ 계속하기</button>
+    </div>
+  </div>
+
+  <!-- RESULT SCREEN -->
+  <div id="resultScreen" class="screen">
+    <div class="result-emoji" id="resultEmoji">🎉</div>
+    <div class="result-title" id="resultTitle">미션 완료!</div>
+    <div class="result-score" id="resultScore">0점</div>
+    <div class="result-desc" id="resultDesc"></div>
+    <div class="rank-box">
+      <h3>🏆 명예의 전당</h3>
+      <div id="rankList"></div>
+    </div>
+    <div style="display:flex;flex-wrap:wrap;justify-content:center;">
+      <button class="btn-retry" onclick="resetGame()">🔄 다시하기</button>
+      <button class="btn-share" onclick="showQR()">📱 공유 QR</button>
+    </div>
+    <div id="qrContainer"></div>
+  </div>
+
+</div>
+
+<script>
+// ═══════════════════════════════════════════════
+//  AUDIO ENGINE
+// ═══════════════════════════════════════════════
+let audioCtx = null;
+let bgmNodes = [];
+let masterGain = null;
+let bgmInterval = null;
+
+function initAudio() {
+  if (audioCtx) return;
+  audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  masterGain = audioCtx.createGain();
+  masterGain.gain.value = 0.25;
+  masterGain.connect(audioCtx.destination);
+}
+
+function playTone(freq, type='square', duration=0.08, vol=0.15, delay=0) {
+  if (!audioCtx) return;
+  const g = audioCtx.createGain();
+  const o = audioCtx.createOscillator();
+  o.type = type;
+  o.frequency.value = freq;
+  g.gain.setValueAtTime(vol, audioCtx.currentTime + delay);
+  g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + delay + duration);
+  o.connect(g); g.connect(masterGain);
+  o.start(audioCtx.currentTime + delay);
+  o.stop(audioCtx.currentTime + delay + duration + 0.01);
+}
+
+function sfxShoot() {
+  playTone(880, 'square', 0.05, 0.08);
+  playTone(660, 'square', 0.05, 0.06, 0.03);
+}
+function sfxExplode() {
+  if (!audioCtx) return;
+  const b = audioCtx.createOscillator();
+  const bg = audioCtx.createGain();
+  b.type = 'sawtooth';
+  b.frequency.setValueAtTime(200, audioCtx.currentTime);
+  b.frequency.exponentialRampToValueAtTime(40, audioCtx.currentTime + 0.3);
+  bg.gain.setValueAtTime(0.2, audioCtx.currentTime);
+  bg.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.3);
+  b.connect(bg); bg.connect(masterGain);
+  b.start(); b.stop(audioCtx.currentTime + 0.31);
+}
+function sfxDamage() {
+  playTone(150, 'sawtooth', 0.3, 0.3);
+}
+function sfxLevelUp() {
+  [523,659,784,1047].forEach((f,i) => playTone(f,'square',0.15,0.18,i*0.12));
+}
+function sfxBossAlert() {
+  [200,150,100].forEach((f,i) => playTone(f,'sawtooth',0.25,0.3,i*0.2));
+}
+
+// BGM System - zone-based
+let bgmZone = -1;
+let bgmScheduled = [];
+
+function stopBGM() {
+  bgmScheduled.forEach(n => { try { n.stop(); } catch(e){} });
+  bgmScheduled = [];
+  if (bgmInterval) { clearInterval(bgmInterval); bgmInterval = null; }
+}
+
+// Zone BGM patterns
+const BGM_ZONES = [
+  // Zone 0: 충주 하늘 - 밝고 경쾌, BPM100
+  { bpm:100, notes:[
+    [523,0],[659,0.6],[784,1.2],[1047,1.8],[784,2.4],[659,3.0],
+    [523,3.6],[440,4.2],[523,4.8],[659,5.4],[784,6.0],[523,6.6]
+  ], bass:[[130,0],[130,1.8],[146,3.6],[130,5.4]], type:'square', bassType:'triangle' },
+  // Zone 1: 도심 상공 - 긴장감 상승, BPM120
+  { bpm:120, notes:[
+    [440,0],[392,0.5],[349,1.0],[330,1.5],[349,2.0],[392,2.5],
+    [440,3.0],[494,3.5],[523,4.0],[440,4.5],[392,5.0],[330,5.5]
+  ], bass:[[110,0],[110,1.5],[98,3.0],[110,4.5]], type:'sawtooth', bassType:'square' },
+  // Zone 2: 공장지대 - 긴박 비트, BPM140
+  { bpm:140, notes:[
+    [330,0],[311,0.43],[294,0.86],[277,1.29],[294,1.71],[311,2.14],
+    [330,2.57],[349,3.0],[330,3.43],[311,3.86],[294,4.29],[277,4.71]
+  ], bass:[[98,0],[98,0.86],[110,1.71],[98,2.57],[88,3.43],[98,4.29]], type:'sawtooth', bassType:'sawtooth' },
+  // Zone 3: 오염 구름 - 전투음, BPM145
+  { bpm:145, notes:[
+    [294,0],[277,0.41],[262,0.83],[247,1.24],[262,1.66],[277,2.07],
+    [294,2.48],[311,2.90],[294,3.31],[277,3.72],[262,4.14],[247,4.55]
+  ], bass:[[87,0],[87,0.83],[98,1.66],[87,2.48],[82,3.31],[87,4.14]], type:'sawtooth', bassType:'square' },
+  // Zone 4: 우주 진입 - 긴박+웅장, BPM155
+  { bpm:155, notes:[
+    [220,0],[196,0.39],[175,0.77],[165,1.16],[175,1.55],[196,1.94],
+    [220,2.32],[247,2.71],[220,3.10],[196,3.48],[175,3.87],[165,4.26]
+  ], bass:[[65,0],[65,0.77],[73,1.55],[65,2.32],[58,3.10],[65,3.87]], type:'sawtooth', bassType:'sawtooth' },
+  // Zone 5: 보스 - 클라이맥스, BPM165 + 리드
+  { bpm:165, notes:[
+    [147,0],[139,0.36],[131,0.73],[123,1.09],[131,1.45],[139,1.82],
+    [147,2.18],[156,2.55],[147,2.91],[139,3.27],[131,3.64],[123,4.0]
+  ], bass:[[55,0],[55,0.73],[61,1.45],[55,2.18],[49,2.91],[55,3.64]], type:'sawtooth', bassType:'sawtooth', isBoss:true }
+];
+
+function playZoneBGM(zone) {
+  if (!audioCtx || bgmZone === zone) return;
+  stopBGM();
+  bgmZone = zone;
+  const cfg = BGM_ZONES[Math.min(zone, BGM_ZONES.length-1)];
+  const loopDur = cfg.notes[cfg.notes.length-1][1] + 0.5;
+
+  function scheduleBGMLoop(startTime) {
+    cfg.notes.forEach(([freq, t]) => {
+      const o = audioCtx.createOscillator();
+      const g = audioCtx.createGain();
+      o.type = cfg.type;
+      o.frequency.value = freq;
+      const vol = cfg.isBoss ? 0.06 : 0.04;
+      g.gain.setValueAtTime(0, startTime + t);
+      g.gain.linearRampToValueAtTime(vol, startTime + t + 0.02);
+      g.gain.exponentialRampToValueAtTime(0.001, startTime + t + 0.35);
+      o.connect(g); g.connect(masterGain);
+      o.start(startTime + t);
+      o.stop(startTime + t + 0.36);
+      bgmScheduled.push(o);
+    });
+    cfg.bass.forEach(([freq, t]) => {
+      const o = audioCtx.createOscillator();
+      const g = audioCtx.createGain();
+      o.type = cfg.bassType;
+      o.frequency.value = freq;
+      g.gain.setValueAtTime(0, startTime + t);
+      g.gain.linearRampToValueAtTime(0.08, startTime + t + 0.05);
+      g.gain.exponentialRampToValueAtTime(0.001, startTime + t + 0.6);
+      o.connect(g); g.connect(masterGain);
+      o.start(startTime + t);
+      o.stop(startTime + t + 0.61);
+      bgmScheduled.push(o);
+    });
+    if (cfg.isBoss) {
+      [330,440,330,440].forEach((f,i) => {
+        const o = audioCtx.createOscillator();
+        const g = audioCtx.createGain();
+        o.type = 'square'; o.frequency.value = f;
+        g.gain.setValueAtTime(0.03, startTime + i*0.18);
+        g.gain.exponentialRampToValueAtTime(0.001, startTime + i*0.18 + 0.16);
+        o.connect(g); g.connect(masterGain);
+        o.start(startTime + i*0.18);
+        o.stop(startTime + i*0.18 + 0.17);
+        bgmScheduled.push(o);
+      });
+    }
+  }
+
+  let nextLoop = audioCtx.currentTime;
+  scheduleBGMLoop(nextLoop);
+  nextLoop += loopDur;
+  bgmInterval = setInterval(() => {
+    if (!audioCtx) return;
+    scheduleBGMLoop(nextLoop);
+    nextLoop += loopDur;
+  }, (loopDur - 0.5) * 1000);
+}
+
+// ═══════════════════════════════════════════════
+//  STAR BACKGROUND (title)
+// ═══════════════════════════════════════════════
+function initStars() {
+  const c = document.getElementById('starCanvas');
+  c.width = window.innerWidth;
+  c.height = window.innerHeight;
+  const ctx = c.getContext('2d');
+  const stars = Array.from({length:120}, () => ({
+    x: Math.random()*c.width, y: Math.random()*c.height,
+    r: Math.random()*1.5+0.3, a: Math.random(), da: (Math.random()-0.5)*0.015
+  }));
+  function draw() {
+    ctx.clearRect(0,0,c.width,c.height);
+    stars.forEach(s => {
+      s.a = Math.max(0.1, Math.min(1, s.a + s.da));
+      if (s.a <= 0.1 || s.a >= 1) s.da *= -1;
+      ctx.beginPath();
+      ctx.arc(s.x, s.y, s.r, 0, Math.PI*2);
+      ctx.fillStyle = `rgba(255,255,255,${s.a})`;
+      ctx.fill();
+    });
+    requestAnimationFrame(draw);
+  }
+  draw();
+}
+initStars();
+
+// ═══════════════════════════════════════════════
+//  GAME STATE
+// ═══════════════════════════════════════════════
+const TOTAL_TIME = 180;
+const ZONES = [
+  // 0:00~0:20  충주 하늘  speed 2배(기존 1.2→2.4)
+  { start:0,   end:20,  name:'🌤️ 충주 하늘',   bgTop:'#1a3a6c', bgBot:'#0a1830', speed:2.4, spawnRate:1.4, types:['trash'],               bossEnabled:false },
+  // 0:20~0:50  도심 상공  speed 2.5배(기존 1.6→4.0)
+  { start:20,  end:50,  name:'🏙️ 도심 상공',   bgTop:'#2a2a5c', bgBot:'#0a0a30', speed:4.0, spawnRate:1.0, types:['trash','bomb'],         bossEnabled:false },
+  // 0:50~1:10  공장지대   speed 2.5배(기존 2.0→5.0)
+  { start:50,  end:70,  name:'🏭 공장지대',    bgTop:'#3a1a1a', bgBot:'#1a0a0a', speed:5.0, spawnRate:0.8, types:['trash','bomb','gas'],    bossEnabled:false },
+  // 1:10~1:30  오염 구름  speed 2.5배(기존 2.4→6.0)
+  { start:70,  end:90,  name:'☁️ 오염 구름',   bgTop:'#2a1a3a', bgBot:'#0a0a1a', speed:6.0, spawnRate:0.7, types:['gas','bomb','flock'],    bossEnabled:false },
+  // 1:30~2:00  우주 진입  speed 2.5배(기존 2.8→7.0) + 객체수 2배 감소(spawnRate 2배↑)
+  { start:90,  end:120, name:'🌑 우주 진입',   bgTop:'#0a0a0a', bgBot:'#000000', speed:7.0, spawnRate:2.0, types:['bomb','nuke','flock'],   bossEnabled:false },
+  // 2:00~3:00  보스 전투
+  { start:120, end:180, name:'🛸 보스 전투',   bgTop:'#000000', bgBot:'#000000', speed:3.2, spawnRate:0.4, types:['nuke','flock'],           bossEnabled:true }
+];
+
+let G = {}; // game state
+
+function resetGameState() {
+  G = {
+    running: false,
+    paused: false,
+    elapsed: 0,
+    score: 0,
+    combo: 1,
+    comboTimer: 0,
+    lives: 3,
+    cleanCount: 0,
+    totalSpawned: 0,
+    zone: 0,
+    drone: { x:0, y:0, w:44, h:44 },
+    bullets: [],
+    enemies: [],
+    particles: [],
+    boss: null,
+    bossActive: false,
+    bossDefeated: false,
+    shootTimer: 0,
+    spawnTimer: 0,
+    invincible: 0,
+    lastZone: -1,
+    bgScroll: 0,
+    nickname: ''
+  };
+}
+resetGameState();
+
+// ═══════════════════════════════════════════════
+//  CANVAS SETUP
+// ═══════════════════════════════════════════════
+const canvas = document.getElementById('gameCanvas');
+const ctx = canvas.getContext('2d');
+let CW, CH, HUD_H = 48;
+
+function resizeCanvas() {
+  CW = canvas.width = window.innerWidth;
+  CH = canvas.height = window.innerHeight - HUD_H;
+  canvas.style.marginTop = HUD_H + 'px';
+  if (G.drone) {
+    G.drone.x = Math.min(G.drone.x || CW/2, CW - G.drone.w);
+    G.drone.y = Math.min(G.drone.y || CH*0.75, CH - G.drone.h);
+  }
+}
+window.addEventListener('resize', resizeCanvas);
+resizeCanvas();
+
+// ═══════════════════════════════════════════════
+//  INPUT
+// ═══════════════════════════════════════════════
+let pointer = { active: false, x: 0, y: 0 };
+
+canvas.addEventListener('touchstart', e => {
+  e.preventDefault();
+  initAudio();
+  const t = e.touches[0];
+  pointer = { active:true, x:t.clientX, y:t.clientY - HUD_H };
+}, { passive:false });
+canvas.addEventListener('touchmove', e => {
+  e.preventDefault();
+  const t = e.touches[0];
+  pointer = { active:true, x:t.clientX, y:t.clientY - HUD_H };
+}, { passive:false });
+canvas.addEventListener('touchend', () => { pointer.active = false; });
+
+canvas.addEventListener('mousemove', e => {
+  pointer = { active:true, x:e.clientX, y:e.clientY - HUD_H };
+});
+canvas.addEventListener('mouseleave', () => { pointer.active = false; });
+canvas.addEventListener('click', () => initAudio());
+
+// Pause on double-tap
+let lastTap = 0;
+canvas.addEventListener('touchstart', e => {
+  const now = Date.now();
+  if (now - lastTap < 300) togglePause();
+  lastTap = now;
+}, { passive:false });
+
+// ═══════════════════════════════════════════════
+//  ENEMY TYPES
+// ═══════════════════════════════════════════════
+const ENEMY_TYPES = {
+  trash: { emoji:'🗑️', w:36, h:36, hp:1, pts:10,  spd:1.2, zig:false, col:false },
+  bomb:  { emoji:'💣', w:36, h:36, hp:2, pts:20,  spd:1.6, zig:true,  col:true  },
+  gas:   { emoji:'☣️', w:40, h:40, hp:1, pts:15,  spd:2.0, zig:false, col:true  },
+  flock: { emoji:'🗑️', w:28, h:28, hp:1, pts:8,   spd:2.5, zig:true,  col:false, flock:true },
+  nuke:  { emoji:'☢️', w:44, h:44, hp:3, pts:50,  spd:1.8, zig:true,  col:true  }
+};
+
+function spawnEnemy(zone) {
+  const cfg = ZONES[zone];
+  const types = cfg.types;
+  const typeName = types[Math.floor(Math.random()*types.length)];
+  const def = ENEMY_TYPES[typeName];
+  const spd = def.spd * (1 + zone*0.12);
+  const e = {
+    type: typeName,
+    emoji: def.emoji,
+    x: Math.random()*(CW - def.w),
+    y: -def.h,
+    w: def.w, h: def.h,
+    hp: def.hp,
+    pts: def.pts,
+    spd,
+    zig: def.zig,
+    col: def.col,
+    zigDir: Math.random()<0.5?1:-1,
+    zigTimer: 0,
+    amplitude: 40 + Math.random()*30
+  };
+  if (def.flock) {
+    const count = 3 + Math.floor(Math.random()*4);
+    for (let i=0; i<count; i++) {
+      G.enemies.push({...e,
+        x: (CW/2 - count*20) + i*40,
+        y: -def.h - i*25
+      });
+    }
+    G.totalSpawned += count;
+  } else {
+    G.enemies.push(e);
+    G.totalSpawned++;
+  }
+}
+
+// Boss
+function spawnBoss() {
+  G.boss = {
+    x: CW/2 - 50, y: -120,
+    w: 100, h: 80,
+    hp: 30, maxHp: 30,
+    dx: 1.8, dy: 0,
+    phase: 0,
+    shootTimer: 0,
+    bullets: [],
+    descending: true
+  };
+  G.bossActive = true;
+  sfxBossAlert();
+}
+
+// ═══════════════════════════════════════════════
+//  GAME LOOP
+// ═══════════════════════════════════════════════
+let lastTime = 0;
+
+function gameLoop(ts) {
+  if (!G.running) return;
+  const dt = Math.min((ts - lastTime) / 1000, 0.05);
+  lastTime = ts;
+  if (!G.paused) update(dt);
+  render();
+  requestAnimationFrame(gameLoop);
+}
+
+function update(dt) {
+  G.elapsed += dt;
+  const remaining = Math.max(0, TOTAL_TIME - G.elapsed);
+
+  // Zone
+  const newZone = ZONES.findIndex(z => G.elapsed >= z.start && G.elapsed < z.end);
+  const zone = newZone >= 0 ? newZone : 5;
+  if (zone !== G.zone) {
+    G.zone = zone;
+    showZoneTransition(ZONES[zone].name);
+    playZoneBGM(zone);
+    if (zone >= 4) sfxLevelUp();
+  }
+
+  // Boss zone
+  if (zone === 5 && !G.bossActive && !G.bossDefeated) {
+    spawnBoss();
+  }
+
+  // HUD
+  const cleanPct = G.totalSpawned > 0 ? Math.round(G.cleanCount/G.totalSpawned*100) : 0;
+  document.getElementById('hudScore').textContent = G.score;
+  document.getElementById('hudClean').textContent = cleanPct + '%';
+  document.getElementById('hudCombo').textContent = 'x' + G.combo;
+  const m = Math.floor(remaining/60), s = Math.floor(remaining%60);
+  document.getElementById('hudTime').textContent = m+':'+(s<10?'0':'')+s;
+  document.getElementById('timerBar').style.width = (remaining/TOTAL_TIME*100)+'%';
+  updateLivesUI();
+
+  // Drone movement
+  if (pointer.active) {
+    const tx = pointer.x - G.drone.w/2;
+    const ty = pointer.y - G.drone.h/2;
+    G.drone.x += (tx - G.drone.x) * 0.2;
+    G.drone.y += (ty - G.drone.y) * 0.2;
+  }
+  G.drone.x = Math.max(0, Math.min(CW - G.drone.w, G.drone.x));
+  G.drone.y = Math.max(0, Math.min(CH - G.drone.h, G.drone.y));
+
+  // Auto shoot
+  G.shootTimer += dt;
+  const fireRate = zone >= 5 ? 0.18 : zone >= 4 ? 0.22 : 0.28;
+  if (G.shootTimer >= fireRate) {
+    G.shootTimer = 0;
+    G.bullets.push({ x: G.drone.x + G.drone.w/2 - 3, y: G.drone.y, w:6, h:14 });
+    sfxShoot();
+  }
+
+  // Bullets
+  G.bullets = G.bullets.filter(b => b.y > -20);
+  G.bullets.forEach(b => { b.y -= 480*dt; });
+
+  // Enemy spawn
+  if (!G.bossActive || zone < 5) {
+    G.spawnTimer += dt;
+    const spawnRate = ZONES[zone].spawnRate * (1 - zone*0.05);
+    if (G.spawnTimer >= spawnRate) {
+      G.spawnTimer = 0;
+      spawnEnemy(zone);
+    }
+  }
+
+  // Enemy update
+  const zspd = ZONES[zone].speed;
+  G.enemies.forEach(e => {
+    e.y += e.spd * zspd * dt * 60 * 0.016;
+    if (e.zig) {
+      e.zigTimer += dt;
+      e.x += Math.sin(e.zigTimer*3)*e.amplitude*dt*2*e.zigDir;
+      e.x = Math.max(0, Math.min(CW-e.w, e.x));
+    }
+  });
+  G.enemies = G.enemies.filter(e => e.y < CH + 60);
+
+  // Bullet-enemy collision
+  for (let i = G.bullets.length-1; i >= 0; i--) {
+    const b = G.bullets[i];
+    let hit = false;
+    for (let j = G.enemies.length-1; j >= 0; j--) {
+      const e = G.enemies[j];
+      if (rectsOverlap(b, e)) {
+        e.hp--;
+        if (e.hp <= 0) {
+          spawnParticles(e.x+e.w/2, e.y+e.h/2, e.type);
+          sfxExplode();
+          G.score += e.pts * G.combo;
+          G.cleanCount++;
+          G.combo = Math.min(8, G.combo + 0.5|0 || 1);
+          if (G.combo > 1) showCombo(e.x, e.y, G.combo);
+          G.comboTimer = 2.5;
+          G.enemies.splice(j, 1);
+        }
+        hit = true;
+        break;
+      }
+    }
+    if (hit) G.bullets.splice(i, 1);
+  }
+
+  // Combo decay
+  G.comboTimer -= dt;
+  if (G.comboTimer <= 0) G.combo = 1;
+
+  // Enemy-drone collision
+  if (G.invincible <= 0) {
+    for (let j = G.enemies.length-1; j >= 0; j--) {
+      const e = G.enemies[j];
+      if (rectsOverlap(G.drone, e)) {
+        G.enemies.splice(j, 1);
+        takeDamage();
+        break;
+      }
+    }
+  } else {
+    G.invincible -= dt;
+  }
+
+  // Boss update
+  if (G.bossActive && G.boss) {
+    updateBoss(dt);
+  }
+
+  // Particles
+  G.particles.forEach(p => {
+    p.x += p.vx*dt*60;
+    p.y += p.vy*dt*60;
+    p.life -= dt;
+    p.vy += 0.5*dt*60;
+  });
+  G.particles = G.particles.filter(p => p.life > 0);
+
+  // BG scroll
+  G.bgScroll += ZONES[zone].speed * 60 * dt;
+
+  // Time up
+  if (remaining <= 0 || (G.bossActive && G.bossDefeated)) {
+    endGame();
+  }
+  if (G.lives <= 0) endGame();
+
+  // Mascot reactions
+  updateMascot();
+}
+
+function updateBoss(dt) {
+  const b = G.boss;
+  if (b.descending) {
+    b.y += 120*dt;
+    if (b.y >= 60) { b.y = 60; b.descending = false; }
+  }
+  b.x += b.dx * 2.5;
+  if (b.x <= 0 || b.x >= CW - b.w) b.dx *= -1;
+
+  // Boss bullets
+  b.shootTimer += dt;
+  // HP 구간별 발사 간격 & 탄 수: 고체력→저체력으로 갈수록 더 빠르고 많아짐
+  const hpFrac = b.hp / b.maxHp;
+  const bFireRate = hpFrac > 0.66 ? 0.55 : hpFrac > 0.33 ? 0.35 : 0.22;
+  if (b.shootTimer >= bFireRate) {
+    b.shootTimer = 0;
+    const cx = b.x + b.w/2;
+    const cy = b.y + b.h;
+    // 탄 수: 고체력 7발 → 중체력 10발 → 저체력 14발
+    const count = hpFrac > 0.66 ? 7 : hpFrac > 0.33 ? 10 : 14;
+    const spread = 0.28; // 각 탄 사이 각도 간격
+    for (let i=0; i<count; i++) {
+      const angle = (Math.PI/2) + (i - (count-1)/2) * spread;
+      const spd = hpFrac > 0.33 ? 3.5 : 4.5; // 저체력 탄속도 증가
+      b.bullets.push({ x:cx-4, y:cy, vx:Math.cos(angle)*spd, vy:Math.sin(angle)*spd, w:8, h:8 });
+    }
+  }
+  b.bullets.forEach(bb => { bb.x += bb.vx*3; bb.y += bb.vy*3; });
+  b.bullets = b.bullets.filter(bb => bb.y < CH+20 && bb.x > -20 && bb.x < CW+20);
+
+  // Boss bullet-drone collision
+  if (G.invincible <= 0) {
+    for (let i = b.bullets.length-1; i>=0; i--) {
+      const bb = b.bullets[i];
+      if (rectsOverlap(G.drone, bb)) {
+        b.bullets.splice(i,1);
+        takeDamage();
+        break;
+      }
+    }
+  }
+
+  // Player bullets-boss collision
+  for (let i = G.bullets.length-1; i>=0; i--) {
+    const bullet = G.bullets[i];
+    if (rectsOverlap(bullet, b)) {
+      b.hp--;
+      G.bullets.splice(i,1);
+      if (b.hp <= 0) {
+        spawnParticles(b.x+b.w/2, b.y+b.h/2, 'nuke', 30);
+        sfxExplode(); sfxLevelUp();
+        G.score += 500;
+        G.bossActive = false;
+        G.bossDefeated = true;
+        G.boss = null;
+        setTimeout(endGame, 2000);
+      }
+      break;
+    }
+  }
+}
+
+function takeDamage() {
+  G.lives--;
+  G.combo = 1;
+  G.invincible = 2.0;
+  sfxDamage();
+  flashDamage();
+  updateLivesUI();
+  showMascot('😱', '으악! 조심해!');
+}
+
+function flashDamage() {
+  const d = document.createElement('div');
+  d.className = 'damage-flash';
+  document.getElementById('gameScreen').appendChild(d);
+  setTimeout(() => d.remove(), 300);
+}
+
+function updateLivesUI() {
+  const icons = ['🚁','🚁','🚁'];
+  const dead = ['💀','💀','💀'];
+  let html = '';
+  for (let i=0; i<3; i++) {
+    html += `<span class="life-icon">${i < G.lives ? icons[i] : dead[i]}</span>`;
+  }
+  document.getElementById('livesDisplay').innerHTML = html;
+}
+
+function rectsOverlap(a, b) {
+  return a.x < b.x+b.w && a.x+a.w > b.x && a.y < b.y+b.h && a.y+a.h > b.y;
+}
+
+function spawnParticles(x, y, type, count=12) {
+  const colors = { trash:'#88ff88', bomb:'#ff8844', gas:'#88ffaa', nuke:'#ff44ff', flock:'#ffff44' };
+  const col = colors[type] || '#ffffff';
+  for (let i=0; i<count; i++) {
+    const angle = (Math.PI*2/count)*i;
+    G.particles.push({
+      x, y,
+      vx: Math.cos(angle)*(2+Math.random()*3),
+      vy: Math.sin(angle)*(2+Math.random()*3),
+      r: 3+Math.random()*4,
+      color: col,
+      life: 0.5+Math.random()*0.4
+    });
+  }
+}
+
+// ═══════════════════════════════════════════════
+//  RENDER
+// ═══════════════════════════════════════════════
+function render() {
+  ctx.clearRect(0, 0, CW, CH);
+  const zone = G.zone;
+  const zc = ZONES[Math.min(zone, ZONES.length-1)];
+
+  // Background gradient (zone-based)
+  const grad = ctx.createLinearGradient(0,0,0,CH);
+  grad.addColorStop(0, zc.bgTop);
+  grad.addColorStop(1, zc.bgBot);
+  ctx.fillStyle = grad;
+  ctx.fillRect(0,0,CW,CH);
+
+  // Stars (zones 4-5)
+  if (zone >= 4) {
+    ctx.fillStyle = 'rgba(255,255,255,0.7)';
+    for (let i=0; i<60; i++) {
+      const sx = (i*137 + G.bgScroll*0.3) % CW;
+      const sy = (i*89 + G.bgScroll*0.5) % CH;
+      ctx.beginPath();
+      ctx.arc(sx, sy, 1, 0, Math.PI*2);
+      ctx.fill();
+    }
+  }
+
+  // Scrolling bg elements
+  if (zone < 4) {
+    drawBGElements(zone);
+  }
+
+  // Particles
+  G.particles.forEach(p => {
+    ctx.save();
+    ctx.globalAlpha = p.life;
+    ctx.fillStyle = p.color;
+    ctx.shadowBlur = 6; ctx.shadowColor = p.color;
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, p.r, 0, Math.PI*2);
+    ctx.fill();
+    ctx.restore();
+  });
+
+  // Enemies
+  G.enemies.forEach(e => {
+    ctx.font = `${e.h}px serif`;
+    ctx.textBaseline = 'top';
+    ctx.fillText(e.emoji, e.x, e.y);
+    if (e.hp > 1) {
+      ctx.fillStyle = '#ff4444';
+      ctx.fillRect(e.x, e.y-6, e.w, 4);
+      ctx.fillStyle = '#44ff88';
+      ctx.fillRect(e.x, e.y-6, e.w*(e.hp/ENEMY_TYPES[e.type].hp), 4);
+    }
+  });
+
+  // Boss
+  if (G.bossActive && G.boss) {
+    renderBoss();
+  }
+
+  // Bullets
+  G.bullets.forEach(b => {
+    const lg = ctx.createLinearGradient(b.x, b.y+b.h, b.x, b.y);
+    lg.addColorStop(0, '#00e5ff');
+    lg.addColorStop(1, '#ffffff');
+    ctx.fillStyle = lg;
+    ctx.shadowBlur = 8; ctx.shadowColor = '#00e5ff';
+    ctx.fillRect(b.x, b.y, b.w, b.h);
+    ctx.shadowBlur = 0;
+  });
+
+  // Drone
+  renderDrone();
+}
+
+function renderDrone() {
+  const d = G.drone;
+  if (G.invincible > 0 && Math.floor(G.invincible*10)%2===0) return;
+  ctx.save();
+  ctx.font = `${d.h}px serif`;
+  ctx.textBaseline = 'top';
+  if (pointer.active) {
+    ctx.translate(d.x + d.w/2, d.y + d.h/2);
+    const tilt = Math.max(-0.3, Math.min(0.3, (pointer.x - (d.x+d.w/2)) / CW * 0.8));
+    ctx.rotate(tilt);
+    ctx.translate(-d.w/2, -d.h/2);
+    ctx.fillText('🚁', 0, 0);
+  } else {
+    ctx.fillText('🚁', d.x, d.y);
+  }
+  // Thrust particles
+  if (Math.random() > 0.5) {
+    G.particles.push({
+      x: d.x + d.w/2 + (Math.random()-0.5)*10,
+      y: d.y + d.h,
+      vx: (Math.random()-0.5)*1.5,
+      vy: 2+Math.random()*2,
+      r: 2+Math.random()*2,
+      color: '#00e5ff',
+      life: 0.2
+    });
+  }
+  ctx.restore();
+}
+
+function renderBoss() {
+  const b = G.boss;
+  // Boss body
+  ctx.font = '80px serif';
+  ctx.textBaseline = 'top';
+  ctx.fillText('🛸', b.x, b.y);
+  // HP bar
+  const bw = b.w + 40;
+  const bx = b.x - 20;
+  ctx.fillStyle = '#330000';
+  ctx.fillRect(bx, b.y - 14, bw, 10);
+  const hpFrac = b.hp / b.maxHp;
+  const hpCol = hpFrac > 0.5 ? '#44ff88' : hpFrac > 0.25 ? '#ffaa00' : '#ff4444';
+  ctx.fillStyle = hpCol;
+  ctx.fillRect(bx, b.y - 14, bw * hpFrac, 10);
+  ctx.strokeStyle = '#ffffff';
+  ctx.lineWidth = 1;
+  ctx.strokeRect(bx, b.y - 14, bw, 10);
+  // Boss label
+  ctx.fillStyle = '#ff4444';
+  ctx.font = 'bold 14px Courier New';
+  ctx.textAlign = 'center';
+  ctx.fillText('👾 오염 위성 BOSS', b.x + b.w/2, b.y - 24);
+  ctx.textAlign = 'left';
+  // Boss bullets
+  b.bullets.forEach(bb => {
+    ctx.fillStyle = '#ff4444';
+    ctx.shadowBlur = 6; ctx.shadowColor = '#ff0000';
+    ctx.beginPath();
+    ctx.arc(bb.x+4, bb.y+4, 6, 0, Math.PI*2);
+    ctx.fill();
+    ctx.shadowBlur = 0;
+  });
+}
+
+function drawBGElements(zone) {
+  const scroll = G.bgScroll;
+  ctx.save();
+  ctx.globalAlpha = 0.15;
+  if (zone <= 1) {
+    // Clouds
+    const cloudPositions = [[0.1,0.2],[0.5,0.1],[0.8,0.3],[0.3,0.5],[0.7,0.6]];
+    cloudPositions.forEach(([fx,fy]) => {
+      const cx = (fx*CW + scroll*0.3) % (CW+100) - 50;
+      const cy = (fy*CH + scroll*0.15) % (CH+60) - 30;
+      ctx.font = '48px serif';
+      ctx.fillText('☁️', cx, cy);
+    });
+  } else if (zone <= 3) {
+    // Smoke / factory
+    const fPositions = [[0.1,0.8],[0.4,0.9],[0.7,0.85],[0.9,0.75]];
+    fPositions.forEach(([fx,fy]) => {
+      const cx = fx*CW;
+      const cy = (fy*CH + scroll*0.5) % (CH+80) - 40;
+      ctx.font = '36px serif';
+      ctx.fillText('🏭', cx, cy);
+    });
+  }
+  ctx.restore();
+}
+
+// ═══════════════════════════════════════════════
+//  MASCOT
+// ═══════════════════════════════════════════════
+let mascotTimeout = null;
+function showMascot(emoji, msg) {
+  document.getElementById('mascot').textContent = emoji;
+  const m = document.getElementById('mascotMsg');
+  m.textContent = msg;
+  m.style.opacity = '1';
+  if (mascotTimeout) clearTimeout(mascotTimeout);
+  mascotTimeout = setTimeout(() => { m.style.opacity = '0'; }, 2000);
+}
+function updateMascot() {
+  if (G.combo >= 4) showMascot('😄','콤보! 최고야!');
+  else if (G.score > 0 && G.score % 300 === 0) showMascot('😤','계속 격추해!');
+}
+
+// ═══════════════════════════════════════════════
+//  ZONE TRANSITION
+// ═══════════════════════════════════════════════
+function showZoneTransition(name) {
+  const el = document.getElementById('zoneTransition');
+  document.getElementById('zoneTransText').textContent = name;
+  el.style.opacity = '1';
+  document.getElementById('zoneLabel').textContent = name;
+  document.getElementById('zoneLabel').style.opacity = '1';
+  setTimeout(() => { el.style.opacity = '0'; }, 1800);
+  setTimeout(() => { document.getElementById('zoneLabel').style.opacity = '0'; }, 3000);
+}
+
+function showCombo(x, y, combo) {
+  const el = document.createElement('div');
+  el.className = 'combo-pop';
+  el.textContent = `x${combo} COMBO!`;
+  el.style.left = x + 'px';
+  el.style.top = (y + HUD_H) + 'px';
+  document.getElementById('gameScreen').appendChild(el);
+  setTimeout(() => el.remove(), 800);
+}
+
+// ═══════════════════════════════════════════════
+//  GAME FLOW
+// ═══════════════════════════════════════════════
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+function startGame() {
+  initAudio();
+  const nn = document.getElementById('nicknameInput').value.trim() || '드론조종사';
+  G.nickname = nn;
+  resetGameState();
+  G.nickname = nn;
+  G.drone.x = CW/2 - 22;
+  G.drone.y = CH * 0.75;
+  G.running = true;
+  resizeCanvas();
+  showScreen('gameScreen');
+  playZoneBGM(0);
+  showZoneTransition(ZONES[0].name);
+  showMascot('😄','하늘을 정화하자!');
+  lastTime = performance.now();
+  requestAnimationFrame(gameLoop);
+}
+
+function togglePause() {
+  if (!G.running) return;
+  G.paused = !G.paused;
+  const o = document.getElementById('pauseOverlay');
+  if (G.paused) {
+    o.classList.add('show');
+    stopBGM();
+  } else {
+    o.classList.remove('show');
+    playZoneBGM(G.zone);
+    lastTime = performance.now();
+    requestAnimationFrame(gameLoop);
+  }
+}
+
+function endGame() {
+  G.running = false;
+  stopBGM();
+  const cleanPct = G.totalSpawned > 0 ? Math.round(G.cleanCount/G.totalSpawned*100) : 0;
+  saveScore(G.nickname, G.score, cleanPct);
+  showResult(cleanPct);
+}
+
+function showResult(cleanPct) {
+  showScreen('resultScreen');
+  let emoji, title, desc, color;
+  if (cleanPct >= 90 || G.bossDefeated) {
+    emoji='✨'; title='완전 정화!'; color='#00e5ff';
+    desc='완벽합니다! 충주 하늘이 맑아졌어요. 미랩 드론 에이스 조종사!';
+  } else if (cleanPct >= 70) {
+    emoji='🌤️'; title='부분 성공!'; color='#44ff88';
+    desc='잘 했어요! 대부분의 오염물을 제거했어요. 조금만 더 연습하면 완벽!';
+  } else if (cleanPct >= 50) {
+    emoji='🌫️'; title='아슬아슬...'; color='#ffaa00';
+    desc='드론이 손상됐지만 포기하지 마세요. 다시 도전해 보세요!';
+  } else {
+    emoji='💥'; title='미션 실패'; color='#ff4444';
+    desc='오염물에 압도당했어요. 다시 도전해서 하늘을 지켜주세요!';
+  }
+  document.getElementById('resultEmoji').textContent = emoji;
+  document.getElementById('resultTitle').textContent = title;
+  document.getElementById('resultTitle').style.color = color;
+  document.getElementById('resultScore').textContent = `${G.score.toLocaleString()}점 | 정화율 ${cleanPct}%`;
+  document.getElementById('resultDesc').textContent = desc;
+  renderRankList();
+}
+
+// ═══════════════════════════════════════════════
+//  LEADERBOARD
+// ═══════════════════════════════════════════════
+const LB_KEY = 'milab_game_030_lb';
+function saveScore(name, score, pct) {
+  let lb = [];
+  try { lb = JSON.parse(localStorage.getItem(LB_KEY)) || []; } catch(e){}
+  lb.push({ name, score, pct, date: new Date().toLocaleDateString('ko-KR') });
+  lb.sort((a,b) => b.score - a.score);
+  lb = lb.slice(0, 10);
+  localStorage.setItem(LB_KEY, JSON.stringify(lb));
+}
+function renderRankList() {
+  let lb = [];
+  try { lb = JSON.parse(localStorage.getItem(LB_KEY)) || []; } catch(e){}
+  const medals = ['🥇','🥈','🥉','4️⃣','5️⃣','6️⃣','7️⃣','8️⃣','9️⃣','🔟'];
+  document.getElementById('rankList').innerHTML = lb.slice(0,5).map((r,i) =>
+    `<div class="rank-item">
+      <span class="rank-medal">${medals[i]}</span>
+      <span class="rank-name">${r.name}</span>
+      <span class="rank-pts">${r.score.toLocaleString()}점</span>
+    </div>`
+  ).join('') || '<div style="color:#888;text-align:center;font-size:0.8rem;">아직 기록 없음</div>';
+}
+
+function resetGame() {
+  showScreen('titleScreen');
+  stopBGM();
+}
+
+// ═══════════════════════════════════════════════
+//  QR CODE
+// ═══════════════════════════════════════════════
+function showQR() {
+  const container = document.getElementById('qrContainer');
+  container.innerHTML = '';
+  const url = 'https://milab2019.github.io/main/milab_drone_clean_030.html';
+  try {
+    new QRCode(container, { text: url, width:140, height:140, colorDark:'#00e5ff', colorLight:'#000510' });
+  } catch(e) {
+    container.innerHTML = `<div style="color:#00e5ff;font-size:0.8rem;text-align:center;">🔗 ${url}</div>`;
+  }
+}
+
+// ═══════════════════════════════════════════════
+//  PORTFOLIO ENTRY
+// ═══════════════════════════════════════════════
+const portfolioEntry = {
+  id: "030",
+  title: "🚁 드론 클린 미션",
+  category: "모두의 학급",
+  target: "전체",
+  duration: "3분",
+  playMode: "솔로 | 릴레이",
+  topic: "드론조종 | 환경교육 | 아이스브레이킹",
+  filename: "milab_drone_clean_030.html",
+  url: "https://milab2019.github.io/main/milab_drone_clean_030.html",
+  date: "2026.04.03 개발",
+  skills: ["Web Audio API", "Canvas 2D", "LocalStorage", "QRCode.js"],
+  description: "갤러그형 슈팅! 드론으로 폭탄·쓰레기·오염물 격추, 6구역 30초 단위 자동 난이도 상승, 보스 배틀 포함"
+};
+console.log(portfolioEntry);
+</script>
+</body>
+</html>
