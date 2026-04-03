@@ -1,0 +1,727 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>XR 수호대 — VR·AR 세계를 구하라!</title>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-WTY6YJQ1NS"></script>
+<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-WTY6YJQ1NS');</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<style>
+:root{--bg1:#e0f0ff;--bg2:#d8e8ff;--p:#4a6cf7;--pd:#3355dd;--acc:#ff6eb4;--acc2:#7c5fff;--ok:#22c55e;--no:#ef4444;--warn:#f59e0b;--card:#ffffffcc;--sh:0 4px 24px #4a6cf733;--r:18px;}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Noto Sans KR',sans-serif;background:linear-gradient(135deg,var(--bg1),var(--bg2));min-height:100vh;color:#222;overflow-x:hidden;}
+#topBar{position:fixed;top:0;left:0;right:0;z-index:999;background:#4a6cf7ee;backdrop-filter:blur(8px);display:flex;align-items:center;justify-content:space-between;padding:8px 18px;color:#fff;font-size:14px;}
+#topBar .logo{font-weight:900;font-size:16px;}
+#musicBtn{background:#fff3;border:none;color:#fff;font-size:22px;cursor:pointer;border-radius:50%;width:40px;height:40px;display:flex;align-items:center;justify-content:center;}
+.screen{display:none;min-height:100vh;padding:70px 16px 30px;flex-direction:column;align-items:center;}
+.screen.active{display:flex;}
+.card{background:var(--card);border-radius:var(--r);box-shadow:var(--sh);padding:24px 20px;width:100%;max-width:640px;margin-bottom:16px;backdrop-filter:blur(6px);}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:52px;padding:12px 28px;border-radius:50px;border:none;font-size:17px;font-weight:700;cursor:pointer;transition:transform .15s;box-shadow:0 4px 14px #0002;font-family:'Noto Sans KR',sans-serif;}
+.btn:active{transform:scale(.96);}
+.btn-p{background:linear-gradient(135deg,var(--p),var(--acc2));color:#fff;}
+.btn-ok{background:linear-gradient(135deg,var(--ok),#16a34a);color:#fff;}
+.btn-w{background:linear-gradient(135deg,var(--warn),#d97706);color:#fff;}
+.btn-g{background:#e5e7eb;color:#374151;}
+.btn:disabled{opacity:.5;cursor:not-allowed;transform:none;}
+.mascot-wrap{display:flex;flex-direction:column;align-items:center;margin:10px 0;}
+.mascot-svg{width:110px;height:110px;}
+.bubble{background:#fff;border:2.5px solid var(--p);border-radius:16px;padding:10px 16px;font-size:14px;max-width:260px;text-align:center;position:relative;margin-top:8px;color:#333;line-height:1.5;}
+.bubble::before{content:'';position:absolute;top:-13px;left:50%;transform:translateX(-50%);border:7px solid transparent;border-bottom-color:var(--p);}
+.prog-wrap{width:100%;max-width:640px;margin-bottom:12px;}
+.prog-label{font-size:13px;color:#555;margin-bottom:4px;display:flex;justify-content:space-between;}
+.prog-bar{height:12px;background:#dde4f7;border-radius:10px;overflow:hidden;}
+.prog-fill{height:100%;background:linear-gradient(90deg,var(--p),var(--acc));border-radius:10px;transition:width .4s;}
+.tmr{font-size:26px;font-weight:900;color:var(--p);}
+.tmr.danger{color:var(--no);animation:blink .5s infinite;}
+@keyframes blink{0%,100%{opacity:1;}50%{opacity:.3;}}
+.m-tab{padding:10px 20px;border-radius:50px;border:2.5px solid var(--p);background:#fff;color:var(--p);font-weight:700;font-size:15px;cursor:pointer;transition:all .2s;}
+.m-tab.active,.m-tab:hover:not(.locked){background:var(--p);color:#fff;}
+.m-tab.locked{border-color:#ccc;color:#aaa;cursor:not-allowed;}
+.m-tab.done{border-color:var(--ok);color:var(--ok);}
+.opts{display:flex;flex-direction:column;gap:12px;margin:14px 0;}
+.opt{padding:14px 18px;border-radius:14px;border:2.5px solid #dde4f7;background:#f8faff;font-size:16px;cursor:pointer;transition:all .2s;text-align:left;font-family:'Noto Sans KR',sans-serif;min-height:52px;}
+.opt:hover{border-color:var(--p);background:#eef2ff;}
+.opt.correct{border-color:var(--ok);background:#dcfce7;color:#166534;}
+.opt.wrong{border-color:var(--no);background:#fee2e2;color:#991b1b;}
+.d-tab{padding:8px 18px;border-radius:50px;border:2px solid #dde4f7;background:#f8faff;font-size:14px;font-weight:700;cursor:pointer;transition:all .2s;}
+.d-tab.active{background:var(--acc2);color:#fff;border-color:var(--acc2);}
+.sort-item{padding:14px 18px;border-radius:14px;border:2.5px solid #dde4f7;background:#f8faff;font-size:15px;cursor:grab;transition:box-shadow .2s;display:flex;align-items:center;gap:10px;user-select:none;margin-bottom:10px;}
+.sort-item.dragging{opacity:.5;box-shadow:0 8px 24px #4a6cf755;}
+.sort-item.drag-over{border-color:var(--p);background:#eef2ff;}
+.sort-handle{font-size:20px;color:#aaa;}
+.chart-wrap{overflow-x:auto;margin:14px 0;}
+.bar-chart{display:flex;align-items:flex-end;gap:10px;height:200px;padding:0 8px;}
+.bar-col{display:flex;flex-direction:column;align-items:center;gap:4px;min-width:52px;}
+.bar{width:42px;border-radius:8px 8px 0 0;position:relative;}
+.bar-val{font-size:12px;font-weight:700;color:#555;}
+.bar-label{font-size:11px;color:#666;text-align:center;line-height:1.3;}
+.badge{padding:6px 14px;border-radius:50px;font-size:13px;font-weight:700;background:linear-gradient(135deg,var(--warn),#f97316);color:#fff;}
+.badge-row{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin:10px 0;}
+.hint-btn{background:#fff3;border:2px solid var(--warn);color:var(--warn);border-radius:50px;padding:6px 16px;font-size:13px;font-weight:700;cursor:pointer;font-family:'Noto Sans KR',sans-serif;}
+.hint-box{background:#fffbeb;border:2px solid var(--warn);border-radius:12px;padding:10px 14px;font-size:14px;color:#92400e;margin-top:8px;display:none;}
+.result-score{font-size:54px;font-weight:900;color:var(--p);text-align:center;}
+.lb-list{list-style:none;width:100%;}
+.lb-list li{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-radius:10px;margin-bottom:6px;background:#f8faff;font-size:15px;}
+.lb-list li:first-child{background:linear-gradient(135deg,#fef9c3,#fde68a);}
+.qr-wrap{display:flex;flex-direction:column;align-items:center;gap:8px;margin:14px 0;}
+.qr-wrap p{font-size:13px;color:#666;}
+#qrcode img,#qrcode2 img{display:none!important;}
+.inner{width:100%;max-width:640px;display:flex;flex-direction:column;align-items:center;}
+@keyframes pop{0%{transform:scale(.7);opacity:0;}80%{transform:scale(1.05);}100%{transform:scale(1);opacity:1;}}
+@keyframes float{0%,100%{transform:translateY(0);}50%{transform:translateY(-8px);}}
+.pop{animation:pop .4s ease;}
+.floating{animation:float 3s ease-in-out infinite;}
+#fbOverlay{position:fixed;inset:0;z-index:9999;display:none;align-items:center;justify-content:center;background:#0006;}
+#fbOverlay.show{display:flex;}
+.fb-box{background:#fff;border-radius:24px;padding:32px 28px;max-width:340px;width:90%;text-align:center;animation:pop .35s ease;}
+.fb-box h3{font-size:24px;margin-bottom:10px;}
+.fb-box p{font-size:15px;color:#555;line-height:1.6;margin-bottom:16px;}
+.title-hero{font-size:32px;font-weight:900;text-align:center;background:linear-gradient(135deg,var(--p),var(--acc));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;line-height:1.2;margin:10px 0;}
+.sub{font-size:16px;color:#555;text-align:center;margin-bottom:14px;line-height:1.6;}
+.tag{padding:5px 14px;border-radius:50px;font-size:13px;font-weight:700;border:2px solid var(--p);color:var(--p);}
+.tag-row{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin:10px 0;}
+.notice{background:#eef2ff;border-left:4px solid var(--p);border-radius:0 12px 12px 0;padding:10px 14px;font-size:14px;color:#3730a3;margin:10px 0;line-height:1.6;}
+.set-lbl{font-size:13px;font-weight:700;color:var(--acc2);background:#f3f0ff;border-radius:50px;padding:4px 14px;display:inline-block;margin-bottom:8px;}
+input[type=text]{width:100%;padding:12px 16px;border-radius:12px;border:2px solid #dde4f7;font-size:16px;font-family:'Noto Sans KR',sans-serif;outline:none;transition:border-color .2s;}
+input[type=text]:focus{border-color:var(--p);}
+.mission-tabs{display:flex;gap:10px;margin-bottom:18px;flex-wrap:wrap;justify-content:center;}
+.diff-tabs{display:flex;gap:8px;margin-bottom:16px;}
+.sort-area{display:flex;flex-direction:column;}
+</style>
+</head>
+<body>
+<div id="topBar">
+  <div class="logo">🥽 XR 수호대</div>
+  <div></div>
+  <button id="musicBtn" onclick="toggleMusic()">🎵</button>
+</div>
+
+<div id="fbOverlay">
+  <div class="fb-box">
+    <h3 id="fbTitle"></h3>
+    <p id="fbMsg"></p>
+    <button class="btn btn-p" onclick="closeFb()">계속하기 ▶</button>
+  </div>
+</div>
+
+<!-- S0: TITLE -->
+<div class="screen active" id="s0">
+<div class="inner">
+  <div class="mascot-wrap floating">
+    <svg class="mascot-svg" viewBox="0 0 110 110">
+      <rect x="25" y="45" width="60" height="50" rx="14" fill="#4a6cf7"/>
+      <rect x="30" y="10" width="50" height="42" rx="12" fill="#7c5fff"/>
+      <rect x="24" y="20" width="62" height="26" rx="10" fill="#222" opacity=".85"/>
+      <rect x="28" y="23" width="54" height="18" rx="7" fill="#4a6cf7" opacity=".7"/>
+      <ellipse cx="43" cy="32" rx="10" ry="8" fill="#60a5fa" opacity=".9"/>
+      <ellipse cx="67" cy="32" rx="10" ry="8" fill="#60a5fa" opacity=".9"/>
+      <ellipse cx="40" cy="28" rx="4" ry="3" fill="#fff" opacity=".5"/>
+      <ellipse cx="64" cy="28" rx="4" ry="3" fill="#fff" opacity=".5"/>
+      <path d="M42 60 Q55 70 68 60" stroke="#fff" stroke-width="3" fill="none" stroke-linecap="round"/>
+      <rect x="5" y="52" width="22" height="12" rx="6" fill="#7c5fff"/>
+      <rect x="83" y="52" width="22" height="12" rx="6" fill="#7c5fff"/>
+      <rect x="32" y="88" width="16" height="14" rx="6" fill="#3355dd"/>
+      <rect x="62" y="88" width="16" height="14" rx="6" fill="#3355dd"/>
+      <line x1="55" y1="10" x2="55" y2="2" stroke="#ff6eb4" stroke-width="3"/>
+      <circle cx="55" cy="1" r="3" fill="#ff6eb4"/>
+      <text x="6" y="45" font-size="11" fill="#ff6eb4">AR</text>
+      <text x="88" y="45" font-size="11" fill="#60a5fa">VR</text>
+    </svg>
+    <div class="bubble">안녕! 나는 <b>빅스(VIXS)</b>야!<br>XR 수호대의 AI 로봇 🤖</div>
+  </div>
+  <h1 class="title-hero">XR 수호대<br>VR·AR 세계를 구하라!</h1>
+  <p class="sub">2046년, 가상현실 시스템에 바이러스가 침투했어!<br>XR 수호대 신입 요원으로 4가지 미션을 완수하고<br>디지털 세계를 복구하라!</p>
+  <div class="tag-row">
+    <span class="tag">🎯 초등 5~6학년</span>
+    <span class="tag">📚 실과+사회+도덕</span>
+    <span class="tag">🥽 VR·AR</span>
+    <span class="tag">4미션</span>
+  </div>
+  <div class="card">
+    <div style="font-size:15px;font-weight:700;margin-bottom:10px">📋 미션 목록</div>
+    <div style="display:flex;flex-direction:column;gap:8px;font-size:14px;">
+      <div>🔵 미션 1 — VR·AR 개념 분류 <span style="color:#aaa;font-size:12px">(60초)</span></div>
+      <div>🟣 미션 2 — 교과 융합 퀴즈 <span style="color:#aaa;font-size:12px">(쉬움→보통→도전)</span></div>
+      <div>🟡 미션 3 — 기술 발전 순서 정렬 <span style="color:#aaa;font-size:12px">(3세트)</span></div>
+      <div>🟢 미션 4 — XR 데이터 분석</div>
+    </div>
+  </div>
+  <div style="margin:8px 0;font-size:15px;color:#555;">닉네임을 입력해 주세요</div>
+  <input type="text" id="nickInput" placeholder="예: XR탐험가" maxlength="10" style="max-width:320px;margin-bottom:14px;">
+  <button class="btn btn-p" onclick="startGame()" style="font-size:19px;padding:16px 48px;margin-bottom:18px;">🚀 게임 시작!</button>
+  <div class="qr-wrap"><p>📲 QR코드로 공유하세요!</p><div id="qrcode"></div></div>
+</div>
+</div>
+
+<!-- S1: HUB -->
+<div class="screen" id="s1">
+<div class="inner">
+  <div style="text-align:center;margin-bottom:6px;">
+    <div style="font-size:18px;font-weight:700;">🛡️ XR 수호대 — 임무 센터</div>
+    <div style="font-size:14px;color:#555;" id="hubNick"></div>
+  </div>
+  <div class="prog-wrap">
+    <div class="prog-label"><span>전체 진행률</span><span id="hubPct">0%</span></div>
+    <div class="prog-bar"><div class="prog-fill" id="hubFill" style="width:0%"></div></div>
+  </div>
+  <div class="badge-row" id="hubBadges"></div>
+  <div class="mascot-wrap">
+    <svg class="mascot-svg" viewBox="0 0 110 110">
+      <rect x="25" y="45" width="60" height="50" rx="14" fill="#4a6cf7"/>
+      <rect x="30" y="10" width="50" height="42" rx="12" fill="#7c5fff"/>
+      <rect x="24" y="20" width="62" height="26" rx="10" fill="#222" opacity=".85"/>
+      <rect x="28" y="23" width="54" height="18" rx="7" fill="#4a6cf7" opacity=".7"/>
+      <ellipse cx="43" cy="32" rx="10" ry="8" fill="#60a5fa" opacity=".9"/>
+      <ellipse cx="67" cy="32" rx="10" ry="8" fill="#60a5fa" opacity=".9"/>
+      <ellipse cx="40" cy="28" rx="4" ry="3" fill="#fff" opacity=".5"/>
+      <ellipse cx="64" cy="28" rx="4" ry="3" fill="#fff" opacity=".5"/>
+      <path d="M42 60 Q55 70 68 60" stroke="#fff" stroke-width="3" fill="none" stroke-linecap="round"/>
+      <rect x="5" y="52" width="22" height="12" rx="6" fill="#7c5fff"/>
+      <rect x="83" y="52" width="22" height="12" rx="6" fill="#7c5fff"/>
+      <rect x="32" y="88" width="16" height="14" rx="6" fill="#3355dd"/>
+      <rect x="62" y="88" width="16" height="14" rx="6" fill="#3355dd"/>
+      <line x1="55" y1="10" x2="55" y2="2" stroke="#ff6eb4" stroke-width="3"/>
+      <circle cx="55" cy="1" r="3" fill="#ff6eb4"/>
+    </svg>
+    <div class="bubble" id="hubBubble">미션을 선택해서 임무를 시작해 봐!</div>
+  </div>
+  <div class="mission-tabs">
+    <button class="m-tab active" onclick="goM(1)" id="tab1">🔵 미션 1</button>
+    <button class="m-tab locked" onclick="goM(2)" id="tab2">🟣 미션 2</button>
+    <button class="m-tab locked" onclick="goM(3)" id="tab3">🟡 미션 3</button>
+    <button class="m-tab locked" onclick="goM(4)" id="tab4">🟢 미션 4</button>
+  </div>
+  <div id="mCards" style="width:100%;display:flex;flex-direction:column;gap:12px;"></div>
+</div>
+</div>
+
+<!-- S2: M1 -->
+<div class="screen" id="s2">
+<div class="inner">
+  <div class="card">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+      <div style="font-size:18px;font-weight:900;">🔵 미션 1 — VR·AR 개념 분류</div>
+      <div class="tmr" id="tmr1">⏱ <span id="tv1">60</span>초</div>
+    </div>
+    <div style="font-size:13px;color:#666;margin-bottom:6px;" id="m1lbl"></div>
+    <div class="prog-bar"><div class="prog-fill" id="m1p" style="width:0%"></div></div>
+  </div>
+  <div class="card pop" id="m1card">
+    <div class="set-lbl" id="m1sl"></div>
+    <div style="font-size:17px;font-weight:700;margin-bottom:8px;" id="m1q"></div>
+    <div class="opts" id="m1opts"></div>
+    <button class="hint-btn" onclick="showHint(1)" id="hb1" style="margin-top:6px;">💡 힌트 (-50%)</button>
+    <div class="hint-box" id="hbox1"></div>
+  </div>
+  <div class="mascot-wrap">
+    <svg class="mascot-svg" viewBox="0 0 110 110">
+      <rect x="25" y="45" width="60" height="50" rx="14" fill="#4a6cf7"/>
+      <rect x="30" y="10" width="50" height="42" rx="12" fill="#7c5fff"/>
+      <rect x="24" y="20" width="62" height="26" rx="10" fill="#222" opacity=".85"/>
+      <rect x="28" y="23" width="54" height="18" rx="7" fill="#4a6cf7" opacity=".7"/>
+      <ellipse cx="43" cy="32" rx="10" ry="8" fill="#60a5fa" opacity=".9"/>
+      <ellipse cx="67" cy="32" rx="10" ry="8" fill="#60a5fa" opacity=".9"/>
+      <ellipse cx="40" cy="28" rx="4" ry="3" fill="#fff" opacity=".5"/>
+      <ellipse cx="64" cy="28" rx="4" ry="3" fill="#fff" opacity=".5"/>
+      <path d="M42 60 Q55 70 68 60" stroke="#fff" stroke-width="3" fill="none" stroke-linecap="round" id="m1mouth"/>
+      <rect x="5" y="52" width="22" height="12" rx="6" fill="#7c5fff"/>
+      <rect x="83" y="52" width="22" height="12" rx="6" fill="#7c5fff"/>
+      <rect x="32" y="88" width="16" height="14" rx="6" fill="#3355dd"/>
+      <rect x="62" y="88" width="16" height="14" rx="6" fill="#3355dd"/>
+      <line x1="55" y1="10" x2="55" y2="2" stroke="#ff6eb4" stroke-width="3"/>
+      <circle cx="55" cy="1" r="3" fill="#ff6eb4"/>
+    </svg>
+    <div class="bubble" id="m1bub">VR과 AR의 차이를 잘 구분해 봐! 🥽</div>
+  </div>
+</div>
+</div>
+
+<!-- S3: M2 -->
+<div class="screen" id="s3">
+<div class="inner">
+  <div class="card">
+    <div style="font-size:18px;font-weight:900;margin-bottom:4px;">🟣 미션 2 — 교과 융합 퀴즈</div>
+    <div class="diff-tabs">
+      <div class="d-tab active" onclick="setDiff(0)" id="dt0">🟢 쉬움</div>
+      <div class="d-tab" onclick="setDiff(1)" id="dt1">🟡 보통</div>
+      <div class="d-tab" onclick="setDiff(2)" id="dt2">🔴 도전</div>
+    </div>
+    <div style="display:flex;justify-content:space-between;align-items:center;">
+      <div style="font-size:13px;color:#666;" id="m2info"></div>
+      <div class="tmr" id="tmr2">⏱ <span id="tv2">30</span>초</div>
+    </div>
+    <div class="prog-bar" style="margin-top:6px;"><div class="prog-fill" id="m2p" style="width:0%"></div></div>
+  </div>
+  <div class="card pop" id="m2card">
+    <div class="set-lbl" id="m2sl"></div>
+    <div style="font-size:17px;font-weight:700;margin-bottom:6px;" id="m2q"></div>
+    <div class="notice" id="m2notice" style="display:none;"></div>
+    <div class="opts" id="m2opts"></div>
+    <button class="hint-btn" onclick="showHint(2)" id="hb2" style="margin-top:6px;">💡 힌트 (-50%)</button>
+    <div class="hint-box" id="hbox2"></div>
+  </div>
+  <div class="mascot-wrap">
+    <svg class="mascot-svg" viewBox="0 0 110 110">
+      <rect x="25" y="45" width="60" height="50" rx="14" fill="#4a6cf7"/>
+      <rect x="30" y="10" width="50" height="42" rx="12" fill="#7c5fff"/>
+      <rect x="24" y="20" width="62" height="26" rx="10" fill="#222" opacity=".85"/>
+      <rect x="28" y="23" width="54" height="18" rx="7" fill="#4a6cf7" opacity=".7"/>
+      <ellipse cx="43" cy="32" rx="10" ry="8" fill="#60a5fa" opacity=".9"/>
+      <ellipse cx="67" cy="32" rx="10" ry="8" fill="#60a5fa" opacity=".9"/>
+      <ellipse cx="40" cy="28" rx="4" ry="3" fill="#fff" opacity=".5"/>
+      <ellipse cx="64" cy="28" rx="4" ry="3" fill="#fff" opacity=".5"/>
+      <path d="M42 60 Q55 70 68 60" stroke="#fff" stroke-width="3" fill="none" stroke-linecap="round" id="m2mouth"/>
+      <rect x="5" y="52" width="22" height="12" rx="6" fill="#7c5fff"/>
+      <rect x="83" y="52" width="22" height="12" rx="6" fill="#7c5fff"/>
+      <rect x="32" y="88" width="16" height="14" rx="6" fill="#3355dd"/>
+      <rect x="62" y="88" width="16" height="14" rx="6" fill="#3355dd"/>
+      <line x1="55" y1="10" x2="55" y2="2" stroke="#ff6eb4" stroke-width="3"/>
+      <circle cx="55" cy="1" r="3" fill="#ff6eb4"/>
+    </svg>
+    <div class="bubble" id="m2bub">어려울수록 점수가 높아! 도전해 봐! 💪</div>
+  </div>
+</div>
+</div>
+
+<!-- S4: M3 -->
+<div class="screen" id="s4">
+<div class="inner">
+  <div class="card">
+    <div style="font-size:18px;font-weight:900;margin-bottom:4px;">🟡 미션 3 — 기술 발전 순서 정렬</div>
+    <div style="font-size:14px;color:#666;">드래그해서 올바른 순서로 정렬하세요!</div>
+  </div>
+  <div class="card pop" id="m3card">
+    <div class="set-lbl" id="m3sl"></div>
+    <div style="font-size:16px;font-weight:700;margin-bottom:4px;" id="m3title"></div>
+    <div style="font-size:14px;color:#666;margin-bottom:10px;">항목을 드래그해서 순서를 맞춰보세요!</div>
+    <div class="sort-area" id="sortArea"></div>
+    <div style="display:flex;gap:10px;margin-top:14px;flex-wrap:wrap;">
+      <button class="btn btn-ok" onclick="checkSort()">✅ 확인</button>
+      <button class="btn btn-g" onclick="shuffleSort()">🔀 섞기</button>
+    </div>
+    <div class="hint-box" id="m3fb" style="margin-top:10px;"></div>
+  </div>
+  <div style="display:flex;gap:10px;justify-content:center;margin:10px 0;flex-wrap:wrap;">
+    <button class="btn btn-g" onclick="prevSet()" id="prevBtn">◀ 이전</button>
+    <button class="btn btn-p" onclick="nextSet()" id="nextBtn">다음 ▶</button>
+    <button class="btn btn-ok" onclick="finishM3()" id="finBtn" style="display:none;">미션 완료 🎉</button>
+  </div>
+  <div class="mascot-wrap">
+    <svg class="mascot-svg" viewBox="0 0 110 110">
+      <rect x="25" y="45" width="60" height="50" rx="14" fill="#4a6cf7"/>
+      <rect x="30" y="10" width="50" height="42" rx="12" fill="#7c5fff"/>
+      <rect x="24" y="20" width="62" height="26" rx="10" fill="#222" opacity=".85"/>
+      <rect x="28" y="23" width="54" height="18" rx="7" fill="#4a6cf7" opacity=".7"/>
+      <ellipse cx="43" cy="32" rx="10" ry="8" fill="#60a5fa" opacity=".9"/>
+      <ellipse cx="67" cy="32" rx="10" ry="8" fill="#60a5fa" opacity=".9"/>
+      <ellipse cx="40" cy="28" rx="4" ry="3" fill="#fff" opacity=".5"/>
+      <ellipse cx="64" cy="28" rx="4" ry="3" fill="#fff" opacity=".5"/>
+      <path d="M42 60 Q55 70 68 60" stroke="#fff" stroke-width="3" fill="none" stroke-linecap="round"/>
+      <rect x="5" y="52" width="22" height="12" rx="6" fill="#7c5fff"/>
+      <rect x="83" y="52" width="22" height="12" rx="6" fill="#7c5fff"/>
+      <rect x="32" y="88" width="16" height="14" rx="6" fill="#3355dd"/>
+      <rect x="62" y="88" width="16" height="14" rx="6" fill="#3355dd"/>
+      <line x1="55" y1="10" x2="55" y2="2" stroke="#ff6eb4" stroke-width="3"/>
+      <circle cx="55" cy="1" r="3" fill="#ff6eb4"/>
+    </svg>
+    <div class="bubble">기술의 역사를 순서대로 정리해 봐! 📅</div>
+  </div>
+</div>
+</div>
+
+<!-- S5: M4 -->
+<div class="screen" id="s5">
+<div class="inner">
+  <div class="card">
+    <div style="font-size:18px;font-weight:900;margin-bottom:4px;">🟢 미션 4 — XR 데이터 분석</div>
+  </div>
+  <div class="card">
+    <div style="font-size:15px;font-weight:700;margin-bottom:10px;">📊 국내 XR 기술 활용 분야별 시장 규모 (2023년, 단위: 억 원)</div>
+    <div class="chart-wrap"><div class="bar-chart" id="barChart"></div></div>
+    <div style="font-size:12px;color:#aaa;margin-top:6px;">※ 교육용 가상 데이터입니다</div>
+  </div>
+  <div class="card pop" id="m4card">
+    <div class="set-lbl" id="m4sl"></div>
+    <div style="font-size:17px;font-weight:700;margin-bottom:6px;" id="m4q"></div>
+    <div class="notice" id="m4notice" style="display:none;"></div>
+    <div class="opts" id="m4opts"></div>
+    <button class="hint-btn" onclick="showHint(4)" id="hb4" style="margin-top:6px;">💡 힌트 (-50%)</button>
+    <div class="hint-box" id="hbox4"></div>
+  </div>
+  <div class="mascot-wrap">
+    <svg class="mascot-svg" viewBox="0 0 110 110">
+      <rect x="25" y="45" width="60" height="50" rx="14" fill="#4a6cf7"/>
+      <rect x="30" y="10" width="50" height="42" rx="12" fill="#7c5fff"/>
+      <rect x="24" y="20" width="62" height="26" rx="10" fill="#222" opacity=".85"/>
+      <rect x="28" y="23" width="54" height="18" rx="7" fill="#4a6cf7" opacity=".7"/>
+      <ellipse cx="43" cy="32" rx="10" ry="8" fill="#60a5fa" opacity=".9"/>
+      <ellipse cx="67" cy="32" rx="10" ry="8" fill="#60a5fa" opacity=".9"/>
+      <ellipse cx="40" cy="28" rx="4" ry="3" fill="#fff" opacity=".5"/>
+      <ellipse cx="64" cy="28" rx="4" ry="3" fill="#fff" opacity=".5"/>
+      <path d="M42 60 Q55 70 68 60" stroke="#fff" stroke-width="3" fill="none" stroke-linecap="round"/>
+      <rect x="5" y="52" width="22" height="12" rx="6" fill="#7c5fff"/>
+      <rect x="83" y="52" width="22" height="12" rx="6" fill="#7c5fff"/>
+      <rect x="32" y="88" width="16" height="14" rx="6" fill="#3355dd"/>
+      <rect x="62" y="88" width="16" height="14" rx="6" fill="#3355dd"/>
+      <line x1="55" y1="10" x2="55" y2="2" stroke="#ff6eb4" stroke-width="3"/>
+      <circle cx="55" cy="1" r="3" fill="#ff6eb4"/>
+    </svg>
+    <div class="bubble">그래프를 잘 읽으면 데이터 전문가! 📊</div>
+  </div>
+</div>
+</div>
+
+<!-- S6: RESULT -->
+<div class="screen" id="s6">
+<div class="inner">
+  <div class="mascot-wrap floating">
+    <svg class="mascot-svg" viewBox="0 0 110 110">
+      <rect x="25" y="45" width="60" height="50" rx="14" fill="#4a6cf7"/>
+      <rect x="30" y="10" width="50" height="42" rx="12" fill="#7c5fff"/>
+      <rect x="24" y="20" width="62" height="26" rx="10" fill="#222" opacity=".85"/>
+      <rect x="28" y="23" width="54" height="18" rx="7" fill="#4a6cf7" opacity=".7"/>
+      <ellipse cx="43" cy="32" rx="10" ry="8" fill="#60a5fa" opacity=".9"/>
+      <ellipse cx="67" cy="32" rx="10" ry="8" fill="#60a5fa" opacity=".9"/>
+      <ellipse cx="40" cy="28" rx="4" ry="3" fill="#fff" opacity=".5"/>
+      <ellipse cx="64" cy="28" rx="4" ry="3" fill="#fff" opacity=".5"/>
+      <path d="M38 58 Q55 75 72 58" stroke="#fff" stroke-width="3.5" fill="none" stroke-linecap="round"/>
+      <rect x="5" y="52" width="22" height="12" rx="6" fill="#7c5fff"/>
+      <rect x="83" y="52" width="22" height="12" rx="6" fill="#7c5fff"/>
+      <rect x="32" y="88" width="16" height="14" rx="6" fill="#3355dd"/>
+      <rect x="62" y="88" width="16" height="14" rx="6" fill="#3355dd"/>
+      <line x1="55" y1="10" x2="55" y2="2" stroke="#ff6eb4" stroke-width="3"/>
+      <circle cx="55" cy="1" r="3" fill="#ff6eb4"/>
+      <text x="12" y="16" font-size="14" fill="#fde68a">⭐</text>
+      <text x="80" y="16" font-size="14" fill="#fde68a">⭐</text>
+    </svg>
+  </div>
+  <div class="card" style="text-align:center;">
+    <div style="font-size:32px;margin-bottom:6px;" id="resEmoji">🎉</div>
+    <div class="result-score" id="resScore"></div>
+    <div style="font-size:20px;font-weight:700;margin:8px 0;" id="resRank"></div>
+    <div style="font-size:15px;color:#555;margin:8px 0;line-height:1.6;" id="resDesc"></div>
+    <div class="badge-row" id="resBadges"></div>
+  </div>
+  <div class="card">
+    <div style="font-size:16px;font-weight:700;margin-bottom:10px;">🏆 명예의 전당</div>
+    <ul class="lb-list" id="lbList"></ul>
+    <input type="text" id="lbName" placeholder="이름 입력!" maxlength="10" style="margin:10px 0;">
+    <button class="btn btn-w" onclick="saveLb()" style="width:100%;">⭐ 점수 등록</button>
+  </div>
+  <button class="btn btn-p" onclick="restart()" style="margin:10px 0;">🔄 다시 도전!</button>
+  <div class="qr-wrap"><p>📲 친구에게 공유하기</p><div id="qrcode2"></div></div>
+</div>
+</div>
+
+<script>
+// ===== DATA =====
+const M1Q=[
+  // 쉬움 4문항
+  {q:"VR(가상현실)은 어떤 환경을 만들어 내나요?",opts:["완전히 새로운 가상 공간","현실에 그림을 더하는 환경","인터넷만 사용하는 환경","카메라로 촬영한 영상"],ans:0,hint:"VR 헬멧을 쓰면 완전히 다른 세계로 이동해요!",pt:10,ex:"VR(Virtual Reality)은 현실과 전혀 다른 완전한 가상 공간을 만들어요."},
+  {q:"AR(증강현실)의 뜻으로 올바른 것은?",opts:["현실 위에 디지털 정보를 덧붙임","완전한 가상 세계를 만듦","로봇이 대신 일하는 기술","인터넷으로 물건을 사는 것"],ans:0,hint:"AR = 더한다(증강). 현실을 살리면서 정보를 더해요!",pt:10,ex:"AR은 현실 위에 디지털 정보(이미지, 글자 등)를 겹쳐 보여주는 기술이에요."},
+  {q:"VR을 경험하려면 보통 무엇이 필요한가요?",opts:["VR 헤드셋(고글)","스마트 텔레비전","드론","3D 프린터"],ans:0,hint:"눈을 완전히 가리는 특별한 장치가 필요해요!",pt:10,ex:"VR 헤드셋을 착용하면 가상 세계를 360도로 경험할 수 있어요."},
+  {q:"AR 기술을 활용한 게임의 예로 올바른 것은?",opts:["포켓몬 GO","마인크래프트","배틀그라운드","테트리스"],ans:0,hint:"스마트폰 카메라로 현실 속 캐릭터를 잡는 게임이에요!",pt:10,ex:"포켓몬 GO는 스마트폰 카메라로 현실 공간에 포켓몬이 나타나는 AR 게임이에요."},
+  // 보통 4문항
+  {q:"다음 중 AR 기술과 관련이 없는 것은?",opts:["우주 위성 발사","수술실 의료 보조","스마트폰 얼굴 필터","박물관 전시 설명"],ans:0,hint:"AR은 현실과 연결된 곳에 주로 쓰여요!",pt:15,ex:"AR은 의료·스마트폰 필터·박물관 등에 활용되지만 우주 위성 발사와는 직접 관련이 없어요."},
+  {q:"VR과 AR의 가장 큰 차이점은 무엇인가요?",opts:["VR은 현실을 차단하고, AR은 현실 위에 정보를 추가한다","VR은 무료이고, AR은 유료이다","VR은 어른만 쓸 수 있고, AR은 누구나 쓸 수 있다","VR은 게임 전용이고, AR은 공부 전용이다"],ans:0,hint:"VR은 현실을 '가리고', AR은 현실을 '살리며' 정보를 더해요!",pt:15,ex:"VR은 외부 현실을 차단한 가상 공간을, AR은 현실 위에 정보를 겹쳐 보여줘요."},
+  {q:"XR이라는 단어가 포함하는 기술로 올바른 것은?",opts:["VR, AR, MR을 모두 포함한 확장현실 기술","가상현실(VR)만을 가리키는 말","인터넷 연결 기술의 이름","로봇공학 분야의 용어"],ans:0,hint:"X는 모든 것을 대표하는 기호예요. eXtended Reality!",pt:15,ex:"XR(eXtended Reality)은 VR·AR·MR 등 현실과 디지털을 융합하는 모든 기술을 포함해요."},
+  {q:"스마트폰 카메라로 가구를 방 안에 미리 배치해 보는 앱은 어떤 기술인가요?",opts:["AR(증강현실)","VR(가상현실)","AI 번역","클라우드 저장"],ans:0,hint:"현실 공간에 디지털 물체를 겹쳐 보는 기술이에요!",pt:15,ex:"현실 공간에 가상 가구를 겹쳐 보여주는 것은 AR(증강현실) 기술이에요."},
+  // 도전 4문항
+  {q:"VR 콘텐츠를 만들 때 필요하지 않은 것은?",opts:["종이와 연필로 그린 수채화","360도 카메라","3D 모델링 소프트웨어","VR 개발 엔진(게임 엔진)"],ans:0,hint:"VR은 디지털 도구로 만들어져요!",pt:20,ex:"VR 콘텐츠는 360도 카메라, 3D 모델링, VR 개발 엔진 등 디지털 도구로 제작돼요. 수채화는 관련이 없어요."},
+  {q:"AR 기술에서 마커(Marker)란 무엇인가요?",opts:["AR 콘텐츠가 나타날 위치를 알려주는 인식 기준점","AR 기기의 배터리 표시","화면 밝기 조절 도구","앱 다운로드 버튼"],ans:0,hint:"카메라가 특정 이미지를 인식하면 AR이 나타나요!",pt:20,ex:"AR 마커는 카메라가 인식하는 이미지나 패턴으로, 마커를 인식하면 해당 위치에 AR 콘텐츠가 나타나요."},
+  {q:"VR 멀미(사이버 멀미)가 생기는 이유로 올바른 것은?",opts:["눈이 보는 화면과 몸이 느끼는 움직임이 달라서","화면이 너무 밝아서","VR 기기가 너무 무거워서","음향이 너무 커서"],ans:0,hint:"눈과 귀(평형감각)가 서로 다른 신호를 보내면 어지러워요!",pt:20,ex:"VR 멀미는 시각은 움직임을 인식하지만 신체(전정기관)는 정지 상태여서 발생하는 감각 불일치예요."},
+  {q:"교육 현장에서 VR 기술을 활용할 때 가장 큰 장점은?",opts:["직접 가기 위험하거나 불가능한 장소를 안전하게 체험할 수 있다","학생이 혼자 모든 것을 공부할 수 있다","교사가 필요 없어진다","시험을 자동으로 채점해 준다"],ans:0,hint:"화산 내부, 우주, 고대 유적 등을 교실에서 체험할 수 있어요!",pt:20,ex:"VR은 화산·우주·역사 현장 등 직접 방문하기 어렵거나 위험한 곳을 안전하게 체험하게 해줘요."},
+];
+const M2Q=[
+  {q:"실과 교과: VR·AR 기술을 배우는 이유로 가장 올바른 것은?",opts:["미래 직업과 사회에 필요한 기술이라서","게임만 할 수 있어서","어른만 사용하는 기술이라서","비용이 저렴해서"],ans:0,hint:"VR·AR은 미래 직업 세계와 깊게 연결되어 있어요!",pt:10,diff:'e',ex:"VR·AR은 의료·교육·건축 등 미래 직업에서 매우 중요한 기술이에요(실과)."},
+  {q:"사회 교과: VR 기술로 박물관을 가상 투어할 때의 장점은?",opts:["직접 가지 않아도 전 세계 박물관을 볼 수 있다","사진이 더 예쁘게 찍힌다","박물관 입장료가 더 비싸진다","전시물을 직접 만질 수 있다"],ans:0,hint:"VR 가상 투어는 거리 문제를 해결해 줘요!",pt:10,diff:'e',ex:"VR로 제주도·파리·뉴욕의 박물관을 집에서도 관람할 수 있어요(사회)."},
+  {q:"도덕 교과: VR 게임을 오래 하면 생길 수 있는 문제는?",opts:["현실과 가상 세계를 혼동할 수 있다","공부를 더 잘하게 된다","친구가 많아진다","눈이 더 좋아진다"],ans:0,hint:"너무 많이 하면 어디가 현실인지 헷갈릴 수 있어요!",pt:10,diff:'e',ex:"VR 과사용 시 현실·가상 혼동, 중독, 신체 활동 감소 등의 문제가 생길 수 있어요(도덕)."},
+  {q:"실과 교과: AR 기술이 건축 설계에 사용될 때 가장 큰 이점은?",opts:["건물을 짓기 전에 실제 환경에서 미리 확인할 수 있다","건물을 더 빠르게 무너뜨릴 수 있다","건축 비용이 두 배가 된다","설계도를 없애도 된다"],ans:0,notice:"AR을 활용하면 설계 단계에서 실제 부지에 건물을 미리 시뮬레이션할 수 있어요.",hint:"AR은 현실 공간에서 미리 보기를 가능하게 해요!",pt:15,diff:'n',ex:"건축 현장에 AR로 설계 이미지를 겹쳐 보면 완성 모습을 미리 확인하고 오류를 줄일 수 있어요."},
+  {q:"사회 교과: VR 기술이 문화 교류에 미치는 영향으로 올바른 것은?",opts:["직접 여행하기 어려운 나라의 문화를 체험할 수 있다","다른 나라 언어를 자동으로 배워준다","비행기 요금이 줄어든다","해외 친구를 대신 사귀어 준다"],ans:0,notice:"문화 교류란 서로 다른 나라의 문화를 나누고 이해하는 것이에요.",hint:"VR로 외국 마을, 전통 축제를 체험할 수 있어요!",pt:15,diff:'n',ex:"VR 문화 체험은 비용·거리 장벽 없이 세계 여러 나라의 문화를 경험하게 해줘요(사회)."},
+  {q:"도덕 교과: XR 기술을 올바르게 사용하기 위한 태도는?",opts:["사용 시간을 정해 균형 잡힌 생활을 유지한다","하루 종일 사용해도 괜찮다","가상 세계에서는 무엇이든 해도 된다","친구 몰래 개인정보를 수집해도 된다"],ans:0,notice:"기술 사용에도 책임이 필요해요.",hint:"기술도 음식처럼 적당히 써야 건강해요!",pt:15,diff:'n',ex:"XR 기술도 사용 시간 조절·개인정보 보호·현실과의 균형이 중요한 도덕적 태도예요."},
+  {q:"실과+사회 융합: 의료 분야에서 VR 기술을 활용하는 사례로 올바른 것은?",opts:["수술 시뮬레이션으로 의사가 수술을 미리 연습한다","환자를 VR 세계로 이동시켜 치료한다","VR이 의사를 완전히 대체한다","모든 질병을 VR로 치료할 수 있다"],ans:0,notice:"의료 VR은 훈련과 재활 두 분야에서 특히 활발하게 연구되고 있어요.",hint:"의대 학생들이 VR로 어떻게 공부할까 생각해 봐요!",pt:20,diff:'h',ex:"VR 의료 시뮬레이션으로 의사는 실제 수술 전 연습하고, 환자는 재활 치료에 활용할 수 있어요."},
+  {q:"사회+도덕 융합: XR 기술 발전으로 생길 수 있는 디지털 격차 문제란?",opts:["XR 기기가 비싸서 형편이 어려운 사람들이 혜택을 못 받는 것","모든 사람이 VR을 같은 속도로 배우는 것","디지털 기기가 고장나는 것","인터넷 속도가 빠른 것"],ans:0,notice:"디지털 격차(Digital Divide)는 기술 혜택의 불평등한 분배를 의미해요.",hint:"비싼 물건은 모두가 쉽게 살 수 있을까요?",pt:20,diff:'h',ex:"XR 기기의 높은 가격은 경제적 불평등을 심화시킬 수 있어 사회적 해결책이 필요해요."},
+  {q:"실과+과학 융합: VR이 입체감을 주는 원리로 올바른 것은?",opts:["왼눈과 오른눈에 각각 다른 이미지를 보여줌","하나의 카메라로 빠르게 회전하며 촬영","안경이 빛을 굴절시켜 큰 화면처럼 보이게 함","스마트폰이 화면을 3D로 변환"],ans:0,notice:"입체시(양안 시차)는 두 눈이 약간 다른 각도로 사물을 보는 원리를 이용해요.",hint:"우리 눈은 왼눈과 오른눈이 보는 것이 약간 달라서 입체감을 느껴요!",pt:20,diff:'h',ex:"VR 헤드셋은 왼눈·오른눈에 다른 이미지를 보여줘 뇌가 3D 공간으로 인식하게 해요(과학)."},
+];
+const M3SETS=[
+  {title:"VR 기술 발전의 역사",items:[
+    {t:"[1950년대] 최초의 시뮬레이터 '센소라마'가 발명되었어요",o:0},
+    {t:"[1980년대] 'VR(가상현실)'이라는 용어가 처음 사용되었어요",o:1},
+    {t:"[1990년대] VR 헤드셋이 처음으로 상용화되기 시작했어요",o:2},
+    {t:"[2012년] 오큘러스 리프트가 킥스타터 펀딩에 성공했어요",o:3},
+    {t:"[2016년] 포켓몬 GO 출시로 AR이 대중에게 알려졌어요",o:4},
+    {t:"[현재] 교육·의료·건축 등 다양한 분야에서 XR을 활용하고 있어요",o:5},
+  ]},
+  {title:"AR 앱 만드는 순서",items:[
+    {t:"만들고 싶은 AR 아이디어를 기획해요",o:0},
+    {t:"AR 개발 도구(소프트웨어)를 선택해요",o:1},
+    {t:"3D 모델(캐릭터, 물체)을 제작해요",o:2},
+    {t:"AR 트리거(카메라가 인식할 이미지)를 설정해요",o:3},
+    {t:"스마트폰으로 제대로 작동하는지 테스트해요",o:4},
+    {t:"오류를 수정하고 완성된 앱을 배포해요",o:5},
+  ]},
+  {title:"VR 체험 활동 안전 수칙 순서",items:[
+    {t:"헤드셋을 쓰기 전 주변에 부딪힐 물건이 없는지 확인해요",o:0},
+    {t:"헤드셋을 쓴 후 렌즈 초점을 내 눈에 맞게 조절해요",o:1},
+    {t:"처음엔 짧고 가벼운 체험으로 어지러움에 적응해요",o:2},
+    {t:"어지럼증이 느껴지면 즉시 헤드셋을 벗어요",o:3},
+    {t:"충분히 쉰 후 다시 착용할지 결정해요",o:4},
+    {t:"체험이 끝나면 눈이 피로하지 않은지 확인해요",o:5},
+  ]},
+];
+const CHART=[
+  {l:"교육",v:320,c:"#4a6cf7"},{l:"의료",v:280,c:"#7c5fff"},
+  {l:"건축",v:180,c:"#22c55e"},{l:"제조",v:240,c:"#f59e0b"},
+  {l:"엔터",v:420,c:"#ef4444"},{l:"군사",v:150,c:"#64748b"},
+];
+const M4Q=[
+  {q:"그래프에서 XR 활용 규모가 가장 큰 분야는?",opts:["엔터테인먼트(오락)","교육","의료","건축"],ans:0,hint:"막대가 가장 높은 것을 찾아봐요!",pt:10,ex:"엔터테인먼트 분야가 420억 원으로 가장 크며, VR 게임·영화 등이 포함돼요."},
+  {q:"교육 분야(320억)와 의료 분야(280억)의 차이는?",opts:["40억 원","80억 원","100억 원","60억 원"],ans:0,hint:"320 - 280 = ?",pt:15,ex:"320 - 280 = 40억 원! 교육 분야가 의료보다 40억 원 더 커요."},
+  {q:"군사 분야(150억)는 교육 분야(320억)의 약 몇 배인가요?",opts:["약 0.5배","약 1배","약 2배","약 3배"],ans:0,hint:"150 ÷ 320 ≈ ? 절반보다 작은지 생각해 봐요.",pt:15,ex:"150 ÷ 320 ≈ 0.47배. 군사는 교육의 약 절반 수준이에요."},
+  {q:"그래프 6개 분야의 합산 총액은?",opts:["1,590억 원","1,490억 원","1,390억 원","1,690억 원"],ans:0,hint:"320+280+180+240+420+150 = ?",pt:20,ex:"320+280+180+240+420+150 = 1,590억 원!"},
+  {q:"교육 분야(320억)가 전체(1,590억)에서 차지하는 비율은 약?",opts:["약 20%","약 10%","약 30%","약 40%"],ans:0,hint:"320 ÷ 1590 × 100 ≈ ?",pt:20,ex:"320 ÷ 1590 × 100 ≈ 20.1% → 교육 분야가 전체의 약 20%!"},
+];
+
+// ===== STATE =====
+let G={nick:"",sc:{m1:0,m2:0,m3:0,m4:0},done:{m1:false,m2:false,m3:false,m4:false},badges:[],
+  m1:{qi:0,uh:[]},m2:{d:0,qi:0,uh:[]},
+  m3:{si:0,ord:[],sd:[false,false,false]},m4:{qi:0,uh:[]},cb:null};
+let tInt=null,t2=null,tv=60,musicOn=true,actx=null,dsrc=null;
+let touchSrc=null,touchClone=null;
+
+// ===== AUDIO =====
+function getCtx(){if(!actx)actx=new(window.AudioContext||window.webkitAudioContext)();return actx;}
+function beep(f,d,type,vol){try{const c=getCtx(),o=c.createOscillator(),g=c.createGain();o.connect(g);g.connect(c.destination);o.frequency.value=f;o.type=type||'sine';g.gain.setValueAtTime(vol||0.15,c.currentTime);g.gain.exponentialRampToValueAtTime(0.001,c.currentTime+d);o.start(c.currentTime);o.stop(c.currentTime+d);}catch(e){}}
+function sndOk(){beep(523,.1);setTimeout(()=>beep(659,.1),110);setTimeout(()=>beep(784,.22),220);}
+function sndNo(){beep(220,.3,'sawtooth');}
+function sndWin(){[523,659,784,1047].forEach((f,i)=>setTimeout(()=>beep(f,.25),i*130));}
+function startBGM(){
+  if(!musicOn)return;
+  try{const c=getCtx();const ns=[110,110,130,110,110,98,110];let t=c.currentTime;
+  function loop(){ns.forEach(f=>{const o=c.createOscillator(),g=c.createGain();o.connect(g);g.connect(c.destination);o.frequency.value=f;o.type='sine';g.gain.setValueAtTime(0.06,t);g.gain.exponentialRampToValueAtTime(0.001,t+0.45);o.start(t);o.stop(t+0.5);t+=0.55;});if(musicOn)setTimeout(loop,ns.length*550);}
+  loop();}catch(e){}}
+function toggleMusic(){musicOn=!musicOn;document.getElementById('musicBtn').textContent=musicOn?'🎵':'🔇';if(musicOn)startBGM();}
+
+// ===== SCREENS =====
+function show(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active');window.scrollTo(0,0);}
+
+// ===== QR =====
+function mkQR(id){const el=document.getElementById(id);if(!el)return;el.innerHTML='';try{new QRCode(el,{text:location.href,width:100,height:100,correctLevel:QRCode.CorrectLevel.M});}catch(e){}}
+
+// ===== INIT =====
+window.onload=function(){
+  mkQR('qrcode');startBGM();
+  console.log('%c🥽 XR수호대 portfolioEntry','color:#4a6cf7;font-weight:bold;font-size:14px;');
+  console.log(JSON.stringify({id:"032",title:"XR 수호대 — VR·AR 세계를 구하라!",subtitle:"가상현실(VR)과 증강현실(AR) 교과 융합 게임",target:"초등 5~6학년",subjects:["실과","사회","과학","도덕"],theme:"VR·AR / XR 기술",missions:["VR·AR 개념 분류","교과 융합 퀴즈(3단계)","기술 발전 순서 정렬","XR 데이터 분석"],date:"2026-04-04",url:"https://milab2019.github.io/main/milab_vr_ar_xr_032.html"},null,2));
+};
+
+// ===== TITLE =====
+function startGame(){
+  const n=document.getElementById('nickInput').value.trim();
+  if(!n){alert('닉네임을 입력해 주세요!');return;}
+  G.nick=n;showHub();show('s1');
+}
+
+// ===== HUB =====
+function showHub(){
+  document.getElementById('hubNick').textContent='요원명: '+G.nick;
+  const done=Object.values(G.done).filter(Boolean).length;
+  const pct=Math.round(done/4*100);
+  document.getElementById('hubFill').style.width=pct+'%';
+  document.getElementById('hubPct').textContent=pct+'%';
+  const bEl=document.getElementById('hubBadges');
+  bEl.innerHTML=G.badges.map(b=>`<span class="badge">${b}</span>`).join('');
+  const msgs=['미션을 선택해서 임무를 시작해 봐!','잘하고 있어! 계속 도전! 💪','거의 다 왔어! 마지막까지 화이팅! 🔥','모든 미션 완료! 결과를 확인해 봐! 🎉'];
+  document.getElementById('hubBubble').textContent=msgs[Math.min(done,3)];
+  updateTabs();renderCards();
+}
+function updateTabs(){
+  [1,2,3,4].forEach(n=>{
+    const t=document.getElementById('tab'+n);
+    t.className='m-tab';
+    if(G.done['m'+n])t.classList.add('done');
+    else if(canGo(n))t.classList.add('active');
+    else t.classList.add('locked');
+  });
+}
+function canGo(n){return n===1||G.done['m'+(n-1)];}
+function goM(n){
+  if(!canGo(n)){alert('이전 미션을 먼저 완료해야 해요!');return;}
+  [startM1,startM2,startM3,startM4][n-1]();
+}
+function renderCards(){
+  const info=[{e:'🔵',t:'미션 1',s:'VR·AR 개념 분류',n:1},{e:'🟣',t:'미션 2',s:'교과 융합 퀴즈',n:2},{e:'🟡',t:'미션 3',s:'기술 발전 순서 정렬',n:3},{e:'🟢',t:'미션 4',s:'XR 데이터 분석',n:4}];
+  document.getElementById('mCards').innerHTML=info.map(m=>`<div class="card" style="display:flex;align-items:center;justify-content:space-between;cursor:pointer;${canGo(m.n)?'':'opacity:.55'}" onclick="goM(${m.n})"><div style="font-size:28px">${m.e}</div><div style="flex:1;margin:0 14px;"><div style="font-weight:700;font-size:15px">${m.t} — ${m.s}</div><div style="font-size:13px;color:#888">${G.done['m'+m.n]?'✅ 완료! '+G.sc['m'+m.n]+'점':canGo(m.n)?'▶ 도전!':'🔒 잠김'}</div></div><div style="font-size:24px">${G.done['m'+m.n]?'⭐':canGo(m.n)?'▶':'🔒'}</div></div>`).join('');
+}
+
+// ===== M1 =====
+function startM1(){G.m1={qi:0,uh:[]};show('s2');renderM1();startT1();}
+function startT1(){clearInterval(tInt);tv=180;updT1();tInt=setInterval(()=>{tv--;updT1();if(tv<=0){clearInterval(tInt);finishM1();}},1000);}
+function updT1(){document.getElementById('tv1').textContent=tv;const el=document.getElementById('tmr1');el.className='tmr'+(tv<=10?' danger':'');}
+
+function shuffle(a){const r=[...a];for(let i=r.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[r[i],r[j]]=[r[j],r[i]];}return r;}
+function esc(s){return(s||'').replace(/'/g,"\\'").replace(/\n/g,' ');}
+
+function renderM1(){
+  const q=M1Q[G.m1.qi];
+  if(!q){finishM1();return;}
+  document.getElementById('m1p').style.width=Math.round(G.m1.qi/M1Q.length*100)+'%';
+  document.getElementById('m1sl').textContent='문제 '+(G.m1.qi+1)+' / '+M1Q.length;
+  document.getElementById('m1q').textContent=q.q;
+  document.getElementById('hbox1').style.display='none';
+  document.getElementById('hb1').disabled=G.m1.uh.includes(G.m1.qi);
+  const idx=shuffle([0,1,2,3]),ap=idx.indexOf(q.ans);
+  document.getElementById('m1opts').innerHTML=idx.map((oi,p)=>`<button class="opt" onclick="ansM1(${p},${ap},${q.pt},'${esc(q.ex)}','${esc(q.opts[q.ans])}')">${['①','②','③','④'][p]} ${q.opts[oi]}</button>`).join('');
+  const c=document.getElementById('m1card');c.classList.remove('pop');void c.offsetWidth;c.classList.add('pop');
+  document.getElementById('m1bub').textContent='잘 생각해 봐! 힌트도 써볼까? 🤔';
+}
+function ansM1(p,ap,pt,ex,at){
+  const ok=p===ap;
+  const os=document.querySelectorAll('#m1opts .opt');os.forEach(o=>o.disabled=true);
+  os[p].classList.add(ok?'correct':'wrong');if(!ok)os[ap].classList.add('correct');
+  const uh=G.m1.uh.includes(G.m1.qi);
+  if(ok){G.sc.m1+=uh?Math.floor(pt/2):pt;sndOk();mood('m1mouth','h');document.getElementById('m1bub').textContent='정답이야! 🎉 +'+(uh?Math.floor(pt/2):pt)+'점';setTimeout(()=>{G.m1.qi++;renderM1();mood('m1mouth','n');},1200);}
+  else{sndNo();mood('m1mouth','s');document.getElementById('m1bub').textContent='괜찮아요! 한 번 더! 😊';showFb('😅 오답!','정답은 <b>'+at+'</b>이에요.<br><small>'+ex+'</small>',()=>{G.m1.qi++;renderM1();mood('m1mouth','n');});}
+}
+function showHint(m){
+  if(m===1){const q=M1Q[G.m1.qi];if(G.m1.uh.includes(G.m1.qi))return;G.m1.uh.push(G.m1.qi);const b=document.getElementById('hbox1');b.textContent='💡 '+q.hint;b.style.display='block';document.getElementById('hb1').disabled=true;}
+  else if(m===2){const qs=getM2Q();const q=qs[G.m2.qi];const k=G.m2.qi+G.m2.d*100;if(!q||G.m2.uh.includes(k))return;G.m2.uh.push(k);const b=document.getElementById('hbox2');b.textContent='💡 '+q.hint;b.style.display='block';document.getElementById('hb2').disabled=true;}
+  else if(m===4){const q=M4Q[G.m4.qi];if(G.m4.uh.includes(G.m4.qi))return;G.m4.uh.push(G.m4.qi);const b=document.getElementById('hbox4');b.textContent='💡 '+q.hint;b.style.display='block';document.getElementById('hb4').disabled=true;}
+}
+function finishM1(){clearInterval(tInt);const st=stars(G.sc.m1,M1Q.reduce((a,q)=>a+q.pt,0));addBadge('M1 '+'★'.repeat(st||1));G.done.m1=true;sndWin();showFb('🔵 미션 1 완료!','점수: <b>'+G.sc.m1+'점</b> '+'★'.repeat(st)+'☆'.repeat(3-st),()=>{showHub();show('s1');});}
+
+// ===== M2 =====
+function startM2(){G.m2={d:0,qi:0,uh:[]};show('s3');renderM2();}
+function getM2Q(){return M2Q.filter(q=>q.diff===(['e','n','h'][G.m2.d]));}
+function setDiff(d){G.m2.d=d;G.m2.qi=0;['dt0','dt1','dt2'].forEach((id,i)=>document.getElementById(id).classList.toggle('active',i===d));renderM2();}
+function renderM2(){
+  const qs=getM2Q();const q=qs[G.m2.qi];if(!q){finishM2diff();return;}
+  document.getElementById('m2p').style.width=Math.round(G.m2.qi/qs.length*100)+'%';
+  document.getElementById('m2info').textContent=['🟢 쉬움(10점)','🟡 보통(15점)','🔴 도전(20점)'][G.m2.d];
+  document.getElementById('m2sl').textContent='문제 '+(G.m2.qi+1)+' / '+qs.length;
+  document.getElementById('m2q').textContent=q.q;
+  const no=document.getElementById('m2notice');if(q.notice){no.textContent=q.notice;no.style.display='block';}else no.style.display='none';
+  document.getElementById('hbox2').style.display='none';document.getElementById('hb2').disabled=G.m2.uh.includes(G.m2.qi+G.m2.d*100);
+  startT2();
+  const idx=shuffle([0,1,2,3]),ap=idx.indexOf(q.ans);
+  document.getElementById('m2opts').innerHTML=idx.map((oi,p)=>`<button class="opt" onclick="ansM2(${p},${ap},${q.pt},'${esc(q.ex)}','${esc(q.opts[q.ans])}')">${['①','②','③','④'][p]} ${q.opts[oi]}</button>`).join('');
+  const c=document.getElementById('m2card');c.classList.remove('pop');void c.offsetWidth;c.classList.add('pop');
+}
+function startT2(){clearInterval(t2);let t=30;document.getElementById('tv2').textContent=t;document.getElementById('tmr2').className='tmr';
+  t2=setInterval(()=>{t--;document.getElementById('tv2').textContent=t;if(t<=10)document.getElementById('tmr2').className='tmr danger';if(t<=0){clearInterval(t2);sndNo();mood('m2mouth','s');document.getElementById('m2bub').textContent='시간 초과! 다음 문제! ⏰';setTimeout(()=>{G.m2.qi++;mood('m2mouth','n');renderM2();},1500);}},1000);}
+function ansM2(p,ap,pt,ex,at){
+  clearInterval(t2);const ok=p===ap;
+  const os=document.querySelectorAll('#m2opts .opt');os.forEach(o=>o.disabled=true);
+  os[p].classList.add(ok?'correct':'wrong');if(!ok)os[ap].classList.add('correct');
+  const uh=G.m2.uh.includes(G.m2.qi+G.m2.d*100);
+  if(ok){G.sc.m2+=uh?Math.floor(pt/2):pt;sndOk();mood('m2mouth','h');document.getElementById('m2bub').textContent='훌륭해! +'+(uh?Math.floor(pt/2):pt)+'점! 🎉';setTimeout(()=>{G.m2.qi++;mood('m2mouth','n');renderM2();},1200);}
+  else{sndNo();mood('m2mouth','s');document.getElementById('m2bub').textContent='틀려도 배우는 중이에요! 😊';showFb('😅 오답!','정답은 <b>'+at+'</b>이에요.<br><small>'+ex+'</small>',()=>{G.m2.qi++;mood('m2mouth','n');renderM2();});}
+}
+function finishM2diff(){
+  if(G.m2.d<2)showFb(['🟢 쉬움 완료!','🟡 보통 완료!'][G.m2.d],'다음 난이도에 도전!',()=>setDiff(G.m2.d+1));
+  else finishM2();
+}
+function finishM2(){const mx=M2Q.reduce((a,q)=>a+q.pt,0);const st=stars(G.sc.m2,mx);addBadge('M2 '+'★'.repeat(st||1));G.done.m2=true;sndWin();showFb('🟣 미션 2 완료!','점수: <b>'+G.sc.m2+'점</b> '+'★'.repeat(st)+'☆'.repeat(3-st),()=>{showHub();show('s1');});}
+
+// ===== M3 =====
+function startM3(){G.m3={si:0,ord:[],sd:[false,false,false]};show('s4');renderM3();}
+function renderM3(){
+  const s=M3SETS[G.m3.si];
+  document.getElementById('m3sl').textContent='세트 '+(G.m3.si+1)+' / '+M3SETS.length;
+  document.getElementById('m3title').textContent=s.title;
+  G.m3.ord=shuffle([...Array(s.items.length).keys()]);
+  renderSortItems();
+  document.getElementById('m3fb').style.display='none';
+  document.getElementById('prevBtn').disabled=G.m3.si===0;
+  document.getElementById('nextBtn').style.display='block';
+  document.getElementById('finBtn').style.display='none';
+}
+function renderSortItems(){
+  const s=M3SETS[G.m3.si];const area=document.getElementById('sortArea');area.innerHTML='';
+  G.m3.ord.forEach((oi,pos)=>{
+    const d=document.createElement('div');d.className='sort-item';d.draggable=true;d.dataset.pos=pos;
+    d.innerHTML=`<span class="sort-handle">☰</span><span>${s.items[oi].t}</span>`;
+    d.addEventListener('dragstart',e=>{dsrc=parseInt(e.currentTarget.dataset.pos);e.currentTarget.classList.add('dragging');});
+    d.addEventListener('dragover',e=>{e.preventDefault();e.currentTarget.classList.add('drag-over');});
+    d.addEventListener('dragleave',e=>e.currentTarget.classList.remove('drag-over'));
+    d.addEventListener('drop',e=>{e.preventDefault();const ti=parseInt(e.currentTarget.dataset.pos);e.currentTarget.classList.remove('drag-over');if(dsrc===null||dsrc===ti)return;[G.m3.ord[dsrc],G.m3.ord[ti]]=[G.m3.ord[ti],G.m3.ord[dsrc]];dsrc=null;renderSortItems();});
+    d.addEventListener('dragend',e=>e.currentTarget.classList.remove('dragging','drag-over'));
+    d.addEventListener('touchstart',e=>{touchSrc=parseInt(e.currentTarget.dataset.pos);touchClone=e.currentTarget.cloneNode(true);touchClone.style.cssText='position:fixed;opacity:.7;pointer-events:none;z-index:9999;width:'+e.currentTarget.offsetWidth+'px;';document.body.appendChild(touchClone);},{passive:true});
+    d.addEventListener('touchmove',e=>{e.preventDefault();const t=e.touches[0];if(touchClone){touchClone.style.left=(t.clientX-touchClone.offsetWidth/2)+'px';touchClone.style.top=(t.clientY-touchClone.offsetHeight/2)+'px';}},{passive:false});
+    d.addEventListener('touchend',e=>{if(touchClone){document.body.removeChild(touchClone);touchClone=null;}const t=e.changedTouches[0];const el=document.elementFromPoint(t.clientX,t.clientY);const tgt=el&&el.closest('.sort-item');if(tgt&&touchSrc!==null){const ti=parseInt(tgt.dataset.pos);if(ti!==touchSrc){[G.m3.ord[touchSrc],G.m3.ord[ti]]=[G.m3.ord[ti],G.m3.ord[touchSrc]];renderSortItems();}}touchSrc=null;});
+    area.appendChild(d);
+  });
+}
+function shuffleSort(){G.m3.ord=shuffle(G.m3.ord);renderSortItems();document.getElementById('m3fb').style.display='none';}
+function checkSort(){
+  const s=M3SETS[G.m3.si];const ok=G.m3.ord.every((oi,p)=>s.items[oi].o===p);
+  const fb=document.getElementById('m3fb');fb.style.display='block';
+  if(ok){fb.style.cssText='display:block;background:#dcfce7;border:2px solid #22c55e;border-radius:12px;padding:10px 14px;color:#166534;margin-top:10px;';fb.textContent='🎉 정답! 순서가 완벽해요!';G.sc.m3+=30;G.m3.sd[G.m3.si]=true;sndOk();if(G.m3.sd.every(Boolean)){document.getElementById('nextBtn').style.display='none';document.getElementById('finBtn').style.display='block';}}
+  else{fb.style.cssText='display:block;background:#fee2e2;border:2px solid #ef4444;border-radius:12px;padding:10px 14px;color:#991b1b;margin-top:10px;';fb.textContent='🤔 아직 순서가 맞지 않아요. 다시 해봐요!';sndNo();}
+}
+function prevSet(){if(G.m3.si>0){G.m3.si--;renderM3();}}
+function nextSet(){if(G.m3.si<M3SETS.length-1){G.m3.si++;renderM3();}}
+function finishM3(){const st=stars(G.sc.m3,90);addBadge('M3 '+'★'.repeat(st||1));G.done.m3=true;sndWin();showFb('🟡 미션 3 완료!','점수: <b>'+G.sc.m3+'점</b> '+'★'.repeat(st)+'☆'.repeat(3-st),()=>{showHub();show('s1');});}
+
+// ===== M4 =====
+function startM4(){G.m4={qi:0,uh:[]};show('s5');renderBar();renderM4();}
+function renderBar(){
+  const mx=Math.max(...CHART.map(d=>d.v));
+  document.getElementById('barChart').innerHTML=CHART.map(d=>`<div class="bar-col"><div class="bar-val">${d.v}억</div><div class="bar" style="height:${Math.round(d.v/mx*150)}px;background:${d.c};"></div><div class="bar-label">${d.l}</div></div>`).join('');
+}
+function renderM4(){
+  const q=M4Q[G.m4.qi];if(!q){finishM4();return;}
+  document.getElementById('m4sl').textContent='문제 '+(G.m4.qi+1)+' / '+M4Q.length+(['','','','  [계산]','  [계산]'][G.m4.qi]||'  [그래프]');
+  document.getElementById('m4q').textContent=q.q;
+  const no=document.getElementById('m4notice');if(q.notice){no.textContent=q.notice;no.style.display='block';}else no.style.display='none';
+  document.getElementById('hbox4').style.display='none';document.getElementById('hb4').disabled=G.m4.uh.includes(G.m4.qi);
+  const idx=shuffle([0,1,2,3]),ap=idx.indexOf(q.ans);
+  document.getElementById('m4opts').innerHTML=idx.map((oi,p)=>`<button class="opt" onclick="ansM4(${p},${ap},${q.pt},'${esc(q.ex)}','${esc(q.opts[q.ans])}')">${['①','②','③','④'][p]} ${q.opts[oi]}</button>`).join('');
+  const c=document.getElementById('m4card');c.classList.remove('pop');void c.offsetWidth;c.classList.add('pop');
+}
+function ansM4(p,ap,pt,ex,at){
+  const ok=p===ap;const os=document.querySelectorAll('#m4opts .opt');os.forEach(o=>o.disabled=true);
+  os[p].classList.add(ok?'correct':'wrong');if(!ok)os[ap].classList.add('correct');
+  const uh=G.m4.uh.includes(G.m4.qi);
+  if(ok){G.sc.m4+=uh?Math.floor(pt/2):pt;sndOk();setTimeout(()=>{G.m4.qi++;renderM4();},1200);}
+  else{sndNo();showFb('😅 오답!','정답은 <b>'+at+'</b>이에요.<br><small>'+ex+'</small>',()=>{G.m4.qi++;renderM4();});}
+}
+function finishM4(){const mx=M4Q.reduce((a,q)=>a+q.pt,0);const st=stars(G.sc.m4,mx);addBadge('M4 '+'★'.repeat(st||1));G.done.m4=true;sndWin();showFb('🟢 미션 4 완료!','점수: <b>'+G.sc.m4+'점</b> '+'★'.repeat(st)+'☆'.repeat(3-st),()=>showResult());}
+
+// ===== RESULT =====
+function totalSc(){const raw=G.sc.m1+G.sc.m2+G.sc.m3+G.sc.m4;const mx=M1Q.reduce((a,q)=>a+q.pt,0)+M2Q.reduce((a,q)=>a+q.pt,0)+90+M4Q.reduce((a,q)=>a+q.pt,0);return Math.min(100,Math.round(raw/mx*100));}
+function showResult(){
+  show('s6');const sc=totalSc();
+  document.getElementById('resScore').textContent=sc+'점';
+  const ranks=[
+    {min:80,r:'🏆 레전드 수호대원',e:'🎊🥽🚀',d:'완벽해요! 당신은 진정한 XR 전문가! VR·AR의 모든 비밀을 해독했어요!'},
+    {min:60,r:'🥇 XR 전문가',e:'🎉🥽✨',d:'대단해요! XR 기술의 핵심 개념을 잘 이해하고 있어요!'},
+    {min:40,r:'🌟 탐험가',e:'🌟🥽💫',d:'잘했어요! 조금 더 공부하면 XR 전문가가 될 수 있어요!'},
+    {min:0,r:'🌱 견습 요원',e:'😊🥽🌱',d:'처음이라 어려웠죠? 다시 도전하면 반드시 잘할 수 있어요!'},
+  ];
+  const rk=ranks.find(r=>sc>=r.min);
+  document.getElementById('resEmoji').textContent=rk.e;
+  document.getElementById('resRank').textContent=rk.r;
+  document.getElementById('resDesc').textContent=rk.d;
+  document.getElementById('resBadges').innerHTML=G.badges.map(b=>`<span class="badge">${b}</span>`).join('');
+  document.getElementById('lbName').value=G.nick;
+  renderLb();mkQR('qrcode2');
+}
+function renderLb(){const lb=JSON.parse(localStorage.getItem('xrSquad_lb')||'[]');const ul=document.getElementById('lbList');if(!lb.length){ul.innerHTML='<li style="color:#aaa;justify-content:center">아직 기록이 없어요!</li>';return;}ul.innerHTML=lb.slice(0,5).map((e,i)=>`<li><span>${['🥇','🥈','🥉','4️⃣','5️⃣'][i]} ${e.n}</span><span style="font-weight:700;color:#4a6cf7">${e.s}점</span></li>`).join('');}
+function saveLb(){const n=document.getElementById('lbName').value.trim()||G.nick;const sc=totalSc();const lb=JSON.parse(localStorage.getItem('xrSquad_lb')||'[]');lb.push({n,s:sc});lb.sort((a,b)=>b.s-a.s);localStorage.setItem('xrSquad_lb',JSON.stringify(lb.slice(0,5)));renderLb();sndOk();alert('등록 완료! 🎉');}
+function restart(){G={nick:G.nick,sc:{m1:0,m2:0,m3:0,m4:0},done:{m1:false,m2:false,m3:false,m4:false},badges:[],m1:{qi:0,uh:[]},m2:{d:0,qi:0,uh:[]},m3:{si:0,ord:[],sd:[false,false,false]},m4:{qi:0,uh:[]},cb:null};clearInterval(tInt);clearInterval(t2);showHub();show('s1');}
+
+// ===== MASCOT =====
+function mood(id,m){const el=document.getElementById(id);if(!el)return;const paths={h:'M38 58 Q55 75 72 58',s:'M38 68 Q55 55 72 68',n:'M42 60 Q55 70 68 60'};el.setAttribute('d',paths[m]||paths.n);}
+
+// ===== FEEDBACK MODAL =====
+function showFb(t,m,cb){G.cb=cb;document.getElementById('fbTitle').textContent=t;document.getElementById('fbMsg').innerHTML=m;document.getElementById('fbOverlay').classList.add('show');}
+function closeFb(){document.getElementById('fbOverlay').classList.remove('show');if(G.cb){const c=G.cb;G.cb=null;c();}}
+
+// ===== HELPERS =====
+function stars(sc,mx){const p=sc/mx;return p>=.8?3:p>=.5?2:p>0?1:0;}
+function addBadge(b){if(!G.badges.includes(b))G.badges.push(b);}
+</script>
+</body>
+</html>
