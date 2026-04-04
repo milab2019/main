@@ -1,0 +1,1551 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>AI 프롬프트 연구소 | MILAB #033</title>
+<!-- Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-WTY6YJQ1NS"></script>
+<script>
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-WTY6YJQ1NS');
+</script>
+<!-- QRCode.js v1.0.0 -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<style>
+/* ===== CSS 변수 & 기본 설정 ===== */
+:root {
+  --bg: #050d1a;
+  --surface: #0a1628;
+  --surface2: #0f2040;
+  --border: #1a3a6a;
+  --accent: #00d4ff;
+  --accent2: #7c3aed;
+  --accent3: #10b981;
+  --warn: #f59e0b;
+  --danger: #ef4444;
+  --text: #e2e8f0;
+  --text2: #94a3b8;
+  --gold: #fbbf24;
+  --radius: 14px;
+  --shadow: 0 8px 32px rgba(0,212,255,0.15);
+}
+
+* { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+
+html, body {
+  height: 100%;
+  min-height: 100vh;
+  min-height: -webkit-fill-available;
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Apple SD Gothic Neo', 'Malgun Gothic', 'Noto Sans KR', sans-serif;
+  font-size: 16px;
+  line-height: 1.5;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* iOS safe area */
+.safe-wrap {
+  padding-left: env(safe-area-inset-left);
+  padding-right: env(safe-area-inset-right);
+}
+
+/* ===== 배경 파티클 ===== */
+#bg-canvas {
+  position: fixed; top:0; left:0; width:100%; height:100%;
+  pointer-events:none; z-index:0; opacity:0.4;
+}
+
+/* ===== 레이아웃 ===== */
+.screen {
+  position: fixed; inset:0;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  z-index: 10; overflow-y: auto;
+  padding: 20px 16px;
+  padding-bottom: calc(20px + env(safe-area-inset-bottom));
+}
+.screen.hidden { display:none; }
+
+/* ===== 카드 ===== */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 24px 20px;
+  width: 100%; max-width: 480px;
+  box-shadow: var(--shadow);
+  position: relative;
+}
+
+/* ===== 음악 토글 ===== */
+#music-btn {
+  position: fixed; top: 16px; right: 16px;
+  z-index: 100;
+  background: rgba(10,22,40,0.85);
+  border: 1px solid var(--border);
+  border-radius: 50%; width: 44px; height: 44px;
+  color: var(--accent); font-size: 20px;
+  cursor: pointer; display: flex; align-items:center; justify-content:center;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  transition: all .2s;
+}
+#music-btn:active { transform: scale(.9); }
+
+/* ===== 로고 & 타이틀 ===== */
+.logo { font-size: 11px; letter-spacing: 3px; color: var(--accent); text-transform:uppercase; margin-bottom:6px; }
+.main-title { font-size: clamp(22px, 5vw, 30px); font-weight: 800; line-height:1.2; }
+.subtitle { color: var(--text2); font-size: 14px; margin-top:6px; }
+
+/* ===== 마스코트 ===== */
+.mascot-wrap { display:flex; justify-content:center; margin: 12px 0; }
+.mascot { width: 80px; height: 80px; position:relative; }
+
+/* 로봇 SVG 감정별 */
+.mascot-svg { width:80px; height:80px; }
+
+/* ===== 말풍선 ===== */
+.bubble {
+  background: var(--surface2);
+  border: 1px solid var(--accent);
+  border-radius: 12px;
+  padding: 10px 14px;
+  font-size: 14px;
+  color: var(--accent);
+  position: relative;
+  margin: 6px 0 14px;
+  line-height:1.5;
+}
+.bubble::before {
+  content:''; position:absolute; top:-8px; left:30px;
+  border-left:8px solid transparent;
+  border-right:8px solid transparent;
+  border-bottom: 8px solid var(--accent);
+}
+
+/* ===== 버튼 ===== */
+.btn {
+  display: block; width:100%;
+  padding: 15px 20px;
+  border:none; border-radius: 10px;
+  font-size: 16px; font-weight: 700;
+  cursor: pointer; transition: all .2s;
+  text-align:center; -webkit-appearance:none;
+}
+.btn-primary {
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  color:#fff;
+  box-shadow: 0 4px 20px rgba(0,212,255,0.3);
+}
+.btn-primary:active { transform:scale(.97); }
+
+.btn-outline {
+  background: transparent;
+  border: 1.5px solid var(--accent);
+  color: var(--accent);
+}
+.btn-outline:active { background: rgba(0,212,255,.1); }
+
+.btn-choice {
+  display:block; width:100%;
+  padding: 14px 16px;
+  background: var(--surface2);
+  border: 1.5px solid var(--border);
+  border-radius: 10px;
+  color: var(--text);
+  font-size: 15px; font-weight:600;
+  cursor:pointer; text-align:left;
+  transition: all .2s; margin-bottom: 10px;
+  -webkit-appearance:none;
+  line-height:1.4;
+}
+.btn-choice:active { background: rgba(0,212,255,.12); border-color: var(--accent); }
+.btn-choice.correct { border-color: var(--accent3); background: rgba(16,185,129,.15); color:#fff; }
+.btn-choice.wrong { border-color: var(--danger); background: rgba(239,68,68,.12); color:#fff; }
+
+/* ===== 입력 ===== */
+input[type=text] {
+  width:100%; padding: 14px 16px;
+  background: var(--surface2); border: 1.5px solid var(--border);
+  border-radius: 10px; color: var(--text); font-size: 16px;
+  outline:none; -webkit-appearance:none;
+  margin-bottom: 12px;
+}
+input[type=text]:focus { border-color: var(--accent); }
+
+/* ===== 진행바 ===== */
+.progress-wrap { margin-bottom: 16px; }
+.progress-label { display:flex; justify-content:space-between; font-size:13px; color:var(--text2); margin-bottom:6px; }
+.progress-bar { width:100%; height:6px; background:var(--border); border-radius:3px; overflow:hidden; }
+.progress-fill { height:100%; background: linear-gradient(90deg, var(--accent), var(--accent2)); border-radius:3px; transition: width .4s ease; }
+
+/* ===== 타이머 ===== */
+.timer-box {
+  display:flex; align-items:center; gap:8px;
+  background: var(--surface2); border: 1px solid var(--border);
+  border-radius: 8px; padding: 8px 14px;
+  margin-bottom: 14px; width: fit-content;
+}
+.timer-num { font-size: 22px; font-weight:800; color: var(--accent); min-width:40px; }
+.timer-num.danger { color: var(--danger); animation: blink .5s infinite; }
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:.3} }
+
+/* ===== 미션 탭 ===== */
+.tabs { display:flex; gap:6px; margin-bottom:14px; }
+.tab {
+  flex:1; padding:9px 4px; border-radius:8px;
+  background: var(--surface2); border:1.5px solid var(--border);
+  color:var(--text2); font-size:12px; font-weight:700;
+  cursor:pointer; text-align:center; transition:.2s;
+  -webkit-appearance:none;
+}
+.tab.active { border-color:var(--accent); color:var(--accent); background:rgba(0,212,255,.1); }
+.tab.done { border-color:var(--accent3); color:var(--accent3); }
+
+/* ===== 난이도 ===== */
+.diff-tabs { display:flex; gap:6px; margin-bottom:14px; }
+.diff-tab {
+  flex:1; padding:8px; border-radius:8px;
+  background: var(--surface2); border:1.5px solid var(--border);
+  color:var(--text2); font-size:13px; font-weight:700;
+  cursor:pointer; text-align:center; transition:.2s;
+  -webkit-appearance:none;
+}
+.diff-tab[data-d='easy'].active { border-color:var(--accent3); color:var(--accent3); background:rgba(16,185,129,.1); }
+.diff-tab[data-d='normal'].active { border-color:var(--warn); color:var(--warn); background:rgba(245,158,11,.1); }
+.diff-tab[data-d='hard'].active { border-color:var(--danger); color:var(--danger); background:rgba(239,68,68,.1); }
+
+/* ===== 배지 ===== */
+.badge-row { display:flex; gap:6px; justify-content:center; margin:10px 0; }
+.star { font-size:22px; filter:grayscale(1) brightness(.4); transition:.3s; }
+.star.lit { filter:none; }
+
+/* ===== 피드백 ===== */
+.feedback-box {
+  border-radius: 10px; padding: 12px 14px;
+  font-size: 14px; margin: 10px 0;
+  line-height:1.5;
+}
+.feedback-box.correct-fb { background:rgba(16,185,129,.15); border:1px solid var(--accent3); }
+.feedback-box.wrong-fb { background:rgba(239,68,68,.1); border:1px solid var(--danger); }
+
+/* ===== 미션3 드래그/순서 ===== */
+.classify-area { display:flex; gap:10px; margin-bottom:14px; flex-wrap:wrap; }
+.classify-col {
+  flex:1; min-width:120px;
+  background: var(--surface2); border:1.5px solid var(--border);
+  border-radius:10px; padding:10px; min-height:100px;
+}
+.classify-col h4 { font-size:13px; color:var(--text2); margin-bottom:8px; text-align:center; }
+.prompt-chip {
+  background: var(--surface); border:1.5px solid var(--border);
+  border-radius:8px; padding:8px 10px;
+  font-size:13px; cursor:pointer; margin-bottom:6px;
+  transition:.2s; line-height:1.4;
+  -webkit-user-select:none; user-select:none;
+}
+.prompt-chip:active { transform:scale(.97); }
+.prompt-chip.selected { border-color:var(--accent); background:rgba(0,212,255,.1); }
+
+/* 순서 맞추기 */
+.order-items { display:flex; flex-direction:column; gap:8px; margin-bottom:12px; }
+.order-item {
+  background: var(--surface2); border:1.5px solid var(--border);
+  border-radius:10px; padding:12px 14px;
+  font-size:14px; cursor:pointer;
+  display:flex; align-items:center; gap:10px;
+  transition:.2s; line-height:1.4;
+}
+.order-item:active { background:rgba(0,212,255,.1); }
+.order-item .num { font-weight:800; color:var(--accent); min-width:20px; }
+
+/* ===== 결과 화면 ===== */
+.score-big { font-size: clamp(48px, 12vw, 72px); font-weight:900; text-align:center; }
+.ending-tag {
+  display:inline-block; padding:6px 16px;
+  border-radius:20px; font-size:13px; font-weight:700;
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  color:#fff; margin:10px auto;
+}
+.leaderboard { list-style:none; }
+.leaderboard li {
+  display:flex; justify-content:space-between; align-items:center;
+  padding:10px 14px; border-bottom:1px solid var(--border);
+  font-size:14px;
+}
+.leaderboard li:last-child { border-bottom:none; }
+.rank { font-weight:800; color:var(--accent); min-width:24px; }
+
+/* ===== QR ===== */
+#qr-start, #qr-result { display:flex; flex-direction:column; align-items:center; margin-top:16px; }
+#qr-start canvas, #qr-result canvas { border-radius:8px; border:2px solid var(--border); }
+.qr-label { font-size:11px; color:var(--text2); margin-top:6px; letter-spacing:1px; }
+
+/* ===== 힌트 ===== */
+.hint-btn {
+  font-size:13px; padding:8px 14px;
+  background:rgba(245,158,11,.15); border:1px solid var(--warn);
+  border-radius:8px; color:var(--warn); cursor:pointer;
+  margin-bottom:10px; display:inline-flex; align-items:center; gap:6px;
+  -webkit-appearance:none;
+}
+.hint-box {
+  background:rgba(245,158,11,.1); border:1px solid var(--warn);
+  border-radius:8px; padding:10px 12px;
+  font-size:13px; color:var(--warn); margin-bottom:10px;
+  line-height:1.5;
+}
+
+/* ===== 섹션 제목 ===== */
+.section-title { font-size:16px; font-weight:800; margin-bottom:6px; }
+.chip { display:inline-block; padding:3px 10px; border-radius:12px; font-size:11px; font-weight:700; border:1px solid; margin-right:4px; }
+.chip-info { border-color:var(--accent); color:var(--accent); }
+.chip-grade { border-color:var(--accent2); color:var(--accent2); }
+
+/* ===== 반응형 ===== */
+@media (max-width: 360px) {
+  .card { padding: 18px 14px; }
+  .tabs .tab { font-size:11px; padding:8px 2px; }
+}
+@media (min-height: 800px) {
+  .mascot-svg { width:90px; height:90px; }
+}
+
+/* ===== 애니메이션 ===== */
+@keyframes fadeUp { from{opacity:0;transform:translateY(16px)} to{opacity:1;transform:none} }
+.fade-up { animation: fadeUp .4s ease both; }
+@keyframes pulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.04)} }
+.pulse { animation: pulse 2s infinite; }
+@keyframes celebrate { 0%{transform:scale(1) rotate(0)} 25%{transform:scale(1.1) rotate(-5deg)} 75%{transform:scale(1.1) rotate(5deg)} 100%{transform:scale(1) rotate(0)} }
+.celebrate { animation: celebrate .5s ease; }
+
+/* ===== 체력바 (미션1) ===== */
+.q-counter { font-size:13px; color:var(--text2); margin-bottom:8px; }
+.q-text { font-size:16px; font-weight:700; margin-bottom:16px; line-height:1.5; }
+
+/* ===== 구분선 ===== */
+hr.div { border:none; border-top:1px solid var(--border); margin:14px 0; }
+
+</style>
+</head>
+<body>
+
+<canvas id="bg-canvas"></canvas>
+<button id="music-btn" onclick="toggleMusic()" aria-label="음악 켜기/끄기">🎵</button>
+
+<!-- ========== 시작 화면 ========== -->
+<div id="screen-start" class="screen">
+<div class="card fade-up safe-wrap">
+  <div style="text-align:center; margin-bottom:10px;">
+    <div class="logo">MILAB · #033 · 중학교 1학년</div>
+    <div class="main-title">🤖 AI 프롬프트<br>연구소</div>
+    <div class="subtitle">말로 AI를 깨워라!</div>
+  </div>
+
+  <!-- 마스코트 -->
+  <div class="mascot-wrap">
+    <svg class="mascot-svg" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <!-- 몸 -->
+      <rect x="20" y="38" width="40" height="30" rx="8" fill="#0f2040" stroke="#00d4ff" stroke-width="1.5"/>
+      <!-- 머리 -->
+      <rect x="22" y="12" width="36" height="30" rx="8" fill="#0a1628" stroke="#00d4ff" stroke-width="1.5"/>
+      <!-- 눈 -->
+      <circle cx="34" cy="26" r="5" fill="#00d4ff" opacity=".9"/>
+      <circle cx="46" cy="26" r="5" fill="#00d4ff" opacity=".9"/>
+      <circle cx="35" cy="25" r="2" fill="#050d1a"/>
+      <circle cx="47" cy="25" r="2" fill="#050d1a"/>
+      <!-- 입(기본:미소) -->
+      <path d="M33 35 Q40 40 47 35" stroke="#00d4ff" stroke-width="2" stroke-linecap="round" fill="none"/>
+      <!-- 안테나 -->
+      <line x1="40" y1="12" x2="40" y2="4" stroke="#00d4ff" stroke-width="2"/>
+      <circle cx="40" cy="3" r="3" fill="#7c3aed"/>
+      <!-- 팔 -->
+      <rect x="8" y="42" width="12" height="6" rx="3" fill="#0f2040" stroke="#00d4ff" stroke-width="1.5"/>
+      <rect x="60" y="42" width="12" height="6" rx="3" fill="#0f2040" stroke="#00d4ff" stroke-width="1.5"/>
+      <!-- 배지 -->
+      <rect x="30" y="48" width="20" height="12" rx="4" fill="#7c3aed" opacity=".7"/>
+      <text x="40" y="57" text-anchor="middle" font-size="8" fill="#fff" font-weight="bold">AI</text>
+    </svg>
+  </div>
+
+  <div class="bubble">안녕! 나는 미봇이야. 2035년 AI 연구소에 오신 걸 환영해요! 🚀 프롬프트 엔지니어 인턴으로 미봇을 함께 고쳐줄래요?</div>
+
+  <div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:14px;">
+    <span class="chip chip-info">4개 미션</span>
+    <span class="chip chip-grade">중학교 1학년</span>
+    <span class="chip chip-info">진로체험</span>
+    <span class="chip chip-info">AI 리터러시</span>
+  </div>
+
+  <div style="margin-bottom:14px;">
+    <input type="text" id="nickname-input" placeholder="닉네임을 입력하세요" maxlength="10">
+  </div>
+
+  <button class="btn btn-primary pulse" onclick="startGame()">🚀 연구소 입장하기</button>
+
+  <div id="qr-start" style="margin-top:16px; align-items:center; display:flex; flex-direction:column;">
+    <div id="qr-start-img"></div>
+    <div class="qr-label">📱 QR로 친구와 공유하기</div>
+  </div>
+</div>
+</div>
+
+<!-- ========== 미션 허브 ========== -->
+<div id="screen-hub" class="screen hidden">
+<div class="card fade-up safe-wrap">
+  <div class="logo">MILAB · AI 프롬프트 연구소</div>
+  <div class="section-title">미션 선택 <span id="hub-nickname" style="color:var(--accent)"></span></div>
+  <div class="subtitle" style="margin-bottom:14px;">총점: <span id="hub-score">0</span>점</div>
+
+  <div class="tabs" id="mission-tabs">
+    <button class="tab" data-m="0" onclick="goMission(0)">🔍<br>미션1</button>
+    <button class="tab" data-m="1" onclick="goMission(1)">📚<br>미션2</button>
+    <button class="tab" data-m="2" onclick="goMission(2)">🧠<br>미션3</button>
+    <button class="tab" data-m="3" onclick="goMission(3)">🚀<br>미션4</button>
+  </div>
+
+  <!-- 마스코트 -->
+  <div class="mascot-wrap" id="hub-mascot-wrap">
+    <svg class="mascot-svg" id="hub-mascot" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect x="20" y="38" width="40" height="30" rx="8" fill="#0f2040" stroke="#00d4ff" stroke-width="1.5"/>
+      <rect x="22" y="12" width="36" height="30" rx="8" fill="#0a1628" stroke="#00d4ff" stroke-width="1.5"/>
+      <circle cx="34" cy="26" r="5" fill="#00d4ff" opacity=".9"/>
+      <circle cx="46" cy="26" r="5" fill="#00d4ff" opacity=".9"/>
+      <circle cx="35" cy="25" r="2" fill="#050d1a"/>
+      <circle cx="47" cy="25" r="2" fill="#050d1a"/>
+      <path d="M33 35 Q40 40 47 35" stroke="#00d4ff" stroke-width="2" stroke-linecap="round" fill="none"/>
+      <line x1="40" y1="12" x2="40" y2="4" stroke="#00d4ff" stroke-width="2"/>
+      <circle cx="40" cy="3" r="3" fill="#7c3aed"/>
+      <rect x="8" y="42" width="12" height="6" rx="3" fill="#0f2040" stroke="#00d4ff" stroke-width="1.5"/>
+      <rect x="60" y="42" width="12" height="6" rx="3" fill="#0f2040" stroke="#00d4ff" stroke-width="1.5"/>
+      <rect x="30" y="48" width="20" height="12" rx="4" fill="#7c3aed" opacity=".7"/>
+      <text x="40" y="57" text-anchor="middle" font-size="8" fill="#fff" font-weight="bold">AI</text>
+    </svg>
+  </div>
+  <div class="bubble" id="hub-bubble">미션을 선택해서 프롬프트 엔지니어 능력을 키워봐요!</div>
+
+  <button class="btn btn-primary" onclick="showResult()" style="margin-top:10px;">🏁 최종 결과 보기</button>
+</div>
+</div>
+
+<!-- ========== 미션1: 지식 탐색 ========== -->
+<div id="screen-m1" class="screen hidden">
+<div class="card fade-up safe-wrap">
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+    <div>
+      <div class="logo">미션 1</div>
+      <div class="section-title">🔍 프롬프트 기초 탐색</div>
+    </div>
+    <div>
+      <div class="timer-box">
+        <span style="font-size:14px;">⏱</span>
+        <span class="timer-num" id="m1-timer">80</span>
+        <span style="font-size:12px;color:var(--text2)">초</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="progress-wrap">
+    <div class="progress-label">
+      <span id="m1-qnum">1/12</span>
+      <span id="m1-pts">0점</span>
+    </div>
+    <div class="progress-bar"><div class="progress-fill" id="m1-bar" style="width:8%"></div></div>
+  </div>
+
+  <div class="q-text" id="m1-qtext">문제 로딩 중...</div>
+  <div id="m1-choices"></div>
+  <div id="m1-hint-area"></div>
+  <div id="m1-feedback" class="feedback-box" style="display:none;"></div>
+  <button class="btn btn-outline" id="m1-next" onclick="m1Next()" style="display:none; margin-top:8px;">다음 문제 →</button>
+</div>
+</div>
+
+<!-- ========== 미션2: 교과 융합 퀴즈 ========== -->
+<div id="screen-m2" class="screen hidden">
+<div class="card fade-up safe-wrap">
+  <div class="logo">미션 2</div>
+  <div class="section-title" style="margin-bottom:8px;">📚 교과 융합 퀴즈</div>
+
+  <div class="diff-tabs" id="diff-tabs">
+    <button class="diff-tab active" data-d="easy" onclick="setDiff('easy')">🟢 쉬움</button>
+    <button class="diff-tab" data-d="normal" onclick="setDiff('normal')">🟡 보통</button>
+    <button class="diff-tab" data-d="hard" onclick="setDiff('hard')">🔴 도전</button>
+  </div>
+
+  <div class="progress-wrap">
+    <div class="progress-label">
+      <span id="m2-qnum">1/3</span>
+      <span id="m2-pts">0점</span>
+    </div>
+    <div class="progress-bar"><div class="progress-fill" id="m2-bar" style="width:33%"></div></div>
+  </div>
+
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+    <div class="timer-box">
+      <span style="font-size:14px;">⏱</span>
+      <span class="timer-num" id="m2-timer">45</span>
+      <span style="font-size:12px;color:var(--text2)">초</span>
+    </div>
+    <div id="m2-diff-label" style="font-size:13px; color:var(--text2);"></div>
+  </div>
+
+  <div class="q-text" id="m2-qtext">문제 로딩 중...</div>
+  <div id="m2-choices"></div>
+  <div id="m2-hint-area"></div>
+  <div id="m2-feedback" class="feedback-box" style="display:none;"></div>
+  <button class="btn btn-outline" id="m2-next" onclick="m2Next()" style="display:none; margin-top:8px;">다음 문제 →</button>
+</div>
+</div>
+
+<!-- ========== 미션3: AI 체험 ========== -->
+<div id="screen-m3" class="screen hidden">
+<div class="card fade-up safe-wrap">
+  <div class="logo">미션 3</div>
+  <div class="section-title" style="margin-bottom:4px;">🧠 AI 체험 — 프롬프트 설계</div>
+  <div class="subtitle" style="margin-bottom:14px;">좋은 프롬프트와 나쁜 프롬프트를 구분하고, AI 작동 순서를 맞춰봐요!</div>
+
+  <!-- 파트A: 분류 -->
+  <div id="m3-partA">
+    <div style="font-weight:700; margin-bottom:10px; font-size:15px;">📌 파트A: 프롬프트 분류하기</div>
+    <div class="subtitle" style="margin-bottom:12px;">각 프롬프트를 탭해서 좋은/나쁜 프롬프트로 분류하세요</div>
+    <div class="classify-area">
+      <div class="classify-col" id="col-good">
+        <h4>✅ 좋은 프롬프트</h4>
+        <div id="good-drop"></div>
+      </div>
+      <div class="classify-col" id="col-bad">
+        <h4>❌ 나쁜 프롬프트</h4>
+        <div id="bad-drop"></div>
+      </div>
+    </div>
+    <div id="m3-chips"></div>
+    <button class="btn btn-primary" onclick="checkClassify()">✅ 분류 확인</button>
+    <div id="m3-classify-fb" class="feedback-box" style="display:none; margin-top:10px;"></div>
+  </div>
+
+  <!-- 파트B: 순서 맞추기 -->
+  <div id="m3-partB" style="display:none;">
+    <div style="font-weight:700; margin-bottom:10px; font-size:15px;">📌 파트B: AI 작동 순서 맞추기</div>
+    <div class="subtitle" style="margin-bottom:10px;">아래 단계를 올바른 순서로 탭해 배열하세요</div>
+    <div class="order-items" id="order-source"></div>
+    <div style="font-size:13px; color:var(--text2); margin-bottom:8px;">선택한 순서:</div>
+    <div class="order-items" id="order-selected"></div>
+    <button class="btn btn-primary" onclick="checkOrder()" id="order-check-btn">✅ 순서 확인</button>
+    <div id="m3-order-fb" class="feedback-box" style="display:none; margin-top:10px;"></div>
+    <button class="btn btn-outline" onclick="completeM3()" id="m3-done-btn" style="display:none; margin-top:10px;">미션 완료 →</button>
+  </div>
+</div>
+</div>
+
+<!-- ========== 미션4: 진로 시나리오 ========== -->
+<div id="screen-m4" class="screen hidden">
+<div class="card fade-up safe-wrap">
+  <div class="logo">미션 4</div>
+  <div class="section-title" style="margin-bottom:4px;">🚀 진로 선택 시나리오</div>
+  <div class="subtitle" style="margin-bottom:14px;">프롬프트 엔지니어로서 어떤 선택을 할까요?</div>
+
+  <div class="progress-wrap">
+    <div class="progress-label">
+      <span id="m4-qnum">1/4</span>
+      <span></span>
+    </div>
+    <div class="progress-bar"><div class="progress-fill" id="m4-bar" style="width:25%"></div></div>
+  </div>
+
+  <div class="q-text" id="m4-qtext"></div>
+  <div id="m4-choices"></div>
+  <div id="m4-feedback" class="feedback-box" style="display:none;"></div>
+  <button class="btn btn-outline" id="m4-next" onclick="m4Next()" style="display:none; margin-top:8px;">다음 →</button>
+</div>
+</div>
+
+<!-- ========== 결과 화면 ========== -->
+<div id="screen-result" class="screen hidden">
+<div class="card fade-up safe-wrap">
+  <div class="logo" style="text-align:center;">MILAB · AI 프롬프트 연구소</div>
+  <div style="text-align:center; margin-bottom:8px;">
+    <div style="font-size:14px; color:var(--text2); margin-bottom:4px;">최종 점수</div>
+    <div class="score-big" id="result-score">0</div>
+    <div style="font-size:14px; color:var(--text2)">점</div>
+  </div>
+
+  <div style="text-align:center; margin-bottom:12px;">
+    <div class="ending-tag" id="result-title"></div>
+    <div style="font-size:14px; margin-top:8px; color:var(--text2);" id="result-desc"></div>
+  </div>
+
+  <div class="badge-row" id="result-badges"></div>
+
+  <hr class="div">
+  <div style="font-size:14px; font-weight:700; margin-bottom:8px;">🏆 명예의 전당</div>
+
+  <div style="margin-bottom:10px;">
+    <input type="text" id="lb-nickname" placeholder="닉네임 입력 후 등록">
+    <button class="btn btn-primary" onclick="saveScore()">점수 등록</button>
+  </div>
+
+  <ul class="leaderboard" id="lb-list"></ul>
+
+  <hr class="div">
+  <button class="btn btn-outline" onclick="restartGame()" style="margin-bottom:10px;">🔄 다시 도전</button>
+
+  <div id="qr-result" style="align-items:center; display:flex; flex-direction:column;">
+    <div id="qr-result-img"></div>
+    <div class="qr-label">📱 자유학기제 발표용 QR</div>
+  </div>
+</div>
+</div>
+
+<script>
+/* ======================================================
+   MILAB #033 — AI 프롬프트 연구소
+   대상: 중학교 1학년 | 진로체험 · AI 리터러시
+   ====================================================== */
+
+// ── portfolioEntry 자동 출력 ──
+const portfolioEntry = {
+  id: "033",
+  title: "AI 프롬프트 연구소 — 말로 AI를 깨워라!",
+  target: "중학교",
+  grade: "중1",
+  subjects: ["정보(AI·데이터)", "국어(매체읽기)", "도덕(디지털윤리)", "사회(진로탐색)"],
+  aiFeature: true,
+  theme: "프롬프트엔지니어 진로체험 / AI 리터러시 입문",
+  date: "2026-04",
+  url: "https://milab2019.github.io/main/milab_prompt_engineer_033.html"
+};
+console.log("portfolioEntry", JSON.stringify(portfolioEntry, null, 2));
+
+// ── 상태 ──
+let nickname = "";
+let totalScore = 0;
+let missionDone = [false, false, false, false];
+let missionScore = [0, 0, 0, 0];
+let audioCtx = null;
+let musicOn = true;
+let musicNodes = [];
+let bgInterval = null;
+
+// ── Web Audio ──
+function initAudio() {
+  try {
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    playBGM();
+  } catch(e) {}
+}
+
+function playBGM() {
+  if (!audioCtx || !musicOn) return;
+  stopBGM();
+  // 저음 베이스 패드
+  const freqs = [110, 138.6, 164.8, 220];
+  let t = audioCtx.currentTime;
+  bgInterval = setInterval(() => {
+    freqs.forEach((f, i) => {
+      const osc = audioCtx.createOscillator();
+      const g = audioCtx.createGain();
+      osc.type = i % 2 === 0 ? 'sine' : 'triangle';
+      osc.frequency.value = f;
+      g.gain.setValueAtTime(0, audioCtx.currentTime);
+      g.gain.linearRampToValueAtTime(0.04, audioCtx.currentTime + 0.3);
+      g.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 1.5);
+      osc.connect(g); g.connect(audioCtx.destination);
+      osc.start(audioCtx.currentTime);
+      osc.stop(audioCtx.currentTime + 1.6);
+      musicNodes.push(osc);
+    });
+  }, 2000);
+}
+
+function stopBGM() {
+  if (bgInterval) clearInterval(bgInterval);
+  musicNodes.forEach(n => { try { n.stop(); } catch(e){} });
+  musicNodes = [];
+}
+
+function toggleMusic() {
+  musicOn = !musicOn;
+  document.getElementById('music-btn').textContent = musicOn ? '🎵' : '🔇';
+  if (musicOn) { if (!audioCtx) initAudio(); else playBGM(); }
+  else stopBGM();
+}
+
+function sfx(type) {
+  if (!audioCtx) return;
+  const osc = audioCtx.createOscillator();
+  const g = audioCtx.createGain();
+  osc.connect(g); g.connect(audioCtx.destination);
+  if (type === 'correct') {
+    osc.frequency.setValueAtTime(523, audioCtx.currentTime);
+    osc.frequency.linearRampToValueAtTime(784, audioCtx.currentTime + 0.15);
+    g.gain.setValueAtTime(0.15, audioCtx.currentTime);
+    g.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 0.3);
+    osc.start(); osc.stop(audioCtx.currentTime + 0.3);
+  } else if (type === 'wrong') {
+    osc.type = 'sawtooth';
+    osc.frequency.setValueAtTime(200, audioCtx.currentTime);
+    g.gain.setValueAtTime(0.1, audioCtx.currentTime);
+    g.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 0.2);
+    osc.start(); osc.stop(audioCtx.currentTime + 0.2);
+  } else if (type === 'clear') {
+    [523,659,784,1047].forEach((f,i) => {
+      const o2 = audioCtx.createOscillator();
+      const g2 = audioCtx.createGain();
+      o2.frequency.value = f;
+      g2.gain.setValueAtTime(0.12, audioCtx.currentTime + i*0.1);
+      g2.gain.linearRampToValueAtTime(0, audioCtx.currentTime + i*0.1 + 0.15);
+      o2.connect(g2); g2.connect(audioCtx.destination);
+      o2.start(audioCtx.currentTime + i*0.1);
+      o2.stop(audioCtx.currentTime + i*0.1 + 0.2);
+    });
+  }
+}
+
+// ── 배경 파티클 ──
+(function() {
+  const c = document.getElementById('bg-canvas');
+  const ctx2 = c.getContext('2d');
+  let pts = [];
+  function resize() { c.width=innerWidth; c.height=innerHeight; }
+  resize(); window.addEventListener('resize', resize);
+  for (let i=0; i<40; i++) pts.push({x:Math.random()*innerWidth, y:Math.random()*innerHeight, vx:(Math.random()-.5)*.3, vy:(Math.random()-.5)*.3, r:Math.random()*2+1});
+  function frame() {
+    ctx2.clearRect(0,0,c.width,c.height);
+    pts.forEach(p => {
+      p.x += p.vx; p.y += p.vy;
+      if(p.x<0) p.x=c.width; if(p.x>c.width) p.x=0;
+      if(p.y<0) p.y=c.height; if(p.y>c.height) p.y=0;
+      ctx2.beginPath();
+      ctx2.arc(p.x, p.y, p.r, 0, Math.PI*2);
+      ctx2.fillStyle = 'rgba(0,212,255,0.6)';
+      ctx2.fill();
+    });
+    requestAnimationFrame(frame);
+  }
+  frame();
+})();
+
+// ── QR 생성 ──
+function makeQR(elId) {
+  const el = document.getElementById(elId);
+  if (!el) return;
+  el.innerHTML = '';
+  try {
+    new QRCode(el, {
+      text: portfolioEntry.url,
+      width: 100, height: 100,
+      colorDark: '#00d4ff', colorLight: '#050d1a'
+    });
+  } catch(e) {}
+}
+
+// ── 시작 ──
+function startGame() {
+  if (!audioCtx) initAudio();
+  nickname = document.getElementById('nickname-input').value.trim() || '인턴';
+  showScreen('hub');
+  document.getElementById('hub-nickname').textContent = nickname + '님';
+  updateHub();
+}
+
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.add('hidden'));
+  document.getElementById('screen-' + id).classList.remove('hidden');
+  // scroll to top
+  window.scrollTo(0,0);
+}
+
+function updateHub() {
+  totalScore = missionScore.reduce((a,b)=>a+b,0);
+  document.getElementById('hub-score').textContent = totalScore;
+  const tabs = document.querySelectorAll('#mission-tabs .tab');
+  tabs.forEach((t, i) => {
+    t.classList.remove('done','active');
+    if (missionDone[i]) t.classList.add('done');
+  });
+  // 버블 메시지
+  const doneCount = missionDone.filter(Boolean).length;
+  const msgs = [
+    '미션을 선택해서 프롬프트 엔지니어 능력을 키워봐요!',
+    '좋아요! 계속 도전해요! 💪',
+    '절반 완료! 미봇이 조금씩 회복 중이에요! 🔧',
+    '거의 다 왔어요! 마지막 미션만 남았어요! 🎯',
+    '모든 미션 완료! 최종 결과를 확인해봐요! 🏆'
+  ];
+  document.getElementById('hub-bubble').textContent = msgs[doneCount];
+}
+
+function goMission(idx) {
+  if (idx === 0) startM1();
+  else if (idx === 1) startM2();
+  else if (idx === 2) startM3();
+  else if (idx === 3) startM4();
+}
+
+// ════════════════════════════════════════
+// 미션1 — 지식 탐색 (12문항, 전체 80초)
+// ════════════════════════════════════════
+const m1Questions = [
+  {q:"프롬프트(Prompt)란 무엇인가요?", choices:["AI에게 주는 명령·질문 텍스트","AI 로봇의 이름","컴퓨터 부품의 종류","인터넷 속도 단위"], ans:0, hint:"AI에게 '무엇을 해줘'라고 말하는 것!", fb:"프롬프트는 AI에게 전달하는 명령이나 질문 텍스트예요. [정보교과 - AI 인터페이스]"},
+  {q:"프롬프트 엔지니어의 주요 역할은 무엇인가요?", choices:["AI가 정확하게 답하도록 질문을 설계하는 사람","인터넷 케이블을 설치하는 사람","컴퓨터 하드웨어를 수리하는 사람","SNS 게시물을 관리하는 사람"], ans:0, hint:"AI와 인간 사이의 '번역가' 역할이에요!", fb:"프롬프트 엔지니어는 AI가 원하는 결과를 내도록 질문과 명령을 설계하는 직업이에요. [진로교육]"},
+  {q:"ChatGPT, Gemini, Claude는 모두 어떤 종류의 AI인가요?", choices:["대화형 AI(LLM 기반 챗봇)","이미지 인식 AI","자율주행 AI","로봇 제어 AI"], ans:0, hint:"텍스트로 대화하는 AI들이에요!", fb:"ChatGPT, Gemini, Claude는 모두 대형 언어 모델(LLM) 기반 대화형 AI예요. [정보교과 - AI 기초]"},
+  {q:"'역할 부여' 프롬프트 기법이란 무엇인가요?", choices:["AI에게 특정 역할을 맡겨서 답변 방향을 잡는 것","AI를 끄고 켜는 방법","데이터를 저장하는 방법","인터넷에 접속하는 방법"], ans:0, hint:"'너는 선생님이야' 처럼 역할을 지정해줘요!", fb:"'너는 10년 경력 의사야' 같이 역할을 부여하면 AI 답변 품질이 높아져요. [정보교과 - AI 활용]"},
+  {q:"AI의 '할루시네이션(Hallucination)'이란 무엇인가요?", choices:["AI가 사실이 아닌 내용을 사실처럼 답하는 현상","AI 화면이 밝게 빛나는 현상","AI 속도가 느려지는 현상","AI가 질문을 이해 못하는 현상"], ans:0, hint:"AI가 거짓말처럼 틀린 정보를 자신 있게 말할 때예요!", fb:"할루시네이션은 AI가 훈련 데이터 부족 등으로 인해 거짓 정보를 사실처럼 생성하는 문제예요. [도덕 - 디지털 리터러시]"},
+  {q:"좋은 프롬프트의 조건이 아닌 것은?", choices:["구체적이고 명확한 요청","맥락과 배경 정보 포함","애매하고 짧은 한 단어 요청","원하는 형식 지정"], ans:2, hint:"'밥줘'는 나쁜 프롬프트, '오늘 저녁 한식 메뉴 5개 추천해줘'는 좋은 프롬프트!", fb:"좋은 프롬프트는 구체적·명확·맥락 포함이 핵심이에요. 애매한 요청은 나쁜 프롬프트예요. [정보교과]"},
+  {q:"AI 답변을 검증할 때 가장 중요한 비판적 사고 태도는?", choices:["AI 답변을 무조건 믿는다","AI 답변을 다른 신뢰할 수 있는 자료와 비교·확인한다","AI 답변이 길수록 무조건 맞다","AI 답변을 빠르게 복사·붙여넣기 한다"], ans:1, hint:"AI도 틀릴 수 있어요. 팩트체크가 필수!", fb:"비판적 사고란 AI 답변을 맹신하지 않고 다른 자료와 교차 검증하는 태도예요. [도덕 - 디지털 시민성]"},
+  {q:"프롬프트에 '단계별로 설명해줘'를 추가하면 어떤 효과가 있나요?", choices:["AI가 논리적으로 차근차근 사고하도록 유도한다","AI 응답 속도가 빨라진다","AI가 더 짧게 답한다","AI 서버 비용이 줄어든다"], ans:0, hint:"'Chain-of-Thought' 기법이라고도 해요!", fb:"'단계별로 설명해줘'는 AI의 추론 과정을 유도해 더 정확한 답을 이끌어내는 기법이에요. [정보교과 - AI 활용]"},
+  {q:"2025년 기준 우리나라 중학교 정보 교과 필수 이수 시간은?", choices:["34시간 이상","68시간 이상","102시간 이상","136시간 이상"], ans:1, hint:"2022 개정 교육과정에서 대폭 늘었어요!", fb:"2022 개정 교육과정에서 중학교 정보 교과는 68시간 이상 필수 이수로 강화되었어요. [정보교과]"},
+  {q:"'시스템 프롬프트'와 '사용자 프롬프트'의 차이는?", choices:["시스템 프롬프트는 AI의 기본 행동 규칙 설정, 사용자 프롬프트는 대화 중 입력","둘 다 동일하다","시스템 프롬프트만 사용자가 입력할 수 있다","사용자 프롬프트는 AI 개발자만 볼 수 있다"], ans:0, hint:"시스템 = 규칙 설정, 사용자 = 실제 질문!", fb:"시스템 프롬프트는 AI 서비스 운영자가 설정하는 기본 규칙이고, 사용자 프롬프트는 우리가 직접 입력하는 질문이에요. [정보교과 - AI 구조]"},
+  {q:"AI가 생성한 글이나 이미지의 저작권 관련 올바른 태도는?", choices:["AI 생성물은 모두 자유롭게 사용 가능하다","AI 생성물도 출처를 밝히고 약관을 확인해야 한다","AI 생성물은 절대 사용할 수 없다","AI 생성물은 항상 개발사 소유다"], ans:1, hint:"AI 생성물도 저작권 문제가 생길 수 있어요!", fb:"AI 생성물의 저작권은 국가·서비스마다 다르므로, 출처 표기와 약관 확인이 중요해요. [도덕 - 디지털 윤리]"},
+  {q:"프롬프트 엔지니어링에서 '페르소나 설정'의 장점은?", choices:["AI 답변에 일관된 관점과 스타일을 부여할 수 있다","AI 서버 속도를 높인다","AI가 한국어를 더 잘 이해한다","AI가 그림을 그려준다"], ans:0, hint:"'너는 친절한 과학 선생님이야' 처럼 설정해봐요!", fb:"페르소나 설정은 AI 답변에 특정 전문가 관점·어투·스타일을 부여해 더 적합한 결과를 만들어요. [정보교과 - AI 활용]"}
+];
+
+let m1Idx = 0, m1Score = 0, m1Timer = null, m1Time = 80;
+let m1HintUsed = [];
+let m1Answered = false;
+
+function startM1() {
+  showScreen('m1');
+  m1Idx = 0; m1Score = missionScore[0]; m1Time = 80; m1HintUsed = [];
+  // 셔플
+  m1Shuffled = shuffleArr([...m1Questions]);
+  m1Render();
+  startM1Timer();
+}
+
+let m1Shuffled = [];
+
+function m1Render() {
+  if (m1Idx >= m1Shuffled.length) { clearInterval(m1Timer); m1Complete(); return; }
+  const q = m1Shuffled[m1Idx];
+  m1Answered = false;
+  document.getElementById('m1-qnum').textContent = `${m1Idx+1}/12`;
+  document.getElementById('m1-pts').textContent = `${m1Score}점`;
+  document.getElementById('m1-bar').style.width = `${((m1Idx)/12*100)}%`;
+  document.getElementById('m1-qtext').textContent = q.q;
+  document.getElementById('m1-feedback').style.display = 'none';
+  document.getElementById('m1-next').style.display = 'none';
+
+  // 힌트
+  const ha = document.getElementById('m1-hint-area');
+  if (m1HintUsed[m1Idx]) {
+    ha.innerHTML = `<div class="hint-box">💡 힌트: ${q.hint}</div>`;
+  } else {
+    ha.innerHTML = `<button class="hint-btn" onclick="useHint(0)">💡 힌트 (배점 30% 차감)</button>`;
+  }
+
+  // 선택지 셔플
+  const choiceDiv = document.getElementById('m1-choices');
+  choiceDiv.innerHTML = '';
+  const idxArr = shuffleArr([0,1,2,3]);
+  idxArr.forEach(ci => {
+    const btn = document.createElement('button');
+    btn.className = 'btn-choice';
+    btn.textContent = q.choices[ci];
+    btn.onclick = () => m1Answer(ci, btn);
+    choiceDiv.appendChild(btn);
+  });
+}
+
+function useHint(mIdx) {
+  if (mIdx === 0) {
+    m1HintUsed[m1Idx] = true;
+    const q = m1Shuffled[m1Idx];
+    document.getElementById('m1-hint-area').innerHTML = `<div class="hint-box">💡 힌트: ${q.hint}</div>`;
+  } else if (mIdx === 1) {
+    m2HintUsed[m2Idx] = true;
+    const q = m2Current[m2Idx];
+    document.getElementById('m2-hint-area').innerHTML = `<div class="hint-box">💡 힌트: ${q.hint}</div>`;
+  }
+}
+
+function m1Answer(ci, btn) {
+  if (m1Answered) return;
+  m1Answered = true;
+  const q = m1Shuffled[m1Idx];
+  const choiceBtns = document.querySelectorAll('#m1-choices .btn-choice');
+  choiceBtns.forEach(b => b.style.pointerEvents = 'none');
+
+  const points = m1HintUsed[m1Idx] ? 7 : 10;
+  const fb = document.getElementById('m1-feedback');
+  fb.style.display = 'block';
+
+  if (ci === q.ans) {
+    btn.classList.add('correct');
+    m1Score += points;
+    sfx('correct');
+    fb.className = 'feedback-box correct-fb';
+    fb.innerHTML = `✅ 정답! +${points}점<br><small style="color:var(--text2)">${q.fb}</small>`;
+  } else {
+    btn.classList.add('wrong');
+    choiceBtns.forEach(b => { if(b.textContent === q.choices[q.ans]) b.classList.add('correct'); });
+    sfx('wrong');
+    fb.className = 'feedback-box wrong-fb';
+    fb.innerHTML = `❌ 오답! 좋은 시도야! 이런 생각도 있어:<br><small style="color:var(--text2)">${q.fb}</small>`;
+  }
+  document.getElementById('m1-pts').textContent = `${m1Score}점`;
+  document.getElementById('m1-next').style.display = 'block';
+}
+
+function m1Next() {
+  m1Idx++;
+  if (m1Idx >= m1Shuffled.length) { clearInterval(m1Timer); m1Complete(); return; }
+  m1Render();
+}
+
+function startM1Timer() {
+  clearInterval(m1Timer);
+  m1Time = 80;
+  updateM1TimerUI();
+  m1Timer = setInterval(() => {
+    m1Time--;
+    updateM1TimerUI();
+    if (m1Time <= 0) { clearInterval(m1Timer); m1Complete(); }
+  }, 1000);
+}
+
+function updateM1TimerUI() {
+  const el = document.getElementById('m1-timer');
+  el.textContent = m1Time;
+  el.className = 'timer-num' + (m1Time <= 10 ? ' danger' : '');
+}
+
+function m1Complete() {
+  missionScore[0] = m1Score;
+  missionDone[0] = true;
+  sfx('clear');
+  alert(`🎉 미션1 완료! ${m1Score}점 획득!`);
+  showScreen('hub');
+  updateHub();
+}
+
+// ════════════════════════════════════════
+// 미션2 — 교과 융합 퀴즈 (3단계 난이도)
+// ════════════════════════════════════════
+const m2Data = {
+  easy: [
+    {q:"국어 교과 '매체 읽기'에서 AI가 생성한 뉴스를 읽을 때 가장 먼저 해야 할 것은?", choices:["바로 친구에게 공유하기","작성자와 출처를 확인하기","재미있으면 믿기","제목만 읽고 판단하기"], ans:1, hint:"누가, 어디서 만든 정보인지 확인!", fb:"매체 리터러시의 핵심은 출처와 신뢰성 확인이에요. [국어 - 매체읽기]", pts:10},
+    {q:"AI가 학습하는 '데이터'의 뜻으로 알맞은 것은?", choices:["컴퓨터 부품","AI가 배우는 정보의 모음","인터넷 비밀번호","스마트폰 앱"], ans:1, hint:"AI의 '공부 자료'가 데이터예요!", fb:"데이터는 AI가 패턴을 학습하는 재료예요. 많고 좋은 데이터가 중요해요. [정보교과 - AI 기초]", pts:10},
+    {q:"인터넷에서 개인정보를 보호하는 올바른 방법은?", choices:["SNS에 집 주소·전화번호를 공개하기","비밀번호를 모두 같게 설정하기","개인정보를 최소한으로 공개하기","타인의 사진을 마음대로 공유하기"], ans:2, hint:"덜 공개할수록 더 안전해요!", fb:"개인정보 최소 공개와 강력한 비밀번호 관리가 디지털 보안의 기본이에요. [도덕 - 디지털 윤리]", pts:10},
+  ],
+  normal: [
+    {q:"AI 머신러닝에서 '지도 학습'이란 무엇인가요?", choices:["AI가 혼자 알아서 배우는 것","정답 데이터를 주고 AI를 학습시키는 방법","AI가 인터넷을 검색하는 것","사람이 직접 AI를 조종하는 것"], ans:1, hint:"선생님이 정답지를 보여주며 가르치는 방식!", fb:"지도 학습은 입력-정답 쌍 데이터로 AI를 훈련하는 방법이에요. [정보교과 - AI 원리]", pts:15},
+    {q:"뉴스 매체에서 같은 사건을 보도할 때 관점이 다른 이유는?", choices:["기자마다 타자 속도가 달라서","매체마다 가치관·이해관계·편향이 다르기 때문","인터넷 속도가 달라서","뉴스 제작 비용이 달라서"], ans:1, hint:"같은 사건도 누가 보느냐에 따라 다르게 해석돼요!", fb:"미디어 편향성을 인식하고 다양한 관점의 자료를 비교하는 것이 비판적 읽기예요. [국어 - 매체읽기]", pts:15},
+    {q:"자유학기제에서 '진로 탐색'이 중요한 이유는?", choices:["시험 점수를 올리기 위해","자신의 적성·흥미를 발견해 미래를 설계하기 위해","학원 숙제를 줄이기 위해","친구를 사귀기 위해"], ans:1, hint:"자유학기 = 나를 발견하는 시간!", fb:"자유학기제는 진로 탐색 활동을 통해 자신의 적성을 발견하는 기회예요. [진로 교육]", pts:15},
+  ],
+  hard: [
+    {q:"AI 알고리즘의 '편향(Bias)'이 사회에 미치는 문제로 가장 적절한 것은?", choices:["AI 처리 속도가 빨라진다","채용·대출 심사에서 특정 집단이 불이익을 받을 수 있다","AI 전력 소비가 줄어든다","AI 번역 품질이 높아진다"], ans:1, hint:"AI가 학습한 데이터에 차별이 있으면 결과도 차별적일 수 있어요!", fb:"AI 편향은 사회적 불평등을 심화시킬 수 있어요. AI 윤리와 공정성 설계가 중요한 이유예요. [도덕 - AI 윤리] 출처: AI Now Institute, 2023", pts:20},
+    {q:"'딥페이크(Deepfake)'의 위험성과 이를 대응하는 올바른 방법은?", choices:["딥페이크는 예술로만 사용되므로 문제없다","허위 정보 유포에 악용될 수 있어, 출처·맥락 검증과 미디어 리터러시 교육이 필요하다","딥페이크를 많이 만들수록 기술이 발전한다","딥페이크는 AI가 자동으로 탐지한다"], ans:1, hint:"내 얼굴이 합성된 가짜 영상이 퍼진다면?", fb:"딥페이크는 사이버 범죄·허위정보에 악용돼요. 비판적 미디어 리터러시로 대응해야 해요. [도덕 - 디지털 윤리, 국어 - 매체]", pts:20},
+    {q:"프롬프트 엔지니어가 AI에게 윤리적으로 허용되지 않는 요청을 막기 위해 설계하는 것은?", choices:["속도 제한 코드","가드레일(Guardrail) — AI가 유해 콘텐츠를 생성하지 않도록 하는 규칙","광고 차단 코드","인터넷 방화벽"], ans:1, hint:"AI에게도 '이건 안 돼'라는 울타리가 필요해요!", fb:"가드레일은 AI가 유해·불법 콘텐츠를 생성하지 않도록 설계된 안전장치예요. [정보교과 - AI 윤리]", pts:20},
+  ]
+};
+
+let m2Diff = 'easy';
+let m2Idx = 0;
+let m2Score = 0;
+let m2Timer = null;
+let m2Time = 45;
+let m2Current = [];
+let m2HintUsed = [];
+let m2Answered = false;
+
+function startM2() {
+  showScreen('m2');
+  m2Score = missionScore[1];
+  m2Diff = 'easy';
+  setDiff('easy');
+}
+
+function setDiff(d) {
+  m2Diff = d;
+  document.querySelectorAll('.diff-tab').forEach(t => {
+    t.classList.remove('active');
+    if (t.dataset.d === d) t.classList.add('active');
+  });
+  m2Idx = 0;
+  m2HintUsed = [];
+  m2Current = [...m2Data[d]];
+  const labels = {easy:'🟢 쉬움 (10점)', normal:'🟡 보통 (15점)', hard:'🔴 도전 (20점)'};
+  document.getElementById('m2-diff-label').textContent = labels[d];
+  m2Render();
+}
+
+function m2Render() {
+  if (m2Idx >= m2Current.length) { m2DiffDone(); return; }
+  const q = m2Current[m2Idx];
+  m2Answered = false;
+  document.getElementById('m2-qnum').textContent = `${m2Idx+1}/${m2Current.length}`;
+  document.getElementById('m2-pts').textContent = `${m2Score}점`;
+  document.getElementById('m2-bar').style.width = `${((m2Idx)/m2Current.length*100)}%`;
+  document.getElementById('m2-qtext').textContent = q.q;
+  document.getElementById('m2-feedback').style.display = 'none';
+  document.getElementById('m2-next').style.display = 'none';
+
+  const ha = document.getElementById('m2-hint-area');
+  if (m2HintUsed[m2Idx]) {
+    ha.innerHTML = `<div class="hint-box">💡 힌트: ${q.hint}</div>`;
+  } else {
+    ha.innerHTML = `<button class="hint-btn" onclick="useHint(1)">💡 힌트 (배점 30% 차감)</button>`;
+  }
+
+  const choiceDiv = document.getElementById('m2-choices');
+  choiceDiv.innerHTML = '';
+  const idxArr = shuffleArr([0,1,2,3]);
+  idxArr.forEach(ci => {
+    const btn = document.createElement('button');
+    btn.className = 'btn-choice';
+    btn.textContent = q.choices[ci];
+    btn.onclick = () => m2Answer(ci, btn, q);
+    choiceDiv.appendChild(btn);
+  });
+
+  startM2Timer();
+}
+
+function m2Answer(ci, btn, q) {
+  if (m2Answered) return;
+  m2Answered = true;
+  clearInterval(m2Timer);
+  const choiceBtns = document.querySelectorAll('#m2-choices .btn-choice');
+  choiceBtns.forEach(b => b.style.pointerEvents = 'none');
+
+  const pts = m2HintUsed[m2Idx] ? Math.floor(q.pts * 0.7) : q.pts;
+  const fb = document.getElementById('m2-feedback');
+  fb.style.display = 'block';
+
+  if (ci === q.ans) {
+    btn.classList.add('correct');
+    m2Score += pts;
+    sfx('correct');
+    fb.className = 'feedback-box correct-fb';
+    fb.innerHTML = `✅ 정답! +${pts}점<br><small style="color:var(--text2)">${q.fb}</small>`;
+  } else {
+    btn.classList.add('wrong');
+    choiceBtns.forEach(b => { if(b.textContent === q.choices[q.ans]) b.classList.add('correct'); });
+    sfx('wrong');
+    fb.className = 'feedback-box wrong-fb';
+    fb.innerHTML = `❌ 오답! 좋은 시도야! 이런 생각도 있어:<br><small style="color:var(--text2)">${q.fb}</small>`;
+  }
+  document.getElementById('m2-pts').textContent = `${m2Score}점`;
+  document.getElementById('m2-next').style.display = 'block';
+}
+
+function m2Next() {
+  m2Idx++;
+  m2Render();
+}
+
+function m2DiffDone() {
+  clearInterval(m2Timer);
+  const diffs = ['easy','normal','hard'];
+  const nextIdx = diffs.indexOf(m2Diff) + 1;
+  if (nextIdx < diffs.length) {
+    alert(`🎉 ${m2Diff === 'easy' ? '쉬움' : '보통'} 완료! 다음 난이도에 도전해봐요!`);
+    setDiff(diffs[nextIdx]);
+  } else {
+    missionScore[1] = m2Score;
+    missionDone[1] = true;
+    sfx('clear');
+    alert(`🎉 미션2 완료! ${m2Score}점 획득!`);
+    showScreen('hub');
+    updateHub();
+  }
+}
+
+function startM2Timer() {
+  clearInterval(m2Timer);
+  m2Time = 45;
+  updateM2TimerUI();
+  m2Timer = setInterval(() => {
+    m2Time--;
+    updateM2TimerUI();
+    if (m2Time <= 0) {
+      clearInterval(m2Timer);
+      // 타임아웃 → 오답 처리
+      if (!m2Answered) {
+        m2Answered = true;
+        const q = m2Current[m2Idx];
+        sfx('wrong');
+        const fb = document.getElementById('m2-feedback');
+        fb.style.display = 'block';
+        fb.className = 'feedback-box wrong-fb';
+        fb.innerHTML = `⏰ 시간 초과! 좋은 시도야! 이런 생각도 있어:<br><small style="color:var(--text2)">${q.fb}</small>`;
+        document.getElementById('m2-next').style.display = 'block';
+        const choiceBtns = document.querySelectorAll('#m2-choices .btn-choice');
+        choiceBtns.forEach(b => { b.style.pointerEvents='none'; if(b.textContent===q.choices[q.ans]) b.classList.add('correct'); });
+      }
+    }
+  }, 1000);
+}
+
+function updateM2TimerUI() {
+  const el = document.getElementById('m2-timer');
+  el.textContent = m2Time;
+  el.className = 'timer-num' + (m2Time <= 10 ? ' danger' : '');
+}
+
+// ════════════════════════════════════════
+// 미션3 — AI 체험 (분류 + 순서)
+// ════════════════════════════════════════
+const m3Chips = [
+  {text:"오늘 날씨 알려줘", isGood:false},
+  {text:"서울의 오늘 오후 3시 기온과 강수 확률을 알려줘", isGood:true},
+  {text:"숙제 해줘", isGood:false},
+  {text:"중1 수학 방정식 단원의 핵심 개념을 예시와 함께 3가지 설명해줘", isGood:true},
+  {text:"맛있는 거 알려줘", isGood:false},
+  {text:"충주 지역 청소년이 혼자 만들 수 있는 간단한 한식 레시피 3가지 추천해줘", isGood:true},
+];
+
+// 분류 상태
+let chipSelected = {};
+let chipPlaced = {}; // {chipIdx: 'good'|'bad'}
+
+const m3OrderItems = [
+  "사용자가 프롬프트를 입력한다",
+  "AI가 입력을 토큰으로 분리한다",
+  "언어 모델이 다음 단어 확률을 계산한다",
+  "AI가 답변 텍스트를 생성한다",
+  "사용자 화면에 답변이 출력된다"
+];
+const m3CorrectOrder = [0,1,2,3,4];
+let m3OrderSelected = [];
+let m3OrderSource = [...m3OrderItems.keys()]; // 남아있는 아이템 인덱스
+
+let m3Score = 0;
+
+function startM3() {
+  showScreen('m3');
+  m3Score = missionScore[2];
+  chipSelected = {};
+  chipPlaced = {};
+  m3OrderSelected = [];
+  m3OrderSource = [...m3OrderItems.keys()];
+
+  // 파트A 렌더
+  document.getElementById('m3-partA').style.display = 'block';
+  document.getElementById('m3-partB').style.display = 'none';
+  document.getElementById('m3-classify-fb').style.display = 'none';
+  document.getElementById('good-drop').innerHTML = '';
+  document.getElementById('bad-drop').innerHTML = '';
+
+  const chipsDiv = document.getElementById('m3-chips');
+  chipsDiv.innerHTML = '';
+  m3Chips.forEach((chip, i) => {
+    const el = document.createElement('div');
+    el.className = 'prompt-chip';
+    el.textContent = chip.text;
+    el.dataset.idx = i;
+    el.onclick = () => selectChip(i, el, chip);
+    chipsDiv.appendChild(el);
+  });
+}
+
+let m3SelectedChip = null;
+let m3SelectedEl = null;
+
+function selectChip(idx, el, chip) {
+  if (chipPlaced[idx] !== undefined) return;
+  // 이미 선택된 경우 해제
+  if (m3SelectedChip === idx) {
+    el.classList.remove('selected');
+    m3SelectedChip = null; m3SelectedEl = null;
+    return;
+  }
+  if (m3SelectedEl) m3SelectedEl.classList.remove('selected');
+  el.classList.add('selected');
+  m3SelectedChip = idx;
+  m3SelectedEl = el;
+
+  // 자동으로 분류 선택 UI
+  const existing = document.getElementById('m3-classify-sel');
+  if (existing) existing.remove();
+
+  const selDiv = document.createElement('div');
+  selDiv.id = 'm3-classify-sel';
+  selDiv.style.cssText = 'display:flex; gap:8px; margin:8px 0;';
+
+  const goodBtn = document.createElement('button');
+  goodBtn.className = 'btn btn-outline';
+  goodBtn.style.cssText = 'flex:1; padding:10px; font-size:14px; border-color:var(--accent3); color:var(--accent3);';
+  goodBtn.textContent = '✅ 좋은 프롬프트';
+  goodBtn.onclick = () => placeChip(idx, 'good');
+
+  const badBtn = document.createElement('button');
+  badBtn.className = 'btn btn-outline';
+  badBtn.style.cssText = 'flex:1; padding:10px; font-size:14px; border-color:var(--danger); color:var(--danger);';
+  badBtn.textContent = '❌ 나쁜 프롬프트';
+  badBtn.onclick = () => placeChip(idx, 'bad');
+
+  selDiv.appendChild(goodBtn);
+  selDiv.appendChild(badBtn);
+  document.getElementById('m3-chips').after(selDiv);
+}
+
+function placeChip(idx, col) {
+  chipPlaced[idx] = col;
+  const chip = m3Chips[idx];
+
+  // 칩 원본 숨기기
+  const chips = document.querySelectorAll('#m3-chips .prompt-chip');
+  chips[idx].style.opacity = '0.3';
+  chips[idx].classList.remove('selected');
+  m3SelectedChip = null; m3SelectedEl = null;
+
+  // 대상 컬럼에 추가
+  const targetId = col === 'good' ? 'good-drop' : 'bad-drop';
+  const placed = document.createElement('div');
+  placed.className = 'prompt-chip';
+  placed.style.borderColor = col === 'good' ? 'var(--accent3)' : 'var(--danger)';
+  placed.textContent = chip.text;
+  document.getElementById(targetId).appendChild(placed);
+
+  const selDiv = document.getElementById('m3-classify-sel');
+  if (selDiv) selDiv.remove();
+}
+
+function checkClassify() {
+  let correct = 0;
+  m3Chips.forEach((chip, i) => {
+    if (chipPlaced[i] === undefined) return;
+    if ((chip.isGood && chipPlaced[i]==='good') || (!chip.isGood && chipPlaced[i]==='bad')) correct++;
+  });
+
+  const placed = Object.keys(chipPlaced).length;
+  const fb = document.getElementById('m3-classify-fb');
+  fb.style.display = 'block';
+
+  if (placed < m3Chips.length) {
+    fb.className = 'feedback-box wrong-fb';
+    fb.textContent = `⚠️ 모든 프롬프트를 분류해주세요! (${placed}/${m3Chips.length} 완료)`;
+    return;
+  }
+
+  const pts = correct * 5;
+  m3Score += pts;
+  sfx(correct >= 5 ? 'correct' : 'wrong');
+  fb.className = 'feedback-box correct-fb';
+  fb.innerHTML = `✅ 파트A 완료! ${correct}/${m3Chips.length}개 정답 → +${pts}점<br>
+<small style="color:var(--text2)">좋은 프롬프트는 구체적·명확·맥락 포함이 핵심이에요! [정보교과 - AI 활용]</small>`;
+
+  setTimeout(() => {
+    document.getElementById('m3-partA').style.display = 'none';
+    document.getElementById('m3-partB').style.display = 'block';
+    renderOrderPart();
+  }, 2000);
+}
+
+function renderOrderPart() {
+  // 섞인 소스
+  const shuffled = shuffleArr([...m3OrderItems.keys()]);
+  const srcDiv = document.getElementById('order-source');
+  srcDiv.innerHTML = '';
+  shuffled.forEach(idx => {
+    const el = document.createElement('div');
+    el.className = 'order-item';
+    el.dataset.idx = idx;
+    el.innerHTML = `<span class="num">?</span><span>${m3OrderItems[idx]}</span>`;
+    el.onclick = () => selectOrderItem(idx, el);
+    srcDiv.appendChild(el);
+  });
+  document.getElementById('order-selected').innerHTML = '';
+  document.getElementById('m3-order-fb').style.display = 'none';
+  document.getElementById('order-check-btn').style.display = 'block';
+  document.getElementById('m3-done-btn').style.display = 'none';
+  m3OrderSelected = [];
+}
+
+let orderSelectedSet = new Set();
+
+function selectOrderItem(idx, el) {
+  if (orderSelectedSet.has(idx)) {
+    // 취소
+    orderSelectedSet.delete(idx);
+    m3OrderSelected = m3OrderSelected.filter(i => i !== idx);
+    el.style.opacity = '1';
+  } else {
+    orderSelectedSet.add(idx);
+    m3OrderSelected.push(idx);
+    el.style.opacity = '0.3';
+  }
+  // 선택 목록 업데이트
+  const selDiv = document.getElementById('order-selected');
+  selDiv.innerHTML = '';
+  m3OrderSelected.forEach((i, pos) => {
+    const el2 = document.createElement('div');
+    el2.className = 'order-item';
+    el2.innerHTML = `<span class="num">${pos+1}</span><span>${m3OrderItems[i]}</span>`;
+    selDiv.appendChild(el2);
+  });
+}
+
+function checkOrder() {
+  if (m3OrderSelected.length < m3OrderItems.length) {
+    const fb = document.getElementById('m3-order-fb');
+    fb.style.display='block'; fb.className='feedback-box wrong-fb';
+    fb.textContent=`⚠️ 모든 단계를 선택해주세요! (${m3OrderSelected.length}/${m3OrderItems.length})`;
+    return;
+  }
+  let correct = true;
+  m3OrderSelected.forEach((idx, pos) => { if (idx !== m3CorrectOrder[pos]) correct = false; });
+
+  const fb = document.getElementById('m3-order-fb');
+  fb.style.display = 'block';
+
+  if (correct) {
+    m3Score += 15;
+    sfx('correct');
+    fb.className = 'feedback-box correct-fb';
+    fb.innerHTML = `✅ 완벽한 순서! +15점<br><small style="color:var(--text2)">AI는 입력→토큰화→확률계산→생성→출력 순으로 작동해요! [정보교과 - AI 원리]</small>`;
+  } else {
+    sfx('wrong');
+    fb.className = 'feedback-box wrong-fb';
+    fb.innerHTML = `❌ 순서가 다르네요! 좋은 시도야!<br><small style="color:var(--text2)">정답: 입력→토큰화→확률계산→생성→출력 [정보교과 - AI 원리]</small>`;
+  }
+  document.getElementById('order-check-btn').style.display = 'none';
+  document.getElementById('m3-done-btn').style.display = 'block';
+}
+
+function completeM3() {
+  missionScore[2] = m3Score;
+  missionDone[2] = true;
+  sfx('clear');
+  alert(`🎉 미션3 완료! ${m3Score}점 획득!`);
+  showScreen('hub');
+  updateHub();
+}
+
+// ════════════════════════════════════════
+// 미션4 — 진로 시나리오
+// ════════════════════════════════════════
+const m4Questions = [
+  {
+    q:"📋 시나리오 1\n학교 과제로 AI에게 '독도에 대해 알려줘'라고 물었더니 오래된 정보를 답했어요. 프롬프트 엔지니어로서 어떻게 고칠까요?",
+    choices:[
+      "그냥 AI 답변을 그대로 사용한다",
+      "'2024년 기준 독도의 지리·역사·국제 분쟁 현황을 500자 이내로 정리해줘'로 구체화한다",
+      "AI를 탓하고 포기한다",
+      "인터넷 검색으로 대체한다"
+    ], ans:1,
+    fb:"구체적인 시점·형식·분량 지정이 좋은 프롬프트의 핵심이에요! [정보교과 - AI 활용, 국어 - 표현]"
+  },
+  {
+    q:"📋 시나리오 2\n친구가 'AI로 유명인 목소리를 합성해서 장난 영상 만들자'고 제안했어요. 어떻게 할까요?",
+    choices:[
+      "재미있으니까 같이 만든다",
+      "거절한다 — 개인 동의 없는 음성·초상 합성은 명예훼손·저작권 침해 소지가 있다",
+      "몰래 만들고 내 SNS에만 올린다",
+      "AI 서비스 이용약관을 무시하고 진행한다"
+    ], ans:1,
+    fb:"딥페이크·음성 합성은 당사자 동의 없이 사용 시 법적 문제가 생길 수 있어요. [도덕 - AI 윤리]"
+  },
+  {
+    q:"📋 시나리오 3\nAI가 논문 요약을 해줬는데 일부 내용이 실제 논문과 달랐어요(할루시네이션). 다음 행동 중 가장 올바른 것은?",
+    choices:[
+      "AI가 요약했으니 맞을 거라 믿고 제출한다",
+      "원본 논문과 교차 확인 후 사실관계를 수정해서 제출한다",
+      "AI에게 다시 요약해달라고만 한다",
+      "요약을 포기하고 원본만 제출한다"
+    ], ans:1,
+    fb:"AI 답변은 반드시 원본 자료와 교차 검증해야 해요. 비판적 사고가 핵심! [국어 - 비판적 읽기, 정보]"
+  },
+  {
+    q:"📋 시나리오 4\n미래에 '프롬프트 엔지니어'로 일하고 싶어요. 지금 중1 학생으로서 가장 도움이 되는 준비는?",
+    choices:[
+      "수학·과학 공부만 한다",
+      "AI 도구를 직접 사용해보고, 국어·정보·도덕 교과에서 AI 리터러시와 비판적 사고를 키운다",
+      "게임만 한다",
+      "영어만 공부한다"
+    ], ans:1,
+    fb:"프롬프트 엔지니어는 언어 감각 + AI 이해 + 논리적 사고 + 윤리 의식이 모두 필요해요! [자유학기 진로탐색]"
+  }
+];
+
+let m4Idx = 0, m4Score = 0;
+
+function startM4() {
+  showScreen('m4');
+  m4Idx = 0; m4Score = missionScore[3];
+  m4Render();
+}
+
+function m4Render() {
+  if (m4Idx >= m4Questions.length) { m4Complete(); return; }
+  const q = m4Questions[m4Idx];
+  document.getElementById('m4-qnum').textContent = `${m4Idx+1}/${m4Questions.length}`;
+  document.getElementById('m4-bar').style.width = `${((m4Idx)/m4Questions.length*100)}%`;
+  document.getElementById('m4-qtext').textContent = q.q;
+  document.getElementById('m4-feedback').style.display = 'none';
+  document.getElementById('m4-next').style.display = 'none';
+
+  const choiceDiv = document.getElementById('m4-choices');
+  choiceDiv.innerHTML = '';
+  q.choices.forEach((c, ci) => {
+    const btn = document.createElement('button');
+    btn.className = 'btn-choice';
+    btn.textContent = c;
+    btn.onclick = () => m4Answer(ci, btn, q);
+    choiceDiv.appendChild(btn);
+  });
+}
+
+function m4Answer(ci, btn, q) {
+  const choiceBtns = document.querySelectorAll('#m4-choices .btn-choice');
+  choiceBtns.forEach(b => b.style.pointerEvents = 'none');
+  const fb = document.getElementById('m4-feedback');
+  fb.style.display = 'block';
+
+  if (ci === q.ans) {
+    btn.classList.add('correct');
+    m4Score += 15;
+    sfx('correct');
+    fb.className = 'feedback-box correct-fb';
+    fb.innerHTML = `✅ 훌륭한 판단! +15점<br><small style="color:var(--text2)">${q.fb}</small>`;
+  } else {
+    btn.classList.add('wrong');
+    choiceBtns.forEach(b => { if (q.choices.indexOf(b.textContent) === q.ans) b.classList.add('correct'); });
+    sfx('wrong');
+    fb.className = 'feedback-box wrong-fb';
+    fb.innerHTML = `🤔 좋은 시도야! 이런 생각도 있어:<br><small style="color:var(--text2)">${q.fb}</small>`;
+  }
+  document.getElementById('m4-pts') && (document.getElementById('m4-pts').textContent = `${m4Score}점`);
+  document.getElementById('m4-next').style.display = 'block';
+}
+
+function m4Next() {
+  m4Idx++;
+  m4Render();
+}
+
+function m4Complete() {
+  missionScore[3] = m4Score;
+  missionDone[3] = true;
+  sfx('clear');
+  alert(`🎉 미션4 완료! ${m4Score}점 획득!`);
+  showScreen('hub');
+  updateHub();
+}
+
+// ════════════════════════════════════════
+// 결과 화면
+// ════════════════════════════════════════
+const endings = [
+  {min:0, max:39, title:"🌱 AI 리터러시 탐험가", desc:"다시 도전! AI와 프롬프트의 세계는 넓어요. 꾸준히 배우면 성장할 수 있어요!"},
+  {min:40, max:59, title:"🛡️ 디지털 윤리 컨설턴트", desc:"AI 윤리와 디지털 시민성에 강한 당신! 안전한 AI 사회를 만드는 직업이 어울려요."},
+  {min:60, max:79, title:"🎨 AI 콘텐츠 크리에이터", desc:"창의적 프롬프트로 콘텐츠를 만드는 데 재능이 보여요! AI 활용 크리에이터 진로를 추천해요."},
+  {min:80, max:200, title:"🏆 AI 프롬프트 아키텍트", desc:"탁월한 프롬프트 설계 능력! AI 시대의 핵심 직업인 프롬프트 엔지니어 적성이 발견됐어요!"},
+];
+
+function showResult() {
+  totalScore = missionScore.reduce((a,b)=>a+b,0);
+  const percent = Math.min(100, Math.round(totalScore / 1.5)); // 150점 만점 기준 환산
+  showScreen('result');
+
+  // 점수 카운트업
+  let cur = 0;
+  const el = document.getElementById('result-score');
+  const step = Math.max(1, Math.floor(totalScore/30));
+  const iv = setInterval(() => {
+    cur = Math.min(cur + step, totalScore);
+    el.textContent = cur;
+    if (cur >= totalScore) clearInterval(iv);
+  }, 30);
+
+  // 엔딩
+  const ending = endings.find(e => percent >= e.min && percent <= e.max) || endings[0];
+  document.getElementById('result-title').textContent = ending.title;
+  document.getElementById('result-desc').textContent = ending.desc;
+
+  // 배지
+  const badgeRow = document.getElementById('result-badges');
+  badgeRow.innerHTML = '';
+  missionDone.forEach((done, i) => {
+    const labels = ['미션1','미션2','미션3','미션4'];
+    ['⭐','⭐','⭐'].forEach((s, si) => {
+      const sp = document.createElement('span');
+      sp.className = 'star' + (done && si === 0 ? ' lit' : done && si===1 && missionScore[i]>10 ? ' lit' : done && si===2 && missionScore[i]>25 ? ' lit' : '');
+      sp.textContent = s;
+      badgeRow.appendChild(sp);
+    });
+  });
+
+  // 닉네임 pre-fill
+  document.getElementById('lb-nickname').value = nickname;
+  loadLeaderboard();
+
+  // QR
+  setTimeout(() => makeQR('qr-result-img'), 300);
+  sfx('clear');
+}
+
+function saveScore() {
+  const nn = document.getElementById('lb-nickname').value.trim() || nickname;
+  const key = 'milab_m1_033_lb';
+  let board = JSON.parse(localStorage.getItem(key) || '[]');
+  board.push({name: nn, score: totalScore, date: new Date().toLocaleDateString('ko-KR')});
+  board.sort((a,b) => b.score - a.score);
+  board = board.slice(0, 5);
+  localStorage.setItem(key, JSON.stringify(board));
+  loadLeaderboard();
+}
+
+function loadLeaderboard() {
+  const key = 'milab_m1_033_lb';
+  const board = JSON.parse(localStorage.getItem(key) || '[]');
+  const ul = document.getElementById('lb-list');
+  ul.innerHTML = '';
+  if (board.length === 0) {
+    ul.innerHTML = '<li style="color:var(--text2); font-size:13px;">아직 기록이 없어요. 첫 번째 도전자가 되어봐요!</li>';
+    return;
+  }
+  const rankIcons = ['🥇','🥈','🥉','4️⃣','5️⃣'];
+  board.forEach((entry, i) => {
+    const li = document.createElement('li');
+    li.innerHTML = `<span class="rank">${rankIcons[i]}</span><span>${entry.name}</span><span style="font-weight:700; color:var(--accent)">${entry.score}점</span>`;
+    ul.appendChild(li);
+  });
+}
+
+function restartGame() {
+  missionDone = [false,false,false,false];
+  missionScore = [0,0,0,0];
+  totalScore = 0;
+  showScreen('start');
+  setTimeout(() => makeQR('qr-start-img'), 300);
+}
+
+// ── 유틸 ──
+function shuffleArr(arr) {
+  for (let i = arr.length-1; i>0; i--) {
+    const j = Math.floor(Math.random()*(i+1));
+    [arr[i],arr[j]] = [arr[j],arr[i]];
+  }
+  return arr;
+}
+
+// ── 초기화 ──
+window.addEventListener('load', () => {
+  // iOS AudioContext unlock
+  document.body.addEventListener('touchstart', () => {
+    if (!audioCtx) initAudio();
+    else if (audioCtx.state === 'suspended') audioCtx.resume();
+  }, {once: true});
+
+  setTimeout(() => makeQR('qr-start-img'), 500);
+});
+
+// iOS 스크롤 고정 방지
+document.addEventListener('touchmove', function(e) {
+  // 스크롤 가능한 카드 내부는 허용
+}, {passive: true});
+
+</script>
+</body>
+</html>
