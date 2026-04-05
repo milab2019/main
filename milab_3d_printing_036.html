@@ -1,0 +1,1431 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-WTY6YJQ1NS"></script>
+<script>
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-WTY6YJQ1NS');
+</script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🖨️ 미래 제조소 — 3D 설계사의 탄생 | MILAB #036</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<style>
+:root {
+  --bg: #0a0e1a;
+  --bg2: #111827;
+  --card: #1a2235;
+  --card2: #1e2d45;
+  --accent: #3b82f6;
+  --accent2: #06b6d4;
+  --green: #10b981;
+  --red: #ef4444;
+  --yellow: #f59e0b;
+  --purple: #8b5cf6;
+  --text: #e2e8f0;
+  --text2: #94a3b8;
+  --border: #2d3f5a;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Segoe UI', 'Malgun Gothic', sans-serif;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* ── SCREENS ── */
+.screen { display: none; min-height: 100vh; padding: 20px; }
+.screen.active { display: flex; flex-direction: column; align-items: center; }
+
+/* ── HEADER ── */
+.top-bar {
+  width: 100%; max-width: 700px;
+  display: flex; justify-content: space-between; align-items: center;
+  margin-bottom: 16px;
+}
+.logo { font-size: 13px; color: var(--accent2); font-weight: 700; letter-spacing: 2px; }
+.sound-btn {
+  background: var(--card2); border: 1px solid var(--border);
+  color: var(--text); padding: 6px 14px; border-radius: 20px;
+  cursor: pointer; font-size: 14px; transition: .2s;
+}
+.sound-btn:hover { background: var(--accent); }
+
+/* ── CARDS ── */
+.card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 24px;
+  width: 100%; max-width: 700px;
+  margin-bottom: 16px;
+}
+
+/* ── BUTTONS ── */
+.btn {
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  color: #fff; border: none; border-radius: 12px;
+  padding: 14px 32px; font-size: 17px; font-weight: 700;
+  cursor: pointer; transition: .2s; min-height: 52px;
+  width: 100%; max-width: 340px; margin: 6px auto; display: block;
+}
+.btn:hover { transform: translateY(-2px); box-shadow: 0 6px 24px rgba(59,130,246,.4); }
+.btn.green { background: linear-gradient(135deg, var(--green), #34d399); }
+.btn.red { background: linear-gradient(135deg, var(--red), #f97316); }
+.btn.gray { background: var(--card2); border: 1px solid var(--border); }
+
+/* ── MASCOT ── */
+.mascot-wrap { text-align: center; margin: 10px 0; }
+.mascot-svg { width: 110px; height: 110px; transition: .3s; }
+
+/* ── PROGRESS ── */
+.progress-wrap { width: 100%; max-width: 700px; margin-bottom: 8px; }
+.progress-label { font-size: 13px; color: var(--text2); margin-bottom: 4px; display: flex; justify-content: space-between; }
+.progress-bar { background: var(--card2); border-radius: 8px; height: 10px; overflow: hidden; }
+.progress-fill { height: 100%; border-radius: 8px; background: linear-gradient(90deg, var(--accent), var(--accent2)); transition: width .4s; }
+
+/* ── MISSION BADGE ── */
+.mission-badge {
+  display: inline-block;
+  background: linear-gradient(135deg, var(--accent), var(--purple));
+  border-radius: 20px; padding: 4px 16px; font-size: 13px; font-weight: 700;
+  margin-bottom: 12px; letter-spacing: 1px;
+}
+
+/* ── TIMER ── */
+.timer-box {
+  display: flex; align-items: center; gap: 8px;
+  background: var(--card2); border: 1px solid var(--border);
+  border-radius: 12px; padding: 8px 16px; margin-bottom: 12px;
+  font-size: 18px; font-weight: 700; width: fit-content;
+}
+.timer-box.danger { border-color: var(--red); color: var(--red); animation: blink .5s infinite; }
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:.4} }
+
+/* ── QUIZ OPTIONS ── */
+.options-grid { display: flex; flex-direction: column; gap: 10px; margin-top: 14px; }
+.opt-btn {
+  background: var(--card2); border: 2px solid var(--border);
+  color: var(--text); border-radius: 12px;
+  padding: 14px 18px; font-size: 15px; text-align: left;
+  cursor: pointer; transition: .15s; min-height: 52px; width: 100%;
+}
+.opt-btn:hover:not(:disabled) { border-color: var(--accent); background: #1e3a5f; }
+.opt-btn.correct { border-color: var(--green); background: #0d3325; color: var(--green); }
+.opt-btn.wrong { border-color: var(--red); background: #3a1a1a; color: var(--red); }
+.opt-btn:disabled { cursor: default; }
+
+/* ── DIFFICULTY TABS ── */
+.diff-tabs { display: flex; gap: 8px; margin-bottom: 16px; }
+.diff-tab {
+  flex: 1; padding: 10px; border: 2px solid var(--border);
+  border-radius: 10px; background: var(--card2); color: var(--text2);
+  cursor: pointer; font-size: 14px; font-weight: 700; text-align: center; transition: .2s;
+}
+.diff-tab.active { border-color: var(--accent); color: var(--accent); background: #1e3a5f; }
+.diff-tab.done { border-color: var(--green); color: var(--green); }
+
+/* ── FEEDBACK BOX ── */
+.feedback-box {
+  border-radius: 12px; padding: 14px 18px; margin-top: 14px;
+  font-size: 14px; line-height: 1.6; display: none;
+}
+.feedback-box.show { display: block; }
+.feedback-box.ok { background: #0d3325; border: 1px solid var(--green); }
+.feedback-box.ng { background: #3a1a1a; border: 1px solid var(--red); }
+
+/* ── SORT MISSION ── */
+.sort-area { display: flex; flex-direction: column; gap: 8px; }
+.sort-item {
+  background: var(--card2); border: 2px solid var(--border);
+  border-radius: 10px; padding: 12px 16px; cursor: grab;
+  font-size: 14px; display: flex; align-items: center; gap: 10px;
+  user-select: none; transition: .2s;
+}
+.sort-item:active { cursor: grabbing; opacity: .7; }
+.sort-item.dragging { border-color: var(--accent); background: #1e3a5f; }
+.sort-item .handle { color: var(--text2); font-size: 18px; }
+.sort-check-btn { margin-top: 14px; }
+
+/* ── SCENARIO ── */
+.scenario-box {
+  background: var(--card2); border-left: 4px solid var(--accent2);
+  border-radius: 0 12px 12px 0; padding: 16px 18px; margin-bottom: 16px;
+  font-size: 15px; line-height: 1.7;
+}
+.scenario-choices { display: flex; flex-direction: column; gap: 10px; }
+.scenario-btn {
+  background: var(--card2); border: 2px solid var(--border);
+  color: var(--text); border-radius: 12px;
+  padding: 14px 18px; font-size: 15px; text-align: left;
+  cursor: pointer; transition: .15s; min-height: 52px; width: 100%;
+}
+.scenario-btn:hover { border-color: var(--purple); background: #1e1a3a; }
+.scenario-btn.chosen { border-color: var(--accent2); background: #0d2535; }
+
+/* ── ENDING ── */
+.ending-card {
+  text-align: center; background: var(--card);
+  border: 2px solid var(--accent); border-radius: 20px;
+  padding: 32px 24px; max-width: 600px; width: 100%;
+}
+.ending-emoji { font-size: 64px; margin-bottom: 16px; }
+.ending-title { font-size: 22px; font-weight: 700; color: var(--accent2); margin-bottom: 8px; }
+.ending-job { font-size: 20px; font-weight: 700; color: var(--yellow); margin: 12px 0; }
+.score-big { font-size: 48px; font-weight: 900; color: var(--accent); }
+
+/* ── LEADERBOARD ── */
+.lb-row {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 14px; border-radius: 10px; margin-bottom: 6px;
+  background: var(--card2); border: 1px solid var(--border); font-size: 14px;
+}
+.lb-row.me { border-color: var(--accent); background: #1e3a5f; }
+.lb-rank { font-weight: 700; color: var(--yellow); min-width: 24px; }
+
+/* ── STARS ── */
+.stars { color: var(--yellow); font-size: 20px; letter-spacing: 2px; }
+
+/* ── QR ── */
+.qr-wrap { text-align: center; margin-top: 16px; }
+.qr-wrap p { font-size: 12px; color: var(--text2); margin-top: 6px; }
+#qr-start, #qr-end { display: inline-block; }
+
+/* ── HINT ── */
+.hint-btn {
+  background: none; border: 1px solid var(--yellow);
+  color: var(--yellow); border-radius: 8px; padding: 6px 14px;
+  font-size: 13px; cursor: pointer; transition: .2s; margin-top: 8px;
+}
+.hint-btn:hover { background: var(--yellow); color: var(--bg); }
+.hint-box {
+  background: #2a2010; border: 1px solid var(--yellow);
+  border-radius: 10px; padding: 10px 14px; margin-top: 8px;
+  font-size: 13px; color: var(--yellow); display: none;
+}
+.hint-box.show { display: block; }
+
+/* ── SPEECH BUBBLE ── */
+.bubble {
+  background: var(--card2); border: 1px solid var(--border);
+  border-radius: 12px; padding: 12px 16px; margin-top: 10px;
+  font-size: 14px; position: relative; line-height: 1.6;
+}
+.bubble::before {
+  content: ''; position: absolute; top: -10px; left: 50%;
+  transform: translateX(-50%);
+  border: 5px solid transparent; border-bottom-color: var(--border);
+}
+
+/* ── STAT GRID ── */
+.stat-grid { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; margin: 16px 0; }
+.stat-item { background: var(--card2); border-radius: 10px; padding: 12px 20px; text-align: center; min-width: 100px; }
+.stat-val { font-size: 24px; font-weight: 900; color: var(--accent2); }
+.stat-label { font-size: 11px; color: var(--text2); margin-top: 2px; }
+
+/* ── MISSION NAV ── */
+.mission-nav { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; justify-content: center; }
+.mnav { background: var(--card2); border: 2px solid var(--border); border-radius: 10px; padding: 8px 14px; font-size: 13px; color: var(--text2); }
+.mnav.done { border-color: var(--green); color: var(--green); }
+.mnav.current { border-color: var(--accent); color: var(--accent); }
+
+/* ── TITLE SCREEN ── */
+#screen-title { justify-content: center; }
+.title-hero { text-align: center; max-width: 600px; }
+.title-hero h1 { font-size: 26px; font-weight: 900; line-height: 1.3; margin-bottom: 8px; }
+.title-hero .sub { font-size: 14px; color: var(--text2); margin-bottom: 20px; }
+.badge-row { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; margin-bottom: 20px; }
+.badge { background: var(--card2); border: 1px solid var(--border); border-radius: 20px; padding: 4px 12px; font-size: 12px; color: var(--accent2); }
+
+input[type=text] {
+  background: var(--card2); border: 2px solid var(--border);
+  color: var(--text); border-radius: 10px; padding: 12px 16px;
+  font-size: 16px; width: 100%; max-width: 300px;
+  outline: none; transition: .2s; text-align: center;
+}
+input[type=text]:focus { border-color: var(--accent); }
+
+/* ── MISSION3 DATA CLASSIFY ── */
+.classify-area { display: flex; flex-direction: column; gap: 12px; }
+.classify-question { font-size: 15px; margin-bottom: 6px; }
+.classify-bins { display: flex; gap: 10px; margin-top: 8px; }
+.bin {
+  flex: 1; background: var(--card2); border: 2px solid var(--border);
+  border-radius: 12px; padding: 12px; text-align: center; min-height: 80px;
+  font-size: 13px; color: var(--text2); transition: .2s;
+}
+.bin.drag-over { border-color: var(--accent); background: #1e3a5f; }
+.data-chip {
+  display: inline-block; background: var(--card); border: 1px solid var(--border);
+  border-radius: 8px; padding: 6px 12px; margin: 4px;
+  cursor: grab; font-size: 13px; transition: .2s;
+}
+.data-chip:hover { border-color: var(--accent2); }
+
+/* ── ALGO STEPS ── */
+.algo-step-row { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+.algo-num { background: var(--accent); border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px; flex-shrink: 0; }
+
+@media (max-width: 480px) {
+  .card { padding: 16px; }
+  .title-hero h1 { font-size: 20px; }
+  .score-big { font-size: 36px; }
+  .diff-tabs { flex-direction: column; }
+}
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════
+     SCREEN: TITLE
+══════════════════════════════════════════════ -->
+<div id="screen-title" class="screen active">
+  <div class="top-bar" style="max-width:600px">
+    <span class="logo">MILAB #036</span>
+    <button class="sound-btn" onclick="toggleSound()">🔊 음악 ON</button>
+  </div>
+
+  <!-- QR -->
+  <div class="qr-wrap" style="margin-bottom:12px">
+    <div id="qr-start"></div>
+    <p>📱 QR로 친구와 공유하기 | 자유학기제 활동</p>
+  </div>
+
+  <div class="title-hero">
+    <!-- MASCOT -->
+    <div class="mascot-wrap">
+      <svg class="mascot-svg" viewBox="0 0 120 120" id="mascot-main">
+        <!-- body -->
+        <rect x="30" y="55" width="60" height="50" rx="10" fill="#1e40af"/>
+        <!-- head -->
+        <rect x="35" y="20" width="50" height="40" rx="10" fill="#2563eb"/>
+        <!-- eyes -->
+        <ellipse cx="50" cy="37" rx="7" ry="8" fill="#0ea5e9"/>
+        <ellipse cx="70" cy="37" rx="7" ry="8" fill="#0ea5e9"/>
+        <circle cx="50" cy="37" r="4" fill="#fff" id="eye-l"/>
+        <circle cx="70" cy="37" r="4" fill="#fff" id="eye-r"/>
+        <!-- mouth -->
+        <path d="M47 50 Q60 58 73 50" stroke="#7dd3fc" stroke-width="2.5" fill="none" stroke-linecap="round" id="mouth"/>
+        <!-- antenna -->
+        <line x1="60" y1="20" x2="60" y2="8" stroke="#38bdf8" stroke-width="3"/>
+        <circle cx="60" cy="6" r="4" fill="#38bdf8" id="antenna-dot"/>
+        <!-- arms -->
+        <rect x="10" y="60" width="22" height="10" rx="5" fill="#1d4ed8"/>
+        <rect x="88" y="60" width="22" height="10" rx="5" fill="#1d4ed8"/>
+        <!-- print nozzle -->
+        <rect x="50" y="105" width="20" height="8" rx="3" fill="#38bdf8"/>
+        <rect x="55" y="113" width="10" height="5" rx="2" fill="#7dd3fc"/>
+        <!-- chest screen -->
+        <rect x="42" y="70" width="36" height="22" rx="5" fill="#0f172a"/>
+        <text x="60" y="84" text-anchor="middle" fill="#38bdf8" font-size="10" font-weight="bold">3D</text>
+        <!-- legs -->
+        <rect x="38" y="105" width="16" height="12" rx="4" fill="#1e40af"/>
+        <rect x="66" y="105" width="16" height="12" rx="4" fill="#1e40af"/>
+      </svg>
+    </div>
+
+    <h1>🖨️ 미래 제조소<br>3D 설계사의 탄생</h1>
+    <p class="sub">2045년 충주 스마트 제조 허브 | AI 멘토 프린티와 함께</p>
+    <div class="badge-row">
+      <span class="badge">🎯 4미션</span>
+      <span class="badge">🤖 AI 리터러시</span>
+      <span class="badge">🏭 3D프린팅 진로</span>
+      <span class="badge">📚 중1~3학년</span>
+    </div>
+
+    <div class="card" style="text-align:left">
+      <p style="font-size:14px;color:var(--text2);margin-bottom:12px">📛 닉네임을 입력하고 시작!</p>
+      <div style="text-align:center">
+        <input type="text" id="nickname-input" placeholder="나의 닉네임" maxlength="10">
+      </div>
+      <p style="font-size:12px;color:var(--text2);margin-top:8px;text-align:center">미션을 클리어하고 3D 크리에이터 자격증을 취득하세요!</p>
+    </div>
+
+    <button class="btn" onclick="startGame()">🚀 게임 시작!</button>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     SCREEN: MISSION 1 — 지식 탐색 퀴즈
+══════════════════════════════════════════════ -->
+<div id="screen-m1" class="screen">
+  <div class="top-bar">
+    <span class="logo">MILAB #036</span>
+    <button class="sound-btn" onclick="toggleSound()">🔊</button>
+  </div>
+  <div class="mission-nav" id="mnav1"></div>
+  <div style="width:100%;max-width:700px">
+    <div class="mission-badge">🔍 미션1 — 3D프린팅 기초 탐색</div>
+
+    <!-- timer -->
+    <div class="timer-box" id="m1-timer-box">⏱️ <span id="m1-timer">150</span>초</div>
+
+    <!-- progress -->
+    <div class="progress-wrap">
+      <div class="progress-label">
+        <span>문제 <span id="m1-qnum">1</span> / 15</span>
+        <span>점수: <span id="m1-score">0</span>점</span>
+      </div>
+      <div class="progress-bar"><div class="progress-fill" id="m1-prog" style="width:0%"></div></div>
+    </div>
+
+    <div class="card">
+      <div class="mascot-wrap">
+        <svg class="mascot-svg" viewBox="0 0 120 120" id="m1-mascot" style="width:70px;height:70px">
+          <rect x="30" y="55" width="60" height="50" rx="10" fill="#1e40af"/>
+          <rect x="35" y="20" width="50" height="40" rx="10" fill="#2563eb"/>
+          <ellipse cx="50" cy="37" rx="7" ry="8" fill="#0ea5e9"/>
+          <ellipse cx="70" cy="37" rx="7" ry="8" fill="#0ea5e9"/>
+          <circle cx="50" cy="37" r="4" fill="#fff" id="m1-el"/>
+          <circle cx="70" cy="37" r="4" fill="#fff" id="m1-er"/>
+          <path d="M47 50 Q60 58 73 50" stroke="#7dd3fc" stroke-width="2.5" fill="none" stroke-linecap="round" id="m1-mouth"/>
+          <line x1="60" y1="20" x2="60" y2="8" stroke="#38bdf8" stroke-width="3"/>
+          <circle cx="60" cy="6" r="4" fill="#38bdf8"/>
+          <rect x="10" y="60" width="22" height="10" rx="5" fill="#1d4ed8"/>
+          <rect x="88" y="60" width="22" height="10" rx="5" fill="#1d4ed8"/>
+          <rect x="50" y="105" width="20" height="8" rx="3" fill="#38bdf8"/>
+          <rect x="38" y="105" width="16" height="12" rx="4" fill="#1e40af"/>
+          <rect x="66" y="105" width="16" height="12" rx="4" fill="#1e40af"/>
+          <rect x="42" y="70" width="36" height="22" rx="5" fill="#0f172a"/>
+          <text x="60" y="84" text-anchor="middle" fill="#38bdf8" font-size="10" font-weight="bold">3D</text>
+        </svg>
+      </div>
+
+      <p id="m1-q" style="font-size:16px;font-weight:600;line-height:1.6;margin-bottom:4px"></p>
+      <div id="m1-topic" style="font-size:11px;color:var(--text2);margin-bottom:8px"></div>
+
+      <button class="hint-btn" onclick="showHint('m1')" id="m1-hint-btn">💡 힌트 (-30%)</button>
+      <div class="hint-box" id="m1-hint-box"></div>
+
+      <div class="options-grid" id="m1-options"></div>
+      <div class="feedback-box" id="m1-feedback"></div>
+    </div>
+
+    <button class="btn" id="m1-next" onclick="m1Next()" style="display:none">다음 문제 →</button>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     SCREEN: MISSION 2 — 교과 융합 퀴즈
+══════════════════════════════════════════════ -->
+<div id="screen-m2" class="screen">
+  <div class="top-bar">
+    <span class="logo">MILAB #036</span>
+    <button class="sound-btn" onclick="toggleSound()">🔊</button>
+  </div>
+  <div class="mission-nav" id="mnav2"></div>
+  <div style="width:100%;max-width:700px">
+    <div class="mission-badge">📚 미션2 — 교과 융합 퀴즈</div>
+
+    <div class="diff-tabs" id="m2-tabs">
+      <div class="diff-tab active" id="tab-easy" onclick="setDiff('easy')">🟢 쉬움<br><small>10점</small></div>
+      <div class="diff-tab" id="tab-mid" onclick="setDiff('mid')">🟡 보통<br><small>15점</small></div>
+      <div class="diff-tab" id="tab-hard" onclick="setDiff('hard')">🔴 도전<br><small>20점</small></div>
+    </div>
+
+    <div class="timer-box" id="m2-timer-box">⏱️ <span id="m2-timer">45</span>초</div>
+
+    <div class="progress-wrap">
+      <div class="progress-label">
+        <span>문제 <span id="m2-qnum">1</span> / <span id="m2-total">3</span></span>
+        <span>점수: <span id="m2-score">0</span>점</span>
+      </div>
+      <div class="progress-bar"><div class="progress-fill" id="m2-prog" style="width:0%"></div></div>
+    </div>
+
+    <div class="card">
+      <div style="font-size:12px;color:var(--accent2);margin-bottom:8px" id="m2-subject"></div>
+      <p id="m2-q" style="font-size:16px;font-weight:600;line-height:1.6;margin-bottom:4px"></p>
+
+      <button class="hint-btn" onclick="showHint('m2')" id="m2-hint-btn">💡 힌트 (-30%)</button>
+      <div class="hint-box" id="m2-hint-box"></div>
+
+      <div class="options-grid" id="m2-options"></div>
+      <div class="feedback-box" id="m2-feedback"></div>
+    </div>
+    <button class="btn" id="m2-next" onclick="m2Next()" style="display:none">다음 문제 →</button>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     SCREEN: MISSION 3 — AI 설계 체험
+══════════════════════════════════════════════ -->
+<div id="screen-m3" class="screen">
+  <div class="top-bar">
+    <span class="logo">MILAB #036</span>
+    <button class="sound-btn" onclick="toggleSound()">🔊</button>
+  </div>
+  <div class="mission-nav" id="mnav3"></div>
+  <div style="width:100%;max-width:700px">
+    <div class="mission-badge">🤖 미션3 — AI 설계 체험</div>
+    <div class="card">
+      <div class="bubble">
+        💬 프린티: AI가 3D 모델을 만드는 원리를 직접 체험해봐! 데이터 분류와 알고리즘 순서를 맞춰봐 🚀
+      </div>
+
+      <div id="m3-content"></div>
+
+      <div class="feedback-box" id="m3-feedback"></div>
+    </div>
+    <button class="btn" id="m3-next" onclick="m3Next()" style="display:none">다음 단계 →</button>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     SCREEN: MISSION 4 — 진로 시나리오
+══════════════════════════════════════════════ -->
+<div id="screen-m4" class="screen">
+  <div class="top-bar">
+    <span class="logo">MILAB #036</span>
+    <button class="sound-btn" onclick="toggleSound()">🔊</button>
+  </div>
+  <div class="mission-nav" id="mnav4"></div>
+  <div style="width:100%;max-width:700px">
+    <div class="mission-badge">🎯 미션4 — 진로 시나리오</div>
+
+    <div class="progress-wrap">
+      <div class="progress-label">
+        <span>시나리오 <span id="m4-snum">1</span> / 4</span>
+        <span>선택 점수: <span id="m4-score">0</span>점</span>
+      </div>
+      <div class="progress-bar"><div class="progress-fill" id="m4-prog" style="width:0%"></div></div>
+    </div>
+
+    <div class="card" id="m4-card">
+      <div class="bubble" id="m4-printy">💬 프린티: 미래 직업 세계에서 어떤 선택을 할지 함께 생각해봐!</div>
+      <div class="scenario-box" id="m4-scenario"></div>
+      <div class="scenario-choices" id="m4-choices"></div>
+      <div class="feedback-box" id="m4-feedback"></div>
+    </div>
+    <button class="btn" id="m4-next" onclick="m4Next()" style="display:none">다음 시나리오 →</button>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     SCREEN: RESULT / ENDING
+══════════════════════════════════════════════ -->
+<div id="screen-result" class="screen">
+  <div class="top-bar" style="max-width:600px">
+    <span class="logo">MILAB #036</span>
+    <button class="sound-btn" onclick="toggleSound()">🔊</button>
+  </div>
+  <div style="max-width:600px;width:100%">
+    <div class="ending-card">
+      <div class="ending-emoji" id="end-emoji">🏆</div>
+      <div class="ending-title" id="end-title"></div>
+      <div class="score-big" id="end-score"></div>
+      <div style="color:var(--text2);font-size:14px;margin-bottom:8px">/ 100점</div>
+      <div class="stars" id="end-stars"></div>
+      <div class="ending-job" id="end-job"></div>
+      <p id="end-msg" style="font-size:14px;color:var(--text2);line-height:1.6;margin-bottom:16px"></p>
+
+      <!-- Stat breakdown -->
+      <div class="stat-grid" id="end-stats"></div>
+
+      <!-- Badges -->
+      <div id="end-badges" style="margin:12px 0;font-size:14px;color:var(--text2)"></div>
+
+      <!-- Nickname & Leaderboard -->
+      <div style="margin:16px 0">
+        <input type="text" id="lb-name" placeholder="닉네임" maxlength="10">
+        <button class="btn green" style="margin-top:8px" onclick="saveScore()">🏅 점수 등록</button>
+      </div>
+      <div id="lb-board"></div>
+
+      <button class="btn" style="margin-top:16px" onclick="restartGame()">🔄 다시 도전!</button>
+    </div>
+
+    <!-- QR -->
+    <div class="qr-wrap" style="margin-top:16px">
+      <div id="qr-end"></div>
+      <p>📱 공유용 QR | 자유학기제 발표·공유</p>
+    </div>
+  </div>
+</div>
+
+<script>
+// ══════════════════════════════════════
+//  PORTFOLIO ENTRY (console.log on load)
+// ══════════════════════════════════════
+const portfolioEntry = {
+  id: "036",
+  title: "🖨️ 미래 제조소 — 3D 설계사의 탄생",
+  target: "중학교 1~3학년",
+  grade: "middle",
+  subjects: ["기술·가정", "과학", "정보", "도덕"],
+  aiFeature: "AI 데이터 분류·알고리즘 순서 맞추기 체험 미션 포함",
+  theme: "3D프린팅·3D펜 진로체험, 스마트 제조, 미래 직업 탐색",
+  date: "2026-04-06",
+  url: "https://milab2019.github.io/main/3d_printing_036.html"
+};
+console.log(portfolioEntry);
+
+// ══════════════════════════════════════
+//  AUDIO
+// ══════════════════════════════════════
+let audioCtx = null, bgGain = null, bgPlaying = false, soundOn = false;
+function initAudio() {
+  if (audioCtx) return;
+  audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  bgGain = audioCtx.createGain();
+  bgGain.gain.value = 0.18;
+  bgGain.connect(audioCtx.destination);
+  playBG();
+}
+function playBG() {
+  if (!audioCtx || bgPlaying) return;
+  bgPlaying = true;
+  const notes = [261,294,329,349,392,440,494,523];
+  let t = audioCtx.currentTime;
+  function loop() {
+    if (!soundOn) { bgPlaying = false; return; }
+    const n = notes[Math.floor(Math.random()*notes.length)];
+    const o = audioCtx.createOscillator();
+    const g = audioCtx.createGain();
+    o.type = 'sine'; o.frequency.value = n;
+    g.gain.setValueAtTime(0,t); g.gain.linearRampToValueAtTime(.4,t+.1);
+    g.gain.linearRampToValueAtTime(0,t+.6);
+    o.connect(g); g.connect(bgGain);
+    o.start(t); o.stop(t+.7);
+    t += .55;
+    if (bgPlaying) setTimeout(loop, 500);
+  }
+  loop();
+}
+function playBeep(type) {
+  if (!audioCtx || !soundOn) return;
+  const o = audioCtx.createOscillator();
+  const g = audioCtx.createGain();
+  o.connect(g); g.connect(audioCtx.destination);
+  if (type==='correct') { o.frequency.value=880; g.gain.value=.3; o.type='square'; }
+  else if (type==='wrong') { o.frequency.value=180; g.gain.value=.25; o.type='sawtooth'; }
+  else if (type==='clear') { o.frequency.value=660; g.gain.value=.3; o.type='sine'; }
+  o.start(); o.stop(audioCtx.currentTime+(type==='clear'?.5:.25));
+}
+function toggleSound() {
+  soundOn = !soundOn;
+  const btn = document.querySelector('.sound-btn');
+  document.querySelectorAll('.sound-btn').forEach(b => b.textContent = soundOn ? '🔊 음악 ON' : '🔇 음악 OFF');
+  if (soundOn) { initAudio(); bgPlaying=false; playBG(); }
+}
+
+// ══════════════════════════════════════
+//  STATE
+// ══════════════════════════════════════
+let nickname = '';
+let scores = { m1:0, m2:0, m3:0, m4:0 };
+let badges = { m1:0, m2:0, m3:0, m4:0 };
+
+// ══════════════════════════════════════
+//  SCREENS
+// ══════════════════════════════════════
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById('screen-'+id).classList.add('active');
+  window.scrollTo(0,0);
+}
+function mnavHTML(current) {
+  const labels = ['🔍 미션1','📚 미션2','🤖 미션3','🎯 미션4'];
+  return labels.map((l,i) => {
+    const n = i+1;
+    let cls = 'mnav';
+    if (n < current) cls += ' done';
+    if (n === current) cls += ' current';
+    return `<div class="${cls}">${n<current?'✅ ':''} ${l}</div>`;
+  }).join('');
+}
+['mnav1','mnav2','mnav3','mnav4'].forEach((id,i) => {
+  document.getElementById(id).innerHTML = mnavHTML(i+1);
+});
+
+// ══════════════════════════════════════
+//  QR CODE
+// ══════════════════════════════════════
+function makeQR(id) {
+  const el = document.getElementById(id);
+  if (el && !el.hasChildNodes()) {
+    new QRCode(el, {
+      text: portfolioEntry.url,
+      width: 90, height: 90,
+      colorDark: '#3b82f6', colorLight: '#0a0e1a'
+    });
+  }
+}
+
+// ══════════════════════════════════════
+//  START
+// ══════════════════════════════════════
+function startGame() {
+  const n = document.getElementById('nickname-input').value.trim();
+  nickname = n || '탐험가';
+  document.getElementById('lb-name').value = nickname;
+  scores = {m1:0,m2:0,m3:0,m4:0};
+  badges = {m1:0,m2:0,m3:0,m4:0};
+  startM1();
+}
+function restartGame() { showScreen('title'); makeQR('qr-start'); }
+
+window.addEventListener('load', () => {
+  makeQR('qr-start');
+});
+
+// ══════════════════════════════════════
+//  MISSION 1 DATA
+// ══════════════════════════════════════
+const m1Questions = shuffleArr([
+  {q:"3D프린팅의 기본 원리는 무엇인가요?", opts:["재료를 층층이 쌓아 물체를 만든다","재료를 깎아 물체를 만든다","틀에 재료를 부어 만든다","열로 재료를 구부려 만든다"], ans:0, hint:"'적층 제조'라고도 불려요.", topic:"📌 기술·가정 — 3D프린팅 원리"},
+  {q:"FDM 방식 3D프린터에서 주로 사용하는 재료는?", opts:["나무","금속 파우더","PLA·ABS 필라멘트","액체 레진"], ans:2, hint:"실처럼 감긴 플라스틱 재료예요.", topic:"📌 과학 — 재료의 특성"},
+  {q:"3D 모델을 만들 때 사용하는 소프트웨어 파일 형식으로 가장 널리 쓰이는 것은?", opts:[".mp4",".stl",".jpg",".xlsx"], ans:1, hint:"Stereolithography의 약자예요.", topic:"📌 정보 — 파일 형식"},
+  {q:"3D프린팅 출력 전, 모델을 출력 가능한 명령어로 변환하는 프로그램은?", opts:["포토샵","슬라이서","메모장","캐드"], ans:1, hint:"재료를 '얇게 썰어' 경로를 만드는 프로그램이에요.", topic:"📌 정보 — 소프트웨어"},
+  {q:"의료 분야에서 3D프린팅을 활용하는 사례가 아닌 것은?", opts:["맞춤형 보조기구","의족·의수","장기 모형 출력","자동차 엔진 수리"], ans:3, hint:"의료와 관계없는 것을 골라요.", topic:"📌 과학·진로 — 활용 분야"},
+  {q:"3D프린팅에서 '서포트(support)'란 무엇인가요?", opts:["완성 후 남기는 장식","출력 중 돌출 부분을 받쳐주는 임시 구조물","프린터 전원 장치","필라멘트를 감는 롤"], ans:1, hint:"출력 후 제거해야 해요.", topic:"📌 기술 — 출력 구조"},
+  {q:"3D펜의 작동 원리로 옳은 것은?", opts:["잉크를 분사한다","필라멘트를 녹여 공중에 굳힌다","레이저로 재료를 소결한다","UV 빛으로 레진을 굳힌다"], ans:1, hint:"FDM 프린터의 소형 버전이라고 생각해요.", topic:"📌 기술 — 3D펜"},
+  {q:"다음 중 3D프린팅의 장점이 아닌 것은?", opts:["맞춤형 제품 제작 가능","대량 생산 시 비용이 저렴","복잡한 형상도 출력 가능","시제품 제작 기간 단축"], ans:1, hint:"대량 생산에는 다른 방법이 더 유리해요.", topic:"📌 기술·경제 — 장단점"},
+  {q:"PLA 필라멘트의 특징으로 옳은 것은?", opts:["옥수수·사탕수수 기반 친환경 재료","석유계 고온 성형 재료","금속 분말 혼합 재료","실리콘 계열 재료"], ans:0, hint:"'생분해' 가능한 재료예요.", topic:"📌 과학·환경 — 재료"},
+  {q:"3D프린팅 시 출력 층 두께(레이어 높이)가 얇을수록 어떻게 되나요?", opts:["출력 시간이 빠르다","표면이 거칠어진다","표면이 매끄러워진다","재료 소비가 줄어든다"], ans:2, hint:"더 세밀하게 쌓을수록 표면 품질이 올라가요.", topic:"📌 기술 — 출력 품질"},
+  {q:"건축 분야에서 3D프린팅 활용 사례로 옳은 것은?", opts:["비행기 엔진 제작","주택·건물 외벽 출력","스마트폰 제조","의류 봉제"], ans:1, hint:"콘크리트로 집을 '프린트'하는 시대가 왔어요!", topic:"📌 기술·진로 — 건축"},
+  {q:"3D프린팅의 적층 방식 중 광경화 수지를 사용하는 방식은?", opts:["FDM","SLA","SLS","MJF"], ans:1, hint:"Stereolithography의 약자예요.", topic:"📌 기술 — 프린팅 방식"},
+  {q:"3D 모델링 프로그램이 아닌 것은?", opts:["틴커캐드(Tinkercad)","블렌더(Blender)","퓨전360(Fusion 360)","포트나이트(Fortnite)"], ans:3, hint:"게임과 3D 설계를 구분해봐요.", topic:"📌 정보 — 소프트웨어"},
+  {q:"AI가 3D 설계에 활용될 때의 장점으로 옳은 것은?", opts:["AI는 창의적 설계를 할 수 없다","복잡한 구조를 자동 최적화할 수 있다","AI는 2D 설계에만 사용된다","설계 시간이 훨씬 길어진다"], ans:1, hint:"AI는 수천 가지 설계안을 빠르게 비교해줘요.", topic:"📌 정보·AI — AI 설계"},
+  {q:"3D프린팅 직업으로 볼 수 없는 것은?", opts:["3D 모델러","바이오프린팅 연구원","3D 프린팅 엔지니어","방송 카메라 감독"], ans:3, hint:"3D프린팅과 관련 없는 직업을 골라요.", topic:"📌 진로 — 미래 직업"}
+]);
+
+function shuffleArr(arr) {
+  for(let i=arr.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[arr[i],arr[j]]=[arr[j],arr[i]];}
+  return arr;
+}
+
+// ══════════════════════════════════════
+//  MISSION 1 LOGIC
+// ══════════════════════════════════════
+let m1Idx=0, m1TimerID=null, m1TimeLeft=150, m1HintUsed=false, m1AnswerLocked=false;
+
+function startM1() {
+  m1Idx=0; scores.m1=0; m1TimeLeft=150; m1HintUsed=false; m1AnswerLocked=false;
+  document.getElementById('mnav1').innerHTML = mnavHTML(1);
+  showScreen('m1');
+  renderM1();
+  startM1Timer();
+}
+
+function startM1Timer() {
+  clearInterval(m1TimerID);
+  m1TimerID = setInterval(() => {
+    m1TimeLeft--;
+    document.getElementById('m1-timer').textContent = m1TimeLeft;
+    const box = document.getElementById('m1-timer-box');
+    if (m1TimeLeft <= 10) box.classList.add('danger');
+    else box.classList.remove('danger');
+    if (m1TimeLeft <= 0) {
+      clearInterval(m1TimerID);
+      endM1();
+    }
+  }, 1000);
+}
+
+function renderM1() {
+  if (m1Idx >= m1Questions.length) { endM1(); return; }
+  const q = m1Questions[m1Idx];
+  m1HintUsed=false; m1AnswerLocked=false;
+  document.getElementById('m1-q').textContent = q.q;
+  document.getElementById('m1-topic').textContent = q.topic;
+  document.getElementById('m1-qnum').textContent = m1Idx+1;
+  document.getElementById('m1-prog').style.width = ((m1Idx/15)*100)+'%';
+  document.getElementById('m1-score').textContent = scores.m1;
+  document.getElementById('m1-hint-btn').style.display='inline-block';
+  document.getElementById('m1-hint-box').className='hint-box';
+  document.getElementById('m1-hint-box').textContent='';
+  document.getElementById('m1-feedback').className='feedback-box';
+  document.getElementById('m1-next').style.display='none';
+  setMascotMood('m1','normal');
+
+  const optsEl = document.getElementById('m1-options');
+  optsEl.innerHTML='';
+  // shuffle options
+  const idxArr = [0,1,2,3];
+  shuffleArr(idxArr);
+  idxArr.forEach(oi => {
+    const btn = document.createElement('button');
+    btn.className='opt-btn';
+    btn.textContent = q.opts[oi];
+    btn.onclick = () => answerM1(oi===q.ans, btn, q);
+    optsEl.appendChild(btn);
+  });
+}
+
+function answerM1(correct, btn, q) {
+  if (m1AnswerLocked) return;
+  m1AnswerLocked=true;
+  document.querySelectorAll('#m1-options .opt-btn').forEach(b=>{b.disabled=true;});
+
+  // mark correct option
+  document.querySelectorAll('#m1-options .opt-btn').forEach(b=>{
+    if(b.textContent === q.opts[q.ans]) b.classList.add('correct');
+  });
+
+  let pts = 10;
+  if (m1HintUsed) pts = Math.floor(pts * 0.7);
+  const fb = document.getElementById('m1-feedback');
+
+  if (correct) {
+    btn.classList.add('correct');
+    scores.m1 += pts;
+    playBeep('correct');
+    setMascotMood('m1','happy');
+    fb.className='feedback-box ok show';
+    fb.innerHTML=`✅ 정답! <strong>+${pts}점</strong><br>👍 좋은 시도야! ${q.topic}`;
+  } else {
+    btn.classList.add('wrong');
+    playBeep('wrong');
+    setMascotMood('m1','sad');
+    fb.className='feedback-box ng show';
+    fb.innerHTML=`❌ 아쉽지만 괜찮아! 정답은 <strong>"${q.opts[q.ans]}"</strong>이야.<br>💡 ${q.topic}`;
+  }
+  document.getElementById('m1-score').textContent=scores.m1;
+  document.getElementById('m1-next').style.display='block';
+}
+
+function showHint(mission) {
+  if (mission==='m1') {
+    const q=m1Questions[m1Idx];
+    document.getElementById('m1-hint-box').textContent='💡 '+q.hint;
+    document.getElementById('m1-hint-box').classList.add('show');
+    document.getElementById('m1-hint-btn').style.display='none';
+    m1HintUsed=true;
+  } else if(mission==='m2') {
+    const q=m2CurrentPool[m2Idx];
+    document.getElementById('m2-hint-box').textContent='💡 '+q.hint;
+    document.getElementById('m2-hint-box').classList.add('show');
+    document.getElementById('m2-hint-btn').style.display='none';
+    m2HintUsed=true;
+  }
+}
+
+function m1Next() {
+  m1Idx++;
+  if(m1Idx>=m1Questions.length) { endM1(); return; }
+  renderM1();
+}
+
+function endM1() {
+  clearInterval(m1TimerID);
+  const maxPts=150, ratio=scores.m1/maxPts;
+  badges.m1 = ratio>=.8?3:ratio>=.5?2:1;
+  playBeep('clear');
+  startM2();
+}
+
+// ══════════════════════════════════════
+//  MISSION 2 DATA
+// ══════════════════════════════════════
+const m2Data = {
+  easy: shuffleArr([
+    {q:"과학 시간에 배우는 '밀도'란 무엇인가요?", opts:["무게÷부피","부피÷무게","무게×부피","무게+부피"], ans:0, hint:"단위 부피당 질량이에요.", subject:"📗 과학 — 재료의 특성"},
+    {q:"기술·가정 교과에서 '제조 시스템'이란?", opts:["원료를 가공해 제품을 만드는 과정","상품을 파는 과정","서비스를 제공하는 과정","정보를 전달하는 과정"], ans:0, hint:"공장에서 물건을 만드는 전 과정을 말해요.", subject:"📘 기술·가정 — 기술 시스템"},
+    {q:"3D프린팅에서 환경 친화적인 재료로 알맞은 것은?", opts:["PLA(생분해 플라스틱)","ABS(석유계 플라스틱)","나일론","폴리카보네이트"], ans:0, hint:"옥수수·사탕수수로 만들어요.", subject:"📗 과학·환경"},
+    {q:"AI(인공지능)의 기본 개념으로 옳은 것은?", opts:["데이터를 학습해 패턴을 찾는 기술","사람이 직접 모든 규칙을 입력하는 기술","인터넷 없이 작동하는 기계","기억이 전혀 없는 로봇"], ans:0, hint:"'머신러닝'이라고도 해요.", subject:"💻 정보 — AI 원리"},
+  ]),
+  mid: shuffleArr([
+    {q:"3D프린팅 재료 중 SLS 방식에 사용되는 것은?", opts:["PLA 필라멘트","나일론 파우더","에폭시 레진","ABS 필라멘트"], ans:1, hint:"SLS는 분말을 레이저로 소결해요.", subject:"📗 과학 — 재료 분류"},
+    {q:"다음 중 AI가 3D 설계를 최적화하는 방법으로 옳은 것은?", opts:["사람보다 느리게 작동한다","수천 가지 설계 옵션을 빠르게 비교한다","오직 2D만 처리한다","학습 없이 바로 설계한다"], ans:1, hint:"AI는 많은 데이터를 학습한 후 최적 설계를 제안해요.", subject:"💻 정보·AI — AI 설계 최적화"},
+    {q:"기술·가정 '발명과 특허'에서 특허권의 목적은?", opts:["아이디어를 공개 금지하기 위해","발명자의 권리를 보호하고 기술 발전을 촉진","경쟁자를 영구히 배제","제품 가격을 올리기 위해"], ans:1, hint:"발명자가 일정 기간 독점 권리를 가져요.", subject:"📘 기술·가정 — 발명·특허"},
+    {q:"AI 머신러닝에서 '훈련 데이터(training data)'의 역할은?", opts:["AI가 학습할 예시를 제공한다","완성된 결과물을 저장한다","인터넷 속도를 높인다","프린터 속도를 제어한다"], ans:0, hint:"AI는 많은 데이터를 보며 패턴을 익혀요.", subject:"💻 정보 — 머신러닝 개념"},
+    {q:"3D프린팅이 지속가능한 제조에 기여하는 방법은?", opts:["대량 폐기물 발생","재료 낭비 없이 필요한 부분만 출력","에너지 소비가 매우 높음","교체 불가능한 부품 생산"], ans:1, hint:"전통 절삭 가공보다 재료 손실이 적어요.", subject:"📗 과학·환경 — 지속가능성"},
+  ]),
+  hard: shuffleArr([
+    {q:"AI 편향(bias)이 3D 의료 프린팅에서 발생할 경우 가장 큰 문제는?", opts:["출력 속도가 느려진다","특정 인종·체형에 최적화된 의료기기가 다른 집단에 맞지 않을 수 있다","색상 선택이 제한된다","비용이 낮아진다"], ans:1, hint:"데이터가 편향되면 모델도 편향돼요.", subject:"💻 정보·도덕 — AI 윤리·편향"},
+    {q:"개인정보 보호 측면에서, 3D 바이오프린팅(인체 장기)에 사용되는 환자 데이터를 다룰 때 가장 중요한 원칙은?", opts:["데이터를 무조건 공개","최소 수집·목적 외 사용 금지","데이터를 영구 저장","다른 기업에 판매"], ans:1, hint:"개인정보보호법의 '목적 제한 원칙'이에요.", subject:"💻 정보·도덕 — 디지털 윤리"},
+    {q:"3D프린팅으로 무기를 만들 경우 발생하는 윤리·법적 문제로 옳은 것은?", opts:["완전히 합법이다","규제 사각지대로 공공 안전 위협이 될 수 있다","기술 발전에 긍정적이다","특허 문제만 발생한다"], ans:1, hint:"총기 규제를 우회할 수 있다는 우려가 있어요.", subject:"💻 정보·도덕 — 기술 윤리"},
+    {q:"AI가 생성한 3D 디자인의 저작권 귀속에 대한 현재 논의로 옳은 것은?", opts:["AI에게 저작권이 자동 귀속","인간 창작자 없이 AI만 만들면 저작권 인정 여부가 불명확","기업이 자동 소유","아무도 소유 못함"], ans:1, hint:"여러 나라에서 AI 저작권 논쟁 중이에요.", subject:"💻 정보·도덕 — AI 저작권"}
+  ])
+};
+
+// ══════════════════════════════════════
+//  MISSION 2 LOGIC
+// ══════════════════════════════════════
+let m2Diff='easy', m2Idx=0, m2CurrentPool=[], m2TimerID=null, m2TimeLeft=45, m2HintUsed=false, m2AnswerLocked=false;
+let m2DiffDone={easy:false,mid:false,hard:false};
+
+function startM2() {
+  m2Diff='easy'; m2DiffDone={easy:false,mid:false,hard:false};
+  scores.m2=0;
+  document.getElementById('mnav2').innerHTML=mnavHTML(2);
+  ['tab-easy','tab-mid','tab-hard'].forEach((id,i)=>{
+    const d=document.getElementById(id);
+    d.className='diff-tab'+(i===0?' active':'');
+  });
+  setDiff('easy');
+  showScreen('m2');
+}
+
+function setDiff(d) {
+  if (m2DiffDone[d]) return;
+  m2Diff=d;
+  m2Idx=0;
+  m2HintUsed=false; m2AnswerLocked=false;
+  m2CurrentPool = [...m2Data[d]];
+  ['easy','mid','hard'].forEach(k=>{
+    const el=document.getElementById('tab-'+k);
+    el.className='diff-tab'+(m2DiffDone[k]?' done':k===d?' active':'');
+  });
+  document.getElementById('m2-total').textContent=m2CurrentPool.length;
+  renderM2();
+  resetM2Timer();
+}
+
+function resetM2Timer() {
+  clearInterval(m2TimerID);
+  m2TimeLeft=45;
+  document.getElementById('m2-timer').textContent=45;
+  document.getElementById('m2-timer-box').classList.remove('danger');
+  m2TimerID=setInterval(()=>{
+    m2TimeLeft--;
+    document.getElementById('m2-timer').textContent=m2TimeLeft;
+    if(m2TimeLeft<=10) document.getElementById('m2-timer-box').classList.add('danger');
+    if(m2TimeLeft<=0) { clearInterval(m2TimerID); timeoutM2(); }
+  },1000);
+}
+
+function timeoutM2() {
+  if(m2AnswerLocked) return;
+  m2AnswerLocked=true;
+  const q=m2CurrentPool[m2Idx];
+  document.querySelectorAll('#m2-options .opt-btn').forEach(b=>{
+    b.disabled=true;
+    if(b.textContent===q.opts[q.ans]) b.classList.add('correct');
+  });
+  const fb=document.getElementById('m2-feedback');
+  fb.className='feedback-box ng show';
+  fb.innerHTML=`⏰ 시간 초과! 정답은 <strong>"${q.opts[q.ans]}"</strong>이야.<br>💡 비판적으로 다시 생각해봐!`;
+  playBeep('wrong');
+  document.getElementById('m2-next').style.display='block';
+}
+
+function renderM2() {
+  if(m2Idx>=m2CurrentPool.length) { endDiff(); return; }
+  const q=m2CurrentPool[m2Idx];
+  m2HintUsed=false; m2AnswerLocked=false;
+  document.getElementById('m2-subject').textContent=q.subject;
+  document.getElementById('m2-q').textContent=q.q;
+  document.getElementById('m2-qnum').textContent=m2Idx+1;
+  document.getElementById('m2-prog').style.width=(m2Idx/m2CurrentPool.length*100)+'%';
+  document.getElementById('m2-hint-btn').style.display='inline-block';
+  document.getElementById('m2-hint-box').className='hint-box';
+  document.getElementById('m2-feedback').className='feedback-box';
+  document.getElementById('m2-next').style.display='none';
+
+  const optsEl=document.getElementById('m2-options');
+  optsEl.innerHTML='';
+  const idxArr=[0,1,2,3]; shuffleArr(idxArr);
+  idxArr.forEach(oi=>{
+    const btn=document.createElement('button');
+    btn.className='opt-btn';
+    btn.textContent=q.opts[oi];
+    btn.onclick=()=>answerM2(oi===q.ans,btn,q);
+    optsEl.appendChild(btn);
+  });
+}
+
+function answerM2(correct,btn,q) {
+  if(m2AnswerLocked) return;
+  m2AnswerLocked=true;
+  clearInterval(m2TimerID);
+  document.querySelectorAll('#m2-options .opt-btn').forEach(b=>{
+    b.disabled=true;
+    if(b.textContent===q.opts[q.ans]) b.classList.add('correct');
+  });
+
+  const pts = m2Diff==='easy'?10:m2Diff==='mid'?15:20;
+  const finalPts = m2HintUsed?Math.floor(pts*.7):pts;
+  const fb=document.getElementById('m2-feedback');
+
+  if(correct){
+    btn.classList.add('correct');
+    scores.m2+=finalPts;
+    playBeep('correct');
+    fb.className='feedback-box ok show';
+    fb.innerHTML=`✅ 정답! <strong>+${finalPts}점</strong><br>👍 좋은 시도야! ${q.subject}`;
+  } else {
+    btn.classList.add('wrong');
+    playBeep('wrong');
+    fb.className='feedback-box ng show';
+    fb.innerHTML=`❌ 아쉽지만 괜찮아! 정답: <strong>"${q.opts[q.ans]}"</strong><br>💡 비판적 사고로 다시 생각해봐! ${q.subject}`;
+  }
+  document.getElementById('m2-score').textContent=scores.m2;
+  document.getElementById('m2-next').style.display='block';
+}
+
+function m2Next() {
+  m2Idx++;
+  if(m2Idx>=m2CurrentPool.length){ endDiff(); return; }
+  renderM2(); resetM2Timer();
+}
+
+function endDiff() {
+  clearInterval(m2TimerID);
+  m2DiffDone[m2Diff]=true;
+  document.getElementById('tab-'+m2Diff).className='diff-tab done';
+  if(m2DiffDone.easy&&m2DiffDone.mid&&m2DiffDone.hard){
+    const total=m2Data.easy.length+m2Data.mid.length+m2Data.hard.length;
+    const maxPts=m2Data.easy.length*10+m2Data.mid.length*15+m2Data.hard.length*20;
+    const ratio=scores.m2/maxPts;
+    badges.m2=ratio>=.8?3:ratio>=.5?2:1;
+    playBeep('clear');
+    startM3();
+  } else {
+    // auto-advance to next undone
+    const next=['easy','mid','hard'].find(k=>!m2DiffDone[k]);
+    if(next) setDiff(next);
+  }
+}
+
+// ══════════════════════════════════════
+//  MISSION 3 DATA
+// ══════════════════════════════════════
+const m3Steps = [
+  {
+    type:'classify',
+    title:'📊 Step 1: 데이터 분류',
+    intro:'AI가 3D 모델을 학습하려면 데이터를 먼저 분류해야 해! 아래 재료들을 올바른 카테고리로 드래그해봐.',
+    items: shuffleArr(['PLA','ABS','레진','나일론','티타늄','세라믹','왁스','고무']),
+    categories:{
+      '🧪 플라스틱/폴리머':['PLA','ABS','나일론','고무'],
+      '🔩 금속/세라믹':['티타늄','세라믹'],
+      '💎 광경화 재료':['레진','왁스']
+    },
+    pts:15
+  },
+  {
+    type:'sort',
+    title:'🤖 Step 2: AI 모델링 알고리즘 순서',
+    intro:'AI가 3D 모델을 만드는 단계를 올바른 순서로 배열해봐!',
+    items:[
+      {id:1, text:'학습 데이터 수집 (실제 물체 스캔·사진)'},
+      {id:2, text:'AI 신경망 훈련 (패턴 학습)'},
+      {id:3, text:'설계 요구사항 입력 (크기·재료·용도)'},
+      {id:4, text:'AI가 최적 구조 생성 (위상 최적화)'},
+      {id:5, text:'슬라이서로 출력 경로 변환'},
+      {id:6, text:'3D프린터 출력 및 후처리'}
+    ],
+    correctOrder:[1,2,3,4,5,6],
+    pts:20
+  },
+  {
+    type:'quiz',
+    title:'💡 Step 3: AI 리터러시 확인',
+    intro:'AI와 3D프린팅에 대해 배운 내용을 확인해봐!',
+    questions:[
+      {q:'머신러닝에서 AI가 학습하는 데 필요한 것은?', opts:['많은 양의 데이터','인터넷 속도','프린터 해상도','필라멘트 색상'], ans:0, hint:'데이터 없이는 학습할 수 없어요.'},
+      {q:'AI가 3D 설계를 최적화할 때 사용하는 기법은?', opts:['위상 최적화(Topology Optimization)','색상 보정','온도 조절','압력 측정'], ans:0, hint:'불필요한 재료를 제거해 최적 구조를 찾아요.'},
+      {q:'3D프린팅 AI 설계에서 편향 데이터가 생기면?', opts:['더 정확한 설계','특정 조건에만 맞는 불균형한 결과','속도가 빨라짐','재료 절약'], ans:1, hint:'입력 데이터가 치우치면 결과도 치우쳐요.'}
+    ],
+    pts:15
+  }
+];
+
+// ══════════════════════════════════════
+//  MISSION 3 LOGIC
+// ══════════════════════════════════════
+let m3StepIdx=0, m3StepScores=[0,0,0];
+
+function startM3() {
+  m3StepIdx=0; m3StepScores=[0,0,0];
+  scores.m3=0;
+  document.getElementById('mnav3').innerHTML=mnavHTML(3);
+  showScreen('m3');
+  renderM3Step();
+}
+
+function renderM3Step() {
+  const step=m3Steps[m3StepIdx];
+  const content=document.getElementById('m3-content');
+  const fb=document.getElementById('m3-feedback');
+  fb.className='feedback-box';
+  document.getElementById('m3-next').style.display='none';
+
+  let html=`<h3 style="margin:16px 0 8px;color:var(--accent2)">${step.title}</h3>
+  <p style="font-size:14px;color:var(--text2);margin-bottom:12px">${step.intro}</p>`;
+
+  if(step.type==='classify'){
+    html+=`<div id="chips-area" style="background:var(--card2);border-radius:10px;padding:12px;margin-bottom:12px;min-height:50px;display:flex;flex-wrap:wrap;gap:6px">`;
+    step.items.forEach(item=>{
+      html+=`<span class="data-chip" draggable="true" id="chip-${item}" ondragstart="dragStart(event,'${item}')">${item}</span>`;
+    });
+    html+=`</div><div style="display:flex;flex-direction:column;gap:8px">`;
+    Object.keys(step.categories).forEach(cat=>{
+      html+=`<div class="bin" id="bin-${cat}" ondragover="dragOver(event)" ondrop="drop(event,'${cat}')" ondragleave="dragLeave(event)">
+        <div style="font-weight:700;margin-bottom:6px;font-size:13px;color:var(--accent2)">${cat}</div>
+        <div id="bininner-${cat}" style="display:flex;flex-wrap:wrap;gap:4px;min-height:32px"></div>
+      </div>`;
+    });
+    html+=`</div><button class="btn" style="margin-top:12px" onclick="checkClassify()">✅ 분류 확인!</button>`;
+
+  } else if(step.type==='sort'){
+    const shuffled=[...step.items]; shuffleArr(shuffled);
+    html+=`<div class="sort-area" id="sort-list">`;
+    shuffled.forEach(item=>{
+      html+=`<div class="sort-item" draggable="true" data-id="${item.id}" ondragstart="sortDragStart(event)" ondragover="sortDragOver(event)" ondrop="sortDrop(event)">
+        <span class="handle">⠿</span><span>${item.text}</span></div>`;
+    });
+    html+=`</div><button class="btn sort-check-btn" onclick="checkSort()">✅ 순서 확인!</button>`;
+
+  } else if(step.type==='quiz'){
+    html+=`<div id="m3-quiz-area"></div>`;
+  }
+
+  content.innerHTML=html;
+  if(step.type==='quiz') renderM3Quiz(0);
+}
+
+// --- Classify drag ---
+let draggedChip='', chipBin={};
+function dragStart(e,name){draggedChip=name;}
+function dragOver(e){e.preventDefault();e.currentTarget.classList.add('drag-over');}
+function dragLeave(e){e.currentTarget.classList.remove('drag-over');}
+function drop(e,cat){
+  e.preventDefault();
+  e.currentTarget.classList.remove('drag-over');
+  if(!draggedChip) return;
+  chipBin[draggedChip]=cat;
+  const chip=document.getElementById('chip-'+draggedChip);
+  if(chip){ chip.remove(); }
+  const inner=document.getElementById('bininner-'+cat);
+  if(inner){
+    const el=document.createElement('span');
+    el.className='data-chip'; el.textContent=draggedChip; el.id='placed-'+draggedChip;
+    inner.appendChild(el);
+  }
+  draggedChip='';
+}
+function checkClassify(){
+  const step=m3Steps[0];
+  let correct=0,total=0;
+  Object.entries(step.categories).forEach(([cat,vals])=>{
+    vals.forEach(v=>{total++;if(chipBin[v]===cat)correct++;});
+  });
+  const pts=Math.round(step.pts*correct/total);
+  m3StepScores[0]=pts; scores.m3+=pts;
+  const fb=document.getElementById('m3-feedback');
+  fb.className=`feedback-box ${correct===total?'ok':'ng'} show`;
+  fb.innerHTML=`${correct===total?'🎉 완벽한 분류!':'👍 좋은 시도야!'} <strong>${correct}/${total} 정답 (+${pts}점)</strong><br>💡 AI도 이렇게 데이터를 분류해서 학습해요!`;
+  document.getElementById('m3-next').style.display='block';
+}
+
+// --- Sort drag ---
+let sortDragging=null;
+function sortDragStart(e){sortDragging=e.currentTarget;}
+function sortDragOver(e){e.preventDefault();}
+function sortDrop(e){
+  e.preventDefault();
+  const target=e.currentTarget;
+  if(!sortDragging||sortDragging===target) return;
+  const list=document.getElementById('sort-list');
+  const children=[...list.children];
+  const fi=children.indexOf(sortDragging), ti=children.indexOf(target);
+  if(fi<ti) list.insertBefore(sortDragging,target.nextSibling);
+  else list.insertBefore(sortDragging,target);
+}
+function checkSort(){
+  const step=m3Steps[1];
+  const list=document.getElementById('sort-list');
+  const order=[...list.children].map(c=>parseInt(c.dataset.id));
+  const correct=JSON.stringify(order)===JSON.stringify(step.correctOrder);
+  const pts=correct?step.pts:Math.floor(step.pts*.5);
+  m3StepScores[1]=pts; scores.m3+=pts;
+  const fb=document.getElementById('m3-feedback');
+  fb.className=`feedback-box ${correct?'ok':'ng'} show`;
+  fb.innerHTML=correct
+    ? `🎉 완벽한 순서! <strong>+${pts}점</strong><br>💡 AI는 이 과정을 자동화해서 빠르게 설계해요!`
+    : `👍 좋은 시도야! 정답 순서로 아직 학습 중이야. <strong>+${pts}점</strong><br>💡 올바른 순서: 수집→훈련→입력→생성→변환→출력`;
+  document.getElementById('m3-next').style.display='block';
+}
+
+// --- M3 Quiz ---
+let m3QuizIdx=0, m3QuizScore=0;
+function renderM3Quiz(idx){
+  m3QuizIdx=idx;
+  const step=m3Steps[2];
+  const q=step.questions[idx];
+  const area=document.getElementById('m3-quiz-area');
+  area.innerHTML=`<p style="font-size:15px;font-weight:600;margin:12px 0 8px">${idx+1}. ${q.q}</p>
+  <div class="options-grid" id="m3q-opts"></div>
+  <div class="feedback-box" id="m3q-fb"></div>
+  <div id="m3q-next" style="display:none"><button class="btn" style="margin-top:10px" onclick="m3QuizNext()">${idx+1<step.questions.length?'다음 문제 →':'완료 ✅'}</button></div>`;
+  const optsEl=document.getElementById('m3q-opts');
+  const idxArr=[0,1,2,3]; shuffleArr(idxArr);
+  idxArr.forEach(oi=>{
+    const btn=document.createElement('button');
+    btn.className='opt-btn'; btn.textContent=q.opts[oi];
+    btn.onclick=()=>{
+      document.querySelectorAll('#m3q-opts .opt-btn').forEach(b=>{
+        b.disabled=true;
+        if(b.textContent===q.opts[q.ans]) b.classList.add('correct');
+      });
+      const correct=oi===q.ans;
+      if(correct){btn.classList.add('correct');m3QuizScore+=Math.floor(step.pts/step.questions.length);playBeep('correct');}
+      else{btn.classList.add('wrong');playBeep('wrong');}
+      const fb=document.getElementById('m3q-fb');
+      fb.className=`feedback-box ${correct?'ok':'ng'} show`;
+      fb.innerHTML=correct?`✅ 정답! 👍 훌륭해!`:`❌ 정답: <strong>"${q.opts[q.ans]}"</strong><br>💡 비판적 사고로 다시 생각해봐!`;
+      document.getElementById('m3q-next').style.display='block';
+    };
+    optsEl.appendChild(btn);
+  });
+}
+function m3QuizNext(){
+  const step=m3Steps[2];
+  if(m3QuizIdx+1<step.questions.length){ renderM3Quiz(m3QuizIdx+1); }
+  else {
+    m3StepScores[2]=m3QuizScore; scores.m3+=m3QuizScore;
+    const fb=document.getElementById('m3-feedback');
+    fb.className='feedback-box ok show';
+    fb.innerHTML=`🎉 미션3 완료! AI 리터러시 학습 끝! <strong>총 +${scores.m3}점</strong>`;
+    document.getElementById('m3-next').style.display='block';
+  }
+}
+
+function m3Next(){
+  m3StepIdx++;
+  if(m3StepIdx>=m3Steps.length){
+    const maxPts=m3Steps.reduce((a,s)=>a+(s.pts||0),0);
+    const ratio=scores.m3/maxPts;
+    badges.m3=ratio>=.8?3:ratio>=.5?2:1;
+    playBeep('clear');
+    startM4();
+  } else {
+    renderM3Step();
+  }
+}
+
+// ══════════════════════════════════════
+//  MISSION 4 DATA
+// ══════════════════════════════════════
+const m4Scenarios = [
+  {
+    printy:'💬 프린티: 미래 병원에서 일하게 됐어! 3D프린팅으로 무엇을 할지 선택해봐.',
+    scenario:'🏥 시나리오 1 | 충주 스마트 병원\n\n2045년, 충주 스마트 병원에 입사한 너는 3D프린팅 담당 연구원이야. 환자 A씨가 교통사고로 무릎 연골이 손상됐어. 어떤 선택을 할까?',
+    choices:[
+      {text:'🦿 환자 CT 데이터로 맞춤형 연골 임플란트를 3D프린팅한다', pts:20, fb:'✅ 최선의 선택! 맞춤형 3D 프린팅 임플란트는 환자 맞춤형 의료의 미래야.', career:'🩺 의료용 3D프린팅 엔지니어'},
+      {text:'📦 기성품 연골 임플란트를 주문한다', pts:12, fb:'👍 실용적인 선택이지만, 맞춤형보다 정확도가 낮을 수 있어.', career:'🏥 의료기기 유통 전문가'},
+      {text:'🖨️ 일반 플라스틱으로 임플란트를 출력한다', pts:5, fb:'⚠️ 의료용 재료가 아니면 인체에 위험할 수 있어! 재료 선택이 중요해.', career:'⚙️ 3D프린팅 기술자'},
+      {text:'📋 치료 결정을 의사에게만 맡긴다', pts:8, fb:'🤝 협업은 중요하지만, 3D프린팅 전문가로서 적극적으로 제안해봐!', career:'📊 의료 행정 전문가'}
+    ]
+  },
+  {
+    printy:'💬 프린티: 건축 현장에 3D프린팅 기술을 도입하게 됐어!',
+    scenario:'🏗️ 시나리오 2 | 충주 스마트 주거 단지\n\n2045년 충주에 친환경 주거 단지를 짓는 프로젝트에 참여했어. 3D프린팅으로 건물을 지을 기회가 생겼는데, 재료를 선택해야 해.',
+    choices:[
+      {text:'🌱 친환경 콘크리트 혼합 재료로 탄소 배출 최소화', pts:20, fb:'✅ 완벽해! 지속가능한 건축이 2045년의 핵심 가치야.', career:'🌿 그린 건축 3D프린팅 엔지니어'},
+      {text:'🏚️ 저렴한 일반 콘크리트 사용', pts:10, fb:'💰 비용은 절감되지만 환경 부담이 커. 지속가능성을 고려해봐!', career:'🔨 건축 현장 기술자'},
+      {text:'⚡ 가장 빠른 출력 속도 재료 선택', pts:12, fb:'🚀 속도도 중요하지만, 안전성과 환경도 함께 고려해야 해!', career:'🏗️ 스마트 건설 엔지니어'},
+      {text:'🤔 재료 선택을 전문 기관에 의뢰한다', pts:15, fb:'👍 전문가 협업도 좋은 방법! 하지만 스스로의 판단도 키워봐.', career:'📐 건축 PM(프로젝트 매니저)'}
+    ]
+  },
+  {
+    printy:'💬 프린티: AI가 설계한 3D 모델에 문제가 발생했어! 어떻게 할까?',
+    scenario:'🤖 시나리오 3 | AI 설계 오류 발생\n\nAI가 자동 설계한 드론 부품을 3D프린팅했는데, 출력 후 강도 테스트에서 계속 파손이 발생해. AI의 학습 데이터가 부족했던 것 같아. 어떻게 대응할까?',
+    choices:[
+      {text:'📊 AI 훈련 데이터를 보완하고 재학습 후 재설계', pts:20, fb:'✅ 핵심 해결책! AI 편향 문제는 데이터 보완으로 해결할 수 있어.', career:'🤖 AI 3D설계 엔지니어'},
+      {text:'🔄 같은 AI 모델로 계속 출력한다', pts:3, fb:'❌ 같은 오류가 반복될 수 있어. 근본 원인을 찾아야 해!', career:'🔧 단순 기술 보조'},
+      {text:'👨‍💻 사람이 직접 설계를 수정한다', pts:15, fb:'👍 전문가의 판단도 중요해. 하지만 AI와 협력하면 더 효율적이야!', career:'✏️ 3D CAD 설계사'},
+      {text:'📝 AI의 설계 오류를 보고서로 작성해 공개한다', pts:18, fb:'💡 AI 투명성·책임성을 높이는 훌륭한 행동! 윤리적 AI 문화를 만들어가.', career:'📋 AI 윤리 감사관'}
+    ]
+  },
+  {
+    printy:'💬 프린티: 마지막 선택! 3D프린팅으로 어떤 미래를 만들고 싶어?',
+    scenario:'🌍 시나리오 4 | 나의 미래 진로\n\n3D프린팅 기술이 더욱 발전한 2050년, 너는 어떤 분야에서 일하고 싶어? 가장 의미 있다고 생각하는 진로를 선택해봐!',
+    choices:[
+      {text:'🏥 의료 분야 — 맞춤형 장기·보조기구로 생명을 구한다', pts:20, fb:'💗 생명을 다루는 가장 보람 있는 선택! 바이오프린팅 연구원을 꿈꿔봐.', career:'🩺 바이오프린팅 연구원'},
+      {text:'🏗️ 건축 분야 — 지속가능한 친환경 주거를 설계한다', pts:20, fb:'🌱 지구를 위한 선택! 그린 건축 엔지니어로 미래 도시를 만들어봐.', career:'🌿 그린 건축 3D프린팅 엔지니어'},
+      {text:'🚀 우주·항공 분야 — 초경량 부품으로 우주를 개척한다', pts:20, fb:'🚀 도전적인 선택! 우주 3D프린팅 엔지니어는 미래의 핵심 직업이야.', career:'🚀 우주항공 3D프린팅 엔지니어'},
+      {text:'🎨 예술·디자인 분야 — 3D프린팅으로 새로운 예술을 창조한다', pts:20, fb:'🎨 창의적인 선택! 3D프린팅 아티스트는 기술과 예술의 경계를 허물어.', career:'🎨 3D프린팅 아티스트'}
+    ]
+  }
+];
+
+// ══════════════════════════════════════
+//  MISSION 4 LOGIC
+// ══════════════════════════════════════
+let m4Idx=0, m4Career='';
+
+function startM4() {
+  m4Idx=0; scores.m4=0; m4Career='';
+  document.getElementById('mnav4').innerHTML=mnavHTML(4);
+  showScreen('m4');
+  renderM4();
+}
+
+function renderM4() {
+  if(m4Idx>=m4Scenarios.length){ endM4(); return; }
+  const s=m4Scenarios[m4Idx];
+  document.getElementById('m4-printy').innerHTML=s.printy;
+  document.getElementById('m4-scenario').innerHTML=s.scenario.replace(/\n/g,'<br>');
+  document.getElementById('m4-snum').textContent=m4Idx+1;
+  document.getElementById('m4-prog').style.width=((m4Idx/4)*100)+'%';
+  document.getElementById('m4-score').textContent=scores.m4;
+  document.getElementById('m4-feedback').className='feedback-box';
+  document.getElementById('m4-next').style.display='none';
+
+  const choicesEl=document.getElementById('m4-choices');
+  choicesEl.innerHTML='';
+  // Fisher-Yates shuffle choices
+  const idxArr=[0,1,2,3]; shuffleArr(idxArr);
+  idxArr.forEach(ci=>{
+    const c=s.choices[ci];
+    const btn=document.createElement('button');
+    btn.className='scenario-btn';
+    btn.textContent=c.text;
+    btn.onclick=()=>{
+      document.querySelectorAll('.scenario-btn').forEach(b=>b.disabled=true);
+      btn.classList.add('chosen');
+      scores.m4+=c.pts;
+      if(ci===s.choices.findIndex(x=>x.pts===Math.max(...s.choices.map(x=>x.pts)))) m4Career=c.career;
+      else if(!m4Career) m4Career=c.career;
+      document.getElementById('m4-score').textContent=scores.m4;
+      const fb=document.getElementById('m4-feedback');
+      fb.className='feedback-box ok show';
+      fb.innerHTML=`${c.fb}<br>🎯 관련 직업: <strong>${c.career}</strong>`;
+      playBeep('correct');
+      document.getElementById('m4-next').style.display='block';
+    };
+    choicesEl.appendChild(btn);
+  });
+}
+
+function m4Next(){
+  m4Idx++;
+  if(m4Idx>=m4Scenarios.length) endM4();
+  else { renderM4(); }
+}
+
+function endM4(){
+  const maxPts=m4Scenarios.reduce((a,s)=>a+Math.max(...s.choices.map(c=>c.pts)),0);
+  const ratio=scores.m4/maxPts;
+  badges.m4=ratio>=.8?3:ratio>=.5?2:1;
+  playBeep('clear');
+  showResult();
+}
+
+// ══════════════════════════════════════
+//  RESULT
+// ══════════════════════════════════════
+function showResult() {
+  // normalize scores to 100
+  const m1max=100, m2max=m2Data.easy.length*10+m2Data.mid.length*15+m2Data.hard.length*20;
+  const m3max=m3Steps.reduce((a,s)=>a+(s.pts||0),0);
+  const m4max=m4Scenarios.reduce((a,s)=>a+Math.max(...s.choices.map(c=>c.pts)),0);
+
+  const m1n=Math.round(scores.m1/m1max*25);
+  const m2n=Math.round(scores.m2/m2max*25);
+  const m3n=Math.round(scores.m3/m3max*25);
+  const m4n=Math.round(scores.m4/m4max*25);
+  const total=Math.min(100,m1n+m2n+m3n+m4n);
+
+  let emoji,title,job,msg;
+  if(total>=80){
+    emoji='🏆'; title='🎉 3D 크리에이터 자격증 취득!';
+    job='🩺 의료용 3D프린팅 엔지니어 적성 발견!';
+    msg='완벽한 실력이야! 3D프린팅과 AI를 결합한 의료 분야에서 생명을 구하는 미래 엔지니어가 될 수 있어!';
+  } else if(total>=60){
+    emoji='🥈'; title='⭐ 우수 3D 설계 인턴!';
+    job='🏗️ 건축·인테리어 3D 설계사 적성 발견!';
+    msg='훌륭해! 지속가능한 건축을 3D프린팅으로 이끄는 그린 건축 엔지니어로 도전해봐!';
+  } else if(total>=40){
+    emoji='🥉'; title='👍 3D 제품 탐험가!';
+    job='🖨️ 3D 제품 크리에이터 적성 발견!';
+    msg='가능성이 충분해! 다양한 제품을 3D프린팅으로 창작하는 크리에이터로 성장해봐!';
+  } else {
+    emoji='🌟'; title='🎨 3D펜 아트 입문자!';
+    job='🎨 3D펜 아트 작가 적성도 훌륭해!';
+    msg='예술적 감각이 있어! 3D펜으로 멋진 작품을 만드는 아트 작가로도 도전해봐! 다시 도전하면 더 높은 점수를 받을 수 있어!';
+  }
+  if(m4Career) job=m4Career+' 적성 발견!';
+
+  document.getElementById('end-emoji').textContent=emoji;
+  document.getElementById('end-title').textContent=title;
+  document.getElementById('end-score').textContent=total;
+  document.getElementById('end-job').textContent=job;
+  document.getElementById('end-msg').textContent=msg;
+
+  const starCount=total>=80?3:total>=60?2:1;
+  document.getElementById('end-stars').textContent='★'.repeat(starCount)+'☆'.repeat(3-starCount);
+
+  document.getElementById('end-stats').innerHTML=`
+    <div class="stat-item"><div class="stat-val">${m1n}</div><div class="stat-label">🔍 미션1</div></div>
+    <div class="stat-item"><div class="stat-val">${m2n}</div><div class="stat-label">📚 미션2</div></div>
+    <div class="stat-item"><div class="stat-val">${m3n}</div><div class="stat-label">🤖 미션3</div></div>
+    <div class="stat-item"><div class="stat-val">${m4n}</div><div class="stat-label">🎯 미션4</div></div>
+  `;
+
+  // badges
+  const badgeStars=Object.entries(badges).map(([k,v])=>`${k}: ${'★'.repeat(v)}`).join(' | ');
+  document.getElementById('end-badges').innerHTML=`<div class="stars" style="font-size:14px">🏅 미션 뱃지 | ${badgeStars}</div>`;
+
+  // save to localStorage
+  try {
+    let lb=JSON.parse(localStorage.getItem('milab_m1_036_lb')||'[]');
+    // temp entry
+    const entry={name:nickname||'탐험가',score:total,date:new Date().toLocaleDateString('ko-KR')};
+    localStorage.setItem('milab_m1_036_tmp',JSON.stringify({...entry,score:total}));
+  } catch(e){}
+
+  showScreen('result');
+  makeQR('qr-end');
+  renderLeaderboard();
+}
+
+function saveScore(){
+  const name=document.getElementById('lb-name').value.trim()||nickname||'탐험가';
+  const scoreEl=document.getElementById('end-score');
+  const total=parseInt(scoreEl.textContent)||0;
+  try{
+    let lb=JSON.parse(localStorage.getItem('milab_m1_036_lb')||'[]');
+    lb.push({name,score:total,date:new Date().toLocaleDateString('ko-KR')});
+    lb.sort((a,b)=>b.score-a.score);
+    lb=lb.slice(0,5);
+    localStorage.setItem('milab_m1_036_lb',JSON.stringify(lb));
+    renderLeaderboard(name,total);
+  }catch(e){}
+}
+
+function renderLeaderboard(myName,myScore){
+  try{
+    const lb=JSON.parse(localStorage.getItem('milab_m1_036_lb')||'[]');
+    if(!lb.length){document.getElementById('lb-board').innerHTML='';return;}
+    let html=`<div style="margin-top:12px;font-weight:700;color:var(--accent2);margin-bottom:8px">🏅 명예의 전당 TOP 5</div>`;
+    const medals=['🥇','🥈','🥉','4️⃣','5️⃣'];
+    lb.forEach((e,i)=>{
+      const isMe=myName&&e.name===myName&&e.score===myScore;
+      html+=`<div class="lb-row${isMe?' me':''}"><span class="lb-rank">${medals[i]}</span><span style="flex:1">${e.name}</span><span style="color:var(--accent2);font-weight:700">${e.score}점</span><span style="font-size:11px;color:var(--text2);margin-left:8px">${e.date}</span></div>`;
+    });
+    document.getElementById('lb-board').innerHTML=html;
+  }catch(e){}
+}
+
+// ══════════════════════════════════════
+//  MASCOT MOODS
+// ══════════════════════════════════════
+function setMascotMood(prefix,mood){
+  const mouth=document.getElementById(prefix+'-mouth');
+  const el=document.getElementById(prefix+'-el');
+  const er=document.getElementById(prefix+'-er');
+  if(!mouth) return;
+  if(mood==='happy'){
+    mouth.setAttribute('d','M44 48 Q60 62 76 48');
+    if(el){el.setAttribute('cy','35');}
+    if(er){er.setAttribute('cy','35');}
+  } else if(mood==='sad'){
+    mouth.setAttribute('d','M47 56 Q60 48 73 56');
+  } else {
+    mouth.setAttribute('d','M47 50 Q60 58 73 50');
+    if(el){el.setAttribute('cy','37');}
+    if(er){er.setAttribute('cy','37');}
+  }
+}
+</script>
+</body>
+</html>
