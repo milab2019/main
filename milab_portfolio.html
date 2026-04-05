@@ -321,10 +321,16 @@ nav {
   box-shadow:0 2px 16px rgba(41,171,226,0.06);
 }
 .stat-item {
-  text-align:center; padding:8px 40px;
+  text-align:center; padding:8px 16px; min-width:80px; flex:1;
   border-right:1px solid var(--border);
 }
 .stat-item:last-child { border-right:none; }
+@media(max-width:480px){
+  .stats-bar { flex-direction:row; flex-wrap:wrap; padding:16px 8px; }
+  .stat-item { padding:6px 10px; border-right:none; border-bottom:1px solid var(--border); width:50%; }
+  .stat-item:last-child { border-bottom:none; }
+  .stat-num { font-size:1.2rem; }
+}
 .stat-num {
   font-family:'Jua',sans-serif; font-size:2rem;
   color:var(--blue-dark); line-height:1;
