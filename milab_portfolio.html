@@ -569,7 +569,7 @@ footer {
         <div class="cm-icon-wrap orange">✉️</div>
         <div>
           <div class="cm-info-label">E-mail</div>
-          <div class="cm-info-value"><a href="/cdn-cgi/l/email-protection#1c7971736e7275727b2b2b5c727d6a796e327f7371"><span class="__cf_email__" data-cfemail="77121a1805191e191040403719160112055914181a">[email&#160;protected]</span></a></div>
+          <div class="cm-info-value"><a id="contact-email-link" href="#" onclick="return false;" style="cursor:pointer;"></a></div>
         </div>
       </div>
       <div class="cm-row">
@@ -746,7 +746,15 @@ footer {
 
 <footer>© 2026 미랩(MILAB) · 충청북도 충주시 · 교육부 인증 진로체험기관 | 최종 업데이트 2026.04.08</footer>
 
-<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+<script>
+/* ── 이메일 난독화 (GitHub Pages 자체 방식) ── */
+(function(){
+  var p=['em','or','ni','ng','77','@n','av','er','.c','om'];
+  var addr=p.join('');
+  var el=document.getElementById('contact-email-link');
+  if(el){el.href='mailto:'+addr;el.textContent=addr;}
+})();
+</script><script>
 function openContactModal(e){e&&e.preventDefault();document.getElementById('contactModal').classList.add('open');document.body.style.overflow='hidden';}
 function closeContactModal(){document.getElementById('contactModal').classList.remove('open');document.body.style.overflow='';}
 function closeModalOutside(e){if(e.target===document.getElementById('contactModal'))closeContactModal();}
