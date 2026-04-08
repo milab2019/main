@@ -1,0 +1,1312 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🤖 미랩 #037 | 로봇 엔지니어 진로체험</title>
+<!-- Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-WTY6YJQ1NS"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-WTY6YJQ1NS');
+</script>
+<!-- QRCode.js -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<style>
+  :root {
+    --navy: #1A1A2E;
+    --charcoal: #2C3E50;
+    --gold: #F0C040;
+    --blue: #3A7BD5;
+    --gray: #8899AA;
+    --green: #2ECC71;
+    --red: #E74C3C;
+    --white: #F0F4F8;
+    --text: #E8EDF2;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Malgun Gothic', '맑은 고딕', sans-serif;
+    background: var(--navy);
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ─── SCREENS ─── */
+  .screen { display: none; min-height: 100vh; }
+  .screen.active { display: flex; flex-direction: column; }
+
+  /* ─── HEADER ─── */
+  .top-bar {
+    background: rgba(0,0,0,0.4);
+    padding: 10px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid rgba(240,192,64,0.3);
+    font-size: 13px;
+    color: var(--gray);
+  }
+  .top-bar .brand { color: var(--gold); font-weight: 700; font-size: 14px; }
+  .top-bar .score-area { display: flex; gap: 16px; align-items: center; }
+  .score-badge {
+    background: rgba(240,192,64,0.15);
+    border: 1px solid var(--gold);
+    border-radius: 20px;
+    padding: 3px 12px;
+    color: var(--gold);
+    font-weight: 700;
+    font-size: 14px;
+  }
+  #soundBtn {
+    background: none; border: 1px solid var(--gray);
+    border-radius: 50%; width: 32px; height: 32px;
+    color: var(--gray); cursor: pointer; font-size: 16px;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.2s;
+  }
+  #soundBtn:hover { border-color: var(--gold); color: var(--gold); }
+
+  /* ─── MASCOT ─── */
+  .mascot-wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    padding: 10px 0;
+  }
+  .mascot-svg { width: 80px; height: 80px; }
+  .mascot-bubble {
+    background: rgba(240,192,64,0.1);
+    border: 1px solid rgba(240,192,64,0.4);
+    border-radius: 12px;
+    padding: 8px 16px;
+    font-size: 13px;
+    color: var(--gold);
+    max-width: 300px;
+    text-align: center;
+    line-height: 1.5;
+  }
+
+  /* ─── INTRO SCREEN ─── */
+  #introScreen {
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+    text-align: center;
+  }
+  .intro-badge {
+    background: rgba(240,192,64,0.1);
+    border: 1px solid var(--gold);
+    border-radius: 30px;
+    padding: 6px 20px;
+    color: var(--gold);
+    font-size: 13px;
+    margin-bottom: 16px;
+    display: inline-block;
+  }
+  .intro-title {
+    font-size: clamp(22px, 5vw, 36px);
+    font-weight: 900;
+    line-height: 1.3;
+    margin-bottom: 12px;
+  }
+  .intro-title span { color: var(--gold); }
+  .intro-sub {
+    color: var(--gray);
+    font-size: 14px;
+    margin-bottom: 24px;
+    line-height: 1.8;
+  }
+  .mission-overview {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    justify-content: center;
+    margin-bottom: 24px;
+  }
+  .mo-item {
+    background: rgba(44,62,80,0.8);
+    border: 1px solid rgba(240,192,64,0.2);
+    border-radius: 8px;
+    padding: 8px 14px;
+    font-size: 12px;
+    text-align: left;
+  }
+  .mo-item b { color: var(--gold); }
+  .name-input-wrap { margin-bottom: 20px; }
+  .name-input-wrap label { display: block; font-size: 13px; color: var(--gray); margin-bottom: 6px; }
+  .name-input-wrap input {
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(240,192,64,0.4);
+    border-radius: 8px;
+    padding: 10px 16px;
+    color: var(--white);
+    font-size: 15px;
+    width: 240px;
+    text-align: center;
+  }
+  .btn-primary {
+    background: linear-gradient(135deg, var(--gold), #D4A017);
+    color: #1A1A2E;
+    font-weight: 900;
+    font-size: 16px;
+    padding: 14px 40px;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: transform 0.15s, box-shadow 0.15s;
+    min-width: 200px;
+  }
+  .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(240,192,64,0.35); }
+  .btn-secondary {
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(240,192,64,0.4);
+    color: var(--gold);
+    font-weight: 700;
+    font-size: 15px;
+    padding: 12px 30px;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .btn-secondary:hover { background: rgba(240,192,64,0.15); }
+  .qr-box { margin-top: 20px; }
+  .qr-box p { font-size: 11px; color: var(--gray); margin-bottom: 6px; }
+  #introQr canvas, #introQr img { border-radius: 4px; }
+
+  /* ─── GAME SCREEN ─── */
+  #gameScreen {
+    flex-direction: column;
+  }
+  .mission-header {
+    background: rgba(0,0,0,0.3);
+    padding: 12px 20px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    border-bottom: 1px solid rgba(240,192,64,0.15);
+  }
+  .mission-num {
+    background: var(--gold);
+    color: #1A1A2E;
+    font-weight: 900;
+    font-size: 12px;
+    padding: 4px 10px;
+    border-radius: 20px;
+  }
+  .mission-name { font-weight: 700; font-size: 15px; flex: 1; }
+  .mission-progress-bar {
+    height: 3px;
+    background: rgba(255,255,255,0.1);
+    margin: 0;
+  }
+  .mission-progress-fill {
+    height: 100%;
+    background: var(--gold);
+    transition: width 0.4s ease;
+  }
+
+  /* timer */
+  #timerDisplay {
+    font-weight: 900;
+    font-size: 18px;
+    color: var(--gold);
+    min-width: 44px;
+    text-align: right;
+  }
+  #timerDisplay.danger { color: var(--red) !important; animation: pulse 0.5s infinite alternate; }
+  @keyframes pulse { from { opacity: 1; } to { opacity: 0.5; } }
+
+  .game-content {
+    flex: 1;
+    padding: 20px;
+    overflow-y: auto;
+    max-width: 800px;
+    width: 100%;
+    margin: 0 auto;
+  }
+
+  /* question */
+  .q-meta { font-size: 11px; color: var(--gray); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 1px; }
+  .q-text {
+    font-size: 17px;
+    font-weight: 700;
+    line-height: 1.6;
+    margin-bottom: 16px;
+    color: var(--white);
+  }
+  .q-passage {
+    background: rgba(255,255,255,0.05);
+    border-left: 3px solid var(--gold);
+    border-radius: 8px;
+    padding: 14px 16px;
+    font-size: 14px;
+    line-height: 1.8;
+    margin-bottom: 16px;
+    color: #C8D8E8;
+  }
+  .q-passage b { color: var(--gold); }
+  .q-source { font-size: 10px; color: var(--gray); margin-top: 6px; }
+
+  /* options */
+  .options { display: flex; flex-direction: column; gap: 10px; margin-bottom: 16px; }
+  .opt-btn {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 10px;
+    padding: 14px 18px;
+    text-align: left;
+    font-size: 15px;
+    color: var(--text);
+    cursor: pointer;
+    transition: all 0.18s;
+    line-height: 1.5;
+    min-height: 48px;
+  }
+  .opt-btn:hover:not(:disabled) {
+    background: rgba(240,192,64,0.12);
+    border-color: rgba(240,192,64,0.5);
+    transform: translateX(3px);
+  }
+  .opt-btn.correct { background: rgba(46,204,113,0.2); border-color: var(--green); color: #fff; }
+  .opt-btn.wrong   { background: rgba(231,76,60,0.2);  border-color: var(--red);   color: #fff; }
+  .opt-btn:disabled { cursor: default; }
+
+  /* feedback */
+  .feedback-box {
+    background: rgba(44,62,80,0.8);
+    border-radius: 10px;
+    padding: 14px 18px;
+    font-size: 14px;
+    line-height: 1.7;
+    display: none;
+  }
+  .feedback-box.show { display: block; }
+  .feedback-box .fb-correct { color: var(--green); font-weight: 700; }
+  .feedback-box .fb-wrong   { color: var(--red);   font-weight: 700; }
+  .feedback-box .fb-body    { color: #C8D8E8; margin-top: 6px; }
+
+  /* hint */
+  .hint-btn {
+    background: none;
+    border: 1px dashed rgba(240,192,64,0.4);
+    border-radius: 8px;
+    color: var(--gold);
+    font-size: 12px;
+    padding: 6px 14px;
+    cursor: pointer;
+    margin-bottom: 10px;
+    transition: all 0.15s;
+  }
+  .hint-btn:hover { background: rgba(240,192,64,0.08); }
+  .hint-box {
+    background: rgba(240,192,64,0.08);
+    border: 1px solid rgba(240,192,64,0.3);
+    border-radius: 8px;
+    padding: 10px 14px;
+    font-size: 13px;
+    color: var(--gold);
+    margin-bottom: 10px;
+    display: none;
+  }
+  .hint-box.show { display: block; }
+
+  /* next btn */
+  .next-btn {
+    background: var(--gold);
+    color: #1A1A2E;
+    font-weight: 900;
+    font-size: 15px;
+    padding: 12px 32px;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    display: none;
+    transition: all 0.15s;
+  }
+  .next-btn.show { display: inline-block; }
+  .next-btn:hover { transform: translateY(-1px); }
+
+  /* AI mission special */
+  .ai-output-box {
+    background: rgba(58,123,213,0.1);
+    border: 1px solid rgba(58,123,213,0.4);
+    border-radius: 10px;
+    padding: 16px;
+    font-size: 14px;
+    line-height: 1.8;
+    margin-bottom: 16px;
+    color: #C8D8E8;
+    position: relative;
+  }
+  .ai-label {
+    position: absolute;
+    top: -10px; left: 12px;
+    background: rgba(58,123,213,0.9);
+    color: #fff;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 2px 10px;
+    border-radius: 10px;
+  }
+  .ai-error-span { color: var(--red); font-weight: 700; cursor: pointer; }
+  .ai-error-span:hover { text-decoration: underline; }
+
+  /* chart */
+  .chart-wrap { margin-bottom: 16px; }
+  .chart-title { font-size: 13px; color: var(--gray); margin-bottom: 10px; font-weight: 700; }
+  .bar-chart { display: flex; flex-direction: column; gap: 8px; }
+  .bar-row { display: flex; align-items: center; gap: 10px; }
+  .bar-label { width: 100px; font-size: 12px; color: var(--gray); text-align: right; flex-shrink: 0; }
+  .bar-track { flex: 1; background: rgba(255,255,255,0.08); border-radius: 4px; height: 22px; overflow: hidden; }
+  .bar-fill { height: 100%; border-radius: 4px; display: flex; align-items: center; padding-left: 8px; font-size: 11px; font-weight: 700; color: #fff; transition: width 1s ease; }
+  .bar-val { font-size: 12px; color: var(--white); font-weight: 700; width: 40px; }
+
+  /* roadmap/result */
+  #resultScreen { justify-content: center; align-items: center; padding: 20px; }
+  .result-card {
+    background: rgba(44,62,80,0.7);
+    border: 1px solid rgba(240,192,64,0.3);
+    border-radius: 16px;
+    padding: 28px;
+    max-width: 560px;
+    width: 100%;
+    text-align: center;
+  }
+  .result-emoji { font-size: 52px; margin-bottom: 12px; }
+  .result-title { font-size: 24px; font-weight: 900; color: var(--gold); margin-bottom: 6px; }
+  .result-sub { color: var(--gray); font-size: 14px; margin-bottom: 20px; }
+  .score-big { font-size: 52px; font-weight: 900; color: var(--gold); margin: 12px 0; }
+  .career-box {
+    background: rgba(240,192,64,0.08);
+    border: 1px solid rgba(240,192,64,0.3);
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 18px;
+    text-align: left;
+  }
+  .career-box h4 { color: var(--gold); font-size: 14px; margin-bottom: 8px; }
+  .career-tags { display: flex; flex-wrap: wrap; gap: 6px; }
+  .career-tag {
+    background: rgba(240,192,64,0.15);
+    border: 1px solid rgba(240,192,64,0.4);
+    border-radius: 20px;
+    padding: 4px 12px;
+    font-size: 13px;
+    color: var(--gold);
+  }
+  .subject-list { font-size: 13px; line-height: 2; color: var(--text); }
+  .hall-of-fame {
+    background: rgba(0,0,0,0.3);
+    border-radius: 10px;
+    padding: 12px;
+    margin-bottom: 16px;
+    text-align: left;
+  }
+  .hall-of-fame h4 { color: var(--gold); font-size: 13px; margin-bottom: 8px; }
+  .hof-row { display: flex; justify-content: space-between; font-size: 13px; padding: 3px 0; border-bottom: 1px solid rgba(255,255,255,0.05); }
+  .hof-rank { color: var(--gold); width: 24px; }
+  .hof-name { flex: 1; }
+  .hof-score { color: var(--gold); font-weight: 700; }
+  #resultQr { display: flex; justify-content: center; margin-top: 14px; }
+  .ai-warn {
+    background: rgba(231,76,60,0.1);
+    border: 1px solid rgba(231,76,60,0.3);
+    border-radius: 8px;
+    padding: 8px 14px;
+    font-size: 11px;
+    color: #E87070;
+    margin-top: 12px;
+    text-align: left;
+  }
+  .ai-warn::before { content: '⚠️ AI 윤리 안내: '; font-weight: 700; }
+
+  /* loading */
+  #loadingScreen {
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    gap: 16px;
+  }
+  .spinner {
+    width: 48px; height: 48px;
+    border: 4px solid rgba(240,192,64,0.2);
+    border-top-color: var(--gold);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* responsive */
+  @media (max-width: 600px) {
+    .bar-label { width: 70px; font-size: 11px; }
+    .game-content { padding: 14px; }
+    .q-text { font-size: 15px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════ LOADING ═══════════════════ -->
+<div id="loadingScreen" class="screen active">
+  <div class="spinner"></div>
+  <p style="color:var(--gray);font-size:14px;">로봇 엔지니어 본부 접속 중...</p>
+</div>
+
+<!-- ═══════════════════ INTRO ═══════════════════ -->
+<div id="introScreen" class="screen">
+  <div class="intro-badge">🤖 미랩 #037 | 고등학교 진로체험</div>
+  <div class="mascot-wrap">
+    <svg class="mascot-svg" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg" id="mascotSvgIntro">
+      <rect x="20" y="24" width="40" height="34" rx="6" fill="#2C3E50" stroke="#F0C040" stroke-width="2"/>
+      <rect x="28" y="32" width="10" height="8" rx="3" fill="#3A7BD5" id="eyeL"/>
+      <rect x="42" y="32" width="10" height="8" rx="3" fill="#3A7BD5" id="eyeR"/>
+      <rect x="30" y="46" width="20" height="4" rx="2" fill="#F0C040"/>
+      <rect x="15" y="30" width="5" height="16" rx="2.5" fill="#2C3E50" stroke="#F0C040" stroke-width="1.5"/>
+      <rect x="60" y="30" width="5" height="16" rx="2.5" fill="#2C3E50" stroke="#F0C040" stroke-width="1.5"/>
+      <rect x="28" y="58" width="8" height="14" rx="3" fill="#2C3E50" stroke="#F0C040" stroke-width="1.5"/>
+      <rect x="44" y="58" width="8" height="14" rx="3" fill="#2C3E50" stroke="#F0C040" stroke-width="1.5"/>
+      <circle cx="40" cy="20" r="5" fill="#2C3E50" stroke="#F0C040" stroke-width="2"/>
+      <line x1="40" y1="15" x2="40" y2="12" stroke="#F0C040" stroke-width="2"/>
+      <circle cx="40" cy="11" r="2" fill="#F0C040"/>
+    </svg>
+    <div class="mascot-bubble">안녕! 나는 로봇 엔지니어 AI 파트너 <b>RO-VER</b>야!<br>2035 글로벌 로봇 본부에 온 걸 환영해 🌐</div>
+  </div>
+  <div class="intro-title">🌐 2035 <span>글로벌 로봇 산업</span> 본부<br>한국 대표 로봇 엔지니어로 세계를 설계하라!</div>
+  <div class="intro-sub">
+    WEF 2025 직업보고서 기반 · 한국 vs 세계 데이터 비교<br>
+    AI 리터러시 + 문해력 + 진로 탐색 5미션
+  </div>
+  <div class="mission-overview">
+    <div class="mo-item"><b>미션1</b> 📖 글로벌 데이터 탐정</div>
+    <div class="mo-item"><b>미션2</b> 🌍 세계 vs 한국 비교</div>
+    <div class="mo-item"><b>미션3</b> 🤖 AI 비판 검증관</div>
+    <div class="mo-item"><b>미션4</b> ⚙️ 미래 직업 설계사</div>
+    <div class="mo-item"><b>미션5</b> 🗺️ 나의 로드맵</div>
+  </div>
+  <div class="name-input-wrap">
+    <label>엔지니어 이름을 입력하세요</label>
+    <input type="text" id="playerName" placeholder="예: 김로봇" maxlength="10">
+  </div>
+  <button class="btn-primary" onclick="startGame()">🚀 로봇 본부 입장</button>
+  <div class="qr-box">
+    <p>📱 QR로 공유하기 (학생부 포트폴리오용)</p>
+    <div id="introQr"></div>
+  </div>
+  <div class="ai-warn">이 게임의 AI 정보는 교육 목적으로 제공됩니다. 실제 진로 결정은 전문가와 상담하세요.</div>
+</div>
+
+<!-- ═══════════════════ GAME ═══════════════════ -->
+<div id="gameScreen" class="screen">
+  <div class="top-bar">
+    <span class="brand">🤖 미랩 #037</span>
+    <div class="score-area">
+      <span id="topPlayerName" style="color:var(--gray);font-size:12px;"></span>
+      <span class="score-badge">⭐ <span id="scoreDisplay">0</span>점</span>
+      <button id="soundBtn" onclick="toggleSound()" title="소리 켜기/끄기">🔊</button>
+    </div>
+  </div>
+  <div class="mission-progress-bar">
+    <div class="mission-progress-fill" id="progressFill" style="width:0%"></div>
+  </div>
+  <div class="mission-header">
+    <span class="mission-num" id="missionNum">미션1</span>
+    <span class="mission-name" id="missionName">글로벌 데이터 탐정</span>
+    <span id="timerDisplay"></span>
+  </div>
+  <div class="game-content" id="gameContent">
+    <!-- dynamically rendered -->
+  </div>
+</div>
+
+<!-- ═══════════════════ RESULT ═══════════════════ -->
+<div id="resultScreen" class="screen">
+  <div class="result-card">
+    <div class="result-emoji" id="resultEmoji">🏆</div>
+    <div class="result-title" id="resultTitle">축하해!</div>
+    <div class="result-sub" id="resultSub">넌 미래 로봇 산업의 핵심 인재야</div>
+    <div class="score-big" id="scoreBig">0점</div>
+    <div class="career-box">
+      <h4>🎯 추천 진로 경로</h4>
+      <div class="career-tags" id="careerTags"></div>
+    </div>
+    <div class="career-box">
+      <h4>📚 고교학점제 추천 선택과목</h4>
+      <div class="subject-list" id="subjectList"></div>
+    </div>
+    <div class="hall-of-fame" id="hofSection">
+      <h4>🏅 명예의 전당 (상위 5명)</h4>
+      <div id="hofList"></div>
+    </div>
+    <button class="btn-primary" onclick="restartGame()" style="margin-bottom:12px;">🔄 다시 도전</button>
+    <div id="resultQr"></div>
+    <div class="ai-warn">AI 생성 정보는 반드시 실제 데이터로 검증하세요. 진로 탐색은 학교 선생님과 함께하세요.</div>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════
+// PORTFOLIO ENTRY
+// ═══════════════════════════════════════════════
+const portfolioEntry = {
+  id: "037",
+  title: "🤖 로봇 엔지니어 진로체험",
+  target: "고등학생",
+  grade: "고등",
+  theme: "로봇 엔지니어링 · AI 미래 직업 · 글로벌 제조업",
+  aiFeature: "AI 출력 오류 검증(hallucination 탐지), AI 편향 식별, 프롬프트 설계 미션",
+  careerTheme: "로봇 엔지니어, 자동화 시스템 설계자, AI 로보틱스 연구원, 스마트팩토리 전문가",
+  literacyFeature: "WEF·산업부 보고서 지문 읽기, 한국 vs 세계 로봇 밀도 데이터 비교, 논거 기반 4지선다",
+  date: "2026-04-08",
+  url: "https://milab2019.github.io/main/milab_robot_engineer_037.html"
+};
+console.log("📋 portfolioEntry:", JSON.stringify(portfolioEntry, null, 2));
+
+// ═══════════════════════════════════════════════
+// GLOBAL STATE
+// ═══════════════════════════════════════════════
+let playerName = "엔지니어";
+let totalScore = 0;
+let soundOn = true;
+let currentMission = 0;
+let currentQ = 0;
+let hintUsed = false;
+let timer = null;
+let timerSec = 0;
+let missionScores = [0,0,0,0,0];
+
+const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+function playSound(type) {
+  if (!soundOn) return;
+  const now = audioCtx.currentTime;
+  const osc = audioCtx.createOscillator();
+  const gain = audioCtx.createGain();
+  osc.connect(gain); gain.connect(audioCtx.destination);
+  if (type === 'correct') {
+    osc.type = 'sine'; osc.frequency.setValueAtTime(523, now);
+    osc.frequency.setValueAtTime(659, now+0.1); osc.frequency.setValueAtTime(784, now+0.2);
+    gain.gain.setValueAtTime(0.25, now); gain.gain.exponentialRampToValueAtTime(0.001, now+0.5);
+    osc.start(now); osc.stop(now+0.5);
+  } else if (type === 'wrong') {
+    osc.type = 'sawtooth'; osc.frequency.setValueAtTime(200, now);
+    osc.frequency.setValueAtTime(180, now+0.1);
+    gain.gain.setValueAtTime(0.15, now); gain.gain.exponentialRampToValueAtTime(0.001, now+0.4);
+    osc.start(now); osc.stop(now+0.4);
+  } else if (type === 'levelup') {
+    osc.type = 'triangle'; osc.frequency.setValueAtTime(440, now);
+    osc.frequency.setValueAtTime(554, now+0.15); osc.frequency.setValueAtTime(659, now+0.3);
+    gain.gain.setValueAtTime(0.3, now); gain.gain.exponentialRampToValueAtTime(0.001, now+0.8);
+    osc.start(now); osc.stop(now+0.8);
+  } else if (type === 'fanfare') {
+    [523,659,784,1047].forEach((f,i) => {
+      const o2 = audioCtx.createOscillator();
+      const g2 = audioCtx.createGain();
+      o2.connect(g2); g2.connect(audioCtx.destination);
+      o2.type='triangle'; o2.frequency.setValueAtTime(f, now+i*0.12);
+      g2.gain.setValueAtTime(0.25, now+i*0.12); g2.gain.exponentialRampToValueAtTime(0.001, now+i*0.12+0.35);
+      o2.start(now+i*0.12); o2.stop(now+i*0.12+0.4);
+    });
+  } else if (type === 'tick') {
+    osc.type='square'; osc.frequency.setValueAtTime(880, now);
+    gain.gain.setValueAtTime(0.08, now); gain.gain.exponentialRampToValueAtTime(0.001, now+0.05);
+    osc.start(now); osc.stop(now+0.05);
+  }
+}
+function toggleSound() {
+  soundOn = !soundOn;
+  document.getElementById('soundBtn').textContent = soundOn ? '🔊' : '🔇';
+}
+
+// ═══════════════════════════════════════════════
+// QUESTION DATA
+// ═══════════════════════════════════════════════
+const missions = [
+  // ─── 미션1: 글로벌 데이터 탐정 (문해력) ───
+  {
+    id: 1, name: "글로벌 데이터 탐정", icon: "📖",
+    timer: 60, timerType: "total",
+    questions: [
+      {
+        type: "passage",
+        qmeta: "미션1 · 지식확인 · 기초",
+        passage: `세계경제포럼(WEF)의 <b>미래직업보고서 2025</b>에 따르면, 로봇·자동화 기술은 2030년까지 전 세계 약 <b>8,500만 개</b>의 일자리를 대체하는 동시에 <b>9,700만 개</b>의 새로운 직업을 창출할 것으로 예측된다. 이는 '기술로 인한 파괴적 혁신'이 아니라 '직업 재편(reskilling revolution)'으로 이해해야 한다는 것이 핵심 논점이다.`,
+        source: "출처: WEF Future of Jobs Report 2025",
+        q: "이 지문의 핵심 주장에 가장 가까운 것은?",
+        options: [
+          "로봇이 인간 일자리를 모두 빼앗을 것이다.",
+          "기술 변화는 직업의 소멸이 아닌 재편으로 보아야 한다.",
+          "새 직업보다 사라지는 직업이 더 많다.",
+          "2025년까지 로봇이 9,700만 개 직업을 대체한다."
+        ],
+        answer: 1,
+        hint: "지문의 마지막 문장이 핵심 근거야.",
+        feedback: "이 지문에서 핵심은 '직업 재편(reskilling revolution)'이야. ①은 지문과 반대, ③은 숫자가 반대(대체 8,500만 < 창출 9,700만), ④는 연도가 틀렸어. WEF는 기술 변화를 파괴가 아닌 재편으로 봐야 한다고 강조해.",
+        points: 10
+      },
+      {
+        type: "passage",
+        qmeta: "미션1 · 수치 추출 · 보통",
+        passage: `한국 산업통상자원부의 <b>2025 스마트 제조 혁신 보고서</b>에 의하면, 국내 제조업의 로봇 밀도(근로자 1만 명당 로봇 수)는 <b>1,012대</b>로 세계 1위를 기록하고 있다. 반면 세계 평균 로봇 밀도는 <b>162대</b>에 불과하다. 이는 한국 제조업이 인력 부족 문제를 자동화로 해결해 왔음을 보여주며, 향후 로봇 엔지니어 수요가 지속 증가할 것임을 시사한다.`,
+        source: "출처: 산업통상자원부, 스마트제조혁신추진단 2025",
+        q: "지문에서 확인할 수 있는 사실로 옳은 것은?",
+        options: [
+          "한국 로봇 밀도는 세계 2위이다.",
+          "세계 평균 로봇 밀도는 한국의 약 6분의 1 수준이다.",
+          "한국 제조업은 로봇을 약 162대 보유하고 있다.",
+          "로봇 도입으로 한국 제조업 일자리가 감소하고 있다."
+        ],
+        answer: 1,
+        hint: "1012 ÷ 162 ≒ 6.25 — 비율을 계산해봐!",
+        feedback: "1012 ÷ 162 ≈ 6.25배야. 세계 평균은 한국의 약 6분의 1! ①은 세계 1위가 맞음, ③은 1만 명당 기준을 헷갈린 오류, ④는 지문에 없는 내용. 지문은 '엔지니어 수요 증가'를 시사해.",
+        points: 10
+      },
+      {
+        type: "passage",
+        qmeta: "미션1 · 논거 판별 · 심화",
+        passage: `국제로봇연맹(IFR)이 발표한 <b>World Robotics 2024</b> 보고서에 따르면, 글로벌 산업용 로봇 시장은 2023년 기준 <b>약 195억 달러</b> 규모이며, 연평균 성장률(CAGR)은 <b>약 12%</b>로 전망된다. 특히 협동로봇(코봇) 분야는 중소기업의 자동화 수요로 연 <b>30% 이상</b> 성장 중이다. 이 보고서는 로봇 엔지니어, 시스템 통합 전문가, AI 로보틱스 연구원 등을 2030년 핵심 인재로 꼽았다.`,
+        source: "출처: IFR World Robotics 2024",
+        q: "이 지문에서 필자가 가장 근거로 삼는 주장을 고르면?",
+        options: [
+          "코봇 시장보다 산업용 로봇 시장이 더 크게 성장한다.",
+          "글로벌 로봇 시장 성장과 함께 로봇 엔지니어 수요가 증가한다.",
+          "로봇 시장은 대기업 중심으로만 성장하고 있다.",
+          "2030년에는 AI가 로봇 엔지니어를 대체할 것이다."
+        ],
+        answer: 1,
+        hint: "지문의 마지막 문장이 핵심 논거야.",
+        feedback: "지문의 마지막 문장에서 '로봇 엔지니어·시스템 통합·AI 연구원을 2030년 핵심 인재'로 명시해. ①은 성장률 비교가 반대(코봇 30% > 전체 12%), ③은 중소기업 수요를 언급해서 틀림, ④는 지문에 없는 내용이야.",
+        points: 10
+      },
+      {
+        type: "basic",
+        qmeta: "미션1 · 지식확인 · 기초",
+        q: "로봇 엔지니어가 주로 사용하는 프로그래밍 언어로 가장 널리 쓰이는 것은?",
+        options: ["HTML", "Python", "Photoshop", "Excel"],
+        answer: 1,
+        hint: "데이터 분석과 AI에도 쓰이는 범용 언어야.",
+        feedback: "Python은 로봇 제어(ROS), AI 알고리즘, 데이터 분석 모두에 활용되는 로봇 엔지니어의 핵심 언어야. HTML은 웹, Photoshop은 그래픽 도구야.",
+        points: 10
+      },
+    ]
+  },
+  // ─── 미션2: 세계 vs 한국 비교 분석 ───
+  {
+    id: 2, name: "세계 vs 한국 비교 분석", icon: "🌍",
+    timer: 45, timerType: "per_question",
+    questions: [
+      {
+        type: "chart",
+        qmeta: "미션2 · 데이터 해석 · 심화",
+        chart: {
+          title: "국가별 로봇 밀도 비교 (대/만 명, 2024년 기준)",
+          bars: [
+            { label: "🇰🇷 한국", val: 1012, color: "#3A7BD5", max: 1012 },
+            { label: "🇸🇬 싱가포르", val: 730, color: "#3A7BD5", max: 1012 },
+            { label: "🇩🇪 독일", val: 415, color: "#8899AA", max: 1012 },
+            { label: "🇯🇵 일본", val: 397, color: "#8899AA", max: 1012 },
+            { label: "🇺🇸 미국", val: 285, color: "#8899AA", max: 1012 },
+            { label: "🌐 세계평균", val: 162, color: "#556677", max: 1012 }
+          ]
+        },
+        q: "한국의 로봇 밀도가 세계 1위인 주된 이유로 가장 적절한 것은?",
+        options: [
+          "한국 인구가 세계에서 가장 많기 때문이다.",
+          "한국 제조업이 반도체·자동차 등 첨단 산업 중심으로 자동화가 적극 도입되었기 때문이다.",
+          "한국 정부가 로봇 생산을 금지해서 수입에 의존하기 때문이다.",
+          "한국 근로자의 임금이 세계에서 가장 낮기 때문이다."
+        ],
+        answer: 1,
+        feedback: "한국은 반도체(삼성·SK하이닉스), 자동차(현대·기아), 전자(LG) 등 고도 자동화 제조업 비중이 높아 로봇 밀도 1위를 기록해. ①인구는 세계 28위, ③수입이 아닌 국내 적극 도입, ④임금이 낮으면 오히려 자동화가 덜 필요하지!",
+        points: 15
+      },
+      {
+        type: "chart",
+        qmeta: "미션2 · 직업 변화 · 심화",
+        chart: {
+          title: "주요 직업 AI 대체 가능성 비교 (%, WEF 2025)",
+          bars: [
+            { label: "데이터 입력", val: 80, color: "#E74C3C", max: 80 },
+            { label: "단순 조립", val: 65, color: "#E87040", max: 80 },
+            { label: "회계 처리", val: 55, color: "#E8A040", max: 80 },
+            { label: "로봇 엔지니어", val: 12, color: "#2ECC71", max: 80 },
+            { label: "AI 로보틱스", val: 8, color: "#2ECC71", max: 80 },
+            { label: "시스템 통합", val: 10, color: "#2ECC71", max: 80 }
+          ]
+        },
+        q: "이 데이터를 바탕으로 로봇 엔지니어 직업을 선택했을 때의 장점으로 가장 타당한 것은?",
+        options: [
+          "AI 대체 가능성이 낮아 미래에도 안정적인 일자리를 유지할 가능성이 높다.",
+          "AI 대체 가능성이 높아서 빠르게 사라질 직업이므로 피해야 한다.",
+          "데이터 입력 직군과 AI 대체율이 비슷하다.",
+          "로봇 엔지니어는 단순 반복 업무가 많아 자동화가 쉽다."
+        ],
+        answer: 0,
+        feedback: "로봇 엔지니어의 AI 대체 가능성은 12%로 데이터 입력(80%)에 비해 현저히 낮아. 창의적 문제 해결, 시스템 설계, 현장 판단력이 요구되기 때문이야. ②③④는 모두 데이터와 반대!",
+        points: 15
+      },
+      {
+        type: "basic",
+        qmeta: "미션2 · 한국 강점 · 보통",
+        q: "한국이 글로벌 로봇 산업에서 강점을 가지는 분야가 아닌 것은?",
+        options: [
+          "반도체 제조 자동화 로봇",
+          "K-팝 댄스 공연 로봇",
+          "협동로봇(코봇) 생산",
+          "스마트팩토리 솔루션"
+        ],
+        answer: 1,
+        feedback: "K-팝 댄스 공연 로봇은 한국의 로봇 산업 핵심 분야가 아니야. 한국의 진짜 강점은 반도체 자동화(삼성·SK하이닉스 라인), 스마트팩토리, 협동로봇 수출 등이야!",
+        points: 15
+      },
+    ]
+  },
+  // ─── 미션3: AI 비판 검증관 ───
+  {
+    id: 3, name: "AI 비판 검증관", icon: "🤖",
+    timer: 0,
+    questions: [
+      {
+        type: "ai_check",
+        qmeta: "미션3 · AI hallucination 탐지",
+        aiText: `한국의 로봇 밀도는 2024년 기준 세계 3위이며, 근로자 1만 명당 약 650대입니다. 독일이 세계 1위(약 1,012대)를 기록하고 있으며, 국제로봇연맹(IFR)은 2030년까지 로봇 엔지니어 수요가 전 세계적으로 50% 감소할 것이라고 예측했습니다.`,
+        q: "위 AI 출력에서 사실과 다른 오류를 모두 고르면?",
+        options: [
+          "한국 로봇 밀도 순위(3위 → 실제 1위)와 수치(650대 → 실제 1,012대) 오류",
+          "독일이 세계 1위라는 것 — 실제로는 싱가포르가 2위, 독일은 3위",
+          "IFR의 '엔지니어 수요 50% 감소' 예측 — 실제 IFR은 반대로 수요 증가를 예측",
+          "위 ①②③ 모두 오류"
+        ],
+        answer: 3,
+        feedback: "이 AI 출력에는 무려 3가지 오류가 있어! ①한국은 1위, 1,012대, ②독일은 2위(싱가포르가 2위, 독일 3위), ③IFR은 수요 감소가 아닌 증가를 예측해. 이처럼 AI는 hallucination(환각)을 생성할 수 있으니 반드시 원본 자료를 확인해야 해!",
+        points: 20
+      },
+      {
+        type: "ai_bias",
+        qmeta: "미션3 · AI 편향 탐지",
+        aiText: `로봇 엔지니어는 주로 남성들이 선택하는 직업으로, 수학·물리에 뛰어난 특별한 재능이 있어야만 진입할 수 있습니다. 여학생들은 이 분야보다 디자인이나 서비스 직군에 더 적합하다는 연구 결과가 있습니다.`,
+        q: "이 AI 출력에서 발견되는 편향(bias)은?",
+        options: [
+          "기술 직군에 대한 성별 편향 — 특정 성별이 특정 직업에 더 적합하다는 고정관념 주입",
+          "로봇 엔지니어가 어렵다는 사실을 과장한 오류",
+          "수학·물리 실력이 필요하다는 틀린 정보",
+          "편향 없음 — 이 내용은 사실이다"
+        ],
+        answer: 0,
+        feedback: "이 AI 출력은 '성별 고정관념'이라는 심각한 편향을 담고 있어! 실제로 로봇 공학 분야는 성별과 무관하며, 다양한 배경의 엔지니어들이 활약하고 있어. AI가 생성한 편향적 표현은 진로 탐색에 큰 해가 될 수 있으니 비판적으로 읽는 자세가 필요해.",
+        points: 20
+      },
+      {
+        type: "ai_prompt",
+        qmeta: "미션3 · 프롬프트 설계",
+        q: "로봇 공학과 진로를 탐색하고 싶을 때, AI에게 더 유용한 답을 얻기 위한 프롬프트로 가장 적절한 것은?",
+        options: [
+          "\"로봇에 대해 알려줘\"",
+          "\"2025년 기준 한국 대학 로봇공학과 진학 후 취업 가능한 직업 3가지와 평균 초봉을 출처와 함께 알려줘\"",
+          "\"로봇 엔지니어가 되려면 어때?\"",
+          "\"로봇 관련 직업 뭐가 있어?\""
+        ],
+        answer: 1,
+        feedback: "좋은 프롬프트는 ①목적(진로 탐색), ②기준(2025년, 한국), ③구체적 요청(직업 3가지, 초봉), ④검증 요청(출처 포함)이 담겨 있어야 해. '알려줘'처럼 막연한 질문은 AI도 막연하게 답해. 구체적인 질문이 구체적인 답을 만들어!",
+        points: 20
+      },
+    ]
+  },
+  // ─── 미션4: 미래 직업 설계사 ───
+  {
+    id: 4, name: "미래 직업 설계사", icon: "⚙️",
+    timer: 0,
+    questions: [
+      {
+        type: "scenario",
+        qmeta: "미션4 · 진로 딜레마 · 전문가",
+        scenario: "2035년, 당신은 한국의 글로벌 로봇 기업에 지원했습니다. 최종 면접에서 면접관이 묻습니다. '협동로봇이 공장 근로자의 일자리를 빼앗는다는 사회적 비판에 대해 로봇 엔지니어로서 어떻게 생각하시나요?'",
+        q: "가장 논리적이고 균형 잡힌 답변은?",
+        options: [
+          "\"로봇은 사람보다 훨씬 효율적이니 근로자는 필요 없어질 것입니다.\"",
+          "\"협동로봇은 위험·반복 작업을 대체하고, 사람은 창의·판단이 필요한 업무로 재배치되어야 합니다. 기업과 정부의 재교육 투자가 함께 필요합니다.\"",
+          "\"로봇 개발을 중단해야 사회 문제가 해결됩니다.\"",
+          "\"일자리 문제는 엔지니어가 신경 쓸 일이 아닙니다.\""
+        ],
+        answer: 1,
+        feedback: "최고의 답변이야! 로봇 엔지니어는 기술 개발뿐 아니라 사회적 영향을 고려하는 '책임 있는 혁신가'야. WEF도 자동화로 사라지는 일자리보다 새로 생기는 일자리가 많다고 예측했어. 재교육과 사회 안전망을 함께 강조하는 균형 잡힌 시각이 중요해!",
+        points: 20
+      },
+      {
+        type: "scenario",
+        qmeta: "미션4 · 글로벌 판단 · 전문가",
+        scenario: "당신은 한국계 로봇 스타트업의 공동창업자입니다. 미국·독일·베트남 중 첫 해외 진출 국가를 선택해야 합니다. 아래 데이터를 참고하세요: 미국(로봇 시장 2위, 규제 복잡), 독일(스마트팩토리 선도국, 파트너십 필요), 베트남(제조업 급성장, 로봇 밀도 낮음).",
+        q: "스타트업 초기 진출 전략으로 가장 합리적인 선택은?",
+        options: [
+          "미국 — 시장이 크니 무조건 미국으로 간다.",
+          "베트남 — 로봇 밀도가 낮고 제조업이 급성장 중이라 진입 장벽이 낮고 성장 가능성이 높다.",
+          "독일 — 선도국이니 기술만 있으면 바로 성공한다.",
+          "세 나라 동시 진출 — 가능한 넓게 진출한다."
+        ],
+        answer: 1,
+        feedback: "스타트업 초기에는 리소스 집중이 핵심이야. 베트남은 로봇 밀도(세계 낮은 편)와 제조업 급성장이 맞물려 '블루오션'이야. 한국과 지리적으로 가깝고 파트너십 구축도 수월해. 미국·독일은 대기업과의 경쟁이 치열하고 규제가 복잡해서 스타트업에게 불리할 수 있어!",
+        points: 20
+      },
+      {
+        type: "scenario",
+        qmeta: "미션4 · AI 윤리 판단 · 전문가",
+        scenario: "당신이 설계한 자율주행 산업로봇이 공장에서 예상치 못한 상황으로 작업자와 충돌할 뻔한 아찔한 사건이 발생했습니다. 다행히 인명피해는 없었지만 회사 내부 조사에서 설계 결함이 발견되었습니다.",
+        q: "로봇 엔지니어로서 가장 책임 있는 대응은?",
+        options: [
+          "회사 이미지 손상을 막기 위해 내부에서 조용히 처리한다.",
+          "결함 원인을 정밀 분석하고, 안전 개선 보고서를 작성해 경영진에 투명하게 보고하며 즉각 리콜 및 시스템 개선을 시행한다.",
+          "작업자의 부주의로 책임을 돌린다.",
+          "로봇 판매를 중단하고 팀 전체가 사직한다."
+        ],
+        answer: 1,
+        feedback: "공학 윤리의 핵심은 '투명성과 안전 최우선'이야. 삼성·현대 등 세계 선도 기업도 리콜과 투명한 보고를 통해 장기적 신뢰를 쌓아. 숨기거나 책임을 전가하면 더 큰 사고로 이어져. 진짜 엔지니어는 실수를 인정하고 개선하는 사람이야!",
+        points: 20
+      },
+    ]
+  },
+  // ─── 미션5: 나의 로드맵 ───
+  {
+    id: 5, name: "나의 로드맵", icon: "🗺️",
+    timer: 0,
+    questions: [
+      {
+        type: "roadmap",
+        qmeta: "미션5 · 진로 통합 · 최종",
+        q: "지금까지의 미션 결과를 바탕으로 나에게 가장 끌리는 로봇 엔지니어 전문 분야는?",
+        options: [
+          "🔬 AI 로보틱스 연구원 — AI 알고리즘과 로봇 결합 연구",
+          "🏭 스마트팩토리 설계자 — 공장 자동화 시스템 구축",
+          "🤝 협동로봇(코봇) 엔지니어 — 사람과 함께 일하는 로봇 개발",
+          "🌐 글로벌 시스템 통합 전문가 — 다국적 로봇 시스템 구축"
+        ],
+        answer: -1, // all valid
+        feedback: "",
+        points: 20,
+        isRoadmap: true
+      }
+    ]
+  }
+];
+
+const roadmapData = {
+  0: {
+    emoji: "🔬", title: "AI 로보틱스 연구원",
+    careers: ["AI 로보틱스 연구원", "로봇 알고리즘 개발자", "자율주행 시스템 설계자"],
+    subjects: ["인공지능기초, 데이터과학, 정보과학, 물리학, 수학Ⅱ"],
+    desc: "AI와 로봇의 결합을 연구하는 최첨단 직군! 딥러닝, 강화학습, 컴퓨터비전 역량이 핵심이야."
+  },
+  1: {
+    emoji: "🏭", title: "스마트팩토리 설계자",
+    careers: ["스마트팩토리 엔지니어", "제조 자동화 컨설턴트", "산업 IoT 전문가"],
+    subjects: ["공학 일반, 정보과학, 물리학, 경제, 사회문제탐구"],
+    desc: "한국 제조업의 경쟁력을 만드는 사람! 세계 1위 로봇 밀도의 현장을 설계해."
+  },
+  2: {
+    emoji: "🤝", title: "협동로봇(코봇) 엔지니어",
+    careers: ["협동로봇 설계자", "인간-로봇 상호작용 전문가", "안전 시스템 엔지니어"],
+    subjects: ["공학 일반, 인공지능기초, 현대사회와 윤리, 물리학, 정보과학"],
+    desc: "사람과 로봇이 함께 일하는 미래를 만드는 직군! 안전·윤리·기술이 모두 중요해."
+  },
+  3: {
+    emoji: "🌐", title: "글로벌 시스템 통합 전문가",
+    careers: ["글로벌 로봇 시스템 통합", "국제 기술 영업 엔지니어", "로봇 컨설턴트"],
+    subjects: ["국제관계의 이해, 경제, 정보과학, 영어, 공학 일반"],
+    desc: "세계 무대에서 활약하는 로봇 엔지니어! 기술과 비즈니스, 글로벌 감각이 핵심이야."
+  }
+};
+
+// ═══════════════════════════════════════════════
+// GAME LOGIC
+// ═══════════════════════════════════════════════
+let chosenRoadmap = 0;
+let timerInterval = null;
+let questionStartTime = null;
+let mission1TotalTimer = null;
+let mission1SecondsLeft = 60;
+
+function startGame() {
+  playerName = document.getElementById('playerName').value.trim() || "엔지니어";
+  currentMission = 0; currentQ = 0; totalScore = 0;
+  missionScores = [0,0,0,0,0];
+  document.getElementById('topPlayerName').textContent = playerName + "님";
+  showScreen('gameScreen');
+  renderQuestion();
+}
+
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+function updateProgress() {
+  let totalQs = missions.reduce((s,m) => s + m.questions.length, 0);
+  let doneQs = 0;
+  for (let i = 0; i < currentMission; i++) doneQs += missions[i].questions.length;
+  doneQs += currentQ;
+  document.getElementById('progressFill').style.width = (doneQs / totalQs * 100) + '%';
+}
+
+function renderQuestion() {
+  clearTimers();
+  document.getElementById('scoreDisplay').textContent = totalScore;
+  const m = missions[currentMission];
+  const q = m.questions[currentQ];
+  document.getElementById('missionNum').textContent = `미션${m.id}`;
+  document.getElementById('missionName').textContent = m.name;
+  updateProgress();
+  hintUsed = false;
+
+  const gc = document.getElementById('gameContent');
+  gc.innerHTML = '';
+  gc.scrollTop = 0;
+
+  // mascot
+  const moodMap = { 1:'😎', 2:'🌍', 3:'🤔', 4:'⚙️', 5:'🗺️' };
+  const bubbles = {
+    1: "지문을 꼼꼼히 읽고 핵심 논거를 찾아봐!",
+    2: "데이터를 비교해서 진짜 원인을 추론해봐!",
+    3: "AI 출력을 믿지 말고 오류를 찾아봐!",
+    4: "진짜 엔지니어처럼 생각하고 판단해봐!",
+    5: "지금까지 잘했어! 나만의 진로를 선택해봐 🎯"
+  };
+
+  const mascotDiv = document.createElement('div');
+  mascotDiv.className = 'mascot-wrap';
+  mascotDiv.innerHTML = `
+    <svg class="mascot-svg" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect x="20" y="24" width="40" height="34" rx="6" fill="#2C3E50" stroke="#F0C040" stroke-width="2"/>
+      <rect x="28" y="32" width="10" height="8" rx="3" fill="${currentMission===2 ? '#E74C3C' : '#3A7BD5'}"/>
+      <rect x="42" y="32" width="10" height="8" rx="3" fill="${currentMission===2 ? '#E74C3C' : '#3A7BD5'}"/>
+      <rect x="30" y="46" width="20" height="4" rx="2" fill="${totalScore > 30 ? '#2ECC71' : '#F0C040'}"/>
+      <rect x="15" y="30" width="5" height="16" rx="2.5" fill="#2C3E50" stroke="#F0C040" stroke-width="1.5"/>
+      <rect x="60" y="30" width="5" height="16" rx="2.5" fill="#2C3E50" stroke="#F0C040" stroke-width="1.5"/>
+      <rect x="28" y="58" width="8" height="14" rx="3" fill="#2C3E50" stroke="#F0C040" stroke-width="1.5"/>
+      <rect x="44" y="58" width="8" height="14" rx="3" fill="#2C3E50" stroke="#F0C040" stroke-width="1.5"/>
+      <circle cx="40" cy="20" r="5" fill="#2C3E50" stroke="#F0C040" stroke-width="2"/>
+      <circle cx="40" cy="11" r="2" fill="#F0C040"/>
+    </svg>
+    <div class="mascot-bubble">${bubbles[m.id]}</div>
+  `;
+  gc.appendChild(mascotDiv);
+
+  // timer setup
+  if (m.timer > 0) {
+    if (m.timerType === 'total' && currentQ === 0) {
+      mission1SecondsLeft = m.timer;
+      startMission1Timer();
+    } else if (m.timerType === 'per_question') {
+      startPerQuestionTimer(m.timer);
+    }
+  }
+
+  // q-meta
+  const meta = document.createElement('div');
+  meta.className = 'q-meta';
+  meta.textContent = q.qmeta;
+  gc.appendChild(meta);
+
+  // passage
+  if (q.passage) {
+    const pb = document.createElement('div');
+    pb.className = 'q-passage';
+    pb.innerHTML = q.passage + (q.source ? `<div class="q-source">${q.source}</div>` : '');
+    gc.appendChild(pb);
+  }
+
+  // chart
+  if (q.chart) {
+    gc.appendChild(buildChart(q.chart));
+  }
+
+  // AI output box
+  if (q.aiText) {
+    const ab = document.createElement('div');
+    ab.className = 'ai-output-box';
+    ab.innerHTML = `<div class="ai-label">🤖 AI 생성 텍스트</div>${q.aiText}`;
+    gc.appendChild(ab);
+  }
+
+  // scenario box
+  if (q.scenario) {
+    const sb = document.createElement('div');
+    sb.className = 'q-passage';
+    sb.innerHTML = `<b>📋 시나리오</b><br>${q.scenario}`;
+    gc.appendChild(sb);
+  }
+
+  // q text
+  const qtxt = document.createElement('div');
+  qtxt.className = 'q-text';
+  qtxt.textContent = q.q;
+  gc.appendChild(qtxt);
+
+  // hint btn
+  if (q.hint) {
+    const hb = document.createElement('button');
+    hb.className = 'hint-btn';
+    hb.textContent = '💡 힌트 보기 (배점 30% 차감)';
+    hb.onclick = () => showHint(q, hb);
+    gc.appendChild(hb);
+    const hintDiv = document.createElement('div');
+    hintDiv.className = 'hint-box';
+    hintDiv.id = 'hintBox';
+    gc.appendChild(hintDiv);
+  }
+
+  // options
+  const opts = document.createElement('div');
+  opts.className = 'options';
+  q.options.forEach((opt, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'opt-btn';
+    btn.textContent = opt;
+    btn.onclick = () => selectAnswer(i, q, opts);
+    opts.appendChild(btn);
+  });
+  gc.appendChild(opts);
+
+  // feedback
+  const fb = document.createElement('div');
+  fb.className = 'feedback-box';
+  fb.id = 'feedbackBox';
+  gc.appendChild(fb);
+
+  // next btn
+  const nb = document.createElement('button');
+  nb.className = 'next-btn';
+  nb.id = 'nextBtn';
+  nb.textContent = (currentMission === missions.length-1 && currentQ === missions[currentMission].questions.length-1) ? '🏁 결과 보기' : '다음 →';
+  nb.onclick = () => nextQuestion();
+  gc.appendChild(nb);
+}
+
+function showHint(q, btn) {
+  if (hintUsed) return;
+  hintUsed = true;
+  btn.disabled = true;
+  btn.style.opacity = '0.5';
+  const hd = document.getElementById('hintBox');
+  hd.textContent = '💡 힌트: ' + q.hint;
+  hd.classList.add('show');
+}
+
+function selectAnswer(idx, q, opts) {
+  clearTimers();
+  const buttons = opts.querySelectorAll('.opt-btn');
+  buttons.forEach(b => b.disabled = true);
+
+  const isRoadmap = q.isRoadmap;
+  let correct = false;
+
+  if (isRoadmap) {
+    chosenRoadmap = idx;
+    buttons[idx].classList.add('correct');
+    correct = true;
+  } else {
+    correct = (idx === q.answer);
+    buttons[idx].classList.add(correct ? 'correct' : 'wrong');
+    if (!correct && q.answer >= 0) buttons[q.answer].classList.add('correct');
+  }
+
+  let pts = 0;
+  if (correct || isRoadmap) {
+    pts = hintUsed ? Math.round(q.points * 0.7) : q.points;
+    totalScore += pts;
+    missionScores[currentMission] += pts;
+    playSound('correct');
+  } else {
+    playSound('wrong');
+  }
+  document.getElementById('scoreDisplay').textContent = totalScore;
+
+  // feedback
+  const fb = document.getElementById('feedbackBox');
+  if (isRoadmap) {
+    fb.innerHTML = `<div class="fb-correct">✅ 선택 완료! +${pts}점</div><div class="fb-body">${roadmapData[idx].desc}</div>`;
+  } else {
+    fb.innerHTML = `<div class="${correct ? 'fb-correct' : 'fb-wrong'}">${correct ? `✅ 정답! +${pts}점` : '❌ 오답!'}</div><div class="fb-body">${q.feedback}</div>`;
+  }
+  fb.classList.add('show');
+
+  const nb = document.getElementById('nextBtn');
+  nb.classList.add('show');
+  setTimeout(() => nb.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 200);
+}
+
+function nextQuestion() {
+  clearTimers();
+  const m = missions[currentMission];
+  if (currentQ < m.questions.length - 1) {
+    currentQ++;
+    renderQuestion();
+  } else if (currentMission < missions.length - 1) {
+    playSound('levelup');
+    currentMission++;
+    currentQ = 0;
+    renderQuestion();
+  } else {
+    playSound('fanfare');
+    showResult();
+  }
+}
+
+function clearTimers() {
+  clearInterval(timerInterval);
+  clearInterval(mission1TotalTimer);
+  timerInterval = null;
+  mission1TotalTimer = null;
+  document.getElementById('timerDisplay').textContent = '';
+  document.getElementById('timerDisplay').classList.remove('danger');
+}
+
+function startMission1Timer() {
+  const td = document.getElementById('timerDisplay');
+  td.textContent = '⏱ ' + mission1SecondsLeft + 's';
+  mission1TotalTimer = setInterval(() => {
+    mission1SecondsLeft--;
+    td.textContent = '⏱ ' + mission1SecondsLeft + 's';
+    if (mission1SecondsLeft <= 10) { td.classList.add('danger'); playSound('tick'); }
+    if (mission1SecondsLeft <= 0) {
+      clearInterval(mission1TotalTimer);
+      td.textContent = '⏱ 0s';
+      // auto advance mission
+      currentMission = 1; currentQ = 0;
+      playSound('levelup');
+      renderQuestion();
+    }
+  }, 1000);
+}
+
+function startPerQuestionTimer(secs) {
+  let left = secs;
+  const td = document.getElementById('timerDisplay');
+  td.textContent = '⏱ ' + left + 's';
+  td.classList.remove('danger');
+  timerInterval = setInterval(() => {
+    left--;
+    td.textContent = '⏱ ' + left + 's';
+    if (left <= 10) { td.classList.add('danger'); playSound('tick'); }
+    if (left <= 0) {
+      clearInterval(timerInterval);
+      td.textContent = '⏱ 0s';
+      // auto wrong
+      const opts = document.querySelector('.options');
+      const q = missions[currentMission].questions[currentQ];
+      if (opts) {
+        const buttons = opts.querySelectorAll('.opt-btn');
+        buttons.forEach(b => b.disabled = true);
+        if (q.answer >= 0) buttons[q.answer].classList.add('correct');
+        const fb = document.getElementById('feedbackBox');
+        fb.innerHTML = `<div class="fb-wrong">⏰ 시간 초과! 정답은 위를 확인해!</div><div class="fb-body">${q.feedback}</div>`;
+        fb.classList.add('show');
+        const nb = document.getElementById('nextBtn');
+        nb.classList.add('show');
+      }
+    }
+  }, 1000);
+}
+
+// ═══════════════════════════════════════════════
+// CHART BUILDER
+// ═══════════════════════════════════════════════
+function buildChart(chartData) {
+  const wrap = document.createElement('div');
+  wrap.className = 'chart-wrap';
+  const title = document.createElement('div');
+  title.className = 'chart-title';
+  title.textContent = chartData.title;
+  wrap.appendChild(title);
+  const bars = document.createElement('div');
+  bars.className = 'bar-chart';
+  chartData.bars.forEach(b => {
+    const row = document.createElement('div');
+    row.className = 'bar-row';
+    const pct = Math.round(b.val / b.max * 100);
+    row.innerHTML = `
+      <div class="bar-label">${b.label}</div>
+      <div class="bar-track">
+        <div class="bar-fill" style="width:${pct}%;background:${b.color};">${b.val}</div>
+      </div>
+      <div class="bar-val">${b.val}</div>
+    `;
+    bars.appendChild(row);
+  });
+  wrap.appendChild(bars);
+  return wrap;
+}
+
+// ═══════════════════════════════════════════════
+// RESULT
+// ═══════════════════════════════════════════════
+function showResult() {
+  showScreen('resultScreen');
+  const rd = roadmapData[chosenRoadmap];
+  const maxScore = missions.reduce((s,m) => s + m.questions.reduce((ss,q) => ss+q.points, 0), 0);
+  const pct = Math.round(totalScore / maxScore * 100);
+
+  let emoji, title, sub;
+  if (pct >= 85) { emoji='🏆'; title='로봇 산업 최고 전문가!'; sub='넌 글로벌 로봇 엔지니어 감이야!'; }
+  else if (pct >= 65) { emoji='⚙️'; title='유망 로봇 엔지니어!'; sub='조금만 더 연습하면 최고가 될 수 있어!'; }
+  else if (pct >= 40) { emoji='🔧'; title='로봇 공학 입문자!'; sub='기초를 탄탄히 쌓으면 충분해!'; }
+  else { emoji='📚'; title='로봇 세계 탐험가!'; sub='관심을 가진 것만으로 첫걸음이야!'; }
+
+  document.getElementById('resultEmoji').textContent = emoji;
+  document.getElementById('resultTitle').textContent = title;
+  document.getElementById('resultSub').textContent = sub;
+  document.getElementById('scoreBig').textContent = totalScore + '점';
+
+  const ct = document.getElementById('careerTags');
+  ct.innerHTML = rd.careers.map(c => `<span class="career-tag">${c}</span>`).join('');
+
+  document.getElementById('subjectList').innerHTML = rd.subjects.join('<br>');
+
+  // save to leaderboard
+  const lbKey = 'milab_hs_037_lb';
+  let lb = JSON.parse(localStorage.getItem(lbKey) || '[]');
+  lb.push({ name: playerName, score: totalScore, date: new Date().toLocaleDateString('ko-KR') });
+  lb.sort((a,b) => b.score - a.score);
+  lb = lb.slice(0, 5);
+  localStorage.setItem(lbKey, JSON.stringify(lb));
+
+  const hofList = document.getElementById('hofList');
+  hofList.innerHTML = lb.map((e,i) =>
+    `<div class="hof-row"><span class="hof-rank">${['🥇','🥈','🥉','4️⃣','5️⃣'][i]}</span><span class="hof-name">${e.name}</span><span class="hof-score">${e.score}점</span></div>`
+  ).join('');
+
+  // result QR
+  setTimeout(() => {
+    const rqr = document.getElementById('resultQr');
+    rqr.innerHTML = '<p style="font-size:11px;color:var(--gray);margin-bottom:6px;">📱 학생부 포트폴리오용 QR</p>';
+    const d = document.createElement('div');
+    rqr.appendChild(d);
+    new QRCode(d, { text: portfolioEntry.url, width: 100, height: 100 });
+  }, 300);
+}
+
+function restartGame() {
+  currentMission = 0; currentQ = 0;
+  totalScore = 0; missionScores = [0,0,0,0,0];
+  chosenRoadmap = 0; hintUsed = false;
+  clearTimers();
+  mission1SecondsLeft = 60;
+  showScreen('introScreen');
+}
+
+// ═══════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════
+window.addEventListener('load', () => {
+  setTimeout(() => {
+    showScreen('introScreen');
+    // intro QR
+    const iqr = document.getElementById('introQr');
+    new QRCode(iqr, { text: portfolioEntry.url, width: 100, height: 100 });
+  }, 1200);
+});
+</script>
+</body>
+</html>
