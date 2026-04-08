@@ -1,0 +1,1685 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>메타버스 진로체험 | MILAB #039</title>
+<!-- Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-WTY6YJQ1NS"></script>
+<script>
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-WTY6YJQ1NS');
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<style>
+:root {
+  --bg: #0d0d1a;
+  --bg2: #13132b;
+  --card: #1a1a35;
+  --card2: #22224a;
+  --accent: #7c5cfc;
+  --accent2: #a78bfa;
+  --cyan: #22d3ee;
+  --green: #4ade80;
+  --red: #f87171;
+  --yellow: #fbbf24;
+  --text: #e2e8f0;
+  --text2: #94a3b8;
+  --border: rgba(124,92,252,0.3);
+  --glow: 0 0 20px rgba(124,92,252,0.4);
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'Segoe UI', 'Malgun Gothic', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* ── BACKGROUND PARTICLES ── */
+#bg-canvas {
+  position: fixed; top: 0; left: 0;
+  width: 100%; height: 100%;
+  pointer-events: none; z-index: 0;
+  opacity: 0.4;
+}
+
+/* ── MUSIC TOGGLE ── */
+#music-btn {
+  position: fixed; top: 14px; right: 14px;
+  z-index: 999;
+  background: var(--card2);
+  border: 1px solid var(--border);
+  color: var(--accent2);
+  border-radius: 50%;
+  width: 42px; height: 42px;
+  font-size: 18px; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: all .3s;
+}
+#music-btn:hover { background: var(--accent); color: #fff; }
+
+/* ── SCREENS ── */
+.screen {
+  position: relative; z-index: 1;
+  display: none;
+  min-height: 100vh;
+  padding: 20px 16px;
+  max-width: 860px;
+  margin: 0 auto;
+  flex-direction: column;
+  align-items: center;
+}
+.screen.active { display: flex; }
+
+/* ── INTRO SCREEN ── */
+#intro-screen {
+  justify-content: center;
+  text-align: center;
+  gap: 18px;
+}
+.logo-badge {
+  background: linear-gradient(135deg, var(--accent), var(--cyan));
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  padding: 4px 14px;
+  border-radius: 20px;
+  display: inline-block;
+}
+.intro-title {
+  font-size: clamp(26px, 6vw, 42px);
+  font-weight: 900;
+  line-height: 1.2;
+  background: linear-gradient(135deg, #fff, var(--accent2), var(--cyan));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.intro-subtitle {
+  font-size: 15px;
+  color: var(--text2);
+  line-height: 1.6;
+  max-width: 480px;
+}
+.meta-mascot {
+  width: 120px; height: 120px;
+  margin: 0 auto;
+}
+.input-row {
+  display: flex; gap: 10px;
+  width: 100%; max-width: 400px;
+}
+.input-row input {
+  flex: 1;
+  background: var(--card2);
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 12px 16px;
+  border-radius: 12px;
+  font-size: 15px;
+  outline: none;
+}
+.input-row input:focus { border-color: var(--accent); }
+.diff-selector {
+  display: flex; gap: 10px;
+  flex-wrap: wrap;
+  justify-content: center;
+  width: 100%;
+}
+.diff-btn {
+  padding: 10px 22px;
+  border-radius: 12px;
+  border: 2px solid var(--border);
+  background: var(--card);
+  color: var(--text2);
+  font-size: 14px; font-weight: 600;
+  cursor: pointer;
+  transition: all .3s;
+}
+.diff-btn.active, .diff-btn:hover {
+  border-color: var(--accent);
+  background: rgba(124,92,252,0.2);
+  color: var(--accent2);
+}
+.btn-primary {
+  background: linear-gradient(135deg, var(--accent), #5b3fd4);
+  color: #fff;
+  border: none;
+  padding: 14px 36px;
+  border-radius: 14px;
+  font-size: 16px; font-weight: 700;
+  cursor: pointer;
+  transition: all .3s;
+  box-shadow: var(--glow);
+}
+.btn-primary:hover { transform: translateY(-2px); box-shadow: 0 0 30px rgba(124,92,252,0.6); }
+.btn-secondary {
+  background: var(--card2);
+  color: var(--text2);
+  border: 1px solid var(--border);
+  padding: 10px 24px;
+  border-radius: 12px;
+  font-size: 14px; cursor: pointer;
+  transition: all .3s;
+}
+.btn-secondary:hover { border-color: var(--accent2); color: var(--accent2); }
+
+/* ── QR ── */
+.qr-wrap {
+  text-align: center;
+  margin-top: 10px;
+}
+.qr-wrap p { font-size: 11px; color: var(--text2); margin-top: 6px; }
+#intro-qr, #result-qr {
+  display: inline-block;
+  background: #fff;
+  padding: 8px;
+  border-radius: 8px;
+}
+
+/* ── MISSION HUD ── */
+#game-screen { gap: 0; }
+.hud {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 0 14px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 14px;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.hud-left { display: flex; align-items: center; gap: 10px; }
+.hud-mission {
+  background: linear-gradient(135deg, var(--accent), var(--cyan));
+  color: #fff;
+  font-size: 12px; font-weight: 700;
+  padding: 4px 12px;
+  border-radius: 20px;
+}
+.hud-title { font-size: 14px; font-weight: 700; color: var(--accent2); }
+.hud-right { display: flex; gap: 14px; align-items: center; }
+.hud-score {
+  font-size: 13px; font-weight: 700;
+  background: var(--card2);
+  padding: 4px 12px;
+  border-radius: 20px;
+  color: var(--yellow);
+}
+.hud-timer {
+  font-size: 20px; font-weight: 900;
+  color: var(--cyan);
+  min-width: 50px;
+  text-align: center;
+  font-family: monospace;
+}
+.hud-timer.warn { color: var(--red); animation: blink .5s infinite; }
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:.3} }
+
+/* PROGRESS BAR */
+.progress-wrap {
+  width: 100%;
+  height: 6px;
+  background: var(--card2);
+  border-radius: 3px;
+  margin-bottom: 16px;
+  overflow: hidden;
+}
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--accent), var(--cyan));
+  border-radius: 3px;
+  transition: width .4s;
+}
+
+/* ── MASCOT AREA ── */
+.mascot-area {
+  display: flex;
+  align-items: flex-end;
+  gap: 12px;
+  width: 100%;
+  margin-bottom: 14px;
+}
+.mascot-bubble {
+  background: var(--card2);
+  border: 1px solid var(--border);
+  border-radius: 14px 14px 14px 0;
+  padding: 10px 14px;
+  font-size: 13px;
+  color: var(--text2);
+  line-height: 1.5;
+  flex: 1;
+  position: relative;
+}
+.mascot-bubble::before {
+  content: '';
+  position: absolute;
+  left: -8px; bottom: 12px;
+  border: 4px solid transparent;
+  border-right-color: var(--border);
+}
+
+/* ── QUESTION CARD ── */
+.question-card {
+  width: 100%;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 20px;
+  margin-bottom: 14px;
+}
+.q-tag {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: 10px;
+  margin-bottom: 10px;
+}
+.q-tag.easy { background: rgba(74,222,128,.2); color: var(--green); }
+.q-tag.normal { background: rgba(251,191,36,.2); color: var(--yellow); }
+.q-tag.hard { background: rgba(248,113,113,.2); color: var(--red); }
+.q-tag.scenario { background: rgba(34,211,238,.2); color: var(--cyan); }
+.q-tag.data { background: rgba(167,139,250,.2); color: var(--accent2); }
+.q-text {
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 1.6;
+  margin-bottom: 6px;
+}
+.q-source {
+  font-size: 11px;
+  color: var(--text2);
+  margin-bottom: 14px;
+}
+.q-source a { color: var(--accent2); text-decoration: none; }
+.choices {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.choice-btn {
+  width: 100%;
+  background: var(--card2);
+  border: 2px solid var(--border);
+  color: var(--text);
+  padding: 12px 16px;
+  border-radius: 12px;
+  font-size: 14px;
+  text-align: left;
+  cursor: pointer;
+  transition: all .25s;
+  line-height: 1.4;
+}
+.choice-btn:hover:not(:disabled) {
+  border-color: var(--accent);
+  background: rgba(124,92,252,0.15);
+}
+.choice-btn.correct {
+  border-color: var(--green);
+  background: rgba(74,222,128,0.15);
+  color: var(--green);
+}
+.choice-btn.wrong {
+  border-color: var(--red);
+  background: rgba(248,113,113,0.15);
+  color: var(--red);
+}
+.choice-btn:disabled { cursor: default; }
+
+/* FACT CHECK BTNS (Mission 1) */
+.fact-btns {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  margin-top: 10px;
+}
+.fact-btn {
+  flex: 1;
+  max-width: 160px;
+  padding: 16px 12px;
+  border-radius: 14px;
+  border: 2px solid var(--border);
+  background: var(--card2);
+  color: var(--text);
+  font-size: 16px; font-weight: 800;
+  cursor: pointer;
+  transition: all .25s;
+  display: flex; flex-direction: column;
+  align-items: center; gap: 6px;
+}
+.fact-btn:hover:not(:disabled) { transform: scale(1.04); }
+.fact-btn.real-btn:hover:not(:disabled) { border-color: var(--green); background: rgba(74,222,128,0.15); }
+.fact-btn.fake-btn:hover:not(:disabled) { border-color: var(--red); background: rgba(248,113,113,0.15); }
+.fact-btn.correct { border-color: var(--green); background: rgba(74,222,128,0.2); }
+.fact-btn.wrong { border-color: var(--red); background: rgba(248,113,113,0.2); }
+.fact-badge {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 6px;
+  letter-spacing: 1px;
+}
+.real-badge { background: var(--green); color: #000; }
+.fake-badge { background: var(--red); color: #fff; }
+
+/* FEEDBACK BOX */
+.feedback-box {
+  width: 100%;
+  border-radius: 12px;
+  padding: 14px 16px;
+  font-size: 13px;
+  line-height: 1.6;
+  margin-bottom: 14px;
+  border: 1px solid;
+  display: none;
+}
+.feedback-box.correct-fb {
+  background: rgba(74,222,128,0.1);
+  border-color: var(--green);
+  color: var(--green);
+  display: block;
+}
+.feedback-box.wrong-fb {
+  background: rgba(248,113,113,0.1);
+  border-color: var(--red);
+  color: var(--red);
+  display: block;
+}
+.fb-subject {
+  display: inline-block;
+  background: rgba(167,139,250,0.2);
+  color: var(--accent2);
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 6px;
+  margin-top: 6px;
+}
+
+/* HINT BTN */
+.hint-row {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 10px;
+}
+.hint-btn {
+  background: rgba(251,191,36,0.15);
+  border: 1px solid var(--yellow);
+  color: var(--yellow);
+  padding: 6px 14px;
+  border-radius: 10px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all .25s;
+}
+.hint-btn:hover { background: rgba(251,191,36,0.3); }
+.hint-btn:disabled { opacity: .4; cursor: default; }
+.hint-box {
+  background: rgba(251,191,36,0.08);
+  border: 1px solid rgba(251,191,36,0.3);
+  border-radius: 10px;
+  padding: 10px 14px;
+  font-size: 12px;
+  color: var(--yellow);
+  margin-bottom: 10px;
+  display: none;
+}
+
+/* MISSION 3 - SCENARIO */
+.scenario-card {
+  width: 100%;
+  background: linear-gradient(135deg, rgba(34,211,238,0.08), rgba(124,92,252,0.08));
+  border: 1px solid rgba(34,211,238,0.3);
+  border-radius: 14px;
+  padding: 16px;
+  margin-bottom: 14px;
+}
+.scenario-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--cyan);
+  letter-spacing: 1px;
+  margin-bottom: 8px;
+}
+.scenario-text {
+  font-size: 14px;
+  line-height: 1.7;
+  color: var(--text);
+  margin-bottom: 10px;
+}
+.ai-warning {
+  font-size: 11px;
+  color: var(--text2);
+  border-top: 1px solid var(--border);
+  padding-top: 8px;
+  margin-top: 8px;
+}
+
+/* MISSION 4 - DATA */
+.chart-wrap {
+  width: 100%;
+  background: var(--card2);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 16px;
+  margin-bottom: 14px;
+}
+.chart-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--cyan);
+  margin-bottom: 12px;
+}
+.bar-chart { width: 100%; }
+.bar-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+.bar-label {
+  width: 110px;
+  font-size: 12px;
+  color: var(--text2);
+  text-align: right;
+  flex-shrink: 0;
+}
+.bar-track {
+  flex: 1;
+  background: var(--card);
+  border-radius: 4px;
+  height: 22px;
+  overflow: hidden;
+}
+.bar-fill {
+  height: 100%;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  padding-left: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  color: #fff;
+  transition: width 1s;
+}
+
+/* NAVIGATION */
+.nav-row {
+  display: flex;
+  gap: 10px;
+  width: 100%;
+  justify-content: center;
+  padding-top: 6px;
+}
+
+/* MISSION INTRO */
+.mission-intro {
+  width: 100%;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  padding: 28px 20px;
+  text-align: center;
+  margin: 20px 0;
+}
+.mi-icon { font-size: 48px; margin-bottom: 12px; }
+.mi-title { font-size: 22px; font-weight: 900; color: var(--accent2); margin-bottom: 8px; }
+.mi-desc { font-size: 14px; color: var(--text2); line-height: 1.7; margin-bottom: 18px; }
+.mi-rules {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: center;
+  margin-bottom: 18px;
+}
+.mi-rule {
+  background: var(--card2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 6px 12px;
+  font-size: 12px;
+  color: var(--text2);
+}
+
+/* RESULT SCREEN */
+#result-screen { text-align: center; gap: 16px; }
+.result-grade {
+  font-size: clamp(40px, 10vw, 70px);
+  font-weight: 900;
+  background: linear-gradient(135deg, var(--accent2), var(--cyan));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.result-title { font-size: 20px; font-weight: 800; }
+.result-desc { font-size: 14px; color: var(--text2); line-height: 1.7; max-width: 460px; }
+.result-career {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 16px 20px;
+  width: 100%;
+  max-width: 480px;
+  text-align: left;
+}
+.rc-title { font-size: 12px; color: var(--text2); margin-bottom: 8px; font-weight: 700; letter-spacing: 1px; }
+.rc-items { display: flex; flex-wrap: wrap; gap: 8px; }
+.rc-item {
+  background: rgba(124,92,252,0.2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 6px 12px;
+  font-size: 12px;
+  color: var(--accent2);
+  font-weight: 600;
+}
+.score-breakdown {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 16px 20px;
+  width: 100%;
+  max-width: 480px;
+}
+.sb-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+  font-size: 13px;
+}
+.sb-row:last-child { border-bottom: none; font-weight: 700; color: var(--yellow); }
+
+/* LEADERBOARD */
+.leaderboard {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 16px 20px;
+  width: 100%;
+  max-width: 480px;
+  text-align: left;
+}
+.lb-title { font-size: 12px; color: var(--text2); font-weight: 700; letter-spacing: 1px; margin-bottom: 10px; }
+.lb-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+  font-size: 13px;
+}
+.lb-rank { width: 24px; text-align: center; font-weight: 700; }
+.lb-name { flex: 1; padding: 0 10px; }
+.lb-score { color: var(--yellow); font-weight: 700; }
+
+/* STICKER ANIMATION */
+.sticker-pop {
+  position: fixed;
+  top: 40%;
+  left: 50%;
+  transform: translate(-50%,-50%) scale(0);
+  font-size: 60px;
+  z-index: 9999;
+  pointer-events: none;
+  transition: transform .3s cubic-bezier(.34,1.56,.64,1), opacity .5s;
+}
+.sticker-pop.show { transform: translate(-50%,-50%) scale(1); }
+.sticker-pop.hide { opacity: 0; }
+
+/* RESPONSIVE */
+@media(max-width:480px){
+  .fact-btns { flex-direction: column; align-items: center; }
+  .fact-btn { max-width: 100%; width: 100%; flex-direction: row; }
+}
+</style>
+</head>
+<body>
+
+<canvas id="bg-canvas"></canvas>
+<button id="music-btn" onclick="toggleMusic()" title="음악 ON/OFF">🎵</button>
+<div class="sticker-pop" id="sticker"></div>
+
+<!-- ════════════════════════════════
+     INTRO SCREEN
+════════════════════════════════ -->
+<div class="screen active" id="intro-screen">
+  <div class="logo-badge">MILAB · 중학교 공통 · #039</div>
+
+  <!-- Mascot SVG -->
+  <svg class="meta-mascot" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <radialGradient id="mg1" cx="50%" cy="50%" r="50%">
+        <stop offset="0%" stop-color="#a78bfa"/>
+        <stop offset="100%" stop-color="#7c5cfc"/>
+      </radialGradient>
+    </defs>
+    <!-- body -->
+    <ellipse cx="60" cy="80" rx="28" ry="22" fill="#22224a"/>
+    <rect x="36" y="70" width="48" height="28" rx="10" fill="#22224a"/>
+    <!-- jacket -->
+    <path d="M40 76 Q60 82 80 76 L82 98 Q60 105 38 98 Z" fill="url(#mg1)" opacity=".8"/>
+    <!-- tie -->
+    <polygon points="60,80 64,88 60,95 56,88" fill="#22d3ee"/>
+    <!-- head -->
+    <ellipse cx="60" cy="50" rx="24" ry="26" fill="#ffe0b2"/>
+    <!-- hair -->
+    <ellipse cx="60" cy="26" rx="22" ry="12" fill="#5b4fcf"/>
+    <rect x="38" y="20" width="44" height="16" rx="10" fill="#5b4fcf"/>
+    <!-- eyes -->
+    <ellipse cx="50" cy="48" rx="5" ry="6" fill="#1a1a35"/>
+    <ellipse cx="70" cy="48" rx="5" ry="6" fill="#1a1a35"/>
+    <ellipse cx="51.5" cy="46.5" rx="2" ry="2.5" fill="#fff"/>
+    <ellipse cx="71.5" cy="46.5" rx="2" ry="2.5" fill="#fff"/>
+    <!-- VR glasses -->
+    <rect x="38" y="44" width="44" height="12" rx="6" fill="#7c5cfc" opacity=".7"/>
+    <rect x="40" y="45" width="17" height="9" rx="4" fill="#22d3ee" opacity=".6"/>
+    <rect x="63" y="45" width="17" height="9" rx="4" fill="#22d3ee" opacity=".6"/>
+    <!-- smile -->
+    <path d="M52 62 Q60 68 68 62" stroke="#c97b2f" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+    <!-- mic -->
+    <rect x="82" y="58" width="6" height="14" rx="3" fill="#94a3b8"/>
+    <ellipse cx="85" cy="58" rx="5" ry="7" fill="#e2e8f0"/>
+    <line x1="85" y1="72" x2="85" y2="80" stroke="#94a3b8" stroke-width="2"/>
+    <line x1="81" y1="80" x2="89" y2="80" stroke="#94a3b8" stroke-width="2"/>
+  </svg>
+
+  <div class="intro-title">메타버스 진로 설계사</div>
+  <div class="intro-subtitle">
+    2030년, 진로체험은 메타버스로! 팩트체크·AI윤리·데이터 분석을 거쳐<br>
+    나만의 미래 커리어 로드맵을 완성하세요. 🌐
+  </div>
+
+  <div class="qr-wrap">
+    <div id="intro-qr"></div>
+    <p>📱 QR로 바로 시작하기</p>
+  </div>
+
+  <div class="input-row">
+    <input type="text" id="nickname-input" placeholder="닉네임 입력 (예: 진로탐험가)" maxlength="10"/>
+  </div>
+
+  <div style="font-size:13px;color:var(--text2)">난이도 선택</div>
+  <div class="diff-selector">
+    <button class="diff-btn active" onclick="selectDiff('easy', this)">🌱 쉬움</button>
+    <button class="diff-btn" onclick="selectDiff('normal', this)">🔥 보통</button>
+    <button class="diff-btn" onclick="selectDiff('hard', this)">⚡ 도전</button>
+  </div>
+
+  <button class="btn-primary" onclick="startGame()">🚀 메타버스 입장!</button>
+  <button class="btn-secondary" onclick="showLeaderboard()">🏆 명예의 전당</button>
+
+  <div class="leaderboard" id="intro-lb" style="display:none; max-width:400px; width:100%">
+    <div class="lb-title">🏆 TOP 5 명예의 전당</div>
+    <div id="intro-lb-list"></div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════
+     GAME SCREEN
+════════════════════════════════ -->
+<div class="screen" id="game-screen">
+  <div class="hud">
+    <div class="hud-left">
+      <div class="hud-mission" id="hud-mission">MISSION 1</div>
+      <div class="hud-title" id="hud-title">메타버스 팩트체크</div>
+    </div>
+    <div class="hud-right">
+      <div class="hud-score" id="hud-score">0점</div>
+      <div class="hud-timer" id="hud-timer" style="display:none">150</div>
+    </div>
+  </div>
+  <div class="progress-wrap">
+    <div class="progress-fill" id="progress-fill" style="width:0%"></div>
+  </div>
+
+  <!-- Mascot -->
+  <div class="mascot-area">
+    <svg id="game-mascot" width="64" height="64" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg" style="flex-shrink:0">
+      <defs>
+        <radialGradient id="mg2" cx="50%" cy="50%" r="50%">
+          <stop offset="0%" stop-color="#a78bfa"/>
+          <stop offset="100%" stop-color="#7c5cfc"/>
+        </radialGradient>
+      </defs>
+      <ellipse cx="60" cy="80" rx="28" ry="22" fill="#22224a"/>
+      <rect x="36" y="70" width="48" height="28" rx="10" fill="#22224a"/>
+      <path d="M40 76 Q60 82 80 76 L82 98 Q60 105 38 98 Z" fill="url(#mg2)" opacity=".8"/>
+      <polygon points="60,80 64,88 60,95 56,88" fill="#22d3ee"/>
+      <ellipse cx="60" cy="50" rx="24" ry="26" fill="#ffe0b2"/>
+      <ellipse cx="60" cy="26" rx="22" ry="12" fill="#5b4fcf"/>
+      <rect x="38" y="20" width="44" height="16" rx="10" fill="#5b4fcf"/>
+      <ellipse id="eye-l" cx="50" cy="48" rx="5" ry="6" fill="#1a1a35"/>
+      <ellipse id="eye-r" cx="70" cy="48" rx="5" ry="6" fill="#1a1a35"/>
+      <ellipse cx="51.5" cy="46.5" rx="2" ry="2.5" fill="#fff"/>
+      <ellipse cx="71.5" cy="46.5" rx="2" ry="2.5" fill="#fff"/>
+      <rect x="38" y="44" width="44" height="12" rx="6" fill="#7c5cfc" opacity=".7"/>
+      <rect x="40" y="45" width="17" height="9" rx="4" fill="#22d3ee" opacity=".6"/>
+      <rect x="63" y="45" width="17" height="9" rx="4" fill="#22d3ee" opacity=".6"/>
+      <path id="mascot-mouth" d="M52 62 Q60 68 68 62" stroke="#c97b2f" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+      <rect x="82" y="58" width="6" height="14" rx="3" fill="#94a3b8"/>
+      <ellipse cx="85" cy="58" rx="5" ry="7" fill="#e2e8f0"/>
+      <line x1="85" y1="72" x2="85" y2="80" stroke="#94a3b8" stroke-width="2"/>
+      <line x1="81" y1="80" x2="89" y2="80" stroke="#94a3b8" stroke-width="2"/>
+    </svg>
+    <div class="mascot-bubble" id="mascot-bubble">안녕! 나는 메타야. 함께 메타버스 세계를 탐험해 보자! 🌐</div>
+  </div>
+
+  <div id="content-area"></div>
+</div>
+
+<!-- ════════════════════════════════
+     RESULT SCREEN
+════════════════════════════════ -->
+<div class="screen" id="result-screen">
+  <div class="logo-badge">MILAB · 결과 리포트</div>
+  <div class="result-grade" id="result-grade">A+</div>
+  <div class="result-title" id="result-title">AI 정책 전문가 적성!</div>
+  <div class="result-desc" id="result-desc"></div>
+
+  <div class="result-career" id="result-career">
+    <div class="rc-title">📚 추천 고교 선택과목</div>
+    <div class="rc-items" id="rc-items"></div>
+  </div>
+
+  <div class="score-breakdown" id="score-breakdown"></div>
+
+  <div class="leaderboard" style="max-width:480px;width:100%">
+    <div class="lb-title">🏆 명예의 전당</div>
+    <div id="result-lb-list"></div>
+  </div>
+
+  <div class="qr-wrap">
+    <div id="result-qr"></div>
+    <p>📱 친구에게 공유하기</p>
+  </div>
+
+  <div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center">
+    <button class="btn-primary" onclick="restartGame()">🔄 다시 도전!</button>
+    <button class="btn-secondary" onclick="goIntro()">🏠 처음으로</button>
+  </div>
+</div>
+
+<script>
+// ══════════════════════════════════════════
+//  GLOBAL STATE
+// ══════════════════════════════════════════
+const GAME_URL = 'https://milab2019.github.io/main/milab_metaverse_career_039.html';
+let state = {
+  nickname: '',
+  difficulty: 'easy',
+  mission: 0,        // 0=intro, 1~4=missions
+  score: 0,
+  missionScores: [0,0,0,0],
+  hintsUsed: 0,
+  timerInterval: null,
+  timerVal: 0,
+  qIdx: 0,
+  answered: false,
+  hintUsedQ: false,
+};
+
+// ══════════════════════════════════════════
+//  WEB AUDIO
+// ══════════════════════════════════════════
+let audioCtx = null, musicOn = true, bgGain = null, bgOsc1 = null, bgOsc2 = null;
+function initAudio(){
+  if(audioCtx) return;
+  try {
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    bgGain = audioCtx.createGain();
+    bgGain.gain.value = 0.06;
+    bgGain.connect(audioCtx.destination);
+    startBGM();
+  } catch(e){}
+}
+function startBGM(){
+  if(!audioCtx) return;
+  [bgOsc1, bgOsc2].forEach(o => { try{ if(o){o.stop();} }catch(e){} });
+  const o1 = audioCtx.createOscillator();
+  const o2 = audioCtx.createOscillator();
+  o1.type = 'sine'; o1.frequency.value = 110;
+  o2.type = 'triangle'; o2.frequency.value = 165;
+  o1.connect(bgGain); o2.connect(bgGain);
+  o1.start(); o2.start();
+  bgOsc1 = o1; bgOsc2 = o2;
+  // Pulse
+  if(bgGain){
+    const lfo = audioCtx.createOscillator();
+    const lfoG = audioCtx.createGain();
+    lfo.frequency.value = 0.4;
+    lfoG.gain.value = 0.03;
+    lfo.connect(lfoG); lfoG.connect(bgGain.gain);
+    lfo.start();
+  }
+}
+function stopBGM(){
+  [bgOsc1, bgOsc2].forEach(o => { try{ if(o) o.stop(); }catch(e){} });
+}
+function toggleMusic(){
+  if(!audioCtx) initAudio();
+  musicOn = !musicOn;
+  document.getElementById('music-btn').textContent = musicOn ? '🎵' : '🔇';
+  if(musicOn){ startBGM(); if(bgGain) bgGain.gain.value = 0.06; }
+  else { stopBGM(); }
+}
+function playSFX(type){
+  if(!audioCtx || !musicOn) return;
+  const g = audioCtx.createGain();
+  g.connect(audioCtx.destination);
+  const o = audioCtx.createOscillator();
+  o.connect(g);
+  if(type==='correct'){ o.frequency.value=523; g.gain.value=0.15; o.type='sine';
+    g.gain.linearRampToValueAtTime(0, audioCtx.currentTime+0.4); o.start(); o.stop(audioCtx.currentTime+0.4); }
+  else if(type==='wrong'){ o.frequency.value=200; g.gain.value=0.1; o.type='sawtooth';
+    g.gain.linearRampToValueAtTime(0, audioCtx.currentTime+0.3); o.start(); o.stop(audioCtx.currentTime+0.3); }
+  else if(type==='tick'){ o.frequency.value=880; g.gain.value=0.05; o.type='sine';
+    g.gain.linearRampToValueAtTime(0, audioCtx.currentTime+0.05); o.start(); o.stop(audioCtx.currentTime+0.05); }
+  else if(type==='fanfare'){
+    [523,659,784,1047].forEach((f,i)=>{
+      const oo=audioCtx.createOscillator(), gg=audioCtx.createGain();
+      oo.connect(gg); gg.connect(audioCtx.destination);
+      oo.frequency.value=f; gg.gain.value=0.1; oo.type='sine';
+      gg.gain.linearRampToValueAtTime(0, audioCtx.currentTime+0.15+i*0.12);
+      oo.start(audioCtx.currentTime+i*0.12);
+      oo.stop(audioCtx.currentTime+0.3+i*0.12);
+    });
+  }
+}
+
+// ══════════════════════════════════════════
+//  BACKGROUND CANVAS
+// ══════════════════════════════════════════
+(function(){
+  const canvas = document.getElementById('bg-canvas');
+  const ctx = canvas.getContext('2d');
+  let W, H, particles=[];
+  function resize(){ W=canvas.width=window.innerWidth; H=canvas.height=window.innerHeight; }
+  function mkP(){ return { x:Math.random()*W, y:Math.random()*H, r:Math.random()*1.5+0.5,
+    vx:(Math.random()-.5)*0.4, vy:(Math.random()-.5)*0.4,
+    color:`hsla(${Math.random()*60+220},70%,70%,${Math.random()*.5+.2})` }; }
+  resize(); for(let i=0;i<80;i++) particles.push(mkP());
+  window.addEventListener('resize', resize);
+  function loop(){
+    ctx.clearRect(0,0,W,H);
+    particles.forEach(p=>{
+      p.x+=p.vx; p.y+=p.vy;
+      if(p.x<0||p.x>W) p.vx*=-1;
+      if(p.y<0||p.y>H) p.vy*=-1;
+      ctx.beginPath(); ctx.arc(p.x,p.y,p.r,0,Math.PI*2);
+      ctx.fillStyle=p.color; ctx.fill();
+    });
+    // Draw lines
+    particles.forEach((p,i)=>{
+      particles.slice(i+1).forEach(q=>{
+        const d=Math.hypot(p.x-q.x,p.y-q.y);
+        if(d<100){ ctx.beginPath(); ctx.moveTo(p.x,p.y); ctx.lineTo(q.x,q.y);
+          ctx.strokeStyle=`rgba(124,92,252,${0.15*(1-d/100)})`; ctx.stroke(); }
+      });
+    });
+    requestAnimationFrame(loop);
+  }
+  loop();
+})();
+
+// ══════════════════════════════════════════
+//  QR CODE
+// ══════════════════════════════════════════
+function makeQR(id){
+  const el = document.getElementById(id);
+  if(!el || el.children.length > 0) return;
+  try {
+    new QRCode(el, { text: GAME_URL, width: 80, height: 80,
+      colorDark:'#1a1a35', colorLight:'#ffffff', correctLevel: QRCode.CorrectLevel.M });
+    el.querySelector('img') && (el.querySelector('img').style.display='none');
+  } catch(e){}
+}
+
+// ══════════════════════════════════════════
+//  QUESTION DATA
+// ══════════════════════════════════════════
+const QUESTIONS = {
+  // MISSION 1: 팩트체크 (12문항) - true=진짜, false=가짜
+  m1: [
+    { text:'메타버스 플랫폼 로블록스(Roblox)는 사용자들이 직접 게임을 만들어 수익을 올릴 수 있는 크리에이터 경제 구조를 갖추고 있다.', answer: true, fb:'✅ 진짜 뉴스! 로블록스는 게임 내 화폐 로벅스를 통해 크리에이터가 수익을 얻는 구조를 운영 중입니다.', source:'출처: Roblox 공식 보고서 2024', hint:'크리에이터 경제와 관련된 주요 플랫폼을 생각해보세요.' },
+    { text:'한국 정부는 2022년 메타버스를 국가 핵심 전략 산업으로 지정하고 2026년까지 5조 원 이상을 투자하기로 발표했다.', answer: true, fb:'✅ 진짜 뉴스! 과학기술정보통신부는 메타버스 산업을 디지털 뉴딜 핵심 과제로 선정했습니다.', source:'출처: 과기정통부 2022 메타버스 전략', hint:'정부의 디지털 뉴딜 정책 내용을 떠올려보세요.' },
+    { text:'메타버스에서 이루어지는 모든 경제 활동에는 현행 소득세법이 그대로 적용되어 세금을 100% 납부해야 한다.', answer: false, fb:'❌ 가짜 뉴스! 메타버스 내 경제 활동에 대한 과세 기준은 각국마다 다르며 국내에서도 명확한 제도가 완비되지 않았습니다.', source:'출처: 국세청 디지털 과세 현황 2024', hint:'신기술 분야는 법·제도 정비가 기술 속도를 따라가기 어렵습니다.' },
+    { text:'가상현실(VR) 기기를 하루 2시간 이상 사용하면 시력이 영구적으로 손상된다는 것이 의학적으로 공식 인정되었다.', answer: false, fb:'❌ 가짜 뉴스! 장시간 VR 사용이 눈 피로를 유발할 수 있지만 영구 시력 손상에 대한 공식 의학적 확증은 아직 없습니다.', source:'출처: 대한안과학회 VR 연구 현황', hint:'과학적 사실은 "공식 인정"이라는 말에 주의해야 합니다.' },
+    { text:'메타버스 내에서 발생한 성희롱·폭력 등 사이버 범죄는 현실 세계의 법률로 처벌받을 수 있다.', answer: true, fb:'✅ 진짜 뉴스! 정보통신망법·형법에 따라 메타버스 내 사이버 성범죄도 처벌 대상이 됩니다.', source:'출처: 방통위 메타버스 이용자 보호 가이드라인', hint:'디지털 공간도 현실 법률의 적용 범위입니다.' },
+    { text:'메타(Meta) 회사는 2021년 사명을 변경하면서 모든 사업 부문을 메타버스로 전환하고 소셜미디어 서비스를 완전히 종료했다.', answer: false, fb:'❌ 가짜 뉴스! 메타는 페이스북·인스타그램 등 소셜미디어 서비스를 유지하면서 메타버스 부문을 추가한 것입니다.', source:'출처: Meta 연간 보고서 2023', hint:'사명 변경이 곧 기존 사업 포기를 의미하지는 않습니다.' },
+    { text:'NFT(대체불가능토큰)는 메타버스 내 디지털 자산의 소유권을 블록체인으로 증명하는 기술로, 실제 거래에 활용된다.', answer: true, fb:'✅ 진짜 뉴스! NFT는 블록체인 기반 소유권 증명 기술로 메타버스 내 아이템·부동산 거래에 활용됩니다.', source:'출처: 한국콘텐츠진흥원 NFT 보고서 2023', hint:'블록체인과 소유권 인증 기술의 관계를 생각해보세요.' },
+    { text:'교육부는 2023년 메타버스 학교를 전국 모든 초·중·고에 의무 도입하기로 법령을 개정했다.', answer: false, fb:'❌ 가짜 뉴스! 교육부는 메타버스 교육 환경 조성을 지원하고 있으나, 의무 도입 법령 개정은 이루어지지 않았습니다.', source:'출처: 교육부 에듀테크 진흥 방안 2023', hint:'"의무"와 "지원·권장"은 크게 다른 개념입니다.' },
+    { text:'메타버스 플랫폼에서 수집되는 사용자의 생체 데이터(시선·표정 등)는 개인정보보호법 적용 대상이다.', answer: true, fb:'✅ 진짜 뉴스! 생체 데이터는 개인정보보호법상 민감 정보로 분류되어 엄격한 보호를 받습니다.', source:'출처: 개인정보보호위원회 2024', hint:'민감 정보의 종류에 생체 정보가 포함됩니다.' },
+    { text:'AI가 생성한 메타버스 아바타와 배경은 저작권법상 AI가 저작자로 인정되어 AI 회사가 저작권을 보유한다.', answer: false, fb:'❌ 가짜 뉴스! 현행 저작권법에서 저작자는 사람(인간)만 인정되며, AI 생성물의 저작권 귀속은 법적으로 논쟁 중입니다.', source:'출처: 문화체육관광부 AI 저작권 연구 2024', hint:'저작권법의 저작자 정의를 떠올려보세요.' },
+    { text:'메타버스는 인터넷 연결만 있으면 장애 여부에 관계없이 누구나 동등하게 접근할 수 있도록 설계되어 있다.', answer: false, fb:'❌ 가짜 뉴스! 현재 메타버스 플랫폼 대부분은 장애인 접근성이 미흡하여 디지털 격차 문제가 지속 제기되고 있습니다.', source:'출처: 정보통신정책연구원 디지털 격차 보고서 2024', hint:'기술이 모두에게 평등하게 제공되는지 비판적으로 생각해보세요.' },
+    { text:'현재 글로벌 주요 기업(삼성·현대·LG 등)은 메타버스 내 가상 쇼룸·공장을 구축해 실제 제품 홍보·교육에 활용하고 있다.', answer: true, fb:'✅ 진짜 뉴스! 국내외 대기업들은 디지털 트윈·메타버스 쇼룸을 실제 비즈니스에 도입하고 있습니다.', source:'출처: 산업통상자원부 메타버스 산업 활용 현황 2024', hint:'기업의 디지털 전환 사례를 생각해보세요.' },
+  ],
+
+  // MISSION 2: 교과 융합 퀴즈 (9문항: 쉬움3+보통3+도전3)
+  m2: {
+    easy: [
+      { text:'메타버스의 핵심 기술 중 현실 세계에 디지털 정보를 겹쳐 보여주는 기술은?', choices:['가상현실(VR)','증강현실(AR)','블록체인','NFT'], answer:1, fb:'AR(Augmented Reality)은 현실 위에 디지털 레이어를 덧입히는 기술입니다. 스마트폰 카메라를 통해 경험할 수 있어요!', subject:'교과 연계: 정보(디지털 기술) · 고교 선택과목: 인공지능기초', hint:'스마트폰 카메라로 캐릭터를 잡는 포켓몬GO를 생각해보세요.' },
+      { text:'디지털 경제에서 크리에이터가 메타버스 플랫폼에서 직접 콘텐츠를 제작해 수익을 올리는 경제 구조를 무엇이라 부르나요?', choices:['공유경제','구독경제','크리에이터 이코노미','긱 이코노미'], answer:2, fb:'크리에이터 이코노미(Creator Economy)는 개인이 콘텐츠·서비스를 직접 제작·판매하는 새로운 경제 모델입니다.', subject:'교과 연계: 사회(경제) · 고교 선택과목: 경제', hint:'유튜버나 로블록스 게임 개발자를 생각해보세요.' },
+      { text:'메타버스 내 아바타의 외모·의상 등은 어떤 권리로 보호받을 수 있나요?', choices:['특허권','저작권','실용신안권','상표권'], answer:1, fb:'창작물에 대한 권리인 저작권(Copyright)이 메타버스 내 창작 콘텐츠에도 적용됩니다.', subject:'교과 연계: 사회(법) · 도덕(디지털 윤리)', hint:'창작물을 보호하는 대표적인 지식재산권을 떠올려보세요.' },
+    ],
+    normal: [
+      { text:'메타버스 플랫폼이 사용자 데이터를 제3자에게 판매할 때 반드시 사전에 받아야 하는 것은?', choices:['운영자 승인','사용자 동의','정부 허가','법원 명령'], answer:1, fb:'개인정보보호법에 따라 개인정보를 제3자에게 제공하기 위해서는 정보 주체(사용자)의 사전 동의가 필수입니다.', subject:'교과 연계: 사회(법) · 정보(AI윤리) · 고교: 법과 정치', hint:'내 정보를 누가 가져가려면 내가 먼저 허락해야겠죠?' },
+      { text:'메타버스에서 발생하는 경제 활동이 현실 세계 경제에 미치는 영향으로 가장 적절한 것은?', choices:['전혀 영향 없음','디지털-실물 연계로 새로운 일자리 창출','기존 모든 직업 소멸','화폐 가치 고정'], answer:1, fb:'디지털-실물 경제가 연계되며 메타버스 디자이너, XR 개발자 등 새로운 직업이 생겨나고 있습니다.', subject:'교과 연계: 사회(경제) · 진로교육 · 고교: 사회문제탐구', hint:'기술 혁신은 기존 직업을 없애기도 하지만 새 직업을 만들기도 합니다.' },
+      { text:'AI가 메타버스 내에서 사용자 행동 패턴을 학습해 맞춤형 광고를 제공할 때 발생할 수 있는 윤리 문제는?', choices:['서비스 개선','개인정보 침해·필터버블','렉(Lag) 문제','그래픽 향상'], answer:1, fb:'AI 맞춤 광고는 편리하지만 개인정보 과잉 수집, 편향된 정보만 노출되는 "필터버블" 문제를 낳습니다.', subject:'교과 연계: 도덕(AI윤리) · 정보(AI리터러시) · 고교: 인공지능기초', hint:'내가 좋아할 것만 보여준다면 세상을 다양하게 볼 수 있을까요?' },
+    ],
+    hard: [
+      { text:'메타버스에서 특정 집단을 배제하거나 차별하는 알고리즘이 발견되었을 때, 사회적으로 가장 먼저 필요한 대응은?', choices:['서비스 즉시 종료','알고리즘 투명성 공개 및 독립 감사 요청','사용자 수 제한','광고 중단'], answer:1, fb:'알고리즘 차별 문제는 기업의 자체 수정만으로 해결이 어렵습니다. 독립된 기관의 감사와 투명성 공개가 민주주의적 해법입니다.', subject:'교과 연계: 도덕(정의·AI윤리) · 사회(민주주의) · 고교: 인공지능기초', hint:'누가 알고리즘이 공정한지 판단해야 할까요?' },
+      { text:'고교학점제에서 "데이터과학" 선택과목을 공부하면 메타버스 분야 진로에 어떤 측면에서 직접 도움이 되나요?', choices:['3D 모델링 기술','사용자 행동 데이터 분석 및 서비스 개선','VR 기기 제조','법률 계약 작성'], answer:1, fb:'데이터과학은 사용자 행동 데이터를 분석해 메타버스 서비스를 개선하는 핵심 역량입니다. UX 분석·추천 알고리즘 설계에 직결됩니다.', subject:'교과 연계: 정보(데이터과학) · 진로교육 · 고교: 데이터과학', hint:'메타버스 플랫폼은 수억 명의 사용자 데이터를 어떻게 활용할까요?' },
+      { text:'메타버스에서 국가 간 콘텐츠 규제가 다를 경우 한 국가에서 합법인 콘텐츠가 다른 국가에서 불법일 수 있습니다. 이 문제를 해결하기 위해 가장 적절한 접근은?', choices:['각국이 독자적으로 서비스 차단','국제 협약을 통한 공통 기준 마련','메타버스 서비스 완전 폐쇄','규제 없는 자유 시장 유지'], answer:1, fb:'디지털 공간의 국경 초월성 때문에 국제 협약을 통한 공통 기준 마련이 필요합니다. 이는 글로벌 거버넌스의 핵심 과제입니다.', subject:'교과 연계: 사회(국제관계·법) · 고교: 법과 정치·사회문제탐구', hint:'인터넷은 국경이 없지만 규제는 나라마다 다릅니다. 어떻게 조율할까요?' },
+    ],
+  },
+
+  // MISSION 3: AI 규제 딜레마 시나리오 (5개)
+  m3: [
+    {
+      scenario: '🌐 메타버스 학교 "에듀버스"에서 AI가 학생들의 집중도를 실시간으로 측정해 성적과 연동하는 시스템이 도입되려 합니다. AI는 눈 깜빡임·표정·자세를 분석합니다.',
+      question: '이 시스템 도입에 대한 당신의 정책적 판단은?',
+      choices: [
+        '① 학습 효율이 높아지므로 즉시 전면 도입한다',
+        '② 학생·학부모 동의와 데이터 최소화 원칙을 조건으로 시범 운영 후 결정한다',
+        '③ 생체 데이터 수집이 포함되므로 전면 금지한다',
+        '④ 기업에 완전히 위임하고 학교는 관여하지 않는다',
+      ],
+      best: 1,
+      fb: [
+        '학습 효율도 중요하지만 학생 동의 없는 생체 데이터 수집은 개인정보보호법 위반 가능성이 높습니다.',
+        '✅ 가장 균형 잡힌 판단! 동의 확보 + 데이터 최소화 + 시범 운영으로 효과와 위험을 모두 관리합니다.',
+        '완전 금지도 하나의 입장이지만, 기술의 긍정적 활용 가능성을 차단합니다. 조건부 허용도 검토해볼 수 있습니다.',
+        '기업 완전 위임은 학생 권익 보호 의무를 방기하는 것으로 가장 위험한 선택입니다.',
+      ],
+      aiWarn: true,
+    },
+    {
+      scenario: '🤖 메타버스 플랫폼 AI 어시스턴트가 사용자에게 "당신의 성격 유형에 맞는 직업은 의사입니다"라고 단정적으로 안내합니다. 이 AI는 행동 데이터 5가지만 분석했습니다.',
+      question: 'AI의 이 직업 추천 방식에 대한 가장 적절한 비판은?',
+      choices: [
+        '① AI가 추천했으니 믿고 따라야 한다',
+        '② 적은 데이터로 성격을 단정하는 것은 과학적 근거가 부족하다',
+        '③ AI는 항상 객관적이므로 문제없다',
+        '④ 사용자가 싫으면 무시하면 된다',
+      ],
+      best: 1,
+      fb: [
+        'AI 추천을 무조건 따르는 것은 비판적 사고 능력을 포기하는 것입니다.',
+        '✅ 정확한 비판! 적은 데이터, 편향된 학습 데이터로 인한 AI 오류를 "할루시네이션(Hallucination)"이라 합니다. AI 리터러시 핵심입니다.',
+        'AI도 편향된 학습 데이터와 알고리즘 설계 오류로 틀릴 수 있습니다. 맹신은 금물!',
+        '개인의 선택으로 넘기면 AI 시스템의 구조적 문제를 방치하게 됩니다.',
+      ],
+      aiWarn: true,
+    },
+    {
+      scenario: '🗳️ 2030년, 지구촌 메타버스 의회에서 "AI가 생성한 정치 광고"를 규제하는 법안을 투표합니다. AI 생성 광고는 타겟팅이 정교해 선거에 큰 영향을 미칩니다.',
+      question: '어떤 규제 방향이 가장 민주주의 원칙에 부합하나요?',
+      choices: [
+        '① AI 광고 완전 허용 - 표현의 자유 보장',
+        '② AI 생성 콘텐츠임을 반드시 표시하고 허위정보 포함 시 처벌',
+        '③ 모든 디지털 정치 광고 전면 금지',
+        '④ AI 회사가 자율적으로 판단하게 한다',
+      ],
+      best: 1,
+      fb: [
+        '표현의 자유는 중요하지만 AI 생성 허위정보가 선거를 왜곡할 수 있어 무조건 허용은 위험합니다.',
+        '✅ 최선의 정책! 표현의 자유를 보장하면서 투명성(AI 표시)과 허위정보 규제를 균형 있게 실현합니다.',
+        '전면 금지는 디지털 표현의 자유를 과도하게 침해할 수 있습니다.',
+        'AI 회사 자율에 맡기면 이익 충돌 문제가 발생해 공정한 규제가 어렵습니다.',
+      ],
+      aiWarn: true,
+    },
+    {
+      scenario: '💼 메타버스 기업 A는 아바타 외모를 분석해 "매력도 점수"를 매기고, 이를 취업 플랫폼과 연동하려 합니다.',
+      question: '이 서비스의 가장 심각한 윤리 문제는?',
+      choices: [
+        '① 서버 비용이 너무 많이 든다',
+        '② 외모 차별을 디지털로 재생산해 사회적 편견을 강화한다',
+        '③ 아바타 디자인이 제한된다',
+        '④ 기업 간 경쟁이 심해진다',
+      ],
+      best: 1,
+      fb: [
+        '비용 문제는 사업 결정 사항이지 핵심 윤리 문제가 아닙니다.',
+        '✅ 핵심 윤리 문제 정확히 파악! 외모 기반 차별은 현실에서도 불법인데, AI로 이를 자동화·확산하면 차별이 구조화됩니다.',
+        '아바타 제한은 서비스 불편 문제이지 심각한 윤리 문제가 아닙니다.',
+        '기업 경쟁은 시장 문제이지 이 서비스의 핵심 윤리 쟁점이 아닙니다.',
+      ],
+      aiWarn: false,
+    },
+    {
+      scenario: '🧑‍🎓 우리 학교가 메타버스 진로체험 플랫폼을 도입하려 합니다. 플랫폼 A는 무료이지만 학생 데이터를 광고에 활용하고, 플랫폼 B는 유료이지만 데이터를 수집하지 않습니다.',
+      question: '학교 운영자로서 가장 적절한 결정은?',
+      choices: [
+        '① 무조건 무료인 A를 선택한다',
+        '② B 선택 - 학생 개인정보 보호가 교육 기관의 의무다',
+        '③ A 선택 - 학생들이 광고에 익숙해지는 것도 교육이다',
+        '④ 두 플랫폼 모두 거부하고 메타버스를 사용하지 않는다',
+      ],
+      best: 1,
+      fb: [
+        '비용만으로 결정하면 학생 개인정보 보호 의무를 위반할 수 있습니다.',
+        '✅ 교육 기관으로서 가장 적절한 판단! 학생 데이터는 최고 수준으로 보호되어야 하며, 이는 개인정보보호법 및 교육 윤리의 기본입니다.',
+        '학생 데이터를 광고에 활용하는 것을 교육으로 정당화할 수 없습니다.',
+        '기술 자체가 문제가 아니라 데이터 처리 방식이 문제입니다. 좋은 플랫폼을 선택해 활용하면 됩니다.',
+      ],
+      aiWarn: false,
+    },
+  ],
+
+  // MISSION 4: 진로 데이터 분석
+  m4: {
+    chartData: [
+      { label:'메타버스 개발자', val: 87, color:'#7c5cfc' },
+      { label:'XR 콘텐츠 기획자', val: 74, color:'#22d3ee' },
+      { label:'AI 윤리 전문가', val: 68, color:'#a78bfa' },
+      { label:'디지털 트윈 설계사', val: 82, color:'#4ade80' },
+      { label:'메타버스 마케터', val: 61, color:'#fbbf24' },
+      { label:'사이버보안 전문가', val: 79, color:'#f87171' },
+    ],
+    questions: [
+      { text:'위 데이터에서 2030년 예상 수요 증가율이 가장 높은 직업은?', choices:['XR 콘텐츠 기획자','메타버스 개발자','디지털 트윈 설계사','사이버보안 전문가'], answer:1, fb:'메타버스 개발자(87%)가 가장 높은 수요 증가율을 보입니다. 가상 세계 구축의 기반 기술을 담당하기 때문입니다.', hint:'그래프에서 가장 긴 막대를 찾아보세요.' },
+      { text:'AI 윤리 전문가(68%)의 수요가 빠르게 성장하는 핵심 이유로 가장 적절한 것은?', choices:['AI 기술이 단순해지기 때문','AI 시스템의 편향·차별 문제 해결 필요성 증가','AI 사용 인구 감소','AI 법률이 폐지되기 때문'], answer:1, fb:'AI가 의사결정에 광범위하게 활용되면서 편향·차별·프라이버시 침해 문제를 전문적으로 다루는 AI 윤리 전문가 수요가 급증하고 있습니다.', hint:'기술이 발전할수록 윤리적 문제도 함께 성장합니다.' },
+      { text:'메타버스 마케터(61%)를 목표로 한다면 고교에서 어떤 과목 조합이 가장 유리한가요?', choices:['수학·물리','경제·정보·미술','국어·역사','화학·생물'], answer:1, fb:'메타버스 마케터는 경제(시장분석), 정보(디지털 도구), 미술(비주얼 콘텐츠) 역량을 복합적으로 활용합니다.', hint:'마케팅에 필요한 역량이 무엇인지 생각해보세요.' },
+      { text:'6개 직업 중 평균 수요 증가율은 약 몇 %인가요? (소수점 버림)', choices:['65%','75%','70%','80%'], answer:1, fb:'(87+74+68+82+61+79) ÷ 6 = 451 ÷ 6 ≈ 75.1% → 약 75%입니다. 데이터 분석의 기본은 평균 계산부터!', hint:'6개 값을 모두 더한 후 6으로 나눠보세요.' },
+      { text:'데이터에서 디지털 트윈 설계사가 높은 수요(82%)를 보이는 이유로 가장 적절한 것은?', choices:['디지털 트윈은 이미 완성된 기술이라서','제조·도시·의료 등 다양한 산업에서 가상 시뮬레이션 수요 급증','트윈 기술이 저렴해서','관련 학교가 많아서'], answer:1, fb:'디지털 트윈은 현실 세계를 가상으로 복제해 시뮬레이션하는 기술로, 스마트 제조·스마트 시티·의료 시뮬레이션 등 전 산업에 적용 중입니다.', hint:'디지털 트윈의 활용 범위를 떠올려보세요.' },
+    ],
+  },
+};
+
+// ══════════════════════════════════════════
+//  DIFFICULTY MULTIPLIER
+// ══════════════════════════════════════════
+const DIFF_MULT = { easy:1.0, normal:1.3, hard:1.6 };
+const DIFF_LABEL = { easy:'쉬움', normal:'보통', hard:'도전' };
+
+// ══════════════════════════════════════════
+//  SCREEN NAV
+// ══════════════════════════════════════════
+function showScreen(id){
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo(0,0);
+}
+
+function goIntro(){ showScreen('intro-screen'); }
+
+function showLeaderboard(){
+  const lb = document.getElementById('intro-lb');
+  lb.style.display = lb.style.display==='none' ? 'block' : 'none';
+  renderLB('intro-lb-list');
+}
+
+function renderLB(id){
+  const data = JSON.parse(localStorage.getItem('milab039_lb') || '[]');
+  const el = document.getElementById(id);
+  if(!data.length){ el.innerHTML='<div style="color:var(--text2);font-size:13px;text-align:center;padding:10px">아직 기록이 없습니다</div>'; return; }
+  el.innerHTML = data.slice(0,5).map((r,i)=>
+    `<div class="lb-row">
+      <span class="lb-rank">${['🥇','🥈','🥉','4','5'][i]}</span>
+      <span class="lb-name">${r.name}</span>
+      <span style="font-size:11px;color:var(--text2);margin-right:8px">${r.diff}</span>
+      <span class="lb-score">${r.score}점</span>
+    </div>`
+  ).join('');
+}
+
+function saveLB(){
+  const data = JSON.parse(localStorage.getItem('milab039_lb') || '[]');
+  data.push({ name: state.nickname, score: state.score, diff: DIFF_LABEL[state.difficulty], date: new Date().toLocaleDateString() });
+  data.sort((a,b) => b.score-a.score);
+  localStorage.setItem('milab039_lb', JSON.stringify(data.slice(0,10)));
+}
+
+// ══════════════════════════════════════════
+//  DIFFICULTY SELECT
+// ══════════════════════════════════════════
+function selectDiff(d, btn){
+  state.difficulty = d;
+  document.querySelectorAll('.diff-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+// ══════════════════════════════════════════
+//  START GAME
+// ══════════════════════════════════════════
+function startGame(){
+  initAudio();
+  const nick = document.getElementById('nickname-input').value.trim();
+  if(!nick){ alert('닉네임을 입력해주세요!'); return; }
+  state.nickname = nick;
+  state.score = 0;
+  state.missionScores = [0,0,0,0];
+  state.hintsUsed = 0;
+  state.mission = 1;
+  state.qIdx = 0;
+  showScreen('game-screen');
+  showMissionIntro(1);
+}
+
+function restartGame(){
+  state.score = 0;
+  state.missionScores = [0,0,0,0];
+  state.hintsUsed = 0;
+  state.mission = 1;
+  state.qIdx = 0;
+  showScreen('game-screen');
+  showMissionIntro(1);
+}
+
+// ══════════════════════════════════════════
+//  MISSION INTROS
+// ══════════════════════════════════════════
+const MISSION_META = [
+  null,
+  { icon:'📰', title:'MISSION 1\n메타버스 팩트체크', desc:'메타버스 관련 뉴스가 진짜인지 가짜인지 판별하세요!\n12개 뉴스, 제한시간 150초. AI 생성 가짜뉴스 주의!', rules:['⏱ 전체 타이머 150초','12개 뉴스 판별','진짜 / 가짜 선택'], hud:'메타버스 팩트체크' },
+  { icon:'📚', title:'MISSION 2\n디지털 직업 탐구', desc:'메타버스·AI 시대 교과 융합 퀴즈! 9문항을 풀며\n고교 선택과목 힌트를 얻으세요.', rules:['⏱ 문항당 45초','힌트 1회 사용 가능','고교 과목 연계'], hud:'디지털 직업 탐구' },
+  { icon:'🤖', title:'MISSION 3\nAI 규제 딜레마', desc:'AI와 메타버스의 경계에서 정책적 판단을 내리세요!\n옳고 그름이 아닌 "최선의 판단"을 찾는 미션입니다.', rules:['⏱ 타이머 없음','시나리오 기반 선택','AI 경고 문구 주의'], hud:'AI 규제 딜레마' },
+  { icon:'📊', title:'MISSION 4\n진로 데이터 분석', desc:'미래 직업 시장 데이터를 분석해 나의 진로 방향을 발견하세요!\n데이터를 읽는 눈이 미래 경쟁력입니다.', rules:['⏱ 타이머 없음','그래프 독해','직업 시장 분석'], hud:'진로 데이터 분석' },
+];
+
+function showMissionIntro(n){
+  stopTimer();
+  const m = MISSION_META[n];
+  document.getElementById('hud-mission').textContent = `MISSION ${n}`;
+  document.getElementById('hud-title').textContent = m.hud;
+  document.getElementById('hud-timer').style.display='none';
+  document.getElementById('progress-fill').style.width='0%';
+  mascotSay('neutral', `미션 ${n} 시작! ${['📰 뉴스 진위를 파악해봐!','📚 교과서 실력을 발휘해!','🤖 AI 딜레마, 최선의 판단은?','📊 데이터로 미래를 읽어봐!'][n-1]}`);
+
+  document.getElementById('content-area').innerHTML = `
+    <div class="mission-intro">
+      <div class="mi-icon">${m.icon}</div>
+      <div class="mi-title">${m.title.replace('\n','<br>')}</div>
+      <div class="mi-desc">${m.desc.replace(/\n/g,'<br>')}</div>
+      <div class="mi-rules">
+        ${m.rules.map(r=>`<div class="mi-rule">${r}</div>`).join('')}
+      </div>
+      <button class="btn-primary" onclick="startMission(${n})">▶ 시작!</button>
+    </div>
+  `;
+}
+
+function startMission(n){
+  state.mission = n;
+  state.qIdx = 0;
+  if(n===1) startM1();
+  else if(n===2) startM2();
+  else if(n===3) startM3();
+  else if(n===4) startM4();
+}
+
+// ══════════════════════════════════════════
+//  MISSION 1 - FACT CHECK
+// ══════════════════════════════════════════
+let m1Timer = 150, m1Done = false;
+function startM1(){
+  m1Timer = 150; m1Done = false;
+  state.qIdx = 0;
+  document.getElementById('hud-timer').style.display='block';
+  startTimer(150, ()=>{ m1Done=true; endM1(); });
+  showM1Question();
+}
+
+function showM1Question(){
+  if(m1Done) return;
+  const qs = QUESTIONS.m1;
+  const idx = state.qIdx;
+  if(idx >= qs.length){ m1Done=true; stopTimer(); endM1(); return; }
+  const q = qs[idx];
+  updateProgress(idx, qs.length);
+  mascotSay('neutral', `뉴스 ${idx+1}/${qs.length}: 이 뉴스가 진짜일까요, 가짜일까요?`);
+
+  document.getElementById('content-area').innerHTML = `
+    <div class="question-card">
+      <div class="q-tag normal">📰 팩트체크 ${idx+1}/${qs.length}</div>
+      <div class="q-text">${q.text}</div>
+      <div class="q-source">${q.source || ''}</div>
+      <div class="fact-btns">
+        <button class="fact-btn real-btn" onclick="answerFact(true, this)">
+          ✅ <span class="fact-badge real-badge">REAL</span> 진짜 뉴스
+        </button>
+        <button class="fact-btn fake-btn" onclick="answerFact(false, this)">
+          ❌ <span class="fact-badge fake-badge">FAKE</span> 가짜 뉴스
+        </button>
+      </div>
+    </div>
+    <div class="feedback-box" id="fb-box"></div>
+    <div class="nav-row" id="nav-row" style="display:none">
+      <button class="btn-primary" onclick="nextM1()">다음 뉴스 ▶</button>
+    </div>
+  `;
+}
+
+function answerFact(userAns, btn){
+  if(document.querySelector('.fact-btn:disabled')) return;
+  document.querySelectorAll('.fact-btn').forEach(b => b.disabled=true);
+  const q = QUESTIONS.m1[state.qIdx];
+  const correct = (userAns === q.answer);
+  btn.classList.add(correct ? 'correct' : 'wrong');
+  if(!correct){
+    const other = document.querySelector(userAns ? '.fake-btn' : '.real-btn');
+    if(other) other.classList.add('correct');
+  }
+  const pts = correct ? Math.round(10 * DIFF_MULT[state.difficulty]) : 0;
+  state.score += pts; state.missionScores[0] += pts;
+  document.getElementById('hud-score').textContent = state.score + '점';
+  const fb = document.getElementById('fb-box');
+  fb.className = 'feedback-box ' + (correct ? 'correct-fb' : 'wrong-fb');
+  fb.innerHTML = q.fb + (correct ? `<br><strong>+${pts}점</strong>` : '<br>😅 이 시각도 고민해볼 만해! 하지만 다시 보면:');
+  document.getElementById('nav-row').style.display='flex';
+  mascotSay(correct ? 'happy' : 'sad', correct ? '정확해! 뛰어난 팩트체크 능력이야! 🎉' : '아쉽지만 괜찮아! 이 근거를 보면 이해될 거야 💪');
+  playSFX(correct ? 'correct' : 'wrong');
+  showSticker(correct ? '🎯' : '💡');
+}
+
+function nextM1(){
+  state.qIdx++;
+  if(state.qIdx >= QUESTIONS.m1.length){ m1Done=true; stopTimer(); endM1(); }
+  else showM1Question();
+}
+
+function endM1(){
+  stopTimer();
+  document.getElementById('hud-timer').style.display='none';
+  mascotSay('happy', `미션1 완료! ${state.missionScores[0]}점 획득! 다음은 교과 융합 퀴즈야! 📚`);
+  document.getElementById('content-area').innerHTML = `
+    <div class="mission-intro">
+      <div class="mi-icon">📰✅</div>
+      <div class="mi-title">팩트체크 완료!</div>
+      <div class="mi-desc">획득 점수: <strong style="color:var(--yellow)">${state.missionScores[0]}점</strong><br>총 ${state.qIdx}개 뉴스 분석 완료</div>
+      <button class="btn-primary" onclick="showMissionIntro(2)">미션 2로 이동 ▶</button>
+    </div>
+  `;
+}
+
+// ══════════════════════════════════════════
+//  MISSION 2 - QUIZ
+// ══════════════════════════════════════════
+let m2Questions = [];
+function startM2(){
+  const d = state.difficulty;
+  const byDiff = QUESTIONS.m2;
+  m2Questions = [
+    ...byDiff.easy.slice(0,3),
+    ...byDiff.normal.slice(0,3),
+    ...byDiff.hard.slice(0,3),
+  ];
+  state.qIdx = 0;
+  showM2Question();
+}
+
+function showM2Question(){
+  const qs = m2Questions;
+  const idx = state.qIdx;
+  if(idx >= qs.length){ endM2(); return; }
+  const q = qs[idx];
+  updateProgress(idx, qs.length);
+  const tagClass = idx<3?'easy':idx<6?'normal':'hard';
+  const tagLabel = idx<3?'🌱 기초':idx<6?'🔥 심화':'⚡ 고급';
+  state.hintUsedQ = false;
+
+  document.getElementById('hud-timer').style.display='block';
+  startTimer(45, ()=>{ forceNextM2(); });
+  mascotSay('neutral', `문제 ${idx+1}/${qs.length}: 깊이 생각해보자! 힌트는 1회 사용 가능해.`);
+
+  document.getElementById('content-area').innerHTML = `
+    <div class="hint-row">
+      <button class="hint-btn" id="hint-btn" onclick="showHint2()">💡 힌트 (-30%)</button>
+    </div>
+    <div class="hint-box" id="hint-box">💡 ${q.hint}</div>
+    <div class="question-card">
+      <div class="q-tag ${tagClass}">${tagLabel} · 문제 ${idx+1}</div>
+      <div class="q-text">${q.text}</div>
+      <div class="choices">
+        ${q.choices.map((c,i)=>`<button class="choice-btn" onclick="answerM2(${i}, this)">${String.fromCharCode(9312+i)} ${c}</button>`).join('')}
+      </div>
+    </div>
+    <div class="feedback-box" id="fb-box"></div>
+    <div class="nav-row" id="nav-row" style="display:none">
+      <button class="btn-primary" onclick="nextM2()">다음 문제 ▶</button>
+    </div>
+  `;
+}
+
+function showHint2(){
+  const btn = document.getElementById('hint-btn');
+  if(state.hintUsedQ) return;
+  state.hintUsedQ = true;
+  state.hintsUsed++;
+  btn.disabled = true;
+  btn.textContent = '💡 힌트 사용됨';
+  document.getElementById('hint-box').style.display='block';
+}
+
+function answerM2(i, btn){
+  if(document.querySelector('.choice-btn:disabled')) return;
+  stopTimer();
+  document.querySelectorAll('.choice-btn').forEach(b => b.disabled=true);
+  const q = m2Questions[state.qIdx];
+  const correct = (i === q.answer);
+  document.querySelectorAll('.choice-btn')[q.answer].classList.add('correct');
+  if(!correct) btn.classList.add('wrong');
+  let pts = correct ? Math.round((state.hintUsedQ ? 7 : 10) * DIFF_MULT[state.difficulty]) : 0;
+  state.score += pts; state.missionScores[1] += pts;
+  document.getElementById('hud-score').textContent = state.score + '점';
+  const fb = document.getElementById('fb-box');
+  fb.className = 'feedback-box ' + (correct ? 'correct-fb' : 'wrong-fb');
+  fb.innerHTML = (correct ? '✅ 정답! ' : '❌ 이 시각도 설득력 있어! 하지만 이 근거를 보면: ') + q.fb +
+    (correct ? `<br><strong>+${pts}점</strong>` : '') +
+    `<br><span class="fb-subject">📌 ${q.subject}</span>`;
+  document.getElementById('nav-row').style.display='flex';
+  mascotSay(correct ? 'happy' : 'sad', correct ? '완벽해! 교과 지식이 빛나는군! ✨' : '아쉽지만 이 개념, 고교 선택과목에서 더 깊이 배울 수 있어!');
+  playSFX(correct ? 'correct' : 'wrong');
+  showSticker(correct ? '⭐' : '📖');
+}
+
+function forceNextM2(){
+  document.querySelectorAll('.choice-btn').forEach(b => b.disabled=true);
+  const q = m2Questions[state.qIdx];
+  document.querySelectorAll('.choice-btn')[q.answer].classList.add('correct');
+  const fb = document.getElementById('fb-box');
+  fb.className = 'feedback-box wrong-fb';
+  fb.innerHTML = '⏱ 시간 초과! ' + q.fb + `<br><span class="fb-subject">📌 ${q.subject}</span>`;
+  document.getElementById('nav-row') && (document.getElementById('nav-row').style.display='flex');
+  mascotSay('sad', '시간이 부족했어! 다음엔 조금 더 빠르게!');
+}
+
+function nextM2(){ state.qIdx++; showM2Question(); }
+
+function endM2(){
+  stopTimer();
+  document.getElementById('hud-timer').style.display='none';
+  mascotSay('happy', `미션2 완료! ${state.missionScores[1]}점 획득! 이제 AI 딜레마 시나리오야! 🤖`);
+  document.getElementById('content-area').innerHTML = `
+    <div class="mission-intro">
+      <div class="mi-icon">📚✅</div>
+      <div class="mi-title">교과 융합 퀴즈 완료!</div>
+      <div class="mi-desc">획득 점수: <strong style="color:var(--yellow)">${state.missionScores[1]}점</strong></div>
+      <button class="btn-primary" onclick="showMissionIntro(3)">미션 3으로 이동 ▶</button>
+    </div>
+  `;
+}
+
+// ══════════════════════════════════════════
+//  MISSION 3 - SCENARIO
+// ══════════════════════════════════════════
+function startM3(){
+  state.qIdx = 0;
+  document.getElementById('hud-timer').style.display='none';
+  showM3Question();
+}
+
+function showM3Question(){
+  const qs = QUESTIONS.m3;
+  const idx = state.qIdx;
+  if(idx >= qs.length){ endM3(); return; }
+  const q = qs[idx];
+  updateProgress(idx, qs.length);
+  mascotSay('neutral', `시나리오 ${idx+1}/${qs.length}: 정답이 없어! 최선의 판단을 내려봐. 🤔`);
+
+  document.getElementById('content-area').innerHTML = `
+    <div class="scenario-card">
+      <div class="scenario-label">🌐 메타버스 딜레마 시나리오 ${idx+1}</div>
+      <div class="scenario-text">${q.scenario}</div>
+      ${q.aiWarn ? `<div class="ai-warning">⚠️ AI가 생성한 시나리오 요소가 포함되어 있을 수 있습니다. 정보는 비판적으로 검토하세요.</div>` : ''}
+    </div>
+    <div class="question-card">
+      <div class="q-tag scenario">🤔 시나리오 판단</div>
+      <div class="q-text">${q.question}</div>
+      <div class="choices">
+        ${q.choices.map((c,i)=>`<button class="choice-btn" onclick="answerM3(${i}, this)">${c}</button>`).join('')}
+      </div>
+    </div>
+    <div class="feedback-box" id="fb-box"></div>
+    <div class="nav-row" id="nav-row" style="display:none">
+      <button class="btn-primary" onclick="nextM3()">다음 시나리오 ▶</button>
+    </div>
+  `;
+}
+
+function answerM3(i, btn){
+  if(document.querySelector('.choice-btn:disabled')) return;
+  document.querySelectorAll('.choice-btn').forEach(b => b.disabled=true);
+  const q = QUESTIONS.m3[state.qIdx];
+  const best = (i === q.best);
+  document.querySelectorAll('.choice-btn')[q.best].classList.add('correct');
+  if(!best) btn.classList.add('wrong');
+  const pts = best ? Math.round(15 * DIFF_MULT[state.difficulty]) : Math.round(5 * DIFF_MULT[state.difficulty]);
+  state.score += pts; state.missionScores[2] += pts;
+  document.getElementById('hud-score').textContent = state.score + '점';
+  const fb = document.getElementById('fb-box');
+  fb.className = 'feedback-box ' + (best ? 'correct-fb' : 'wrong-fb');
+  fb.innerHTML = q.fb[i] + `<br><strong>+${pts}점</strong>`;
+  document.getElementById('nav-row').style.display='flex';
+  mascotSay(best ? 'happy' : 'neutral', best ? '최선의 판단! 정책 전문가 자질이 보여! 🌟' : '이 시각도 가치 있어! 하지만 최선을 찾아보자 💭');
+  playSFX(best ? 'correct' : 'wrong');
+  showSticker(best ? '🏛️' : '💭');
+}
+
+function nextM3(){ state.qIdx++; showM3Question(); }
+
+function endM3(){
+  mascotSay('happy', `미션3 완료! ${state.missionScores[2]}점 획득! 마지막, 데이터 분석이야! 📊`);
+  document.getElementById('content-area').innerHTML = `
+    <div class="mission-intro">
+      <div class="mi-icon">🤖✅</div>
+      <div class="mi-title">AI 딜레마 완료!</div>
+      <div class="mi-desc">획득 점수: <strong style="color:var(--yellow)">${state.missionScores[2]}점</strong></div>
+      <button class="btn-primary" onclick="showMissionIntro(4)">미션 4로 이동 ▶</button>
+    </div>
+  `;
+}
+
+// ══════════════════════════════════════════
+//  MISSION 4 - DATA ANALYSIS
+// ══════════════════════════════════════════
+function startM4(){
+  state.qIdx = 0;
+  document.getElementById('hud-timer').style.display='none';
+  showM4();
+}
+
+function showM4(){
+  const qs = QUESTIONS.m4.questions;
+  const idx = state.qIdx;
+  if(idx >= qs.length){ endM4(); return; }
+  const q = qs[idx];
+  updateProgress(idx, qs.length);
+  state.hintUsedQ = false;
+  mascotSay('neutral', `데이터 ${idx+1}/${qs.length}: 그래프를 잘 읽어봐! 숫자 속에 미래가 있어 📊`);
+
+  const chartHTML = `
+    <div class="chart-wrap">
+      <div class="chart-title">📊 2030년 메타버스 관련 직업 수요 증가율 예측 (%)<br>
+        <span style="font-size:11px;color:var(--text2)">출처: 미랩 미래직업연구소 시뮬레이션 데이터 2024 · 실제 수치와 다를 수 있음</span>
+      </div>
+      <div class="bar-chart">
+        ${QUESTIONS.m4.chartData.map(d=>`
+          <div class="bar-row">
+            <div class="bar-label">${d.label}</div>
+            <div class="bar-track">
+              <div class="bar-fill" style="width:${d.val}%;background:${d.color}">${d.val}%</div>
+            </div>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+  `;
+
+  document.getElementById('content-area').innerHTML = chartHTML + `
+    <div class="hint-row">
+      <button class="hint-btn" id="hint-btn" onclick="showHint4()">💡 힌트 (-30%)</button>
+    </div>
+    <div class="hint-box" id="hint-box">💡 ${q.hint}</div>
+    <div class="question-card">
+      <div class="q-tag data">📊 데이터 분석 ${idx+1}</div>
+      <div class="q-text">${q.text}</div>
+      <div class="choices">
+        ${q.choices.map((c,i)=>`<button class="choice-btn" onclick="answerM4(${i}, this)">${String.fromCharCode(9312+i)} ${c}</button>`).join('')}
+      </div>
+    </div>
+    <div class="feedback-box" id="fb-box"></div>
+    <div class="nav-row" id="nav-row" style="display:none">
+      <button class="btn-primary" onclick="nextM4()">다음 ▶</button>
+    </div>
+  `;
+}
+
+function showHint4(){
+  const btn = document.getElementById('hint-btn');
+  if(state.hintUsedQ) return;
+  state.hintUsedQ = true; state.hintsUsed++;
+  btn.disabled=true; btn.textContent='💡 힌트 사용됨';
+  document.getElementById('hint-box').style.display='block';
+}
+
+function answerM4(i, btn){
+  if(document.querySelector('.choice-btn:disabled')) return;
+  document.querySelectorAll('.choice-btn').forEach(b => b.disabled=true);
+  const q = QUESTIONS.m4.questions[state.qIdx];
+  const correct = (i===q.answer);
+  document.querySelectorAll('.choice-btn')[q.answer].classList.add('correct');
+  if(!correct) btn.classList.add('wrong');
+  const pts = correct ? Math.round((state.hintUsedQ?7:10) * DIFF_MULT[state.difficulty]) : 0;
+  state.score += pts; state.missionScores[3] += pts;
+  document.getElementById('hud-score').textContent = state.score+'점';
+  const fb = document.getElementById('fb-box');
+  fb.className = 'feedback-box '+(correct?'correct-fb':'wrong-fb');
+  fb.innerHTML = (correct?'✅ ':'❌ ') + q.fb + (correct?`<br><strong>+${pts}점</strong>`:'');
+  document.getElementById('nav-row').style.display='flex';
+  mascotSay(correct?'happy':'sad', correct?'데이터 독해력이 탁월해! 📊 미래를 읽는 눈이 있어!':'아쉬워! 데이터 분석은 연습이 중요해. 다시 보자!');
+  playSFX(correct?'correct':'wrong');
+  showSticker(correct?'📈':'🔍');
+}
+
+function nextM4(){ state.qIdx++; showM4(); }
+
+function endM4(){
+  playSFX('fanfare');
+  mascotSay('happy', '모든 미션 완료! 놀라운 탐구자야! 🎊 결과를 확인해보자!');
+  setTimeout(()=>{ saveLB(); showResult(); }, 1200);
+}
+
+// ══════════════════════════════════════════
+//  RESULT
+// ══════════════════════════════════════════
+const ENDINGS = [
+  { min:0, max:39, grade:'C', title:'메타버스 탐험 시작!', desc:'아직 메타버스 세계가 낯설지요? 괜찮아요! 모든 전문가도 처음엔 초보자였습니다. 팩트체크 능력과 AI 리터러시를 조금씩 쌓아가면 금방 성장할 거예요!', careers:['사회(기초)','정보(기초)','기술·가정'] },
+  { min:40, max:59, grade:'B', title:'메타버스 탐험가!', desc:'기본기를 갖춘 탐험가! 팩트체크와 AI 윤리에 대한 감각이 생겼어요. 조금 더 깊이 파고들면 디지털 시민 전문가로 성장할 수 있습니다.', careers:['정보(AI기초)','사회(경제)','도덕(윤리)'] },
+  { min:60, max:79, grade:'A', title:'메타버스 설계사!', desc:'훌륭한 성과! 데이터 분석, AI 딜레마 판단, 팩트체크 모두 균형 잡힌 역량을 보여줬습니다. 고교에서 심화 과목을 통해 전문가로 성장하세요!', careers:['인공지능기초','데이터과학','사회문제탐구','경제'] },
+  { min:80, max:999, grade:'S', title:'AI 정책 전문가 적성!', desc:'완벽에 가까운 분석력! 팩트체크·AI 윤리·데이터 분석 모든 영역에서 뛰어난 역량을 보였습니다. 미래 AI 정책, 메타버스 법·윤리 전문가의 길이 열려 있습니다!', careers:['인공지능기초','법과 정치','데이터과학','사회문제탐구'] },
+];
+
+function getEnding(){
+  const pct = Math.min(100, Math.round(state.score / getMaxScore() * 100));
+  return ENDINGS.find(e => pct >= e.min && pct <= e.max) || ENDINGS[0];
+}
+function getMaxScore(){
+  // M1: 12*10=120, M2: 9*10=90, M3: 5*15=75, M4: 5*10=50 → base 335
+  return Math.round(335 * DIFF_MULT[state.difficulty]);
+}
+
+function showResult(){
+  showScreen('result-screen');
+  makeQR('result-qr');
+  const end = getEnding();
+  const pct = Math.min(100, Math.round(state.score / getMaxScore() * 100));
+  document.getElementById('result-grade').textContent = end.grade;
+  document.getElementById('result-title').textContent = end.title;
+  document.getElementById('result-desc').textContent = end.desc;
+  document.getElementById('rc-items').innerHTML = end.careers.map(c=>`<div class="rc-item">📚 ${c}</div>`).join('');
+
+  document.getElementById('score-breakdown').innerHTML = `
+    <div class="sb-row"><span>📰 팩트체크</span><span style="color:var(--cyan)">${state.missionScores[0]}점</span></div>
+    <div class="sb-row"><span>📚 교과 퀴즈</span><span style="color:var(--cyan)">${state.missionScores[1]}점</span></div>
+    <div class="sb-row"><span>🤖 AI 딜레마</span><span style="color:var(--cyan)">${state.missionScores[2]}점</span></div>
+    <div class="sb-row"><span>📊 데이터 분석</span><span style="color:var(--cyan)">${state.missionScores[3]}점</span></div>
+    <div class="sb-row"><span>💡 힌트 사용</span><span style="color:var(--red)">-${state.hintsUsed}회</span></div>
+    <div class="sb-row"><span>🏆 최종 점수</span><span>${state.score}점 (${pct}%)</span></div>
+  `;
+  renderLB('result-lb-list');
+
+  // Portfolio Entry
+  const portfolioEntry = {
+    id: '039',
+    title: '메타버스 진로체험 - 메타버스 진로 설계사',
+    target: '중학교 공통',
+    grade: '중등',
+    subjects: ['사회(진로·경제)', '정보(AI·메타버스)', '도덕(AI윤리)'],
+    aiFeature: '팩트체크 12문항 진짜/가짜 판별 · AI 규제 딜레마 시나리오 5종 · AI 생성 콘텐츠 경고 문구 · 할루시네이션 개념 체험',
+    theme: '메타버스 진로체험 / AI 리터러시 / 고교학점제 선택과목 연계',
+    date: new Date().toISOString().slice(0,10),
+    url: 'https://milab2019.github.io/main/milab_metaverse_career_039.html',
+    missions: ['미션1 팩트체크(150초)', '미션2 교과융합퀴즈', '미션3 AI규제딜레마', '미션4 진로데이터분석'],
+    difficulty: ['쉬움','보통','도전'],
+    endings: 4,
+  };
+  console.log('%c📦 MILAB Portfolio Entry #039', 'color:#7c5cfc;font-weight:bold;font-size:14px');
+  console.log(portfolioEntry);
+}
+
+// ══════════════════════════════════════════
+//  TIMER
+// ══════════════════════════════════════════
+function startTimer(sec, cb){
+  stopTimer();
+  state.timerVal = sec;
+  const el = document.getElementById('hud-timer');
+  el.textContent = sec;
+  el.classList.remove('warn');
+  state.timerInterval = setInterval(()=>{
+    state.timerVal--;
+    if(el) el.textContent = state.timerVal;
+    if(state.timerVal <= 10){ el && el.classList.add('warn'); playSFX('tick'); }
+    if(state.timerVal <= 0){ stopTimer(); cb && cb(); }
+  }, 1000);
+}
+function stopTimer(){
+  clearInterval(state.timerInterval);
+  state.timerInterval = null;
+}
+
+// ══════════════════════════════════════════
+//  HELPERS
+// ══════════════════════════════════════════
+function updateProgress(idx, total){
+  document.getElementById('progress-fill').style.width = (idx/total*100)+'%';
+}
+
+function mascotSay(emotion, text){
+  document.getElementById('mascot-bubble').textContent = text;
+  const mouth = document.getElementById('mascot-mouth');
+  if(!mouth) return;
+  if(emotion==='happy') mouth.setAttribute('d','M48 60 Q60 72 72 60');
+  else if(emotion==='sad') mouth.setAttribute('d','M48 68 Q60 58 72 68');
+  else mouth.setAttribute('d','M52 62 Q60 68 68 62');
+}
+
+function showSticker(emoji){
+  const el = document.getElementById('sticker');
+  el.textContent = emoji;
+  el.classList.remove('show','hide');
+  void el.offsetWidth;
+  el.classList.add('show');
+  setTimeout(()=>{ el.classList.add('hide'); setTimeout(()=>el.classList.remove('show','hide'),500); },900);
+}
+
+// ══════════════════════════════════════════
+//  INIT
+// ══════════════════════════════════════════
+window.addEventListener('load', ()=>{
+  makeQR('intro-qr');
+});
+</script>
+</body>
+</html>
