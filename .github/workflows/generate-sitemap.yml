@@ -1,0 +1,62 @@
+name: Auto Generate Sitemap
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - '**.html'
+
+jobs:
+  generate-sitemap:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Generate sitemap.xml
+        run: |
+          BASE_URL="https://milab2019.github.io/main"
+          TODAY=$(date +%Y-%m-%d)
+
+          cat > sitemap.xml << 'XMLEOF'
+          <?xml version="1.0" encoding="UTF-8"?>
+          <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+          XMLEOF
+
+          # 포트폴리오 메인 페이지 (최우선)
+          cat >> sitemap.xml << XMLEOF
+            <url>
+              <loc>${BASE_URL}/milab_portfolio.html</loc>
+              <lastmod>${TODAY}</lastmod>
+              <changefreq>weekly</changefreq>
+              <priority>1.0</priority>
+            </url>
+          XMLEOF
+
+          # main/ 폴더의 모든 html 파일 자동 추가 (포트폴리오 제외)
+          for file in *.html; do
+            if [ "$file" != "milab_portfolio.html" ] && [ "$file" != "index.html" ]; then
+              cat >> sitemap.xml << XMLEOF
+            <url>
+              <loc>${BASE_URL}/${file}</loc>
+              <lastmod>${TODAY}</lastmod>
+              <changefreq>monthly</changefreq>
+              <priority>0.8</priority>
+            </url>
+          XMLEOF
+            fi
+          done
+
+          echo "</urlset>" >> sitemap.xml
+
+      - name: Commit sitemap
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add sitemap.xml
+          git diff --staged --quiet || git commit -m "🗺️ Auto-update sitemap.xml"
+          git push
