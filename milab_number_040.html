@@ -1,0 +1,706 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>삐약이랑 숫자 찾기 🐣 | MILAB</title>
+<!-- Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-WTY6YJQ1NS"></script>
+<script>
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-WTY6YJQ1NS');
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; user-select: none; }
+  :root {
+    --bg: #FFF9E6;
+    --yellow: #FFD93D;
+    --orange: #FF9500;
+    --green: #4CAF50;
+    --pink: #FF6B9D;
+    --blue: #4A90D9;
+    --card1: #FFF3B0;
+    --card2: #B5EAD7;
+    --text: #3A3A3A;
+    --shadow: 0 8px 24px rgba(0,0,0,0.12);
+  }
+  html, body {
+    width: 100%; height: 100%; overflow: hidden;
+    background: var(--bg);
+    font-family: 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif;
+  }
+  /* ── 화면 공통 ── */
+  .screen {
+    position: fixed; inset: 0;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    background: var(--bg);
+    transition: opacity 0.4s;
+  }
+  .screen.hidden { opacity: 0; pointer-events: none; }
+
+  /* ── 시작 화면 ── */
+  #startScreen { gap: 20px; padding: 30px; }
+  .title-box { text-align: center; }
+  .title-main { font-size: 2.4rem; font-weight: 900; color: var(--orange); line-height: 1.2; }
+  .title-sub  { font-size: 1.2rem; color: #888; margin-top: 6px; }
+  .start-btn {
+    background: var(--yellow); border: none; border-radius: 40px;
+    font-size: 1.8rem; font-weight: 900; color: var(--text);
+    padding: 22px 60px; cursor: pointer;
+    box-shadow: 0 6px 0 var(--orange);
+    transition: transform 0.1s;
+  }
+  .start-btn:active { transform: translateY(4px); box-shadow: 0 2px 0 var(--orange); }
+  #startQr { margin-top: 10px; }
+
+  /* ── 게임 화면 ── */
+  #gameScreen { padding: 0; }
+  .game-header {
+    width: 100%; display: flex; align-items: center; justify-content: space-between;
+    padding: 14px 20px 10px;
+    background: var(--bg);
+  }
+  .activity-label {
+    font-size: 1rem; font-weight: 700; color: var(--orange);
+    background: #FFE8A3; border-radius: 20px; padding: 6px 16px;
+  }
+  .progress-wrap { display: flex; gap: 6px; }
+  .prog-dot {
+    width: 16px; height: 16px; border-radius: 50%;
+    background: #E0E0E0; transition: background 0.3s;
+  }
+  .prog-dot.done { background: var(--green); }
+  .prog-dot.current { background: var(--yellow); border: 2px solid var(--orange); }
+
+  /* 캐릭터 */
+  .chara-wrap {
+    flex-shrink: 0;
+    width: 100%; display: flex; justify-content: center; align-items: flex-end;
+    height: 22vw; max-height: 130px; min-height: 80px;
+  }
+  .chick-svg { height: 100%; width: auto; }
+  @keyframes jump { 0%,100%{transform:translateY(0)} 40%{transform:translateY(-30px)} }
+  @keyframes shake { 0%,100%{transform:rotate(0)} 25%{transform:rotate(-12deg)} 75%{transform:rotate(12deg)} }
+  @keyframes idle { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-6px)} }
+  .chick-svg.jump  { animation: jump 0.6s ease; }
+  .chick-svg.shake { animation: shake 0.5s ease; }
+  .chick-svg.idle  { animation: idle 2s ease-in-out infinite; }
+
+  /* 질문 */
+  .question-area {
+    width: 100%; text-align: center;
+    padding: 8px 16px;
+    font-size: 1.6rem; font-weight: 900; color: var(--text);
+    min-height: 54px;
+  }
+
+  /* 선택지 카드 */
+  .choices-wrap {
+    flex: 1; width: 100%;
+    display: flex; gap: 10px; padding: 8px 14px 14px;
+  }
+  .choice-card {
+    flex: 1; border-radius: 28px; border: none; cursor: pointer;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    min-height: 120px;
+    box-shadow: var(--shadow);
+    transition: transform 0.12s;
+    font-size: 5rem; font-weight: 900; color: var(--text);
+    position: relative; overflow: hidden;
+  }
+  .choice-card:nth-child(1) { background: var(--card1); box-shadow: 0 8px 0 #E8D070; }
+  .choice-card:nth-child(2) { background: var(--card2); box-shadow: 0 8px 0 #7DC9A8; }
+  .choice-card:nth-child(3) { background: #FFD1DC; box-shadow: 0 8px 0 #C9929E; }
+  .choice-card:active { transform: scale(0.95); }
+  .choice-card .num-label { font-size: 5rem; line-height: 1; }
+  .choice-card .dot-row { display: flex; flex-wrap: wrap; justify-content: center; gap: 4px; max-width: 80%; margin-top: 6px; }
+  .dot { width: 14px; height: 14px; border-radius: 50%; background: var(--orange); display: inline-block; }
+
+  /* 힌트 반짝 */
+  @keyframes hint-glow {
+    0%,100%{box-shadow:0 0 0 0 rgba(255,215,0,0)} 50%{box-shadow:0 0 0 16px rgba(255,215,0,0.6)}
+  }
+  .choice-card.hint { animation: hint-glow 0.6s ease 3; }
+  .choice-card.correct-flash { background: #A8F0A0 !important; }
+  .choice-card.wrong-flash   { opacity: 0.5; }
+
+  /* 피드백 오버레이 */
+  #feedback {
+    position: fixed; inset: 0;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    pointer-events: none; z-index: 50;
+  }
+  .fb-emoji { font-size: 6rem; opacity: 0; transition: opacity 0.2s; }
+  .fb-emoji.show { opacity: 1; }
+  @keyframes confetti-fall {
+    0%   { transform: translateY(-40px) rotate(0deg); opacity: 1; }
+    100% { transform: translateY(120px) rotate(720deg); opacity: 0; }
+  }
+  .confetti-piece {
+    position: fixed; width: 14px; height: 14px; border-radius: 3px;
+    animation: confetti-fall 1.2s ease forwards;
+    pointer-events: none; z-index: 60;
+  }
+
+  /* 활동 완료 배너 */
+  #activityDone {
+    position: fixed; inset: 0; background: rgba(255,249,230,0.95);
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 18px; z-index: 70;
+  }
+  #activityDone.hidden { display: none; }
+  .done-emoji { font-size: 5rem; }
+  .done-text  { font-size: 2rem; font-weight: 900; color: var(--orange); }
+  .sticker-row { display: flex; gap: 10px; font-size: 2.4rem; }
+  .next-btn {
+    background: var(--yellow); border: none; border-radius: 40px;
+    font-size: 1.6rem; font-weight: 900; color: var(--text);
+    padding: 18px 48px; cursor: pointer;
+    box-shadow: 0 6px 0 var(--orange);
+    min-width: 200px; min-height: 80px;
+  }
+
+  /* ── 결과 화면 ── */
+  #resultScreen { gap: 16px; padding: 30px; text-align: center; }
+  .result-title { font-size: 2.4rem; font-weight: 900; color: var(--orange); }
+  .result-stickers { font-size: 2.8rem; letter-spacing: 4px; }
+  .result-msg { font-size: 1.2rem; color: #666; }
+  .restart-btn {
+    background: var(--yellow); border: none; border-radius: 40px;
+    font-size: 1.5rem; font-weight: 900; color: var(--text);
+    padding: 18px 48px; cursor: pointer;
+    box-shadow: 0 6px 0 var(--orange);
+    min-height: 80px;
+  }
+  #resultQr { margin-top: 6px; }
+
+  /* 교사 모드 */
+  #teacherTrigger {
+    position: fixed; bottom: 0; left: 0;
+    width: 60px; height: 60px;
+    background: transparent; border: none; z-index: 100;
+    cursor: pointer;
+  }
+  #teacherPanel {
+    position: fixed; bottom: 0; left: 0; right: 0;
+    background: #333; color: #fff;
+    padding: 20px; border-radius: 20px 20px 0 0;
+    z-index: 200; display: none;
+  }
+  #teacherPanel h3 { font-size: 1rem; margin-bottom: 12px; color: #FFD93D; }
+  .t-btns { display: flex; gap: 10px; flex-wrap: wrap; }
+  .t-btn {
+    background: #555; border: none; color: #fff;
+    border-radius: 12px; padding: 12px 18px;
+    font-size: 0.9rem; cursor: pointer; min-height: 50px;
+  }
+  .t-btn:active { background: #FFD93D; color: #333; }
+  #teacherClose { position: absolute; top: 14px; right: 16px; background: none; border: none; color: #fff; font-size: 1.4rem; cursor: pointer; }
+</style>
+</head>
+<body>
+
+<!-- ══ 시작 화면 ══ -->
+<div id="startScreen" class="screen">
+  <div class="title-box">
+    <div style="font-size:4rem;">🐣</div>
+    <div class="title-main">삐약이랑<br>숫자 찾기</div>
+    <div class="title-sub">숫자 1~10을 함께 배워요!</div>
+  </div>
+
+  <!-- 시작 화면 삐약이 -->
+  <svg class="chick-svg idle" viewBox="0 0 160 160" style="height:120px;width:auto;" xmlns="http://www.w3.org/2000/svg">
+    <ellipse cx="80" cy="110" rx="50" ry="38" fill="#FFD93D"/>
+    <circle  cx="80" cy="68"  r="36"  fill="#FFE87C"/>
+    <ellipse cx="65" cy="60" rx="10" ry="12" fill="white"/>
+    <ellipse cx="95" cy="60" rx="10" ry="12" fill="white"/>
+    <circle  cx="66" cy="62" r="5"  fill="#2C2C2C"/>
+    <circle  cx="96" cy="62" r="5"  fill="#2C2C2C"/>
+    <circle  cx="68" cy="60" r="2"  fill="white"/>
+    <circle  cx="98" cy="60" r="2"  fill="white"/>
+    <ellipse cx="80" cy="78" rx="10" ry="6" fill="#FF9500"/>
+    <ellipse cx="40" cy="108" rx="14" ry="8" fill="#FF9500" transform="rotate(-20 40 108)"/>
+    <ellipse cx="120" cy="108" rx="14" ry="8" fill="#FF9500" transform="rotate(20 120 108)"/>
+    <ellipse cx="65" cy="130" rx="10" ry="5" fill="#FF9500"/>
+    <ellipse cx="95" cy="130" rx="10" ry="5" fill="#FF9500"/>
+  </svg>
+
+  <button class="start-btn" onclick="startGame()">시작! 🎵</button>
+  <div id="startQr"></div>
+</div>
+
+<!-- ══ 게임 화면 ══ -->
+<div id="gameScreen" class="screen hidden" style="justify-content:flex-start;">
+  <div class="game-header">
+    <div class="activity-label" id="actLabel">활동 1</div>
+    <div class="progress-wrap" id="progDots"></div>
+  </div>
+
+  <div class="chara-wrap">
+    <svg id="chick" class="chick-svg idle" viewBox="0 0 160 160" xmlns="http://www.w3.org/2000/svg">
+      <ellipse cx="80" cy="110" rx="50" ry="38" fill="#FFD93D"/>
+      <circle  cx="80" cy="68"  r="36"  fill="#FFE87C"/>
+      <ellipse cx="65" cy="60" rx="10" ry="12" fill="white"/>
+      <ellipse cx="95" cy="60" rx="10" ry="12" fill="white"/>
+      <circle  cx="66" cy="62" r="5"  fill="#2C2C2C"/>
+      <circle  cx="96" cy="62" r="5"  fill="#2C2C2C"/>
+      <circle  cx="68" cy="60" r="2"  fill="white"/>
+      <circle  cx="98" cy="60" r="2"  fill="white"/>
+      <ellipse id="beak" cx="80" cy="78" rx="10" ry="6" fill="#FF9500"/>
+      <ellipse cx="40" cy="108" rx="14" ry="8" fill="#FF9500" transform="rotate(-20 40 108)"/>
+      <ellipse cx="120" cy="108" rx="14" ry="8" fill="#FF9500" transform="rotate(20 120 108)"/>
+      <ellipse cx="65" cy="130" rx="10" ry="5" fill="#FF9500"/>
+      <ellipse cx="95" cy="130" rx="10" ry="5" fill="#FF9500"/>
+    </svg>
+  </div>
+
+  <div class="question-area" id="questionArea"></div>
+  <div class="choices-wrap" id="choicesWrap"></div>
+
+  <div id="feedback"><div class="fb-emoji" id="fbEmoji"></div></div>
+</div>
+
+<!-- 활동 완료 배너 -->
+<div id="activityDone" class="hidden">
+  <div class="done-emoji">🎉</div>
+  <div class="done-text" id="doneText">활동 1 완료!</div>
+  <div class="sticker-row" id="stickerRow"></div>
+  <button class="next-btn" id="nextActBtn" onclick="nextActivity()">다음 활동 ➡️</button>
+</div>
+
+<!-- ══ 결과 화면 ══ -->
+<div id="resultScreen" class="screen hidden">
+  <div style="font-size:4rem;">🐣✨</div>
+  <div class="result-title">모두 다 했어요!<br>정말 잘 했어요!</div>
+  <div class="result-stickers" id="resultStickers"></div>
+  <div class="result-msg">삐약이가 너무 좋아해요 🎵</div>
+  <button class="restart-btn" onclick="restartGame()">다시 하기 🔄</button>
+  <div id="resultQr"></div>
+</div>
+
+<!-- 교사 모드 -->
+<button id="teacherTrigger"></button>
+<div id="teacherPanel">
+  <button id="teacherClose" onclick="closeTeacher()">✕</button>
+  <h3>🔧 교사 모드</h3>
+  <div class="t-btns">
+    <button class="t-btn" onclick="toggleBGM()">🎵 배경음 ON/OFF</button>
+    <button class="t-btn" onclick="toggleSFX()">🔔 효과음 ON/OFF</button>
+    <button class="t-btn" onclick="forceNextActivity()">⏭️ 다음 활동</button>
+    <button class="t-btn" onclick="closeTeacher()">닫기</button>
+  </div>
+</div>
+
+<script>
+// ════════════════════════════════════
+//  상태
+// ════════════════════════════════════
+const URL_SELF = 'https://milab2019.github.io/main/milab_number_040.html';
+
+let bgmOn = true, sfxOn = true;
+let audioCtx = null;
+let bgmNodes = null;
+
+let currentActivity = 0;   // 0=활동1, 1=활동2, 2=활동3
+let currentQ = 0;
+let correctCount = 0;
+let totalStickers = 0;
+let retryCount = 0;
+let correctIndex = -1;
+
+// 활동별 문항 정의
+const activities = [
+  { name:'활동 1', label:'숫자 보고 탭하기', total:10, type:'tap' },
+  { name:'활동 2', label:'같은 숫자 찾기',   total:10, type:'match' },
+  { name:'활동 3', label:'소리 듣고 고르기', total:5,  type:'listen' }
+];
+
+// 문항 풀 (활동1,2: 2지선다, 활동3: 2지선다)
+// 활동1 — "N이 어디 있어요?" 2지선다
+// 활동2 — 3개 중 같은 숫자 1개
+// 활동3 — 소리 듣고 2지선다
+
+let questionQueue = [];
+
+function shuffleArr(a){ return a.sort(()=>Math.random()-0.5); }
+function randInt(lo,hi){ return Math.floor(Math.random()*(hi-lo+1))+lo; }
+
+function buildQueue(actIdx){
+  const nums = [1,2,3,4,5,6,7,8,9,10];
+  const total = activities[actIdx].total;
+  const q = [];
+  if(actIdx===0||actIdx===2){
+    // 2지선다: 각 숫자 한 번씩, 부족하면 반복
+    let pool = shuffleArr([...nums]);
+    while(pool.length<total) pool=[...pool,...shuffleArr([...nums])];
+    pool = pool.slice(0,total);
+    pool.forEach(n=>{
+      let wrong;
+      do{ wrong=randInt(1,10); }while(wrong===n);
+      const choices=shuffleArr([n,wrong]);
+      q.push({ answer:n, choices });
+    });
+  } else {
+    // 활동2: 3개 중 1개
+    let pool=shuffleArr([...nums]);
+    while(pool.length<total) pool=[...pool,...shuffleArr([...nums])];
+    pool=pool.slice(0,total);
+    pool.forEach(n=>{
+      let w1,w2;
+      do{ w1=randInt(1,10); }while(w1===n);
+      do{ w2=randInt(1,10); }while(w2===n||w2===w1);
+      const choices=shuffleArr([n,w1,w2]);
+      q.push({ answer:n, choices });
+    });
+  }
+  return q;
+}
+
+// ════════════════════════════════════
+//  Audio
+// ════════════════════════════════════
+function getACtx(){
+  if(!audioCtx) audioCtx=new(window.AudioContext||window.webkitAudioContext)();
+  return audioCtx;
+}
+function playTone(freq,dur,type='sine',vol=0.3){
+  if(!sfxOn) return;
+  const ctx=getACtx();
+  const g=ctx.createGain(); g.gain.setValueAtTime(0,ctx.currentTime);
+  g.gain.linearRampToValueAtTime(vol,ctx.currentTime+0.03);
+  g.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+dur);
+  g.connect(ctx.destination);
+  const o=ctx.createOscillator(); o.type=type; o.frequency.value=freq;
+  o.connect(g); o.start(); o.stop(ctx.currentTime+dur);
+}
+function playCorrect(){
+  [523,659,784,1047].forEach((f,i)=>setTimeout(()=>playTone(f,0.2,'sine',0.35),i*90));
+}
+function playRetry(){
+  playTone(400,0.3,'sine',0.15);
+}
+function playDone(){
+  [523,659,784,1047,1319].forEach((f,i)=>setTimeout(()=>playTone(f,0.25,'sine',0.4),i*80));
+}
+
+// BGM: 자장가풍 반복 멜로디
+const BGM_NOTES=[523,587,659,698,784,698,659,587,523,494,523];
+let bgmIdx=0, bgmTimer=null;
+function startBGM(){
+  if(!bgmOn) return;
+  bgmTimer=setInterval(()=>{
+    playTone(BGM_NOTES[bgmIdx%BGM_NOTES.length],0.4,'sine',0.08);
+    bgmIdx++;
+  },600);
+}
+function stopBGM(){ clearInterval(bgmTimer); bgmTimer=null; }
+function toggleBGM(){
+  bgmOn=!bgmOn;
+  bgmOn ? startBGM() : stopBGM();
+}
+function toggleSFX(){ sfxOn=!sfxOn; }
+
+// 숫자 말하기 (Web Audio beep 패턴으로 대체)
+function speakNumber(n){
+  if(!sfxOn) return;
+  for(let i=0;i<n;i++){
+    setTimeout(()=>playTone(880,0.12,'sine',0.35),i*200);
+  }
+}
+
+// ════════════════════════════════════
+//  QR
+// ════════════════════════════════════
+function makeQR(id){
+  const el=document.getElementById(id);
+  if(!el||el.children.length>0) return;
+  new QRCode(el,{text:URL_SELF,width:90,height:90,correctLevel:QRCode.CorrectLevel.M});
+}
+
+// ════════════════════════════════════
+//  화면 전환
+// ════════════════════════════════════
+function show(id){
+  ['startScreen','gameScreen','resultScreen'].forEach(s=>{
+    document.getElementById(s).classList.toggle('hidden', s!==id);
+  });
+}
+
+// ════════════════════════════════════
+//  캐릭터 애니메이션
+// ════════════════════════════════════
+function chickAnim(type){
+  const c=document.getElementById('chick');
+  c.classList.remove('jump','shake','idle');
+  void c.offsetWidth;
+  c.classList.add(type);
+  if(type!=='idle') setTimeout(()=>{ c.classList.remove(type); c.classList.add('idle'); },700);
+}
+
+// ════════════════════════════════════
+//  폭죽
+// ════════════════════════════════════
+function launchConfetti(){
+  const colors=['#FFD93D','#FF6B9D','#4CAF50','#4A90D9','#FF9500','#B5EAD7'];
+  for(let i=0;i<18;i++){
+    const p=document.createElement('div');
+    p.className='confetti-piece';
+    p.style.left=randInt(10,90)+'vw';
+    p.style.top=randInt(5,40)+'vh';
+    p.style.background=colors[i%colors.length];
+    p.style.animationDelay=(i*0.05)+'s';
+    document.body.appendChild(p);
+    setTimeout(()=>p.remove(),1500);
+  }
+}
+
+// ════════════════════════════════════
+//  피드백 이모지
+// ════════════════════════════════════
+function showFeedback(ok){
+  const el=document.getElementById('fbEmoji');
+  el.textContent = ok ? '🎉' : '💛';
+  el.classList.add('show');
+  setTimeout(()=>el.classList.remove('show'),1000);
+}
+
+// ════════════════════════════════════
+//  게임 시작
+// ════════════════════════════════════
+function startGame(){
+  getACtx().resume();
+  currentActivity=0; totalStickers=0;
+  show('gameScreen');
+  startBGM();
+  loadActivity(0);
+}
+
+function loadActivity(idx){
+  currentActivity=idx;
+  currentQ=0; correctCount=0; retryCount=0;
+  questionQueue=buildQueue(idx);
+  document.getElementById('actLabel').textContent=activities[idx].name;
+  buildProgDots();
+  showQuestion();
+}
+
+function buildProgDots(){
+  const wrap=document.getElementById('progDots');
+  wrap.innerHTML='';
+  const total=activities[currentActivity].total;
+  for(let i=0;i<total;i++){
+    const d=document.createElement('div');
+    d.className='prog-dot'+(i===0?' current':'');
+    d.id='dot'+i;
+    wrap.appendChild(d);
+  }
+}
+function updateDots(){
+  for(let i=0;i<activities[currentActivity].total;i++){
+    const d=document.getElementById('dot'+i);
+    if(!d) continue;
+    d.className='prog-dot'+(i<currentQ?'done':i===currentQ?' current':'');
+  }
+}
+
+// ════════════════════════════════════
+//  문항 렌더링
+// ════════════════════════════════════
+function showQuestion(){
+  if(currentQ>=questionQueue.length){ activityComplete(); return; }
+  const q=questionQueue[currentQ];
+  const act=activities[currentActivity];
+  const qArea=document.getElementById('questionArea');
+  const cWrap=document.getElementById('choicesWrap');
+  cWrap.innerHTML='';
+
+  if(act.type==='tap'){
+    qArea.textContent=`${q.answer}이 어디 있어요? 👀`;
+    q.choices.forEach((num,i)=>{ cWrap.appendChild(makeNumCard(num,num===q.answer,q.choices.length)); });
+  } else if(act.type==='match'){
+    qArea.textContent=`같은 숫자를 찾아요! 🔍`;
+    // 상단에 정답 숫자 크게 표시
+    qArea.innerHTML=`같은 숫자를 찾아요! 🔍<br><span style="font-size:3rem;font-weight:900;color:var(--orange)">${q.answer}</span>`;
+    q.choices.forEach((num,i)=>{ cWrap.appendChild(makeNumCard(num,num===q.answer,q.choices.length)); });
+  } else {
+    // listen
+    qArea.textContent='소리를 들어요! 👂';
+    speakNumber(q.answer);
+    q.choices.forEach((num,i)=>{ cWrap.appendChild(makeNumCard(num,num===q.answer,q.choices.length)); });
+    // 5초 후 다시 재생
+    setTimeout(()=>{ if(currentQ<questionQueue.length && questionQueue[currentQ].answer===q.answer) speakNumber(q.answer); },5000);
+  }
+  updateDots();
+  chickAnim('idle');
+}
+
+function makeDots(n){
+  const row=document.createElement('div'); row.className='dot-row';
+  for(let i=0;i<n;i++){
+    const d=document.createElement('span'); d.className='dot'; row.appendChild(d);
+  }
+  return row;
+}
+
+function makeNumCard(num, isAnswer, total){
+  const card=document.createElement('button');
+  card.className='choice-card';
+  card.style.flexDirection='column';
+
+  const lbl=document.createElement('div'); lbl.className='num-label'; lbl.textContent=num;
+  card.appendChild(lbl);
+  if(num<=10){ card.appendChild(makeDots(num)); }
+
+  card.addEventListener('click',()=>onChoose(card,isAnswer));
+  return card;
+}
+
+// ════════════════════════════════════
+//  선택 처리
+// ════════════════════════════════════
+function onChoose(card,isAnswer){
+  // 이미 처리 중이면 무시
+  if(document.querySelector('.choice-card.correct-flash') || document.querySelector('.choice-card.wrong-flash')) return;
+  const allCards=document.querySelectorAll('.choice-card');
+  allCards.forEach(c=>c.style.pointerEvents='none');
+
+  if(isAnswer){
+    card.classList.add('correct-flash');
+    playCorrect();
+    chickAnim('jump');
+    showFeedback(true);
+    launchConfetti();
+    totalStickers++;
+    setTimeout(()=>{ currentQ++; showQuestion(); },900);
+  } else {
+    card.classList.add('wrong-flash');
+    playRetry();
+    chickAnim('shake');
+    showFeedback(false);
+    retryCount++;
+    setTimeout(()=>{
+      card.classList.remove('wrong-flash');
+      allCards.forEach(c=>c.style.pointerEvents='');
+      // 3회 오답 후 정답 힌트
+      if(retryCount>=3){
+        retryCount=0;
+        const cards=[...document.querySelectorAll('.choice-card')];
+        cards.forEach(c=>{
+          const lbl=c.querySelector('.num-label');
+          if(lbl && parseInt(lbl.textContent)===questionQueue[currentQ].answer){
+            c.classList.add('hint');
+            setTimeout(()=>c.classList.remove('hint'),2000);
+          }
+        });
+      }
+    },800);
+  }
+}
+
+// ════════════════════════════════════
+//  활동 완료
+// ════════════════════════════════════
+function activityComplete(){
+  playDone();
+  chickAnim('jump');
+  const panel=document.getElementById('activityDone');
+  document.getElementById('doneText').textContent=activities[currentActivity].name+' 완료!';
+  // 스티커 (전체 정답 수 기반)
+  const row=document.getElementById('stickerRow');
+  row.innerHTML='';
+  const stickers=['⭐','🌟','✨','💫','🎵','🎈','🐣','🌈'];
+  const cnt=Math.min(totalStickers, 8);
+  for(let i=0;i<cnt;i++){ const s=document.createElement('span'); s.textContent=stickers[i%stickers.length]; row.appendChild(s); }
+
+  const nextBtn=document.getElementById('nextActBtn');
+  if(currentActivity>=2){
+    nextBtn.textContent='완료! 🎉';
+    nextBtn.onclick=showResult;
+  } else {
+    nextBtn.textContent='다음 활동 ➡️';
+    nextBtn.onclick=nextActivity;
+  }
+  panel.classList.remove('hidden');
+}
+
+function nextActivity(){
+  document.getElementById('activityDone').classList.add('hidden');
+  if(currentActivity<2){ loadActivity(currentActivity+1); }
+  else { showResult(); }
+}
+
+// ════════════════════════════════════
+//  결과 화면
+// ════════════════════════════════════
+function showResult(){
+  document.getElementById('activityDone').classList.add('hidden');
+  stopBGM();
+  show('resultScreen');
+  const stickers=['⭐','🌟','✨','💫','🎵','🎈','🐣','🌈','🦋','🌺'];
+  let s='';
+  for(let i=0;i<Math.min(totalStickers,10);i++) s+=stickers[i%stickers.length];
+  document.getElementById('resultStickers').textContent=s;
+  setTimeout(()=>makeQR('resultQr'),300);
+  launchConfetti(); launchConfetti();
+
+  const portfolioEntry = {
+    id: '#040',
+    title: '삐약이랑 숫자 찾기',
+    target: '특수학급 Level A (발달 나이 4~6세)',
+    subject: '일상생활 · 의사소통 (숫자 1~10 이해)',
+    level: 'Special-A',
+    grade: '특수',
+    activities: 3,
+    questions: 25,
+    numberRange: '1~10',
+    features: ['타이머 없음','2지선다(활동1·3)/3지선다(활동2)','교사 모드','Web Audio 숫자 음향','QR코드','폭죽 애니메이션'],
+    date: '2026.04.09',
+    url: URL_SELF
+  };
+  console.log('📋 portfolioEntry:', JSON.stringify(portfolioEntry, null, 2));
+}
+
+function restartGame(){
+  show('startScreen');
+  stopBGM();
+  bgmIdx=0;
+  setTimeout(()=>makeQR('startQr'),300);
+}
+
+// ════════════════════════════════════
+//  교사 모드
+// ════════════════════════════════════
+let teacherHold=null;
+document.getElementById('teacherTrigger').addEventListener('pointerdown',()=>{
+  teacherHold=setTimeout(()=>document.getElementById('teacherPanel').style.display='block',3000);
+});
+document.getElementById('teacherTrigger').addEventListener('pointerup',()=>clearTimeout(teacherHold));
+function closeTeacher(){ document.getElementById('teacherPanel').style.display='none'; }
+function forceNextActivity(){
+  closeTeacher();
+  document.getElementById('activityDone').classList.add('hidden');
+  if(currentActivity<2){ loadActivity(currentActivity+1); }
+  else { showResult(); }
+}
+
+// ════════════════════════════════════
+//  캐릭터 탭 반응
+// ════════════════════════════════════
+document.addEventListener('DOMContentLoaded',()=>{
+  document.querySelectorAll('.chick-svg').forEach(c=>{
+    c.addEventListener('click',()=>{ chickAnim('jump'); playTone(880,0.15); });
+  });
+  setTimeout(()=>makeQR('startQr'),400);
+});
+
+// 가장자리 탭 무시
+document.addEventListener('click', e=>{
+  if(e.clientX<10||e.clientX>window.innerWidth-10||
+     e.clientY<10||e.clientY>window.innerHeight-10) e.stopPropagation();
+},{capture:true});
+</script>
+</body>
+</html>
