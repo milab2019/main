@@ -1,0 +1,992 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>🌱 스마트팜 마스터 — MILAB #041</title>
+<meta name="description" content="MILAB 스마트팜 마스터 — 3분 안에 식물을 키워라! 조도·습도·배양액을 제어하는 육성 시뮬레이션">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<!-- Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-WTY6YJQ1NS"></script>
+<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-WTY6YJQ1NS');</script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;600;700;900&family=Orbitron:wght@700;900&display=swap');
+
+:root {
+  --bg-deep:#070f0a;--bg-dark:#0d1a10;--bg-card:#111f15;--bg-card2:#162218;
+  --green-bright:#3dff7a;--green-mid:#1db954;--green-dark:#0d6b34;
+  --green-glow:rgba(61,255,122,0.18);
+  --teal:#00e5b4;--amber:#ffb84d;--red-warn:#ff4f4f;--blue-data:#4db8ff;
+  --purple:#b48cff;
+  --text-primary:#e8f5ec;--text-secondary:#8ab89a;--text-muted:#4a6e54;
+  --border:rgba(61,255,122,0.15);--border-bright:rgba(61,255,122,0.4);
+  --radius:14px;--radius-lg:20px;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Noto Sans KR',sans-serif;background:var(--bg-deep);color:var(--text-primary);min-height:100vh;min-height:100dvh;overflow-x:hidden;-webkit-tap-highlight-color:transparent;}
+
+#particles-bg{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:0;background:radial-gradient(ellipse 80% 60% at 50% 0%,rgba(13,107,52,0.25) 0%,transparent 70%);}
+.particle{position:absolute;width:2px;height:2px;border-radius:50%;background:var(--green-bright);opacity:0;animation:float var(--dur,8s) var(--delay,0s) infinite ease-in-out;}
+@keyframes float{0%{opacity:0;transform:translateY(100vh) scale(0);}10%{opacity:.6;}90%{opacity:.3;}100%{opacity:0;transform:translateY(-20px) scale(1.5);}}
+
+#app{position:relative;z-index:1;max-width:480px;margin:0 auto;padding:12px 16px;padding-bottom:env(safe-area-inset-bottom,12px);}
+.screen{display:none;animation:fadeIn .4s ease;}.screen.active{display:block;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(14px);}to{opacity:1;transform:none;}}
+
+/* 헤더 */
+.game-header{display:flex;align-items:center;justify-content:space-between;padding:10px 16px;margin-bottom:10px;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);}
+.header-title{font-family:'Orbitron',sans-serif;font-size:11px;color:var(--green-bright);letter-spacing:1px;}
+.header-right{display:flex;align-items:center;gap:10px;}
+.score-badge{background:rgba(61,255,122,.1);border:1px solid var(--border-bright);border-radius:8px;padding:4px 10px;font-size:12px;color:var(--green-bright);font-weight:700;}
+.music-btn{background:none;border:1px solid var(--border);border-radius:8px;padding:4px 8px;color:var(--text-secondary);cursor:pointer;font-size:14px;transition:all .2s;}
+
+/* 인트로 */
+.intro-badge{display:inline-block;background:rgba(61,255,122,.12);border:1px solid var(--border-bright);border-radius:30px;padding:5px 16px;font-size:11px;color:var(--green-bright);letter-spacing:2px;margin-bottom:20px;}
+.intro-title{font-family:'Orbitron',sans-serif;font-size:clamp(20px,5vw,32px);color:var(--green-bright);line-height:1.3;margin-bottom:6px;text-shadow:0 0 30px rgba(61,255,122,.4);}
+.intro-subtitle{font-size:15px;color:var(--text-secondary);margin-bottom:20px;}
+
+/* 마스코트 */
+.fami-wrap{margin:0 auto 16px;width:100px;height:100px;animation:bob 2.8s ease-in-out infinite;}
+@keyframes bob{0%,100%{transform:translateY(0);}50%{transform:translateY(-6px);}}
+.fami-speech{background:var(--bg-card2);border:1px solid var(--border-bright);border-radius:var(--radius);padding:12px 14px;font-size:13px;color:var(--text-primary);line-height:1.7;margin:0 0 18px;text-align:left;position:relative;}
+.fami-speech::before{content:'';position:absolute;top:-8px;left:44px;width:14px;height:14px;background:var(--bg-card2);border-left:1px solid var(--border-bright);border-top:1px solid var(--border-bright);transform:rotate(45deg);}
+.fami-name{font-size:11px;color:var(--green-bright);font-weight:700;margin-bottom:4px;}
+
+/* 버튼 */
+.btn-primary{display:inline-block;background:var(--green-mid);color:#000;font-size:16px;font-weight:700;padding:14px 36px;border-radius:var(--radius);border:none;cursor:pointer;transition:all .2s;font-family:'Noto Sans KR',sans-serif;-webkit-tap-highlight-color:transparent;}
+.btn-primary:hover{background:var(--green-bright);transform:translateY(-2px);box-shadow:0 8px 24px rgba(61,255,122,.3);}
+.btn-primary:active{transform:scale(.97);}
+.btn-secondary{display:inline-block;background:transparent;color:var(--text-secondary);font-size:13px;padding:10px 20px;border-radius:var(--radius);border:1px solid var(--border);cursor:pointer;transition:all .2s;font-family:'Noto Sans KR',sans-serif;text-decoration:none;}
+
+/* 게임 화면 */
+.timer-bar-wrap{background:rgba(255,255,255,.06);border-radius:6px;height:8px;margin-bottom:10px;overflow:hidden;position:relative;}
+.timer-bar-fill{height:100%;background:var(--green-bright);border-radius:6px;transition:width 1s linear,background .5s;box-shadow:0 0 8px rgba(61,255,122,.5);}
+.timer-bar-fill.warn{background:var(--red-warn);animation:blink .5s infinite;}
+@keyframes blink{0%,100%{opacity:1;}50%{opacity:.4;}}
+.timer-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;font-size:12px;color:var(--text-secondary);}
+.timer-num{font-family:'Orbitron',sans-serif;font-size:18px;font-weight:700;color:var(--green-bright);}
+.timer-num.warn{color:var(--red-warn);}
+
+/* 식물 영역 */
+.plant-area{text-align:center;padding:16px 0 10px;position:relative;min-height:120px;}
+.plant-emoji{font-size:72px;transition:all .5s ease;display:inline-block;}
+.plant-stage-label{font-size:11px;color:var(--text-muted);margin-top:4px;}
+.growth-bar-wrap{margin:8px auto 0;max-width:280px;}
+.growth-label{display:flex;justify-content:space-between;font-size:11px;color:var(--text-secondary);margin-bottom:3px;}
+.growth-bar-bg{height:10px;background:rgba(255,255,255,.06);border-radius:5px;overflow:hidden;}
+.growth-bar-fill{height:100%;border-radius:5px;transition:width .4s ease;background:linear-gradient(90deg,var(--green-dark),var(--green-bright));}
+
+/* 건강도 */
+.health-wrap{margin:8px auto 0;max-width:280px;}
+.health-label{display:flex;justify-content:space-between;font-size:11px;margin-bottom:3px;}
+.health-bar-bg{height:8px;background:rgba(255,255,255,.06);border-radius:4px;overflow:hidden;}
+.health-bar-fill{height:100%;border-radius:4px;transition:width .4s ease,background .3s;background:var(--green-bright);}
+.health-bar-fill.mid{background:var(--amber);}
+.health-bar-fill.low{background:var(--red-warn);}
+
+/* 대시보드 */
+.dashboard{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin:12px 0;}
+.dash-card{background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:10px 8px;text-align:center;position:relative;overflow:hidden;}
+.dash-card.warning{border-color:rgba(255,184,77,.4);animation:pulseWarn 1.5s infinite;}
+.dash-card.danger{border-color:rgba(255,79,79,.4);animation:pulseDanger 1s infinite;}
+@keyframes pulseWarn{0%,100%{box-shadow:none;}50%{box-shadow:0 0 12px rgba(255,184,77,.3);}}
+@keyframes pulseDanger{0%,100%{box-shadow:none;}50%{box-shadow:0 0 12px rgba(255,79,79,.3);}}
+.dash-icon{font-size:18px;margin-bottom:2px;}
+.dash-label{font-size:10px;color:var(--text-muted);margin-bottom:2px;}
+.dash-value{font-size:18px;font-weight:900;}
+.dash-value.ok{color:var(--green-bright);}
+.dash-value.warn{color:var(--amber);}
+.dash-value.danger{color:var(--red-warn);}
+.dash-range{font-size:9px;color:var(--text-muted);margin-top:2px;}
+.dash-optimal{position:absolute;top:4px;right:6px;font-size:8px;padding:1px 4px;border-radius:4px;font-weight:700;}
+.dash-optimal.ok{background:rgba(61,255,122,.12);color:var(--green-bright);}
+.dash-optimal.bad{background:rgba(255,79,79,.12);color:var(--red-warn);}
+
+/* 제어 패널 */
+.control-panel{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:12px;margin-bottom:10px;}
+.control-title{font-size:11px;color:var(--green-mid);font-weight:700;margin-bottom:8px;letter-spacing:1px;}
+.control-row{display:flex;align-items:center;gap:8px;margin-bottom:10px;}
+.control-row:last-child{margin-bottom:0;}
+.ctrl-icon{font-size:18px;width:26px;text-align:center;flex-shrink:0;}
+.ctrl-label{font-size:11px;color:var(--text-secondary);width:40px;flex-shrink:0;}
+.ctrl-slider-wrap{flex:1;position:relative;}
+.ctrl-slider{-webkit-appearance:none;appearance:none;width:100%;height:8px;border-radius:4px;background:rgba(255,255,255,.08);outline:none;cursor:pointer;}
+.ctrl-slider::-webkit-slider-thumb{-webkit-appearance:none;width:24px;height:24px;border-radius:50%;background:var(--amber);border:2px solid #fff;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.3);}
+.ctrl-slider::-moz-range-thumb{width:24px;height:24px;border-radius:50%;background:var(--amber);border:2px solid #fff;cursor:pointer;}
+.ctrl-value{font-size:13px;font-weight:700;width:60px;text-align:right;flex-shrink:0;}
+.ctrl-btns{display:flex;gap:6px;flex:1;}
+.ctrl-btn{flex:1;padding:10px 6px;border-radius:10px;border:1px solid var(--border);background:rgba(255,255,255,.04);color:var(--text-primary);font-size:13px;font-weight:700;cursor:pointer;transition:all .15s;font-family:'Noto Sans KR',sans-serif;-webkit-tap-highlight-color:transparent;}
+.ctrl-btn:active{transform:scale(.95);background:rgba(61,255,122,.1);border-color:var(--border-bright);}
+.ctrl-btn.active{background:rgba(61,255,122,.15);border-color:var(--green-bright);color:var(--green-bright);}
+
+/* 이벤트 알림 */
+.event-banner{position:fixed;top:0;left:0;right:0;z-index:100;padding:10px 16px;text-align:center;font-size:14px;font-weight:700;transform:translateY(-100%);transition:transform .4s ease;pointer-events:none;}
+.event-banner.show{transform:translateY(0);}
+.event-banner.heat{background:rgba(255,79,79,.9);color:#fff;}
+.event-banner.dry{background:rgba(255,184,77,.9);color:#000;}
+.event-banner.cloudy{background:rgba(77,184,255,.9);color:#000;}
+.event-banner.rain{background:rgba(0,229,180,.9);color:#000;}
+
+/* 수확 플래시 */
+.harvest-flash{position:fixed;inset:0;background:rgba(61,255,122,.15);z-index:90;pointer-events:none;animation:harvestPulse .6s ease-out forwards;}
+@keyframes harvestPulse{0%{opacity:1;}100%{opacity:0;}}
+
+/* 화면 흔들림 */
+@keyframes shake{0%,100%{transform:translateX(0);}20%{transform:translateX(-4px);}40%{transform:translateX(4px);}60%{transform:translateX(-3px);}80%{transform:translateX(3px);}}
+.shaking{animation:shake .4s ease;}
+
+/* 마스코트 말풍선 (인게임) */
+.mascot-bubble{background:var(--bg-card2);border:1px solid var(--border-bright);border-radius:10px;padding:8px 12px;font-size:12px;color:var(--text-secondary);margin-bottom:10px;display:flex;align-items:center;gap:8px;min-height:36px;transition:opacity .3s;}
+.mascot-face{font-size:20px;flex-shrink:0;}
+.mascot-msg{line-height:1.5;}
+
+/* 점수 팝업 */
+.score-popup{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);font-family:'Orbitron',sans-serif;font-size:48px;font-weight:900;color:var(--green-bright);text-shadow:0 0 30px rgba(61,255,122,.6);z-index:80;pointer-events:none;animation:scoreUp 1.2s ease-out forwards;}
+@keyframes scoreUp{0%{opacity:1;transform:translate(-50%,-50%) scale(.5);}50%{transform:translate(-50%,-70%) scale(1.1);}100%{opacity:0;transform:translate(-50%,-90%) scale(.8);}}
+
+/* 결과 화면 */
+.result-title{font-family:'Orbitron',sans-serif;font-size:clamp(18px,4vw,26px);color:var(--green-bright);margin-bottom:6px;text-shadow:0 0 20px rgba(61,255,122,.4);}
+.result-score-big{font-family:'Orbitron',sans-serif;font-size:56px;font-weight:900;color:var(--green-bright);line-height:1;margin:12px 0;text-shadow:0 0 40px rgba(61,255,122,.5);}
+.result-career{font-size:18px;font-weight:700;color:var(--teal);margin-bottom:14px;line-height:1.4;}
+.result-detail{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:14px;margin:12px 0;text-align:left;}
+.stat-row{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border);font-size:13px;}
+.stat-row:last-child{border:none;}
+
+/* 닉네임 & 리더보드 */
+.nickname-area{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:14px;margin:12px 0;}
+.nickname-row{display:flex;gap:8px;}
+.nickname-input{flex:1;background:rgba(255,255,255,.05);border:1px solid var(--border);border-radius:10px;padding:10px 12px;font-size:14px;color:var(--text-primary);font-family:'Noto Sans KR',sans-serif;outline:none;}
+.nickname-input:focus{border-color:var(--border-bright);}
+.leaderboard{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:14px;margin:12px 0;text-align:left;}
+.lb-title{font-size:12px;color:var(--text-muted);margin-bottom:10px;}
+.lb-row{display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--border);font-size:13px;}
+.lb-row:last-child{border:none;}
+.lb-rank{width:22px;font-weight:700;color:var(--green-mid);}
+.lb-rank.gold{color:#FFD700;}.lb-rank.silver{color:#C0C0C0;}.lb-rank.bronze{color:#CD7F32;}
+.lb-name{flex:1;}.lb-score{font-weight:700;color:var(--green-bright);}
+
+/* QR */
+.qr-section{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:14px;margin:12px 0;text-align:center;}
+.qr-title{font-size:12px;color:var(--text-muted);margin-bottom:10px;}
+#qr-container,#qr-container-intro{display:flex;justify-content:center;margin-bottom:8px;}
+#qr-container canvas,#qr-container img,#qr-container-intro canvas,#qr-container-intro img{border-radius:8px;border:3px solid #fff;display:block;width:120px;height:120px;}
+.qr-sub{font-size:10px;color:var(--text-muted);}
+
+/* 로딩 */
+#loading-screen{position:fixed;inset:0;background:var(--bg-deep);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:999;}
+.loading-logo{font-family:'Orbitron',sans-serif;font-size:22px;color:var(--green-bright);letter-spacing:4px;margin-bottom:20px;}
+.loading-bar-bg{width:200px;height:4px;background:rgba(255,255,255,.1);border-radius:2px;overflow:hidden;}
+.loading-bar-fill{height:100%;background:var(--green-bright);border-radius:2px;animation:loadbar 1.6s ease forwards;}
+@keyframes loadbar{from{width:0%;}to{width:100%;}}
+.loading-sub{font-size:12px;color:var(--text-muted);margin-top:12px;}
+
+/* 빨간 오버레이 */
+.danger-overlay{position:fixed;inset:0;background:rgba(255,0,0,.08);pointer-events:none;z-index:50;animation:dangerPulse 1s infinite;}
+@keyframes dangerPulse{0%,100%{opacity:.3;}50%{opacity:.6;}}
+
+/* 게임오버 모달 */
+.gameover-overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:200;display:flex;align-items:center;justify-content:center;}
+.gameover-card{background:var(--bg-card);border:1px solid var(--red-warn);border-radius:var(--radius-lg);padding:28px 20px;text-align:center;max-width:340px;width:90%;}
+.gameover-title{font-size:24px;font-weight:900;color:var(--red-warn);margin-bottom:8px;}
+
+@media(max-width:380px){
+  .dashboard{grid-template-columns:1fr 1fr 1fr;gap:5px;}
+  .dash-card{padding:8px 5px;}
+  .dash-value{font-size:15px;}
+  .ctrl-btn{padding:8px 4px;font-size:12px;}
+}
+</style>
+</head>
+<body>
+<div id="particles-bg"></div>
+
+<!-- 로딩 -->
+<div id="loading-screen">
+  <div class="loading-logo">MILAB</div>
+  <div style="font-size:14px;color:var(--text-secondary);margin-bottom:20px;">🌱 스마트팜 마스터 초기화 중...</div>
+  <div class="loading-bar-bg"><div class="loading-bar-fill"></div></div>
+  <div class="loading-sub">환경 센서 보정 중</div>
+</div>
+
+<!-- 이벤트 배너 -->
+<div class="event-banner" id="event-banner"></div>
+
+<!-- 위험 오버레이 -->
+<div id="danger-overlay" style="display:none;" class="danger-overlay"></div>
+
+<div id="app">
+  <!-- 헤더 -->
+  <div class="game-header" id="main-header" style="display:none;">
+    <div class="header-title">🌱 SMART FARM</div>
+    <div class="header-right">
+      <div class="score-badge">🏆 <span id="header-score">0</span></div>
+      <button class="music-btn" id="music-toggle" onclick="toggleMusic()">🔊</button>
+    </div>
+  </div>
+
+  <!-- ── 인트로 화면 ── -->
+  <div id="screen-intro" class="screen active" style="text-align:center;padding:16px 0;">
+    <div class="intro-badge">MILAB · SMART FARM MASTER</div>
+    <div class="intro-title">🌱 스마트팜<br>마스터</div>
+    <div class="intro-subtitle">3분 안에 식물을 키워라!</div>
+
+    <div class="fami-wrap">
+      <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+        <ellipse cx="50" cy="22" rx="28" ry="9" fill="#0a4a20" opacity=".8"/>
+        <rect x="22" y="18" width="56" height="7" rx="3" fill="#0d6b34"/>
+        <rect x="26" y="23" width="48" height="38" rx="12" fill="#1a3a22"/>
+        <rect x="28" y="25" width="44" height="34" rx="10" fill="#142e1a"/>
+        <rect x="35" y="34" width="12" height="8" rx="3" fill="#3dff7a" opacity=".9"/>
+        <rect x="53" y="34" width="12" height="8" rx="3" fill="#3dff7a" opacity=".9"/>
+        <rect x="38" y="37" width="5" height="3" rx="1" fill="#fff" opacity=".7"/>
+        <rect x="56" y="37" width="5" height="3" rx="1" fill="#fff" opacity=".7"/>
+        <rect x="42" y="48" width="16" height="3" rx="1.5" fill="#3dff7a" opacity=".7"/>
+        <rect x="30" y="62" width="40" height="28" rx="8" fill="#1a3a22"/>
+        <rect x="37" y="67" width="26" height="16" rx="5" fill="#0d2a14"/>
+        <circle cx="44" cy="72" r="2.5" fill="#3dff7a" opacity=".8"/>
+        <circle cx="50" cy="72" r="2.5" fill="#00e5b4" opacity=".7"/>
+        <circle cx="56" cy="72" r="2.5" fill="#ffb84d" opacity=".7"/>
+        <rect x="16" y="64" width="12" height="22" rx="6" fill="#1a3a22"/>
+        <rect x="72" y="64" width="12" height="22" rx="6" fill="#1a3a22"/>
+        <rect x="33" y="90" width="14" height="10" rx="5" fill="#1a3a22"/>
+        <rect x="53" y="90" width="14" height="10" rx="5" fill="#1a3a22"/>
+        <line x1="50" y1="14" x2="50" y2="6" stroke="#3dff7a" stroke-width="2"/>
+        <circle cx="50" cy="5" r="2.5" fill="#3dff7a"/>
+      </svg>
+    </div>
+
+    <div class="fami-speech">
+      <div class="fami-name">🤖 파미 (FAMI)</div>
+      안녕! 나는 스마트팜 AI 로봇 <strong>파미</strong>야!<br>
+      <strong>조도·습도·배양액</strong> 3가지를 직접 제어해서 식물을 키워봐! 🌱<br>
+      <strong>3분</strong> 안에 성장도 100%를 달성하면 수확 성공! 여러 번 수확할수록 고득점이야!
+    </div>
+
+    <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:14px;margin-bottom:18px;text-align:left;">
+      <div style="font-size:12px;color:var(--green-mid);font-weight:700;margin-bottom:8px;">📋 게임 규칙</div>
+      <div style="font-size:13px;color:var(--text-secondary);line-height:1.8;">
+        ☀️ <strong>조도</strong> — 슬라이더로 조절 (최적: 600~800 Lux)<br>
+        💧 <strong>습도</strong> — 관수/배수 버튼 (최적: 40~60%)<br>
+        🧪 <strong>배양액</strong> — 투입/희석 버튼 (최적: 30~70%)<br>
+        🌪️ 20초마다 <strong>날씨 이벤트</strong> 발생!<br>
+        ❤️ 건강도가 0이 되면 <strong>게임 오버!</strong>
+      </div>
+    </div>
+
+    <button class="btn-primary" onclick="startGame()" style="width:100%;font-size:18px;padding:16px;">🌱 재배 시작!</button>
+
+    <div class="qr-section" style="margin-top:16px;">
+      <div class="qr-title">📱 QR코드를 스캔해서 함께 참여하세요!</div>
+      <div id="qr-container-intro"></div>
+      <div class="qr-sub">MILAB · 충주 · 2026 | 스마트팜 마스터 #041</div>
+    </div>
+  </div>
+
+  <!-- ── 게임 화면 ── -->
+  <div id="screen-game" class="screen">
+    <!-- 타이머 -->
+    <div class="timer-row">
+      <span>⏱ 남은 시간</span>
+      <span class="timer-num" id="game-timer">180</span>
+    </div>
+    <div class="timer-bar-wrap">
+      <div class="timer-bar-fill" id="timer-bar" style="width:100%"></div>
+    </div>
+
+    <!-- 마스코트 말풍선 -->
+    <div class="mascot-bubble" id="mascot-bubble">
+      <span class="mascot-face" id="mascot-face">🤖</span>
+      <span class="mascot-msg" id="mascot-msg">환경을 최적으로 맞춰봐!</span>
+    </div>
+
+    <!-- 식물 영역 -->
+    <div class="plant-area" id="plant-area">
+      <div class="plant-emoji" id="plant-emoji">🌰</div>
+      <div class="plant-stage-label" id="plant-stage">씨앗 단계</div>
+      <div class="growth-bar-wrap">
+        <div class="growth-label"><span>🌱 성장도</span><span id="growth-pct">0%</span></div>
+        <div class="growth-bar-bg"><div class="growth-bar-fill" id="growth-bar" style="width:0%"></div></div>
+      </div>
+      <div class="health-wrap">
+        <div class="health-label"><span style="color:var(--red-warn)">❤️ 건강도</span><span id="health-pct" style="color:var(--green-bright)">100%</span></div>
+        <div class="health-bar-bg"><div class="health-bar-fill" id="health-bar" style="width:100%"></div></div>
+      </div>
+    </div>
+
+    <!-- 대시보드 -->
+    <div class="dashboard" id="dashboard">
+      <div class="dash-card" id="dash-light">
+        <div class="dash-optimal ok" id="light-status">✓</div>
+        <div class="dash-icon">☀️</div>
+        <div class="dash-label">조도</div>
+        <div class="dash-value ok" id="dash-light-val">700</div>
+        <div class="dash-range">Lux (600~800)</div>
+      </div>
+      <div class="dash-card" id="dash-humidity">
+        <div class="dash-optimal ok" id="humid-status">✓</div>
+        <div class="dash-icon">💧</div>
+        <div class="dash-label">습도</div>
+        <div class="dash-value ok" id="dash-humid-val">50</div>
+        <div class="dash-range">% (40~60)</div>
+      </div>
+      <div class="dash-card" id="dash-nutrient">
+        <div class="dash-optimal ok" id="nutri-status">✓</div>
+        <div class="dash-icon">🧪</div>
+        <div class="dash-label">배양액</div>
+        <div class="dash-value ok" id="dash-nutri-val">50</div>
+        <div class="dash-range">% (30~70)</div>
+      </div>
+    </div>
+
+    <!-- 제어 패널 -->
+    <div class="control-panel">
+      <div class="control-title">🎛️ SMART CONTROL</div>
+
+      <!-- 조도 슬라이더 -->
+      <div class="control-row">
+        <span class="ctrl-icon">☀️</span>
+        <span class="ctrl-label">조도</span>
+        <div class="ctrl-slider-wrap">
+          <input type="range" class="ctrl-slider" id="light-slider" min="0" max="1000" value="700" oninput="setLight(this.value)">
+        </div>
+        <span class="ctrl-value" id="light-val-display">700 Lux</span>
+      </div>
+
+      <!-- 습도 버튼 -->
+      <div class="control-row">
+        <span class="ctrl-icon">💧</span>
+        <span class="ctrl-label">습도</span>
+        <div class="ctrl-btns">
+          <button class="ctrl-btn" onclick="adjustHumidity(-10)">🔽 배수 -10</button>
+          <button class="ctrl-btn" onclick="adjustHumidity(10)">💧 관수 +10</button>
+        </div>
+      </div>
+
+      <!-- 배양액 버튼 -->
+      <div class="control-row">
+        <span class="ctrl-icon">🧪</span>
+        <span class="ctrl-label">배양액</span>
+        <div class="ctrl-btns">
+          <button class="ctrl-btn" onclick="adjustNutrient(-10)">💨 희석 -10</button>
+          <button class="ctrl-btn" onclick="adjustNutrient(10)">🧪 투입 +10</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 수확 횟수 -->
+    <div style="text-align:center;font-size:12px;color:var(--text-muted);">
+      🌾 수확 횟수: <span id="harvest-count" style="color:var(--green-bright);font-weight:700;">0</span> | 
+      누적 점수: <span id="total-score-display" style="color:var(--amber);font-weight:700;">0</span>
+    </div>
+  </div>
+
+  <!-- ── 결과 화면 ── -->
+  <div id="screen-result" class="screen"></div>
+</div>
+
+<!-- 게임오버 모달 -->
+<div id="gameover-modal" style="display:none;" class="gameover-overlay">
+  <div class="gameover-card">
+    <div style="font-size:48px;margin-bottom:8px;">🥀</div>
+    <div class="gameover-title">게임 오버!</div>
+    <div style="font-size:14px;color:var(--text-secondary);margin-bottom:16px;line-height:1.6;" id="gameover-msg">건강도가 0이 되어 식물이 시들었어...</div>
+    <button class="btn-primary" onclick="showResult()" style="padding:12px 28px;font-size:15px;">📊 결과 보기</button>
+  </div>
+</div>
+
+<script>
+// ══════════════════════════════════════════
+// portfolioEntry
+// ══════════════════════════════════════════
+const portfolioEntry = {
+  id: "041",
+  title: "🌱 스마트팜 마스터",
+  category: "모두의 학급",
+  target: "전체",
+  duration: "3분",
+  playMode: "솔로",
+  topic: "스마트팜·IoT·육성시뮬레이션",
+  filename: "milab_smart_farm_master_041.html",
+  url: "https://milab2019.github.io/main/milab_smart_farm_master_041.html",
+  date: "2026.04.10 개발",
+  skills: ["Web Audio API","Canvas","LocalStorage","육성시뮬레이션"],
+  description: "조도·습도·배양액을 제어해 3분 안에 식물을 키우는 스마트팜 육성 게임"
+};
+console.log("portfolioEntry:", JSON.stringify(portfolioEntry, null, 2));
+
+// ══════════════════════════════════════════
+// 게임 상수
+// ══════════════════════════════════════════
+const GAME_TIME = 180;
+const EVENT_INTERVAL = 20;
+const TICK_INTERVAL = 1000;
+
+const LIGHT_OPT = [600, 800];
+const HUMID_OPT = [40, 60];
+const NUTRI_OPT = [30, 70];
+
+const PLANT_STAGES = [
+  { min: 0,  emoji: '🌰', label: '씨앗 단계' },
+  { min: 20, emoji: '🌱', label: '새싹 단계' },
+  { min: 40, emoji: '🪴', label: '성장 단계' },
+  { min: 70, emoji: '🌸', label: '개화 단계' },
+  { min: 95, emoji: '🍅', label: '열매 단계' }
+];
+
+const WEATHER_EVENTS = [
+  { type: 'heat', name: '🔥 폭염 발생!', msg: '온도 급상승! 조도가 올라가고 습도가 떨어져!', lightDelta: 200, humidDelta: -15, nutriDelta: 5 },
+  { type: 'dry', name: '🏜️ 건조 경보!', msg: '대기가 건조해! 습도와 배양액 농도 변화!', lightDelta: 50, humidDelta: -20, nutriDelta: 10 },
+  { type: 'cloudy', name: '☁️ 흐림 주의!', msg: '구름이 몰려와! 조도가 크게 떨어져!', lightDelta: -300, humidDelta: 5, nutriDelta: 0 },
+  { type: 'rain', name: '🌧️ 폭우 발생!', msg: '비가 쏟아져! 습도 폭등, 배양액 희석!', lightDelta: -150, humidDelta: 25, nutriDelta: -20 }
+];
+
+const ENDINGS = [
+  { min: 300, career: '🏆 스마트팜 경영자', desc: '미래 농업을 이끌 CEO!', msg: '모든 환경 지표를 완벽하게 제어했어! 어떤 위기에도 빠르게 대응하는 능력은 스마트팜 경영자의 필수 자질이야.' },
+  { min: 150, career: '📊 농업 데이터 분석가', desc: '데이터로 농업을 혁신!', msg: '환경 수치를 꼼꼼히 관찰하고 조절한 노력이 인상적이야! 센서 데이터를 분석해 최적 재배 조건을 연구하는 전문가가 어울려.' },
+  { min: 50,  career: '🌾 식물공장 운영관리사', desc: '현장 감각이 강점!', msg: '실제 작물을 돌보며 AI 시스템을 함께 활용하는 식물공장 운영관리사의 자질이 보여!' },
+  { min: 0,   career: '🔬 농업 AI 연구자', desc: '도전 자체가 배움!', msg: '좋은 시도였어! 실패를 분석하고 개선하는 것이 연구자의 덕목이야. 다시 도전해볼까?' }
+];
+
+// ══════════════════════════════════════════
+// 게임 상태
+// ══════════════════════════════════════════
+let G = {
+  running: false,
+  timer: GAME_TIME,
+  tickId: null,
+  light: 700,
+  humidity: 50,
+  nutrient: 50,
+  growth: 0,
+  health: 100,
+  score: 0,
+  harvests: 0,
+  eventTimer: 0,
+  eventCount: 0,
+  musicOn: true,
+  audioCtx: null,
+  bgmId: null
+};
+
+// ══════════════════════════════════════════
+// 파티클
+// ══════════════════════════════════════════
+function createParticles(){
+  const bg=document.getElementById('particles-bg');
+  for(let i=0;i<20;i++){
+    const p=document.createElement('div');
+    p.className='particle';
+    p.style.cssText=`left:${Math.random()*100}%;--dur:${6+Math.random()*8}s;--delay:${Math.random()*6}s;`;
+    bg.appendChild(p);
+  }
+}
+
+// ══════════════════════════════════════════
+// Audio
+// ══════════════════════════════════════════
+function initAudio(){
+  try{G.audioCtx=new(window.AudioContext||window.webkitAudioContext)();}catch(e){}
+}
+function playNote(freq,type='sine',dur=.15,vol=.12){
+  if(!G.musicOn||!G.audioCtx)return;
+  try{
+    const o=G.audioCtx.createOscillator(),g=G.audioCtx.createGain();
+    o.connect(g);g.connect(G.audioCtx.destination);
+    o.type=type;o.frequency.value=freq;
+    g.gain.setValueAtTime(vol,G.audioCtx.currentTime);
+    g.gain.exponentialRampToValueAtTime(.001,G.audioCtx.currentTime+dur);
+    o.start();o.stop(G.audioCtx.currentTime+dur);
+  }catch(e){}
+}
+function playCorrect(){playNote(523,undefined,.1,.1);setTimeout(()=>playNote(659,undefined,.1,.1),120);setTimeout(()=>playNote(784,undefined,.18,.12),240);}
+function playWrong(){playNote(200,'sawtooth',.25,.1);setTimeout(()=>playNote(160,'sawtooth',.2,.08),150);}
+function playHarvest(){[523,659,784,1047].forEach((f,i)=>setTimeout(()=>playNote(f,undefined,.2,.12),i*100));}
+function playEvent(){playNote(330,'square',.12,.08);setTimeout(()=>playNote(440,'square',.12,.08),100);}
+function playBgm(){
+  if(!G.musicOn||!G.audioCtx||G.bgmId)return;
+  const mel=[262,294,330,349,392,349,330,294];
+  let i=0;
+  G.bgmId=setInterval(()=>{
+    if(!G.musicOn||!G.running){clearInterval(G.bgmId);G.bgmId=null;return;}
+    playNote(mel[i%mel.length],'triangle',.22,.025);
+    i++;
+  },600);
+}
+function toggleMusic(){
+  G.musicOn=!G.musicOn;
+  document.getElementById('music-toggle').textContent=G.musicOn?'🔊':'🔇';
+  if(G.musicOn&&G.running)playBgm();
+}
+
+// ══════════════════════════════════════════
+// 화면 전환
+// ══════════════════════════════════════════
+function showScreen(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo(0,0);
+}
+
+// ══════════════════════════════════════════
+// 게임 시작
+// ══════════════════════════════════════════
+function startGame(){
+  initAudio();
+  G = {
+    running:true, timer:GAME_TIME, tickId:null,
+    light:700, humidity:50, nutrient:50,
+    growth:0, health:100, score:0, harvests:0,
+    eventTimer:0, eventCount:0,
+    musicOn:G.musicOn, audioCtx:G.audioCtx, bgmId:null
+  };
+  document.getElementById('main-header').style.display='flex';
+  showScreen('screen-game');
+  updateAllUI();
+  G.tickId = setInterval(gameTick, TICK_INTERVAL);
+  setTimeout(()=>playBgm(),300);
+}
+
+// ══════════════════════════════════════════
+// 메인 게임 틱 (1초마다)
+// ══════════════════════════════════════════
+function gameTick(){
+  if(!G.running) return;
+
+  G.timer--;
+  G.eventTimer++;
+
+  // 자연 감쇄: 습도 서서히 감소, 배양액 서서히 감소 (난이도 +10%)
+  G.humidity = Math.max(0, G.humidity - 0.88);
+  G.nutrient = Math.max(0, G.nutrient - 0.55);
+
+  // 조도는 약간 흔들림
+  G.light = Math.max(0, Math.min(1000, G.light + (Math.random()-0.5)*10));
+
+  // 날씨 이벤트
+  if(G.eventTimer >= EVENT_INTERVAL){
+    triggerWeatherEvent();
+    G.eventTimer = 0;
+  }
+
+  // 난이도 증가: 시간이 지날수록 감쇄 빨라짐 (기본 1.1x = +10% 난이도)
+  const elapsed = GAME_TIME - G.timer;
+  const diffMult = 1.1 + Math.floor(elapsed / 60) * 0.33;
+
+  // 환경 최적 판정 & 성장/건강 계산
+  const lightOk = G.light >= LIGHT_OPT[0] && G.light <= LIGHT_OPT[1];
+  const humidOk = G.humidity >= HUMID_OPT[0] && G.humidity <= HUMID_OPT[1];
+  const nutriOk = G.nutrient >= NUTRI_OPT[0] && G.nutrient <= NUTRI_OPT[1];
+  const optCount = (lightOk?1:0) + (humidOk?1:0) + (nutriOk?1:0);
+
+  // 성장: 3개 최적=+4, 2개=+2, 1개=+0.6, 0개=0
+  if(optCount === 3) G.growth = Math.min(100, G.growth + 4);
+  else if(optCount === 2) G.growth = Math.min(100, G.growth + 2);
+  else if(optCount === 1) G.growth = Math.min(100, G.growth + 0.6);
+
+  // 건강: 최적 범위 벗어난 요소당 데미지
+  let dmg = 0;
+  if(!lightOk){
+    const dev = G.light < LIGHT_OPT[0] ? LIGHT_OPT[0]-G.light : G.light-LIGHT_OPT[1];
+    dmg += (dev / 200) * diffMult;
+  }
+  if(!humidOk){
+    const dev = G.humidity < HUMID_OPT[0] ? HUMID_OPT[0]-G.humidity : G.humidity-HUMID_OPT[1];
+    dmg += (dev / 20) * diffMult;
+  }
+  if(!nutriOk){
+    const dev = G.nutrient < NUTRI_OPT[0] ? NUTRI_OPT[0]-G.nutrient : G.nutrient-NUTRI_OPT[1];
+    dmg += (dev / 20) * diffMult;
+  }
+  G.health = Math.max(0, Math.min(100, G.health - dmg));
+
+  // 수확 체크
+  if(G.growth >= 100){
+    doHarvest();
+  }
+
+  // 게임오버 체크
+  if(G.health <= 0){
+    G.health = 0;
+    gameOver();
+    return;
+  }
+
+  // 시간 종료
+  if(G.timer <= 0){
+    G.timer = 0;
+    timeUp();
+    return;
+  }
+
+  updateAllUI();
+  updateMascot(optCount, G.health);
+}
+
+// ══════════════════════════════════════════
+// 수확
+// ══════════════════════════════════════════
+function doHarvest(){
+  G.harvests++;
+  const bonus = Math.floor(G.health);
+  const harvestScore = 50 + bonus;
+  G.score += harvestScore;
+  G.growth = 0; // 리셋
+
+  // 시각 효과
+  const flash = document.createElement('div');
+  flash.className='harvest-flash';
+  document.body.appendChild(flash);
+  setTimeout(()=>flash.remove(),600);
+
+  showScorePopup('+' + harvestScore);
+  playHarvest();
+
+  setMascot('🤖✨', `🎉 ${G.harvests}번째 수확! +${harvestScore}점!`);
+  document.getElementById('header-score').textContent = G.score;
+}
+
+function showScorePopup(text){
+  const el = document.createElement('div');
+  el.className='score-popup';
+  el.textContent=text;
+  document.body.appendChild(el);
+  setTimeout(()=>el.remove(),1200);
+}
+
+// ══════════════════════════════════════════
+// 날씨 이벤트
+// ══════════════════════════════════════════
+function triggerWeatherEvent(){
+  G.eventCount++;
+  // 난이도 증가: 이벤트 강도 커짐 (기본 1.1x = +10% 난이도)
+  const intensity = 1.1 + G.eventCount * 0.22;
+  const evt = WEATHER_EVENTS[Math.floor(Math.random()*WEATHER_EVENTS.length)];
+
+  G.light = clamp(G.light + evt.lightDelta * intensity, 0, 1000);
+  G.humidity = clamp(G.humidity + evt.humidDelta * intensity, 0, 100);
+  G.nutrient = clamp(G.nutrient + evt.nutriDelta * intensity, 0, 100);
+
+  // 배너 표시
+  const banner = document.getElementById('event-banner');
+  banner.className = 'event-banner ' + evt.type + ' show';
+  banner.textContent = evt.name + ' ' + evt.msg;
+  playEvent();
+  setTimeout(()=>banner.classList.remove('show'),3000);
+
+  // 슬라이더 동기화
+  document.getElementById('light-slider').value = Math.round(G.light);
+}
+
+// ══════════════════════════════════════════
+// 제어 함수
+// ══════════════════════════════════════════
+function setLight(val){
+  G.light = parseInt(val);
+  updateDashboard();
+}
+function adjustHumidity(delta){
+  G.humidity = clamp(G.humidity + delta, 0, 100);
+  playNote(delta>0?440:330,undefined,.08,.08);
+  updateDashboard();
+}
+function adjustNutrient(delta){
+  G.nutrient = clamp(G.nutrient + delta, 0, 100);
+  playNote(delta>0?523:392,undefined,.08,.08);
+  updateDashboard();
+}
+
+// ══════════════════════════════════════════
+// UI 업데이트
+// ══════════════════════════════════════════
+function updateAllUI(){
+  updateTimer();
+  updatePlant();
+  updateDashboard();
+  updateHealth();
+  document.getElementById('harvest-count').textContent = G.harvests;
+  document.getElementById('total-score-display').textContent = G.score;
+  document.getElementById('header-score').textContent = G.score;
+}
+
+function updateTimer(){
+  const el = document.getElementById('game-timer');
+  const bar = document.getElementById('timer-bar');
+  el.textContent = G.timer;
+  bar.style.width = (G.timer/GAME_TIME*100)+'%';
+  if(G.timer<=30){
+    bar.classList.add('warn');
+    el.classList.add('warn');
+  } else {
+    bar.classList.remove('warn');
+    el.classList.remove('warn');
+  }
+}
+
+function updatePlant(){
+  let stage = PLANT_STAGES[0];
+  for(let i=PLANT_STAGES.length-1;i>=0;i--){
+    if(G.growth >= PLANT_STAGES[i].min){stage=PLANT_STAGES[i];break;}
+  }
+  const pe = document.getElementById('plant-emoji');
+  const ps = document.getElementById('plant-stage');
+  if(pe.textContent !== stage.emoji){
+    pe.style.transform='scale(1.3)';
+    setTimeout(()=>pe.style.transform='scale(1)',300);
+  }
+  pe.textContent = stage.emoji;
+  ps.textContent = stage.label;
+  document.getElementById('growth-pct').textContent = Math.floor(G.growth)+'%';
+  document.getElementById('growth-bar').style.width = G.growth+'%';
+}
+
+function updateHealth(){
+  const hp = Math.floor(G.health);
+  document.getElementById('health-pct').textContent = hp+'%';
+  const bar = document.getElementById('health-bar');
+  bar.style.width = hp+'%';
+  bar.className = 'health-bar-fill' + (hp<=30?' low':hp<=60?' mid':'');
+  document.getElementById('health-pct').style.color = hp<=30?'var(--red-warn)':hp<=60?'var(--amber)':'var(--green-bright)';
+
+  // 위험 오버레이
+  const overlay = document.getElementById('danger-overlay');
+  if(hp <= 25){
+    overlay.style.display='block';
+    const area = document.getElementById('plant-area');
+    if(!area.classList.contains('shaking')){
+      area.classList.add('shaking');
+      setTimeout(()=>area.classList.remove('shaking'),400);
+    }
+  } else {
+    overlay.style.display='none';
+  }
+}
+
+function updateDashboard(){
+  const lv = Math.round(G.light);
+  const hv = Math.round(G.humidity);
+  const nv = Math.round(G.nutrient);
+
+  document.getElementById('dash-light-val').textContent = lv;
+  document.getElementById('dash-humid-val').textContent = hv;
+  document.getElementById('dash-nutri-val').textContent = nv;
+  document.getElementById('light-val-display').textContent = lv+' Lux';
+
+  setDashStatus('dash-light','dash-light-val','light-status', lv, LIGHT_OPT[0], LIGHT_OPT[1]);
+  setDashStatus('dash-humidity','dash-humid-val','humid-status', hv, HUMID_OPT[0], HUMID_OPT[1]);
+  setDashStatus('dash-nutrient','dash-nutri-val','nutri-status', nv, NUTRI_OPT[0], NUTRI_OPT[1]);
+}
+
+function setDashStatus(cardId, valId, statusId, val, min, max){
+  const card = document.getElementById(cardId);
+  const valEl = document.getElementById(valId);
+  const stEl = document.getElementById(statusId);
+  const inRange = val >= min && val <= max;
+  const farOut = val < min*0.5 || val > max*1.5;
+
+  card.className = 'dash-card' + (farOut?' danger':(!inRange?' warning':''));
+  valEl.className = 'dash-value' + (farOut?' danger':(!inRange?' warn':' ok'));
+  stEl.className = 'dash-optimal ' + (inRange?'ok':'bad');
+  stEl.textContent = inRange?'✓':'⚠';
+}
+
+function updateMascot(optCount, health){
+  if(health <= 20){
+    setMascot('🤖😰','건강도가 위험해! 빨리 환경을 조절해!');
+  } else if(optCount === 3){
+    setMascot('🤖✨','완벽한 환경이야! 쑥쑥 자라고 있어!');
+  } else if(optCount === 2){
+    setMascot('🤖👍','거의 다 맞아! 나머지 하나도 조절해봐!');
+  } else if(optCount === 1){
+    setMascot('🤖💦','환경이 불안정해! 수치를 확인해!');
+  } else {
+    setMascot('🤖🚨','전부 범위 밖이야! 빨리 조절해!');
+  }
+}
+
+function setMascot(face, msg){
+  document.getElementById('mascot-face').textContent = face;
+  document.getElementById('mascot-msg').textContent = msg;
+}
+
+// ══════════════════════════════════════════
+// 게임 종료
+// ══════════════════════════════════════════
+function gameOver(){
+  G.running = false;
+  clearInterval(G.tickId);
+  if(G.bgmId){clearInterval(G.bgmId);G.bgmId=null;}
+  playWrong();
+  document.getElementById('gameover-modal').style.display='flex';
+  document.getElementById('gameover-msg').textContent =
+    G.harvests > 0
+    ? `${G.harvests}번 수확했지만 건강도가 0이 됐어... 점수: ${G.score}점`
+    : '건강도가 0이 되어 식물이 시들었어...';
+}
+
+function timeUp(){
+  G.running = false;
+  clearInterval(G.tickId);
+  if(G.bgmId){clearInterval(G.bgmId);G.bgmId=null;}
+  // 남은 건강도 보너스
+  const healthBonus = Math.floor(G.health / 2);
+  G.score += healthBonus;
+  if(healthBonus > 0) showScorePopup('건강 보너스 +' + healthBonus);
+  playHarvest();
+  setTimeout(()=>showResult(), 800);
+}
+
+// ══════════════════════════════════════════
+// 결과 화면
+// ══════════════════════════════════════════
+function showResult(){
+  document.getElementById('gameover-modal').style.display='none';
+  const total = G.score;
+  const ending = ENDINGS.find(e=>total>=e.min)||ENDINGS[ENDINGS.length-1];
+
+  document.getElementById('screen-result').innerHTML = `
+    <div style="text-align:center;padding:16px 0;">
+      <div class="intro-badge">MISSION COMPLETE</div>
+      <div class="result-title">🌱 스마트팜 마스터 결과</div>
+      <div class="result-score-big">${total}</div>
+      <div style="font-size:13px;color:var(--text-muted);margin-bottom:8px;">총 점수</div>
+      <div class="result-career">${ending.career}<br><span style="font-size:14px;color:var(--text-secondary)">${ending.desc}</span></div>
+
+      <div class="result-detail">
+        <div style="font-size:12px;color:var(--green-bright);font-weight:700;margin-bottom:8px;">🤖 파미의 커리어 조언</div>
+        <div style="font-size:13px;color:var(--text-secondary);line-height:1.8;">${ending.msg}</div>
+      </div>
+
+      <div class="result-detail">
+        <div style="font-size:12px;color:var(--amber);font-weight:700;margin-bottom:8px;">📊 게임 통계</div>
+        <div class="stat-row"><span>🌾 수확 횟수</span><span style="color:var(--green-bright);font-weight:700">${G.harvests}회</span></div>
+        <div class="stat-row"><span>❤️ 최종 건강도</span><span style="color:${G.health>50?'var(--green-bright)':'var(--red-warn)'};font-weight:700">${Math.floor(G.health)}%</span></div>
+        <div class="stat-row"><span>🌪️ 날씨 이벤트</span><span style="color:var(--blue-data);font-weight:700">${G.eventCount}회 극복</span></div>
+        <div class="stat-row"><span>⏱ 플레이 시간</span><span style="color:var(--text-primary);font-weight:700">${GAME_TIME - G.timer}초</span></div>
+      </div>
+
+      <div class="nickname-area">
+        <div style="font-size:12px;color:var(--text-secondary);margin-bottom:8px;">🏆 명예의 전당에 등록</div>
+        <div class="nickname-row">
+          <input class="nickname-input" id="nickname-input" type="text" placeholder="닉네임 입력" maxlength="10">
+          <button class="btn-primary" onclick="saveScore()" style="padding:10px 18px;font-size:14px;">등록</button>
+        </div>
+      </div>
+
+      <div class="leaderboard">
+        <div class="lb-title">🏆 명예의 전당 (상위 5명)</div>
+        <div id="lb-list"></div>
+      </div>
+
+      <div class="qr-section">
+        <div class="qr-title">📱 QR코드로 공유하기</div>
+        <div id="qr-container"></div>
+        <div class="qr-sub">MILAB · 충주 · 2026 | 스마트팜 마스터 #041</div>
+      </div>
+
+      <div style="margin-top:16px;display:flex;gap:10px;flex-wrap:wrap;justify-content:center;">
+        <button class="btn-primary" onclick="location.reload()">🔄 다시 도전</button>
+        <a href="https://milab2019.github.io/main/milab_portfolio.html" target="_blank" class="btn-secondary">🌿 MILAB 포트폴리오</a>
+      </div>
+      <div style="font-size:10px;color:var(--text-muted);margin-top:16px;">
+        MILAB · 충주 · 2026 | 스마트팜 마스터 #041<br>
+        전 학년 | 아이스브레이킹 · 스마트팜 진로체험
+      </div>
+    </div>
+  `;
+  showScreen('screen-result');
+  renderLeaderboard();
+  generateQR();
+}
+
+// ══════════════════════════════════════════
+// 리더보드
+// ══════════════════════════════════════════
+const LB_KEY='milab_041_lb';
+function saveScore(){
+  const name=document.getElementById('nickname-input').value.trim();
+  if(!name){alert('닉네임을 입력해줘!');return;}
+  let lb=getLB();
+  lb.push({name,score:G.score,harvests:G.harvests,date:new Date().toLocaleDateString('ko-KR')});
+  lb.sort((a,b)=>b.score-a.score);
+  lb=lb.slice(0,5);
+  localStorage.setItem(LB_KEY,JSON.stringify(lb));
+  renderLeaderboard();
+  document.querySelector('.nickname-area').innerHTML='<div style="color:var(--green-bright);font-weight:700;padding:8px;">✅ 등록 완료!</div>';
+}
+function getLB(){try{return JSON.parse(localStorage.getItem(LB_KEY)||'[]');}catch{return[];}}
+function renderLeaderboard(){
+  const lb=getLB();
+  const list=document.getElementById('lb-list');
+  if(!list)return;
+  if(!lb.length){list.innerHTML='<div style="font-size:12px;color:var(--text-muted);padding:6px 0;">아직 기록이 없어!</div>';return;}
+  const rc=['gold','silver','bronze'];
+  list.innerHTML=lb.map((r,i)=>`
+    <div class="lb-row">
+      <div class="lb-rank ${rc[i]||''}">${i===0?'🥇':i===1?'🥈':i===2?'🥉':i+1}</div>
+      <div class="lb-name">${r.name}</div>
+      <div style="font-size:10px;color:var(--text-muted)">${r.harvests||0}회 수확</div>
+      <div class="lb-score">${r.score}점</div>
+    </div>
+  `).join('');
+}
+
+// ══════════════════════════════════════════
+// QR
+// ══════════════════════════════════════════
+function generateQR(){
+  waitAndGenerateQR('qr-container','qr-div');
+}
+
+// ══════════════════════════════════════════
+// 유틸
+// ══════════════════════════════════════════
+function clamp(v,min,max){return Math.max(min,Math.min(max,v));}
+
+// ══════════════════════════════════════════
+// 초기화
+// ══════════════════════════════════════════
+window.onload=function(){
+  createParticles();
+  setTimeout(()=>{
+    const ls=document.getElementById('loading-screen');
+    ls.style.transition='opacity .8s';
+    ls.style.opacity='0';
+    setTimeout(()=>{ls.remove();waitAndGenerateQR('qr-container-intro','qr-div-intro');},800);
+  },1800);
+};
+
+// QR 공통 생성 함수 — CDN 로드 대기 후 생성
+function waitAndGenerateQR(containerId, divId, retries){
+  retries = retries || 0;
+  const c=document.getElementById(containerId);
+  if(!c)return;
+
+  // 이미 QR이 생성되어 있으면 스킵
+  const existing=document.getElementById(divId);
+  if(existing && (existing.querySelector('canvas')||existing.querySelector('img'))){
+    return;
+  }
+
+  if(typeof QRCode === 'undefined'){
+    if(retries < 10){
+      setTimeout(()=>waitAndGenerateQR(containerId, divId, retries+1), 500);
+    } else {
+      c.innerHTML='<div style="font-size:11px;color:var(--text-muted);padding:8px;">QR 라이브러리 로드 실패<br><a href="'+portfolioEntry.url+'" style="color:var(--green-mid);word-break:break-all;">'+portfolioEntry.url+'</a></div>';
+    }
+    return;
+  }
+
+  c.innerHTML='<div id="'+divId+'"></div>';
+  try{
+    new QRCode(document.getElementById(divId),{
+      text:portfolioEntry.url,width:120,height:120,
+      colorDark:'#000000',colorLight:'#ffffff',
+      correctLevel:QRCode.CorrectLevel.M
+    });
+  }catch(e){
+    c.innerHTML='<div style="font-size:11px;color:var(--text-muted);padding:8px;">QR 생성 실패<br><a href="'+portfolioEntry.url+'" style="color:var(--green-mid);word-break:break-all;">'+portfolioEntry.url+'</a></div>';
+  }
+}
+</script>
+</body>
+</html>
