@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://milab2019.github.io/main/sitemap.xml
