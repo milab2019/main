@@ -572,18 +572,22 @@ function show(id) {
 // ═══════════════════════════════════════════
 function makeQR(elId) {
   const el = document.getElementById(elId);
-  if (!el || el.querySelector('canvas')) return;
+  if (!el || el.querySelector('canvas') || el.querySelector('img')) return;
   try {
-    new QRCode(el, { text: portfolioEntry.url, width:120, height:120, colorDark:'#000', colorLight:'#fff' });
-  } catch(e) {}
+    new QRCode(el, { text: portfolioEntry.url, width:128, height:128, colorDark:'#000000', colorLight:'#ffffff', correctLevel: QRCode.CorrectLevel.M });
+  } catch(e) { console.warn('QR 생성 오류:', e); }
 }
+
+// 페이지 로드 즉시 시작화면 QR 생성
+window.addEventListener('DOMContentLoaded', function() {
+  setTimeout(function() { makeQR('qrStart'); }, 300);
+});
 
 // ═══════════════════════════════════════════
 //  게임 시작
 // ═══════════════════════════════════════════
 function startGame() {
   initAudio();
-  makeQR('qrStart');
   show('screenNick');
 }
 function submitNick() {
@@ -1028,7 +1032,7 @@ function showResult() {
     <div style="margin-top:10px;font-size:15px;">${ending.msg}</div>`;
   renderLeaderboard();
   show('screenResult');
-  makeQR('qrResult');
+  setTimeout(function() { makeQR('qrResult'); }, 300);
 }
 function registerScore() {
   const name=document.getElementById('lbName').value.trim()||state.nick||'탐험가';
