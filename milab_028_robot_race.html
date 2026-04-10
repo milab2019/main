@@ -131,22 +131,22 @@
     <div class="level-card selected" id="lvcard-1" onclick="selectLevel(1)">
       <div class="lv-num" style="color:#00ff88">Lv.1</div>
       <div class="lv-name">🏭 입문</div>
-      <div class="lv-desc">넓은 통로<br>평균 5.6칸</div>
+      <div class="lv-desc">웨이브 2부터<br>이동벽 등장</div>
     </div>
     <div class="level-card" id="lvcard-2" onclick="selectLevel(2)">
       <div class="lv-num" style="color:#00ccff">Lv.2</div>
       <div class="lv-name">🔥 보통</div>
-      <div class="lv-desc">지그재그<br>평균 4.4칸</div>
+      <div class="lv-desc">웨이브 1부터<br>이동벽·속도↑</div>
     </div>
     <div class="level-card" id="lvcard-3" onclick="selectLevel(3)">
       <div class="lv-num" style="color:#ff6b35">Lv.3</div>
       <div class="lv-name">🪨 어려움</div>
-      <div class="lv-desc">벽 74칸<br>1~2칸 지그재그</div>
+      <div class="lv-desc">좁은통로<br>다중 이동벽</div>
     </div>
     <div class="level-card" id="lvcard-4" onclick="selectLevel(4)">
       <div class="lv-num" style="color:#ff2255">Lv.4</div>
       <div class="lv-name">💀 극한</div>
-      <div class="lv-desc">벽 72칸+이동벽<br>타이밍 미로</div>
+      <div class="lv-desc">최고속도<br>점멸벽 지옥</div>
     </div>
   </div>
   <button class="btn primary" onclick="goToBrief()" style="max-width:320px;">⚡ 이 난이도로 출발!</button>
@@ -160,15 +160,15 @@
   <div class="logo" style="font-size:1.4rem;">미션 브리핑</div>
   <div class="card" style="max-width:420px;">
     <div style="display:flex;flex-direction:column;gap:11px;">
-      <div style="display:flex;gap:10px;align-items:center;"><span style="font-size:1.6rem;">🏭</span><div><div style="color:var(--neon);font-weight:700;font-size:.85rem;">ZONE 1 · 공장 라인</div><div style="font-size:.75rem;color:var(--muted);">기본 이동 & 장벽 회피</div></div></div>
-      <div style="display:flex;gap:10px;align-items:center;"><span style="font-size:1.6rem;">🔥</span><div><div style="color:var(--warn);font-weight:700;font-size:.85rem;">ZONE 2 · 화재 현장</div><div style="font-size:.75rem;color:var(--muted);">불길을 피해 이동하라!</div></div></div>
-      <div style="display:flex;gap:10px;align-items:center;"><span style="font-size:1.6rem;">🪨</span><div><div style="color:var(--neon2);font-weight:700;font-size:.85rem;">ZONE 3 · 잔해 구역</div><div style="font-size:.75rem;color:var(--muted);">좁은 통로를 통과하라!</div></div></div>
-      <div style="display:flex;gap:10px;align-items:center;"><span style="font-size:1.6rem;">🏁</span><div><div style="color:var(--gold);font-weight:700;font-size:.85rem;">ZONE 4 · 구조 완료</div><div style="font-size:.75rem;color:var(--muted);">골인 지점으로!</div></div></div>
+      <div style="display:flex;gap:10px;align-items:center;"><span style="font-size:1.6rem;">🏁</span><div><div style="color:var(--gold);font-weight:700;font-size:.85rem;">골인 = 맵 클리어!</div><div style="font-size:.75rem;color:var(--muted);">+500점 & <strong style="color:var(--neon);">+5초</strong> 보너스</div></div></div>
+      <div style="display:flex;gap:10px;align-items:center;"><span style="font-size:1.6rem;">⚡</span><div><div style="color:var(--neon2);font-weight:700;font-size:.85rem;">에너지 코어 수집</div><div style="font-size:.75rem;color:var(--muted);">1개당 +100점 · 콤보 유지!</div></div></div>
+      <div style="display:flex;gap:10px;align-items:center;"><span style="font-size:1.6rem;">🔥</span><div><div style="color:var(--warn);font-weight:700;font-size:.85rem;">웨이브가 오를수록</div><div style="font-size:.75rem;color:var(--muted);">이동벽 증가 · 로봇 가속</div></div></div>
+      <div style="display:flex;gap:10px;align-items:center;"><span style="font-size:1.6rem;">💥</span><div><div style="color:var(--danger);font-weight:700;font-size:.85rem;">충돌 = 콤보 파괴</div><div style="font-size:.75rem;color:var(--muted);">-3초 · 배율 초기화</div></div></div>
     </div>
     <div style="margin-top:14px;padding:10px;background:var(--bg2);border-radius:8px;font-size:.75rem;color:var(--muted);letter-spacing:1px;line-height:1.8;">
-      ⏱️ <strong style="color:var(--text);">120초</strong> 안에 가능한 멀리!<br>
-      💥 충돌 시 <strong style="color:var(--warn);">-2초</strong> 페널티<br>
-      🏁 빠른 완주 = 높은 점수!
+      ⏱️ <strong style="color:var(--text);">180초</strong> 동안 최대한 많은 웨이브 클리어!<br>
+      🔥 콤보 ×1 → ×2 → ×3 → <strong style="color:var(--gold);">×5</strong> 점수 배율<br>
+      🏆 최고 웨이브 + 최고 점수에 도전!
     </div>
     <div id="brief-lv-badge" style="margin-top:10px;padding:8px;background:rgba(0,255,136,.06);border:1px solid rgba(0,255,136,.2);border-radius:8px;font-size:.75rem;color:var(--neon);letter-spacing:1px;text-align:center;">Lv.1 · 입문 모드</div>
     <button class="btn primary" onclick="beginRace()" style="margin-top:14px;">⚡ 출발!</button>
@@ -180,21 +180,21 @@
   <div class="game-layout">
     <div style="width:100%;max-width:520px;">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px;">
-        <div class="zone-tag" id="zone-label">ZONE 1 · 공장 라인</div>
-        <div id="timer-sec">120</div>
+        <div class="zone-tag" id="zone-label">WAVE 1 · 시작!</div>
+        <div id="timer-sec">180</div>
       </div>
       <div class="timer-bar-bg"><div class="timer-bar" id="timer-bar" style="width:100%"></div></div>
     </div>
     <div class="map-wrap"><canvas id="game-canvas"></canvas></div>
     <div style="display:flex;align-items:center;gap:10px;">
       <span class="mascot" id="game-mascot" style="font-size:2rem;margin:0;">🤖</span>
-      <div class="speech" id="game-speech" style="margin:0;font-size:.75rem;">방향 버튼으로 로봇을 움직여!</div>
+      <div class="speech" id="game-speech" style="margin:0;font-size:.75rem;">골인까지 달려! ⚡ 코어 수집!</div>
     </div>
     <div class="status-row">
-      <div class="stat-box"><div class="s-label">PLAYER</div><div class="s-val" id="stat-name" style="font-size:.78rem;">-</div></div>
-      <div class="stat-box"><div class="s-label">ZONE</div><div class="s-val" id="stat-zone">1/4</div></div>
-      <div class="stat-box"><div class="s-label">LV</div><div class="s-val" id="stat-lv" style="color:var(--neon);">1</div></div>
-      <div class="stat-box"><div class="s-label">충돌</div><div class="s-val" id="stat-hit" style="color:var(--warn);">0</div></div>
+      <div class="stat-box"><div class="s-label">WAVE</div><div class="s-val" id="stat-wave" style="color:var(--neon);">1</div></div>
+      <div class="stat-box"><div class="s-label">SCORE</div><div class="s-val" id="stat-score" style="color:var(--gold);">0</div></div>
+      <div class="stat-box"><div class="s-label">COMBO</div><div class="s-val" id="stat-combo" style="color:var(--neon2);">×1</div></div>
+      <div class="stat-box"><div class="s-label">⚡</div><div class="s-val" id="stat-core" style="color:var(--warn);">0</div></div>
     </div>
     <div class="dpad">
       <div class="dpad-btn empty"></div>
@@ -220,8 +220,8 @@
     <div style="font-size:1.1rem;font-weight:900;color:var(--text);margin-bottom:12px;" id="result-name">-</div>
     <div style="display:flex;gap:10px;justify-content:center;margin-bottom:14px;flex-wrap:wrap;">
       <div class="stat-box" style="min-width:72px;"><div class="s-label">레벨</div><div class="s-val" id="result-lv" style="color:var(--neon);">-</div></div>
-      <div class="stat-box" style="min-width:72px;"><div class="s-label">도달존</div><div class="s-val" id="result-zone">-</div></div>
-      <div class="stat-box" style="min-width:72px;"><div class="s-label">남은시간</div><div class="s-val" id="result-time" style="color:var(--neon);">-</div></div>
+      <div class="stat-box" style="min-width:72px;"><div class="s-label">최고웨이브</div><div class="s-val" id="result-zone" style="color:var(--warn);">-</div></div>
+      <div class="stat-box" style="min-width:72px;"><div class="s-label">최대콤보</div><div class="s-val" id="result-time" style="color:var(--neon2);">-</div></div>
       <div class="stat-box" style="min-width:72px;"><div class="s-label">점수</div><div class="s-val" id="result-score" style="color:var(--gold);">-</div></div>
     </div>
     <div id="result-rank-badge" class="rank-badge rank-other" style="margin:0 auto 10px;">-</div>
@@ -252,80 +252,88 @@
 
 <script>
 // ══════════════════════════════════════════
-//  ① 4단계 맵 (BFS 전체 검증 완료)
-//  형식: MAPS[레벨][행0~10] = 통로(빈 칸) col 배열
+//  ① 프로시저럴 맵 생성 (BFS 검증)
 // ══════════════════════════════════════════
-const MAPS = {
-  1:[ // 입문 - 평균 5.6칸 통로
-    [2,3,4,5,6],
-    [1,2,3,4,5,6,7],
-    [3,4,5,6,7],
-    [2,3,4,5,6],
-    [0,1,2,3,4,5],
-    [1,2,3,4,5],
-    [2,3,4,5,6,7],
-    [1,2,3,4,5,6],
-    [2,3,4,5,6,7],
-    [2,3,4,5,6],
-    [0,1,2,3,4,5,6,7,8],
-  ],
-  2:[ // 보통 - 평균 4.4칸 지그재그
-    [3,4,5],
-    [3,4,5,6,7],
-    [5,6,7,8],
-    [4,5,6,7],
-    [1,2,3,4,5],
-    [0,1,2,3],
-    [0,1,2,3,4],
-    [3,4,5,6,7],
-    [4,5,6,7,8],
-    [3,4,5,6],
-    [0,1,2,3,4,5,6,7,8],
-  ],
-  3:[ // 어려움 - 벽 74칸 · 통로 25칸 · 지그재그 뱀 경로 (BFS ✅)
-    [4],          // r0 골인
-    [4,5,6],      // r1 ↔r0:4
-    [6],          // r2 ↔r1:6
-    [5,6],        // r3 ↔r2:6
-    [5],          // r4 ↔r3:5
-    [4,5],        // r5 ↔r4:5
-    [4],          // r6 ↔r5:4
-    [3,4],        // r7 ↔r6:4
-    [3,4],        // r8 ↔r7:3,4
-    [4],          // r9 ↔r8:4
-    [0,1,2,3,4,5,6,7,8],
-  ],
-  4:[ // 극한 - 고정벽 72칸 + 이동벽 5개 (BFS ✅)
-    [4],          // r0 골인
-    [4,5],        // r1 ↔r0:4  ← 이동벽a 배치
-    [5],          // r2 ↔r1:5
-    [5,6],        // r3 ↔r2:5  ← 이동벽b 배치
-    [6],          // r4 ↔r3:6
-    [6,7],        // r5 ↔r4:6  ← 이동벽c 배치
-    [7],          // r6 ↔r5:7
-    [7,8],        // r7 ↔r6:7  ← 이동벽d 배치
-    [4,5,6,7,8],  // r8 ↔r7:7,8 + r9:4  ← 이동벽e 스캔
-    [4],          // r9 ↔r8:4
-    [0,1,2,3,4,5,6,7,8],
-  ],
-};
+const GRID_COLS=9, GRID_ROWS=11;
+const TOTAL_TIME=180; // 3분 웨이브 서바이벌
+const GOAL={x:4,y:0}, SPAWN={x:4,y:10};
+
+// 웨이브당 맵 랜덤 생성 (난이도 파라미터 기반)
+// BFS로 스폰→골인 연결성 보장
+function generateMap(level, wave){
+  // 난이도 스케일: 레벨 + 웨이브 둘 다 반영
+  // wallDensity: 벽 밀도 (0~1), 높을수록 어려움
+  const base=[0.25,0.38,0.48,0.55][level-1]||0.25;
+  const waveBonus=Math.min(0.18, (wave-1)*0.035); // 웨이브당 +3.5%, 최대 +18%
+  const wallDensity=Math.min(0.62, base+waveBonus);
+
+  for(let attempt=0; attempt<80; attempt++){
+    const walls=new Set();
+    // 중간 행들(1~9)에 랜덤하게 벽 배치
+    for(let r=1;r<GRID_ROWS-1;r++){
+      for(let c=0;c<GRID_COLS;c++){
+        if(Math.random()<wallDensity) walls.add(c+','+r);
+      }
+    }
+    // 스폰/골인 보호
+    walls.delete(`${GOAL.x},${GOAL.y}`);
+    walls.delete(`${SPAWN.x},${SPAWN.y}`);
+    // 골인 인접 칸 최소 1개 확보
+    walls.delete(`${GOAL.x},${GOAL.y+1}`);
+
+    if(bfsConnected(walls, SPAWN, GOAL)) return walls;
+  }
+  // Fallback: 중앙 수직 통로 보장
+  const walls=new Set();
+  for(let r=1;r<GRID_ROWS-1;r++){
+    for(let c=0;c<GRID_COLS;c++){
+      if(c!==GOAL.x && Math.random()<wallDensity) walls.add(c+','+r);
+    }
+  }
+  return walls;
+}
+
+function bfsConnected(walls, start, goal){
+  const q=[[start.x,start.y]];
+  const seen=new Set([start.x+','+start.y]);
+  while(q.length){
+    const[x,y]=q.shift();
+    if(x===goal.x && y===goal.y) return true;
+    [[0,-1],[0,1],[-1,0],[1,0]].forEach(([dx,dy])=>{
+      const nx=x+dx, ny=y+dy;
+      const k=nx+','+ny;
+      if(nx<0||nx>=GRID_COLS||ny<0||ny>=GRID_ROWS) return;
+      if(walls.has(k)||seen.has(k)) return;
+      seen.add(k); q.push([nx,ny]);
+    });
+  }
+  return false;
+}
+
+// 맵이 열린 칸(통로) 리스트 반환 - 코어 배치용
+function getOpenCells(walls){
+  const open=[];
+  for(let r=1;r<GRID_ROWS-1;r++){
+    for(let c=0;c<GRID_COLS;c++){
+      if(!walls.has(c+','+r) && !(c===GOAL.x&&r===GOAL.y)) open.push([c,r]);
+    }
+  }
+  return open;
+}
 
 const LV_INFO = {
-  1:{ name:'Lv.1 입문',  color:'#00ff88', moveMs:140, hitPen:15, lvBonus:0   },
-  2:{ name:'Lv.2 보통',  color:'#00ccff', moveMs:150, hitPen:20, lvBonus:200 },
-  3:{ name:'Lv.3 어려움',color:'#ff6b35', moveMs:155, hitPen:30, lvBonus:400 },
-  4:{ name:'Lv.4 극한',  color:'#ff2255', moveMs:165, hitPen:40, lvBonus:800 },
+  1:{ name:'Lv.1 입문',  color:'#00ff88', moveMs:150, hitPen:15, lvMult:1.0 },
+  2:{ name:'Lv.2 보통',  color:'#00ccff', moveMs:135, hitPen:20, lvMult:1.3 },
+  3:{ name:'Lv.3 어려움',color:'#ff6b35', moveMs:120, hitPen:30, lvMult:1.6 },
+  4:{ name:'Lv.4 극한',  color:'#ff2255', moveMs:105, hitPen:40, lvMult:2.0 },
 };
 
 const ZONES = [
-  {name:'ZONE 1 · 공장 라인',emoji:'🏭',color:'#00ff88',row:0},
-  {name:'ZONE 2 · 화재 현장',emoji:'🔥',color:'#ff6b35',row:3},
-  {name:'ZONE 3 · 잔해 구역',emoji:'🪨',color:'#00ccff',row:6},
-  {name:'ZONE 4 · 구조 완료',emoji:'🏁',color:'#ffd700',row:9},
+  {name:'WAVE · 공장 라인',emoji:'🏭',color:'#00ff88'},
+  {name:'WAVE · 화재 현장',emoji:'🔥',color:'#ff6b35'},
+  {name:'WAVE · 잔해 구역',emoji:'🪨',color:'#00ccff'},
+  {name:'WAVE · 구조 본부',emoji:'🏁',color:'#ffd700'},
 ];
-
-const TOTAL_TIME=120, GRID_COLS=9, GRID_ROWS=11;
-const GOAL={x:4,y:0};
 
 // ══════════════════════════════════════════
 //  ② 전역 상태
@@ -333,15 +341,15 @@ const GOAL={x:4,y:0};
 let state={
   nickname:'', level:1,
   timeLeft:TOTAL_TIME, timerInterval:null, moveInterval:null,
-  robotX:4, robotY:10, pressedDir:null,
-  hits:0, currentZone:0, finished:false, score:0,
+  robotX:SPAWN.x, robotY:SPAWN.y, pressedDir:null,
+  hits:0, wave:1, finished:false, score:0,
+  combo:1, maxCombo:1, coresCollected:0, totalClears:0,
+  cores:[], // [{x,y}]
 };
 let WALLS=new Set(), canvas, ctx, CELL;
 let selLevel=1;
 
-// ── 이동벽 (Lv4 전용) ──
-// 각 이동벽: { row, cols:[c1,c2], cur:0, interval, timer }
-// cur: 현재 이동벽이 점유 중인 col 인덱스
+// ── 이동벽 (웨이브별 동적) ──
 let movingWalls=[];
 let mwInterval=null;
 
@@ -522,63 +530,104 @@ function goToBrief(){
 }
 
 // ══════════════════════════════════════════
-//  ⑥ 맵 빌드
+//  ⑥ 맵 빌드 (웨이브별 프로시저럴)
 // ══════════════════════════════════════════
-function buildWalls(lv){
-  const open=MAPS[lv];
-  const w=new Set();
-  open.forEach((cols,row)=>{
-    const s=new Set(cols);
-    for(let c=0;c<GRID_COLS;c++) if(!s.has(c)) w.add(c+','+row);
+function buildWalls(lv, wave){
+  return generateMap(lv, wave);
+}
+
+// 에너지 코어 배치: 통로 중에서 랜덤 3개
+function spawnCores(walls){
+  const open=getOpenCells(walls).filter(([c,r])=>{
+    // 스폰 근처 2칸 이내는 제외 (너무 쉬움)
+    return !(Math.abs(c-SPAWN.x)<=1 && Math.abs(r-SPAWN.y)<=1);
   });
-  return w;
+  // 셔플
+  for(let i=open.length-1;i>0;i--){
+    const j=Math.floor(Math.random()*(i+1));
+    [open[i],open[j]]=[open[j],open[i]];
+  }
+  return open.slice(0,3).map(([x,y])=>({x,y}));
 }
 
 // ══════════════════════════════════════════
-//  ⑥-b 이동벽 시스템 (Lv4 전용)
+//  ⑥-b 이동벽 시스템 (웨이브별 동적)
 // ══════════════════════════════════════════
-// 이동벽 정의: 각 row의 통로 2칸 사이를 왕복
-// 이동벽이 점유한 칸은 WALLS에 임시 추가 → 충돌 적용
-// 주기(ms)가 다르면 타이밍 예측이 어려워짐
+// 웨이브/레벨에 따라 이동벽 개수 결정
+function getMWCount(lv, wave){
+  // Lv1: wave 2부터 1개씩 증가 / Lv2: wave 1부터 / Lv3+4: 공격적
+  const base=[0,1,2,3][lv-1]||0;
+  const perWave=[0.4,0.6,0.8,1.0][lv-1]||0.4;
+  const startWave=lv===1?2:1;
+  if(wave<startWave) return 0;
+  return Math.min(8, Math.floor(base + (wave-startWave+1)*perWave));
+}
 
-// ─── 이동벽 10개 · r1~r9 전 행 커버 · r0(골인) 제외 ───
-// type:'toggle' → colA↔colB 왕복 (통로 2칸 행)
-// type:'blink'  → 통로 1칸 행에서 점멸 (OFF일 때만 통과 가능)
-// type:'scan'   → colA→colB 선형 스캔 왕복 (넓은 행)
-const MW_DEF = [
-  { row:1, colA:4, colB:5, period:1100, phase:0.0,  type:'toggle' }, // r1 4↔5 왕복
-  { row:2, colA:5, colB:5, period: 800, phase:0.2,  type:'blink'  }, // r2 col5 점멸
-  { row:3, colA:5, colB:6, period: 950, phase:0.5,  type:'toggle' }, // r3 5↔6 왕복
-  { row:4, colA:6, colB:6, period: 700, phase:0.7,  type:'blink'  }, // r4 col6 점멸
-  { row:5, colA:6, colB:7, period:1200, phase:0.3,  type:'toggle' }, // r5 6↔7 왕복
-  { row:6, colA:7, colB:7, period: 850, phase:0.1,  type:'blink'  }, // r6 col7 점멸
-  { row:7, colA:7, colB:8, period: 750, phase:0.8,  type:'toggle' }, // r7 7↔8 왕복
-  { row:8, colA:4, colB:7, period:1400, phase:0.0,  type:'scan'   }, // r8 스캔A
-  { row:8, colA:5, colB:8, period:1800, phase:0.5,  type:'scan'   }, // r8 스캔B (역위상)
-  { row:9, colA:4, colB:4, period: 900, phase:0.4,  type:'blink'  }, // r9 col4 점멸 (최종 관문)
-];
-
+// 이동벽을 통로 위에 동적 배치
 function initMovingWalls(){
-  movingWalls = MW_DEF.map(d => ({
+  stopMovingWalls();
+  const count=getMWCount(state.level, state.wave);
+  if(count<=0) return;
+
+  // 통로 셀(중간 행)에서 골인/스폰/코어 근처 제외하고 후보 추출
+  const candidates=[];
+  for(let r=1;r<GRID_ROWS-1;r++){
+    for(let c=0;c<GRID_COLS;c++){
+      if(WALLS.has(c+','+r)) continue;
+      if(Math.abs(c-SPAWN.x)<=1 && r>=GRID_ROWS-2) continue;
+      if(Math.abs(c-GOAL.x)<=1 && r<=1) continue;
+      // 코어 위치 제외
+      if(state.cores.some(core=>core.x===c&&core.y===r)) continue;
+      candidates.push([c,r]);
+    }
+  }
+  // 셔플
+  for(let i=candidates.length-1;i>0;i--){
+    const j=Math.floor(Math.random()*(i+1));
+    [candidates[i],candidates[j]]=[candidates[j],candidates[i]];
+  }
+
+  const placed=[];
+  for(const[c,r] of candidates){
+    if(placed.length>=count) break;
+    // 같은 행에 이미 있으면 간격 두기
+    if(placed.some(p=>p.row===r && Math.abs(p.colA-c)<2)) continue;
+    // blink형: 제자리 점멸 / toggle: 없음 (맵이 프로시저럴이므로 단순화)
+    const type = Math.random()<0.7 ? 'blink' : 'blink';
+    placed.push({
+      row:r, colA:c, colB:c,
+      period: 700+Math.random()*600,
+      phase: Math.random(),
+      type:'blink',
+      curCol:c, active:false,
+    });
+  }
+
+  // BFS 보장: 이동벽이 모두 ON인 최악 상태에서도 통과 가능한지 검사
+  const testWalls=new Set(WALLS);
+  placed.forEach(mw=>testWalls.add(`${mw.colA},${mw.row}`));
+  if(!bfsConnected(testWalls, SPAWN, GOAL)){
+    // 일부 이동벽 제거하여 확보
+    while(placed.length>0){
+      placed.pop();
+      const tw=new Set(WALLS);
+      placed.forEach(mw=>tw.add(`${mw.colA},${mw.row}`));
+      if(bfsConnected(tw, SPAWN, GOAL)) break;
+    }
+  }
+
+  movingWalls = placed.map(d => ({
     ...d,
     startTime: performance.now() - d.phase * d.period,
-    curCol: d.colA,
-    active: d.type !== 'blink', // 점멸은 OFF(열림)로 시작
   }));
-  mwInterval = setInterval(tickMovingWalls, 50); // 50ms = 20fps 업데이트
+  mwInterval = setInterval(tickMovingWalls, 50);
 }
 
 function stopMovingWalls(){
   if(mwInterval){ clearInterval(mwInterval); mwInterval=null; }
   movingWalls.forEach(mw=>{
-    // toggle/scan 현재 칸 제거
     WALLS.delete(`${mw.row},${mw.curCol}`);
-    // scan 범위 전체 제거
-    if(mw.type==='scan'){
-      for(let c=mw.colA;c<=mw.colB;c++) WALLS.delete(`${mw.row},${c}`);
-    }
-    // blink 제거
-    if(mw.type==='blink') WALLS.delete(`${mw.row},${mw.colA}`);
+    WALLS.delete(`${mw.colA},${mw.row}`);
   });
   movingWalls=[];
 }
@@ -589,50 +638,19 @@ function tickMovingWalls(){
 
   movingWalls.forEach(mw=>{
     const elapsed=(now-mw.startTime)%mw.period;
-    const t=elapsed/mw.period; // 0.0 ~ 1.0
+    const t=elapsed/mw.period;
+    // 점멸: 45%막힘 / 55%열림
+    const shouldBlock = (t < 0.45);
+    const key=`${mw.colA},${mw.row}`;
 
-    let newCol;
-    let shouldBlock=true; // 이동벽이 현재 칸을 막는가
-
-    if(mw.type==='blink'){
-      // 점멸: 절반은 막힘, 절반은 열림
-      shouldBlock = (t < 0.45); // 45%막힘 / 55%열림 (통과 여지)
-      newCol = mw.colA; // 항상 같은 칸
-    } else if(mw.type==='toggle'){
-      // 두 칸 왕복
-      newCol = t < 0.5 ? mw.colA : mw.colB;
-      shouldBlock = true;
-    } else if(mw.type==='scan'){
-      // 선형 스캔
-      const range = mw.colB - mw.colA;
-      const pos = Math.abs(((t*2)%2)-1) * range;
-      newCol = mw.colA + Math.round(pos);
-      shouldBlock = true;
-    }
-
-    // 이전 상태 해제
-    if(mw.type==='blink'){
-      if(!shouldBlock){
-        WALLS.delete(`${mw.row},${mw.curCol}`);
-        mw.active=false;
-      } else if(!mw.active){
-        // 골인/시작 보호
-        if(!(mw.row===0 && mw.colA===4) && mw.row!==10){
-          WALLS.add(`${mw.row},${mw.colA}`);
-          mw.active=true;
-          // 로봇 위치 충돌 체크
-          if(state.robotX===mw.colA && state.robotY===mw.row) onMWHit();
-        }
-      }
-    } else {
-      // toggle/scan: 칸 이동
-      if(newCol !== mw.curCol){
-        WALLS.delete(`${mw.row},${mw.curCol}`);
-        mw.curCol = newCol;
-        if(!(mw.row===0 && newCol===4) && mw.row!==10){
-          WALLS.add(`${mw.row},${mw.curCol}`);
-          if(state.robotX===newCol && state.robotY===mw.row) onMWHit();
-        }
+    if(!shouldBlock){
+      WALLS.delete(key);
+      mw.active=false;
+    } else if(!mw.active){
+      if(!(mw.row===0 && mw.colA===GOAL.x) && mw.row!==GRID_ROWS-1){
+        WALLS.add(key);
+        mw.active=true;
+        if(state.robotX===mw.colA && state.robotY===mw.row) onMWHit();
       }
     }
   });
@@ -641,32 +659,73 @@ function tickMovingWalls(){
 }
 
 function onMWHit(){
-  state.hits++; state.timeLeft=Math.max(0,state.timeLeft-2);
-  document.getElementById('stat-hit').textContent=state.hits;
-  setGM('😰','이동벽에 충돌!'); sfx('hit'); spawnP('⚡'); updateTimerBar();
+  state.hits++; state.timeLeft=Math.max(0,state.timeLeft-3);
+  breakCombo();
+  setGM('😰','이동벽 충돌! -3초'); sfx('hit'); spawnP('⚡'); updateTimerBar();
   setTimeout(()=>setGM('🤖','타이밍을 맞춰!'),800);
 }
 let bgmAutoStarted=false;
 function beginRace(){
   showScreen('game-screen');
-  WALLS=buildWalls(state.level);
-  stopMovingWalls();
-  if(state.level===4) initMovingWalls();
-  initCanvas();
   resetState();
-  document.getElementById('stat-name').textContent=state.nickname;
-  document.getElementById('stat-lv').textContent=state.level;
+  startWave(1);
   startTimer();
   startMoveLoop();
   if(!bgmAutoStarted){bgmAutoStarted=true;startBGM();}
 }
 
+function startWave(waveNum){
+  state.wave=waveNum;
+  state.robotX=SPAWN.x; state.robotY=SPAWN.y;
+  WALLS=buildWalls(state.level, waveNum);
+  state.cores=spawnCores(WALLS);
+  initMovingWalls();
+  initCanvas();
+  // 웨이브별 속도 가속 (매 웨이브 -5ms, 최소 70ms)
+  const baseMs=LV_INFO[state.level].moveMs;
+  const waveSpeed=Math.max(70, baseMs-(waveNum-1)*5);
+  if(state.moveInterval) clearInterval(state.moveInterval);
+  state.moveInterval=setInterval(moveRobot, waveSpeed);
+  // 웨이브 테마
+  const zIdx=(waveNum-1)%ZONES.length;
+  const z=ZONES[zIdx];
+  document.getElementById('zone-label').textContent=`WAVE ${waveNum} · ${z.emoji}`;
+  document.getElementById('zone-label').style.borderColor=z.color;
+  document.getElementById('zone-label').style.color=z.color;
+  document.getElementById('stat-wave').textContent=waveNum;
+  setGM(z.emoji, `WAVE ${waveNum} 시작!`);
+  setTimeout(()=>setGM('🤖','골인까지 달려!'),1100);
+}
+
 function resetState(){
-  state.robotX=4; state.robotY=10;
+  state.robotX=SPAWN.x; state.robotY=SPAWN.y;
   state.timeLeft=TOTAL_TIME; state.hits=0;
-  state.currentZone=0; state.finished=false;
+  state.wave=1; state.finished=false;
   state.pressedDir=null; state.score=0;
+  state.combo=1; state.maxCombo=1;
+  state.coresCollected=0; state.totalClears=0;
+  state.cores=[];
   updateUI();
+}
+
+// 콤보 시스템
+function addCombo(){
+  const next=[1,2,3,5][Math.min(3, state.combo===1?1:state.combo===2?2:3)];
+  // ×1 → ×2 → ×3 → ×5
+  if(state.combo===1) state.combo=2;
+  else if(state.combo===2) state.combo=3;
+  else if(state.combo===3) state.combo=5;
+  if(state.combo>state.maxCombo) state.maxCombo=state.combo;
+  updateCombo();
+}
+function breakCombo(){
+  state.combo=1;
+  updateCombo();
+}
+function updateCombo(){
+  const el=document.getElementById('stat-combo');
+  el.textContent='×'+state.combo;
+  el.style.color=state.combo>=5?'var(--gold)':state.combo>=3?'var(--warn)':state.combo>=2?'var(--neon2)':'var(--text)';
 }
 
 function initCanvas(){
@@ -682,58 +741,42 @@ function initCanvas(){
 //  ⑧ 맵 그리기
 // ══════════════════════════════════════════
 function drawMap(){
+  if(!ctx) return;
   ctx.clearRect(0,0,canvas.width,canvas.height);
+
+  // 웨이브별 테마 배경
+  const zIdx=(state.wave-1)%ZONES.length;
+  const themeColor=ZONES[zIdx].color;
   ctx.fillStyle='#0f1525'; ctx.fillRect(0,0,canvas.width,canvas.height);
+  ctx.fillStyle=hexRgba(themeColor,0.04);
+  ctx.fillRect(0,0,canvas.width,canvas.height);
 
-  ZONES.forEach((z,i)=>{
-    const sR=z.row, eR=i<ZONES.length-1?ZONES[i+1].row:GRID_ROWS;
-    ctx.fillStyle=hexRgba(z.color,0.04);
-    ctx.fillRect(0,sR*CELL,canvas.width,(eR-sR)*CELL);
-    ctx.fillStyle=hexRgba(z.color,0.5);
-    ctx.font=`bold ${Math.max(8,CELL*.2)}px 'Courier New'`;
-    ctx.fillText(z.emoji+' '+z.name,4,sR*CELL+CELL*.58);
-  });
-
+  // 그리드
   ctx.strokeStyle='rgba(30,58,95,0.4)'; ctx.lineWidth=0.5;
   for(let c=0;c<=GRID_COLS;c++){ctx.beginPath();ctx.moveTo(c*CELL,0);ctx.lineTo(c*CELL,canvas.height);ctx.stroke();}
   for(let r=0;r<=GRID_ROWS;r++){ctx.beginPath();ctx.moveTo(0,r*CELL);ctx.lineTo(canvas.width,r*CELL);ctx.stroke();}
 
   const wc=LV_INFO[state.level].color;
 
-  // 이동벽 집합 빌드 (Lv4)
-  const mwMap=new Map(); // key='c,r' → mw 객체
+  // 이동벽 맵
+  const mwMap=new Map();
   movingWalls.forEach(mw=>{
-    if(mw.type==='blink'){
-      if(mw.active) mwMap.set(`${mw.colA},${mw.row}`, mw);
-    } else {
-      mwMap.set(`${mw.curCol},${mw.row}`, mw);
-    }
+    if(mw.active) mwMap.set(`${mw.colA},${mw.row}`, mw);
   });
 
+  // 벽 렌더링
   WALLS.forEach(key=>{
     const[c,r]=key.split(',').map(Number);
     const mw=mwMap.get(key);
     if(mw){
-      // 이동벽 시각화
+      // 이동벽 (점멸)
       const now=performance.now();
-      let alpha, icon, color;
-      if(mw.type==='blink'){
-        // 점멸: 빠른 깜빡임으로 위험 표시
-        const blink=0.5+0.45*Math.sin(now/120);
-        alpha=blink; icon='⚡'; color='255,80,80';
-      } else if(mw.type==='scan'){
-        const pulse=0.6+0.3*Math.sin(now/200);
-        alpha=pulse; icon='🔴'; color='255,120,0';
-      } else {
-        const pulse=0.55+0.3*Math.sin(now/180);
-        alpha=pulse; icon='⚡'; color='255,50,50';
-      }
-      ctx.fillStyle=`rgba(${color},${alpha})`;
+      const blink=0.5+0.45*Math.sin(now/120);
+      ctx.fillStyle=`rgba(255,80,80,${blink})`;
       ctx.fillRect(c*CELL+1,r*CELL+1,CELL-2,CELL-2);
-      // 아이콘
       ctx.font=`${Math.max(10,CELL*.42)}px serif`;
       ctx.textAlign='center'; ctx.textBaseline='middle';
-      ctx.fillText(icon, c*CELL+CELL/2, r*CELL+CELL/2);
+      ctx.fillText('⚡', c*CELL+CELL/2, r*CELL+CELL/2);
       ctx.textAlign='start'; ctx.textBaseline='alphabetic';
     } else {
       ctx.fillStyle=hexRgba(wc,0.5);
@@ -744,6 +787,23 @@ function drawMap(){
     }
   });
 
+  // 에너지 코어
+  const nowMs=performance.now();
+  state.cores.forEach(core=>{
+    const cx=core.x*CELL+CELL/2, cy=core.y*CELL+CELL/2;
+    const pulse=0.6+0.4*Math.sin(nowMs/200);
+    const glow=ctx.createRadialGradient(cx,cy,CELL*.1,cx,cy,CELL*.55);
+    glow.addColorStop(0,`rgba(0,255,255,${pulse*0.8})`);
+    glow.addColorStop(1,'rgba(0,255,255,0)');
+    ctx.fillStyle=glow;
+    ctx.beginPath(); ctx.arc(cx,cy,CELL*.55,0,Math.PI*2); ctx.fill();
+    ctx.font=`${Math.max(14,CELL*.55)}px serif`;
+    ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.fillText('⚡',cx,cy);
+    ctx.textAlign='start'; ctx.textBaseline='alphabetic';
+  });
+
+  // 골인
   const gx=GOAL.x*CELL, gy=GOAL.y*CELL;
   ctx.fillStyle='rgba(255,215,0,0.22)'; ctx.fillRect(gx+1,gy+1,CELL-2,CELL-2);
   ctx.fillStyle='#ffd700'; ctx.font=`${CELL*.62}px serif`;
@@ -767,7 +827,7 @@ function drawRobot(cx,cy){
   ctx.beginPath(); ctx.arc(x,y+r*.15,r*.2,0,Math.PI); ctx.stroke();
 }
 
-function getZone(r){for(let i=ZONES.length-1;i>=0;i--) if(r>=ZONES[i].row) return i; return 0;}
+
 function hexRgba(h,a){const r=parseInt(h.slice(1,3),16),g=parseInt(h.slice(3,5),16),b=parseInt(h.slice(5,7),16);return `rgba(${r},${g},${b},${a})`;}
 
 // ══════════════════════════════════════════
@@ -801,26 +861,61 @@ function moveRobot(){
   if(nx<0||nx>=GRID_COLS||ny<0||ny>=GRID_ROWS) return;
 
   if(WALLS.has(`${nx},${ny}`)){
-    state.hits++; state.timeLeft=Math.max(0,state.timeLeft-2);
-    document.getElementById('stat-hit').textContent=state.hits;
-    setGM('😰','앗! 장애물!'); sfx('hit'); spawnP('💥'); updateTimerBar();
-    setTimeout(()=>setGM('🤖','다시 해봐!'),700); return;
+    state.hits++; state.timeLeft=Math.max(0,state.timeLeft-3);
+    breakCombo();
+    setGM('😰','충돌! -3초 콤보 파괴'); sfx('hit'); spawnP('💥'); updateTimerBar();
+    setTimeout(()=>setGM('🤖','침착하게!'),700); return;
   }
 
   sfx('move'); state.robotX=nx; state.robotY=ny;
-  if(nx===GOAL.x&&ny===GOAL.y){finishGame(true);return;}
 
-  const nz=getZone(ny);
-  if(nz>state.currentZone){
-    state.currentZone=nz;
-    setGM('😄',ZONES[nz].name+' 진입!'); sfx('zone'); spawnP(ZONES[nz].emoji);
-    document.getElementById('zone-label').textContent=ZONES[nz].name;
-    document.getElementById('stat-zone').textContent=`${nz+1}/4`;
-    const el=document.getElementById('zone-label');
-    el.style.borderColor=ZONES[nz].color; el.style.color=ZONES[nz].color;
-    setTimeout(()=>setGM('🤖','계속 전진!'),1100);
+  // 에너지 코어 수집
+  const coreIdx=state.cores.findIndex(c=>c.x===nx&&c.y===ny);
+  if(coreIdx>=0){
+    state.cores.splice(coreIdx,1);
+    state.coresCollected++;
+    const gained=100*state.combo;
+    state.score+=gained;
+    updateScore();
+    document.getElementById('stat-core').textContent=state.coresCollected;
+    sfx('zone'); spawnP('⚡');
+    setGM('⚡','+'+gained+'점!');
+    setTimeout(()=>setGM('🤖','계속!'),600);
   }
+
+  // 골인 = 웨이브 클리어
+  if(nx===GOAL.x&&ny===GOAL.y){
+    clearWave();
+    return;
+  }
+
   drawMap();
+}
+
+function clearWave(){
+  state.totalClears++;
+  addCombo();
+  // 클리어 점수: 500 × 콤보 × 레벨배율 + 남은 코어당 -0(페널티 없음) + 시간보너스 5초
+  const li=LV_INFO[state.level];
+  const clearBonus=Math.round(500*state.combo*li.lvMult);
+  state.score+=clearBonus;
+  state.timeLeft=Math.min(TOTAL_TIME, state.timeLeft+5); // +5초 보너스
+  updateScore();
+  updateTimerBar();
+
+  setGM('🎉','클리어! +'+clearBonus+' +5초');
+  sfx('win'); spawnP('🏁'); spawnP('⭐');
+
+  // 다음 웨이브 시작
+  setTimeout(()=>{
+    if(state.finished) return;
+    startWave(state.wave+1);
+    drawMap();
+  }, 700);
+}
+
+function updateScore(){
+  document.getElementById('stat-score').textContent=state.score.toLocaleString();
 }
 
 // ══════════════════════════════════════════
@@ -831,8 +926,9 @@ function startTimer(){
   state.timerInterval=setInterval(()=>{
     state.timeLeft--;
     updateTimerBar();
-    if(state.timeLeft<=20){document.getElementById('timer-sec').style.color='var(--danger)';setGM('😰','시간이 없어!');}
-    if(state.timeLeft<=0) finishGame(false);
+    if(state.timeLeft===30){setGM('⏰','30초 남음! 집중!');}
+    if(state.timeLeft<=15){document.getElementById('timer-sec').style.color='var(--danger)';}
+    if(state.timeLeft<=0) finishGame(true);
   },1000);
 }
 function updateTimerBar(){
@@ -849,52 +945,58 @@ function stopAll(){clearInterval(state.timerInterval);clearInterval(state.moveIn
 // ══════════════════════════════════════════
 function finishGame(won){
   stopAll(); stopBGM();
-  const li=LV_INFO[state.level];
-  const zB=state.currentZone*300, tB=state.timeLeft*10, hP=state.hits*li.hitPen, lB=li.lvBonus;
-  state.score=Math.max(0,zB+tB-hP+lB+(won?500:0));
-
-  const code=genCode(state.nickname,state.score,state.timeLeft);
+  // 점수는 플레이 중 누적된 state.score 그대로 사용
+  const code=genCode(state.nickname,state.score,state.wave);
   document.getElementById('result-name').textContent=state.nickname;
   document.getElementById('result-lv').textContent='Lv.'+state.level;
-  document.getElementById('result-zone').textContent=`${state.currentZone+1}/4`;
-  document.getElementById('result-time').textContent=state.timeLeft+'초';
+  document.getElementById('result-zone').textContent='WAVE '+state.wave;
+  document.getElementById('result-time').textContent='×'+state.maxCombo;
   document.getElementById('result-score').textContent=state.score.toLocaleString();
   document.getElementById('finish-code').textContent=code;
 
-  if(won){
-    document.getElementById('result-title').textContent='🎉 구조 완료!';
+  // 성적 판정
+  if(state.wave>=8){
+    document.getElementById('result-title').textContent='🏆 전설의 미봇!';
+    document.getElementById('result-mascot').textContent='🤩';
+    document.getElementById('result-speech').textContent='믿을 수 없어! 최고야!';
+  }else if(state.wave>=5){
+    document.getElementById('result-title').textContent='🎉 훌륭해!';
     document.getElementById('result-mascot').textContent='😄';
-    document.getElementById('result-speech').textContent='완벽해! 최고야!';
-    sfx('win');
+    document.getElementById('result-speech').textContent='대단한 실력이야!';
+  }else if(state.wave>=3){
+    document.getElementById('result-title').textContent='⭐ 잘했어!';
+    document.getElementById('result-mascot').textContent='😊';
+    document.getElementById('result-speech').textContent='한번 더 도전해봐!';
   }else{
-    document.getElementById('result-title').textContent='⏱️ 시간 초과!';
+    document.getElementById('result-title').textContent='💪 다시 도전!';
     document.getElementById('result-mascot').textContent='😅';
-    document.getElementById('result-speech').textContent='아쉬워! 다시 도전!';
+    document.getElementById('result-speech').textContent='감을 잡았어? 한번 더!';
   }
+  sfx('win');
 
-  saveRec(state.nickname,state.score,state.level,won);
+  saveRec(state.nickname,state.score,state.level,state.wave);
   const rk=getRank(state.score);
   const badge=document.getElementById('result-rank-badge');
   badge.textContent=rk.label; badge.className='rank-badge '+rk.cls;
 
   setTimeout(()=>{
     showScreen('result-screen');
-    spawnP(won?'🎉':'👏'); spawnP(won?'🏆':'💪');
+    spawnP('🎉'); spawnP('🏆');
   },300);
 }
 
-function genCode(name,score,time){
+function genCode(name,score,wave){
   const n=(name.charCodeAt(0)||65)%10;
-  return String(((n*1000+(score%100)*10+time%100)%9000)+1000).padStart(4,'0');
+  return String(((n*1000+(score%100)*10+wave%100)%9000)+1000).padStart(4,'0');
 }
 
 // ══════════════════════════════════════════
 //  ⑬ 리더보드
 // ══════════════════════════════════════════
-const LBK='milab028_lb';
-function saveRec(name,score,level,won){
+const LBK='milab028_lb_v2';
+function saveRec(name,score,level,wave){
   let lb=JSON.parse(localStorage.getItem(LBK)||'[]');
-  lb.push({name,score,level,won,date:new Date().toLocaleDateString('ko')});
+  lb.push({name,score,level,wave,date:new Date().toLocaleDateString('ko')});
   lb.sort((a,b)=>b.score-a.score); lb=lb.slice(0,10);
   localStorage.setItem(LBK,JSON.stringify(lb));
 }
@@ -915,7 +1017,7 @@ function showLeaderboard(){
     list.innerHTML=lb.map((r,i)=>{
       const m=i===0?'🥇':i===1?'🥈':i===2?'🥉':`${i+1}.`;
       const me=r.name===state.nickname?' me':'';
-      return`<div class="lb-item${me}"><span class="lb-rank">${m}</span><span class="lb-name">${r.name} <span style="font-size:.62rem;color:var(--muted)">Lv.${r.level||1}</span> ${r.won?'🏁':''}</span><span class="lb-score">${r.score.toLocaleString()}pt</span></div>`;
+      return`<div class="lb-item${me}"><span class="lb-rank">${m}</span><span class="lb-name">${r.name} <span style="font-size:.62rem;color:var(--muted)">Lv.${r.level||1} · W${r.wave||1}</span></span><span class="lb-score">${r.score.toLocaleString()}pt</span></div>`;
     }).join('');
   }
   showScreen('lb-screen');
@@ -953,16 +1055,19 @@ function replayGame(){
   setTimeout(()=>{if(!bgmRunning&&bgmAutoStarted)startBGM();},500);
 }
 function updateUI(){
-  document.getElementById('stat-zone').textContent='1/4';
-  document.getElementById('stat-hit').textContent='0';
+  document.getElementById('stat-wave').textContent='1';
+  document.getElementById('stat-score').textContent='0';
+  document.getElementById('stat-combo').textContent='×1';
+  document.getElementById('stat-combo').style.color='var(--text)';
+  document.getElementById('stat-core').textContent='0';
   document.getElementById('timer-sec').textContent=TOTAL_TIME;
   document.getElementById('timer-sec').style.color='var(--neon)';
   document.getElementById('timer-bar').style.width='100%';
   document.getElementById('timer-bar').classList.remove('warn');
-  document.getElementById('zone-label').textContent=ZONES[0].name;
+  document.getElementById('zone-label').textContent='WAVE 1 · 시작!';
   document.getElementById('zone-label').style.borderColor='';
   document.getElementById('zone-label').style.color='';
-  setGM('🤖','방향 버튼으로 로봇을 움직여!');
+  setGM('🤖','골인까지 달려!');
 }
 
 // ══════════════════════════════════════════
@@ -970,13 +1075,13 @@ function updateUI(){
 // ══════════════════════════════════════════
 const portfolioEntry={
   id:"028", title:"로봇 레이스 – 나만의 미봇",
-  category:"아이스브레이킹", target:"중학교", duration:"2분",
+  category:"아이스브레이킹", target:"중학교", duration:"3분",
   playMode:"멀티(개인 기기 각자 조종)", topic:"로봇조종",
   filename:"milab_028_robot_race.html",
   url:"https://milab2019.github.io/main/milab_028_robot_race.html",
-  date:"2026.04.02 개발",
-  skills:["Canvas 2D","Web Audio API","LocalStorage","QRCode.js"],
-  description:"4단계 난이도 미로를 로봇으로 탈출하는 2분 아이스브레이킹 레이스 (SF BGM · 레벨 선택 · 멀티플레이)"
+  date:"2026.04.10 v2 업데이트",
+  skills:["Canvas 2D","Web Audio API","LocalStorage","QRCode.js","Procedural Map Gen"],
+  description:"3분 웨이브 서바이벌 로봇 레이스 · 프로시저럴 랜덤 맵 · 콤보×5 · 에너지 코어 수집 · 4난이도 · SF BGM"
 };
 console.log(portfolioEntry);
 </script>
