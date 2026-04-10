@@ -1,0 +1,1720 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<!-- Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-WTY6YJQ1NS"></script>
+<script>
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-WTY6YJQ1NS');
+</script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🚗 2030 자율주행 엔지니어 | MILAB</title>
+<meta name="description" content="자율주행 엔지니어 진로체험 게임 — 미래 도로의 설계자가 되어라! 중학생 대상 AI·기술 융합 교육">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<style>
+:root {
+  --bg: #0a0e1a;
+  --panel: #111827;
+  --card: #1a2236;
+  --accent: #00d4ff;
+  --accent2: #7c3aed;
+  --accent3: #10b981;
+  --warn: #f59e0b;
+  --danger: #ef4444;
+  --text: #e2e8f0;
+  --muted: #94a3b8;
+  --border: #2d3748;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Segoe UI', 'Apple SD Gothic Neo', sans-serif;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* ===== ROAD ANIMATION BG ===== */
+.road-bg {
+  position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+  pointer-events: none; z-index: 0; overflow: hidden;
+}
+.road-line {
+  position: absolute; width: 4px; background: linear-gradient(to bottom, transparent, var(--accent), transparent);
+  opacity: 0.15; animation: roadMove linear infinite;
+}
+@keyframes roadMove {
+  0% { transform: translateY(-100%); }
+  100% { transform: translateY(200vh); }
+}
+
+/* ===== SCREENS ===== */
+.screen { display: none; position: relative; z-index: 1; min-height: 100vh; }
+.screen.active { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; }
+
+/* ===== INTRO ===== */
+.intro-card {
+  background: var(--card);
+  border: 1px solid var(--accent);
+  border-radius: 20px;
+  padding: 40px 32px;
+  max-width: 520px;
+  width: 100%;
+  text-align: center;
+  box-shadow: 0 0 40px rgba(0,212,255,0.15);
+}
+.intro-logo {
+  font-size: 13px; color: var(--accent); letter-spacing: 4px;
+  font-weight: 700; margin-bottom: 16px; text-transform: uppercase;
+}
+.intro-title {
+  font-size: 28px; font-weight: 900; line-height: 1.3;
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  margin-bottom: 8px;
+}
+.intro-sub { font-size: 15px; color: var(--muted); margin-bottom: 24px; }
+.intro-story {
+  background: rgba(0,212,255,0.06);
+  border-left: 3px solid var(--accent);
+  border-radius: 8px;
+  padding: 14px 16px;
+  font-size: 14px;
+  color: var(--muted);
+  text-align: left;
+  line-height: 1.7;
+  margin-bottom: 24px;
+}
+.name-input {
+  width: 100%; padding: 14px 18px;
+  background: var(--panel); border: 2px solid var(--border);
+  border-radius: 12px; color: var(--text); font-size: 16px;
+  margin-bottom: 16px; transition: border-color .2s;
+}
+.name-input:focus { outline: none; border-color: var(--accent); }
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  padding: 14px 28px; border: none; border-radius: 12px;
+  font-size: 16px; font-weight: 700; cursor: pointer;
+  transition: all .2s; width: 100%;
+}
+.btn-primary {
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  color: #fff;
+}
+.btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,212,255,0.3); }
+.btn-secondary {
+  background: var(--card); color: var(--accent);
+  border: 2px solid var(--accent); margin-top: 10px;
+}
+.qr-area { margin-top: 20px; }
+.qr-label { font-size: 12px; color: var(--muted); margin-bottom: 8px; }
+#qr-intro { display: flex; justify-content: center; }
+#qr-intro > div { border-radius: 8px; overflow: hidden; }
+
+/* ===== MASCOT ===== */
+.mascot-wrap { margin: 16px 0; }
+.mascot-svg { width: 90px; height: 90px; }
+.mascot-bubble {
+  background: var(--card); border: 1px solid var(--accent);
+  border-radius: 12px; padding: 10px 14px;
+  font-size: 13px; color: var(--accent);
+  max-width: 280px; margin: 0 auto; line-height: 1.5;
+  position: relative;
+}
+.mascot-bubble::before {
+  content: ''; position: absolute; top: -8px; left: 50%; transform: translateX(-50%);
+  border: 8px solid transparent; border-bottom-color: var(--accent);
+  border-top: 0; margin-top: -4px;
+}
+
+/* ===== MISSION SCREEN ===== */
+.mission-screen {
+  padding: 0; align-items: stretch; justify-content: flex-start;
+}
+.mission-header {
+  background: var(--panel);
+  border-bottom: 1px solid var(--border);
+  padding: 14px 20px;
+  display: flex; align-items: center; justify-content: space-between;
+  position: sticky; top: 0; z-index: 10;
+}
+.mission-badge {
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  color: #fff; border-radius: 20px; padding: 4px 14px; font-size: 13px; font-weight: 700;
+}
+.score-display { font-size: 15px; color: var(--accent); font-weight: 700; }
+.timer-display {
+  font-size: 20px; font-weight: 900; color: var(--warn);
+  padding: 4px 12px; border-radius: 8px;
+  background: rgba(245,158,11,0.1);
+  border: 1px solid var(--warn);
+  transition: color .3s, background .3s;
+}
+.timer-display.danger { color: var(--danger); background: rgba(239,68,68,0.15); border-color: var(--danger); animation: blink .4s infinite; }
+@keyframes blink { 50% { opacity: .4; } }
+.timer-display.hidden { visibility: hidden; }
+
+.mission-body {
+  flex: 1; padding: 20px; max-width: 680px; width: 100%;
+  margin: 0 auto;
+}
+.mission-title-bar {
+  display: flex; align-items: center; gap: 12px;
+  margin-bottom: 20px;
+}
+.mission-icon { font-size: 28px; }
+.mission-name { font-size: 20px; font-weight: 800; }
+.mission-desc { font-size: 13px; color: var(--muted); }
+
+/* PROGRESS BAR */
+.progress-bar-wrap {
+  background: var(--border); border-radius: 8px; height: 8px; margin-bottom: 20px; overflow: hidden;
+}
+.progress-bar-fill {
+  height: 100%; border-radius: 8px;
+  background: linear-gradient(90deg, var(--accent), var(--accent2));
+  transition: width .4s ease;
+}
+
+/* QUESTION CARD */
+.question-card {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 16px; padding: 24px; margin-bottom: 16px;
+}
+.question-num { font-size: 12px; color: var(--accent); margin-bottom: 6px; font-weight: 700; }
+.question-text {
+  font-size: 17px; font-weight: 700; line-height: 1.6; margin-bottom: 6px;
+}
+.question-source { font-size: 12px; color: var(--muted); margin-bottom: 18px; }
+.question-meta { font-size: 12px; color: var(--accent2); margin-bottom: 18px; }
+
+/* FACT CHECK BUTTONS */
+.fact-btns { display: flex; gap: 12px; }
+.fact-btn {
+  flex: 1; padding: 18px; border: 2px solid var(--border);
+  border-radius: 12px; background: var(--panel);
+  color: var(--text); font-size: 16px; font-weight: 800;
+  cursor: pointer; transition: all .2s;
+  display: flex; flex-direction: column; align-items: center; gap: 6px;
+}
+.fact-btn:hover { transform: translateY(-2px); }
+.fact-btn.true-btn:hover { border-color: var(--accent3); color: var(--accent3); }
+.fact-btn.false-btn:hover { border-color: var(--danger); color: var(--danger); }
+.fact-btn.correct { background: rgba(16,185,129,0.15); border-color: var(--accent3); color: var(--accent3); }
+.fact-btn.wrong { background: rgba(239,68,68,0.1); border-color: var(--danger); color: var(--danger); }
+.fact-btn.disabled { pointer-events: none; }
+
+/* MCQ OPTIONS */
+.options-grid { display: flex; flex-direction: column; gap: 10px; }
+.option-btn {
+  width: 100%; padding: 14px 18px; text-align: left;
+  background: var(--panel); border: 2px solid var(--border);
+  border-radius: 12px; color: var(--text); font-size: 15px;
+  cursor: pointer; transition: all .2s; line-height: 1.5;
+}
+.option-btn:hover { border-color: var(--accent); background: rgba(0,212,255,0.06); }
+.option-btn.correct { background: rgba(16,185,129,0.15); border-color: var(--accent3); color: var(--accent3); }
+.option-btn.wrong { background: rgba(239,68,68,0.1); border-color: var(--danger); color: var(--danger); }
+.option-btn.reveal { background: rgba(16,185,129,0.08); border-color: var(--accent3); color: var(--accent3); }
+.option-btn.disabled { pointer-events: none; }
+
+/* FEEDBACK BOX */
+.feedback-box {
+  border-radius: 12px; padding: 14px 16px;
+  font-size: 14px; line-height: 1.7; margin-top: 12px;
+  display: none;
+}
+.feedback-box.show { display: block; }
+.feedback-box.correct { background: rgba(16,185,129,0.1); border: 1px solid var(--accent3); color: var(--accent3); }
+.feedback-box.wrong { background: rgba(239,68,68,0.08); border: 1px solid var(--danger); color: #fca5a5; }
+.feedback-box .hint-tag { color: var(--accent); font-weight: 700; display: block; margin-bottom: 4px; }
+
+/* HINT BUTTON */
+.hint-btn {
+  padding: 8px 18px; border: 1px dashed var(--warn);
+  border-radius: 8px; background: transparent;
+  color: var(--warn); font-size: 13px; cursor: pointer;
+  margin-bottom: 12px; transition: all .2s;
+}
+.hint-btn:hover { background: rgba(245,158,11,0.1); }
+.hint-btn.used { opacity: .4; pointer-events: none; }
+.hint-box {
+  background: rgba(245,158,11,0.08); border: 1px solid var(--warn);
+  border-radius: 10px; padding: 12px 14px; font-size: 13px;
+  color: var(--warn); margin-bottom: 12px; display: none; line-height: 1.6;
+}
+.hint-box.show { display: block; }
+
+/* NEXT BUTTON */
+.next-btn {
+  margin-top: 16px; padding: 14px; width: 100%;
+  background: linear-gradient(135deg, var(--accent2), var(--accent));
+  border: none; border-radius: 12px; color: #fff;
+  font-size: 16px; font-weight: 700; cursor: pointer;
+  display: none; transition: all .2s;
+}
+.next-btn.show { display: block; }
+.next-btn:hover { transform: translateY(-2px); }
+
+/* MISSION 3: SCENARIO */
+.scenario-card {
+  background: linear-gradient(135deg, rgba(124,58,237,0.12), rgba(0,212,255,0.06));
+  border: 1px solid var(--accent2); border-radius: 16px;
+  padding: 20px; margin-bottom: 16px;
+}
+.scenario-title { font-size: 14px; font-weight: 700; color: var(--accent2); margin-bottom: 8px; }
+.scenario-text { font-size: 15px; line-height: 1.7; }
+.scenario-options { display: flex; flex-direction: column; gap: 10px; margin-top: 16px; }
+.scenario-opt {
+  padding: 14px 18px; background: var(--panel);
+  border: 2px solid var(--border); border-radius: 12px;
+  color: var(--text); font-size: 14px; cursor: pointer;
+  transition: all .2s; text-align: left; line-height: 1.6;
+}
+.scenario-opt:hover { border-color: var(--accent2); background: rgba(124,58,237,0.08); }
+.scenario-opt.selected { border-color: var(--accent); background: rgba(0,212,255,0.08); }
+.scenario-opt.disabled { pointer-events: none; }
+.scenario-result {
+  margin-top: 14px; padding: 14px 16px;
+  background: rgba(124,58,237,0.1); border: 1px solid var(--accent2);
+  border-radius: 12px; font-size: 14px; line-height: 1.7;
+  display: none; color: var(--text);
+}
+.scenario-result.show { display: block; }
+.ai-warn {
+  font-size: 11px; color: var(--muted);
+  background: rgba(245,158,11,0.08); border: 1px solid rgba(245,158,11,0.3);
+  border-radius: 6px; padding: 6px 10px; margin-top: 10px;
+}
+
+/* MISSION 4: DATA VIZ */
+.chart-container {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 16px; padding: 20px; margin-bottom: 16px;
+}
+.chart-title { font-size: 14px; font-weight: 700; color: var(--accent); margin-bottom: 14px; }
+.bar-chart { display: flex; flex-direction: column; gap: 10px; }
+.bar-row { display: flex; align-items: center; gap: 10px; }
+.bar-label { font-size: 13px; color: var(--muted); width: 110px; flex-shrink: 0; }
+.bar-track { flex: 1; background: var(--border); border-radius: 4px; height: 24px; position: relative; overflow: hidden; }
+.bar-fill {
+  height: 100%; border-radius: 4px;
+  background: linear-gradient(90deg, var(--accent2), var(--accent));
+  transition: width 1s ease; display: flex; align-items: center; justify-content: flex-end; padding-right: 8px;
+}
+.bar-val { font-size: 11px; font-weight: 700; color: #fff; }
+.chart-source { font-size: 11px; color: var(--muted); margin-top: 8px; }
+
+/* SORTING MISSION */
+.sort-area { display: flex; flex-direction: column; gap: 8px; }
+.sort-item {
+  padding: 12px 16px; background: var(--panel);
+  border: 2px solid var(--border); border-radius: 10px;
+  font-size: 14px; cursor: grab; user-select: none;
+  display: flex; align-items: center; gap: 10px;
+  transition: border-color .2s;
+}
+.sort-item:active { cursor: grabbing; }
+.sort-item.dragging { opacity: .5; border-color: var(--accent); }
+.sort-item.over { border-color: var(--accent2); background: rgba(124,58,237,0.08); }
+.sort-handle { color: var(--muted); font-size: 16px; }
+.sort-submit {
+  margin-top: 14px; width: 100%; padding: 14px;
+  background: linear-gradient(135deg, var(--accent3), #059669);
+  border: none; border-radius: 12px; color: #fff;
+  font-size: 16px; font-weight: 700; cursor: pointer;
+}
+
+/* SECTION COMPLETE */
+.section-complete {
+  text-align: center; padding: 30px 20px;
+  background: var(--card); border-radius: 16px; border: 1px solid var(--accent3);
+}
+.complete-icon { font-size: 48px; margin-bottom: 12px; }
+.complete-title { font-size: 22px; font-weight: 800; color: var(--accent3); margin-bottom: 8px; }
+.complete-score { font-size: 36px; font-weight: 900; color: var(--accent); margin-bottom: 16px; }
+
+/* ===== RESULT SCREEN ===== */
+.result-card {
+  background: var(--card); border-radius: 20px;
+  border: 2px solid var(--accent); padding: 32px 24px;
+  max-width: 520px; width: 100%; text-align: center;
+  box-shadow: 0 0 60px rgba(0,212,255,0.2);
+}
+.result-ending { font-size: 24px; font-weight: 900; margin-bottom: 6px; }
+.result-total { font-size: 48px; font-weight: 900; color: var(--accent); }
+.result-grade { font-size: 16px; color: var(--muted); margin-bottom: 20px; }
+.result-msg {
+  background: rgba(0,212,255,0.06); border: 1px solid var(--accent);
+  border-radius: 12px; padding: 14px 16px; font-size: 14px;
+  line-height: 1.7; margin-bottom: 20px; text-align: left;
+}
+.career-box {
+  background: rgba(124,58,237,0.1); border: 1px solid var(--accent2);
+  border-radius: 12px; padding: 14px 16px; margin-bottom: 16px; text-align: left;
+}
+.career-title { font-size: 13px; color: var(--accent2); font-weight: 700; margin-bottom: 8px; }
+.career-list { font-size: 14px; line-height: 1.8; }
+.leaderboard {
+  background: var(--panel); border-radius: 12px; padding: 14px;
+  margin-bottom: 16px; text-align: left;
+}
+.lb-title { font-size: 13px; color: var(--accent); font-weight: 700; margin-bottom: 10px; }
+.lb-row {
+  display: flex; justify-content: space-between;
+  font-size: 14px; padding: 6px 0; border-bottom: 1px solid var(--border);
+}
+.lb-row:last-child { border: none; }
+.lb-me { color: var(--accent); font-weight: 700; }
+.lb-rank { color: var(--muted); margin-right: 8px; }
+#qr-result { display: flex; justify-content: center; margin-top: 16px; }
+#qr-result > div { border-radius: 8px; overflow: hidden; }
+
+/* MUSIC TOGGLE */
+.music-btn {
+  position: fixed; top: 16px; right: 16px; z-index: 100;
+  background: var(--panel); border: 1px solid var(--border);
+  border-radius: 50%; width: 44px; height: 44px;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; font-size: 20px; transition: all .2s;
+}
+.music-btn:hover { border-color: var(--accent); }
+
+/* DIFFICULTY SELECTOR */
+.diff-selector { display: flex; gap: 8px; margin-bottom: 20px; flex-wrap: wrap; }
+.diff-btn {
+  padding: 8px 18px; border-radius: 20px; border: 2px solid var(--border);
+  background: transparent; color: var(--muted); font-size: 14px; cursor: pointer;
+  transition: all .2s;
+}
+.diff-btn.active { border-color: var(--accent); color: var(--accent); background: rgba(0,212,255,0.08); }
+
+/* MISSION NAV */
+.mission-nav {
+  display: flex; gap: 6px; padding: 14px 20px;
+  background: var(--panel); border-bottom: 1px solid var(--border);
+  overflow-x: auto; position: sticky; top: 53px; z-index: 9;
+}
+.mnav-item {
+  padding: 6px 14px; border-radius: 20px; font-size: 13px;
+  border: 1px solid var(--border); color: var(--muted);
+  white-space: nowrap; cursor: default;
+  transition: all .2s;
+}
+.mnav-item.active { border-color: var(--accent); color: var(--accent); background: rgba(0,212,255,0.1); }
+.mnav-item.done { border-color: var(--accent3); color: var(--accent3); background: rgba(16,185,129,0.08); }
+
+@media (max-width: 480px) {
+  .intro-title { font-size: 22px; }
+  .question-text { font-size: 15px; }
+  .mission-name { font-size: 17px; }
+}
+</style>
+</head>
+<body>
+
+<!-- Road BG -->
+<div class="road-bg" id="roadBg"></div>
+
+<!-- Music Toggle -->
+<div class="music-btn" id="musicBtn" onclick="toggleMusic()">🎵</div>
+
+<!-- ===== INTRO SCREEN ===== -->
+<div class="screen active" id="screenIntro">
+  <div class="intro-card">
+    <div class="intro-logo">MILAB · 충주 · 진로체험</div>
+    <div class="intro-title">🚗 2030 자율주행 엔지니어</div>
+    <div class="intro-sub">미래 도로의 설계자가 되어라!</div>
+
+    <div class="mascot-wrap">
+      <svg class="mascot-svg" viewBox="0 0 90 90" id="mascotIntro">
+        <!-- 헬멧 -->
+        <ellipse cx="45" cy="30" rx="22" ry="20" fill="#1a2236" stroke="#00d4ff" stroke-width="2"/>
+        <rect x="26" y="26" width="38" height="12" rx="4" fill="#00d4ff" opacity="0.3"/>
+        <!-- 바이저 -->
+        <ellipse cx="45" cy="33" rx="14" ry="8" fill="#0a0e1a" stroke="#00d4ff" stroke-width="1.5"/>
+        <!-- 눈 -->
+        <circle cx="39" cy="32" r="3" fill="#00d4ff"/>
+        <circle cx="51" cy="32" r="3" fill="#00d4ff"/>
+        <circle cx="40" cy="31.5" r="1" fill="#fff"/>
+        <circle cx="52" cy="31.5" r="1" fill="#fff"/>
+        <!-- 몸 -->
+        <rect x="30" y="52" width="30" height="24" rx="8" fill="#1a2236" stroke="#7c3aed" stroke-width="2"/>
+        <!-- 가슴 로고 -->
+        <text x="45" y="67" text-anchor="middle" fill="#00d4ff" font-size="8" font-weight="bold">MILAB</text>
+        <!-- 팔 -->
+        <rect x="18" y="54" width="12" height="18" rx="6" fill="#1a2236" stroke="#7c3aed" stroke-width="1.5"/>
+        <rect x="60" y="54" width="12" height="18" rx="6" fill="#1a2236" stroke="#7c3aed" stroke-width="1.5"/>
+        <!-- 태블릿 -->
+        <rect x="21" y="60" width="8" height="6" rx="2" fill="#00d4ff" opacity="0.7"/>
+        <!-- 다리 -->
+        <rect x="33" y="74" width="10" height="14" rx="5" fill="#1a2236" stroke="#7c3aed" stroke-width="1.5"/>
+        <rect x="47" y="74" width="10" height="14" rx="5" fill="#1a2236" stroke="#7c3aed" stroke-width="1.5"/>
+        <!-- 안테나 -->
+        <line x1="45" y1="10" x2="45" y2="4" stroke="#00d4ff" stroke-width="2"/>
+        <circle cx="45" cy="3" r="2" fill="#00d4ff"/>
+      </svg>
+    </div>
+    <div class="mascot-bubble">
+      안녕! 나는 AI 엔지니어 아르코야. 🤖<br>
+      2030 자율주행 시대, 함께 미래를 설계해 볼까?
+    </div>
+
+    <div class="intro-story">
+      2030년 대한민국. MILAB Motors는 세계 최초 레벨4 자율주행차 상용화를 앞두고 있습니다.
+      주니어 엔지니어로 채용된 <strong>당신</strong>은 4개의 핵심 프로젝트를 완수해야 합니다.
+      자율주행의 진실을 밝히고, 기술을 이해하고, 윤리적 판단을 내리고, 미래 진로를 탐색하세요!
+    </div>
+
+    <input class="name-input" id="playerName" type="text" placeholder="엔지니어 이름을 입력하세요 (닉네임)" maxlength="10">
+    <button class="btn btn-primary" onclick="startGame()">🚀 프로젝트 시작!</button>
+
+    <div class="qr-area">
+      <div class="qr-label">📱 QR로 공유하기</div>
+      <div id="qr-intro"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== GAME SCREEN ===== -->
+<div class="screen" id="screenGame" style="padding:0; justify-content:flex-start; align-items:stretch;">
+  <div class="mission-header">
+    <div class="mission-badge" id="missionBadge">미션 1</div>
+    <div class="timer-display hidden" id="timerDisplay">60</div>
+    <div class="score-display">⭐ <span id="scoreDisplay">0</span>점</div>
+  </div>
+  <div class="mission-nav" id="missionNav">
+    <div class="mnav-item active" id="nav0">① 팩트체크</div>
+    <div class="mnav-item" id="nav1">② 기술 퀴즈</div>
+    <div class="mnav-item" id="nav2">③ 윤리 딜레마</div>
+    <div class="mnav-item" id="nav3">④ 데이터 분석</div>
+  </div>
+  <div class="mission-body" id="missionBody"></div>
+</div>
+
+<!-- ===== RESULT SCREEN ===== -->
+<div class="screen" id="screenResult">
+  <div class="result-card">
+    <div id="resultEndingIcon" style="font-size:48px;margin-bottom:8px;"></div>
+    <div class="result-ending" id="resultEnding"></div>
+    <div class="result-total" id="resultTotal">0점</div>
+    <div class="result-grade" id="resultGrade"></div>
+    <div class="result-msg" id="resultMsg"></div>
+    <div class="career-box">
+      <div class="career-title">🎓 추천 고교 선택과목 & 진로</div>
+      <div class="career-list" id="careerList"></div>
+    </div>
+    <div class="leaderboard">
+      <div class="lb-title">🏆 MILAB 엔지니어 랭킹</div>
+      <div id="lbBody"></div>
+    </div>
+    <div class="qr-label" style="font-size:12px;color:var(--muted);margin-bottom:6px;">📱 친구에게 공유</div>
+    <div id="qr-result"></div>
+    <button class="btn btn-primary" onclick="restartGame()" style="margin-top:16px;">🔄 다시 도전!</button>
+    <button class="btn btn-secondary" onclick="goIntro()">🏠 처음으로</button>
+  </div>
+</div>
+
+<script>
+// ============================================================
+// GAME DATA
+// ============================================================
+const GAME_URL = 'https://milab2019.github.io/main/milab_autonomous_engineer_042.html';
+let playerName = '엔지니어';
+let totalScore = 0;
+let currentMission = 0;
+let missionScores = [0,0,0,0];
+let musicOn = true;
+let audioCtx = null;
+let difficulty = 'normal'; // easy / normal / hard
+let hintUsed = false;
+
+// ===== MISSION 1 DATA: FACT CHECK =====
+const factQuestions = [
+  {
+    text: "자율주행차는 레벨5가 되면 운전자가 전혀 필요 없고, 핸들과 페달도 없다.",
+    answer: true,
+    explanation: "✅ 사실! SAE 기준 레벨5는 완전 자율주행으로, 모든 상황에서 인간 개입이 불필요합니다. 핸들·페달 없는 설계도 가능합니다.",
+    subject: "🔬 정보(알고리즘·자율시스템)",
+    hint: "SAE 자율주행 레벨 분류(0~5단계)를 떠올려보세요."
+  },
+  {
+    text: "라이다(LiDAR) 센서는 빛을 이용해 주변 물체까지의 거리를 측정하며, 현재 모든 자율주행차에 반드시 탑재되어야 한다.",
+    answer: false,
+    explanation: "❌ 가짜! 라이다는 거리 측정에 뛰어나지만, 테슬라처럼 카메라+AI만으로 자율주행을 구현하는 방식도 존재합니다. 필수 탑재 의무는 없습니다.",
+    subject: "🔬 과학(빛·전자기파)",
+    hint: "테슬라 자동파일럿은 어떤 센서를 주로 사용할까요?"
+  },
+  {
+    text: "자율주행차의 AI는 학습 데이터에 따라 편향이 생길 수 있으며, 이는 안전 문제로 이어질 수 있다.",
+    answer: true,
+    explanation: "✅ 사실! AI 모델은 훈련 데이터 편향을 그대로 학습합니다. 야간, 눈길, 특정 인종 보행자 인식률 차이가 실제 문제로 보고된 바 있습니다.",
+    subject: "💡 정보(AI 윤리·데이터 편향)",
+    hint: "AI가 특정 조건에서만 학습했다면 다른 조건에서 어떤 문제가 생길까요?"
+  },
+  {
+    text: "한국은 2024년 기준 세계 최초로 레벨4 자율주행 택시를 전국 모든 도시에서 상용화했다.",
+    answer: false,
+    explanation: "❌ 가짜! 한국은 일부 지역(세종, 상암 등) 시범 운행 중입니다. 전국 상용화는 아직 이루어지지 않았습니다. 중국 바이두, 미국 웨이모가 제한적 상용화를 선도 중입니다.",
+    subject: "📰 사회(기술·정책)",
+    hint: "뉴스에서 자율주행 시범 지역으로 많이 언급되는 도시를 떠올려보세요."
+  },
+  {
+    text: "자율주행 알고리즘은 도로 위 상황을 100% 정확하게 예측할 수 없기 때문에, 설계 단계에서 '허용 가능한 위험 수준'을 정의한다.",
+    answer: true,
+    explanation: "✅ 사실! ISO 21448(SOTIF) 등 국제 표준은 예측 불가능한 상황에서의 허용 안전 수준을 정의합니다. 완벽한 AI는 존재하지 않습니다.",
+    subject: "⚙️ 정보(시스템 안전·표준)",
+    hint: "항공기나 원자력처럼 위험한 시스템은 어떻게 안전을 보장할까요?"
+  },
+  {
+    text: "자율주행차가 사고를 냈을 때, 현행 한국 법률은 자동차 제조사가 아닌 탑승자에게만 책임을 묻는다.",
+    answer: false,
+    explanation: "❌ 가짜! 현재 법률은 자율주행 단계에 따라 운전자·제조사·소프트웨어 회사 등 복합 책임을 검토 중입니다. 법·제도가 기술을 따라가는 중입니다.",
+    subject: "⚖️ 사회(법·제도·책임)",
+    hint: "자율주행 사고 책임 논의는 새로운 법적 쟁점입니다."
+  },
+  {
+    text: "자율주행차는 5G 통신을 통해 다른 차량, 신호등, 도로 인프라와 실시간으로 정보를 교환하는 V2X 기술을 활용한다.",
+    answer: true,
+    explanation: "✅ 사실! V2X(Vehicle to Everything)는 차량-차량(V2V), 차량-인프라(V2I) 통신으로 사각지대 정보를 실시간 공유해 안전성을 높입니다.",
+    subject: "📡 정보(네트워크·통신)",
+    hint: "V2X에서 X는 모든 것(Everything)을 의미합니다."
+  },
+  {
+    text: "자율주행 AI는 딥러닝을 통해 스스로 도로법규를 인터넷에서 학습하므로, 별도의 지도(HD맵) 없이도 완벽하게 작동한다.",
+    answer: false,
+    explanation: "❌ 가짜! 대부분의 자율주행 시스템은 센티미터 단위 정밀 HD맵과 센서 데이터를 결합합니다. HD맵 없이 모든 상황에서 완벽 작동은 현재 불가능합니다.",
+    subject: "🗺️ 정보(데이터·지도·AI)",
+    hint: "자율주행에서 '정밀 지도'가 왜 필요할지 생각해보세요."
+  },
+  {
+    text: "자율주행 기술은 교통사고 사망자를 줄이는 데 기여할 수 있다. 전체 교통사고의 90% 이상이 인간 실수에 의한 것이다.",
+    answer: true,
+    explanation: "✅ 사실! WHO·NHTSA 통계에 따르면 교통사고 원인의 90% 이상이 인간 실수입니다. 자율주행은 음주운전, 졸음운전을 원천 차단할 수 있습니다.",
+    subject: "📊 사회(통계·공공 안전)",
+    hint: "교통사고 원인 1위는 무엇일까요?"
+  },
+  {
+    text: "자율주행 차량의 카메라 센서는 폭설이나 짙은 안개 상황에서도 라이다와 동일한 성능을 발휘한다.",
+    answer: false,
+    explanation: "❌ 가짜! 카메라는 시각 정보에 의존하므로 악천후에 성능이 저하됩니다. 라이다(레이저)는 상대적으로 안개나 눈에 강하지만 역시 한계가 있습니다.",
+    subject: "🔬 과학(광학·센서 원리)",
+    hint: "카메라와 라이다의 원리 차이를 생각해보세요."
+  },
+  {
+    text: "자율주행 소프트웨어는 업데이트를 통해 주행 능력이 향상될 수 있으며, 이를 OTA(Over-The-Air) 업데이트라 한다.",
+    answer: true,
+    explanation: "✅ 사실! OTA는 인터넷을 통해 차량 소프트웨어를 원격 업데이트하는 기술입니다. 테슬라가 대표적으로 활용하며, 새 기능 추가·버그 수정이 가능합니다.",
+    subject: "💻 정보(소프트웨어·네트워크)",
+    hint: "스마트폰 업데이트처럼 차도 업데이트가 가능할까요?"
+  },
+  {
+    text: "자율주행차가 탑재한 AI는 도덕적 판단을 인간과 동일한 방식으로 내린다.",
+    answer: false,
+    explanation: "❌ 가짜! AI는 윤리적 판단을 인간처럼 '감정'으로 내리지 않습니다. 확률·최적화 기반 알고리즘입니다. 어떤 윤리 기준을 코드화할지는 설계자(인간)의 선택입니다.",
+    subject: "🤖 도덕(AI 윤리·책임)",
+    hint: "'트롤리 문제'를 AI에 적용한다면 어떻게 될까요?"
+  }
+];
+
+// ===== MISSION 2 DATA: TECH QUIZ =====
+const techQuestions = [
+  // EASY
+  {
+    diff: 'easy', score: 10,
+    text: "자율주행의 '눈' 역할을 하며 레이저를 쏴 거리를 측정하는 센서는?",
+    options: ["카메라", "GPS", "라이다(LiDAR)", "자이로스코프"],
+    answer: 2,
+    explanation: "라이다(LiDAR: Light Detection And Ranging)는 레이저 펄스를 쏘고 반사 시간을 측정해 3D 공간 정보를 생성합니다.",
+    subject: "🔬 과학(광학·센서)",
+    hint: "Light + Detection + Ranging의 약자입니다."
+  },
+  {
+    diff: 'easy', score: 10,
+    text: "자율주행 레벨2는 다음 중 어떤 상태를 의미하나요?",
+    options: ["완전 자율주행, 운전자 불필요", "차선 유지+속도 조절 자동, 운전자 감시 필요", "자동주차만 가능", "비상시에만 AI가 개입"],
+    answer: 1,
+    explanation: "레벨2는 '부분 자동화'로, 핸들 조향+속도 제어를 동시에 자동화하지만 운전자가 항상 감시해야 합니다. 현재 많은 차량이 레벨2 수준입니다.",
+    subject: "💡 정보(시스템 분류)",
+    hint: "SAE 레벨2: 두 가지 기능이 자동화되지만 감시는 인간이!"
+  },
+  {
+    diff: 'easy', score: 10,
+    text: "자율주행차가 주행 데이터를 다른 차량·인프라와 실시간 교환하는 기술은?",
+    options: ["GPS", "V2X", "OBD", "SLAM"],
+    answer: 1,
+    explanation: "V2X(Vehicle to Everything)는 차량이 다른 차량(V2V), 인프라(V2I), 보행자(V2P)와 통신해 사각지대 정보를 공유합니다.",
+    subject: "📡 정보(네트워크)",
+    hint: "V2X에서 X는 Everything!"
+  },
+  // NORMAL
+  {
+    diff: 'normal', score: 15,
+    text: "자율주행 AI가 주변 환경을 인식하고 3D 지도를 실시간으로 만드는 기술은?",
+    options: ["딥드림(DeepDream)", "SLAM(동시 위치추정 및 지도 작성)", "GAN(생성적 적대 신경망)", "RNN(순환신경망)"],
+    answer: 1,
+    explanation: "SLAM(Simultaneous Localization And Mapping)은 자신의 위치를 추정하면서 동시에 주변 지도를 생성하는 알고리즘입니다. 자율주행 핵심 기술입니다.",
+    subject: "🗺️ 정보(알고리즘·AI)",
+    hint: "위치(Localization)와 지도(Mapping)를 동시에(Simultaneous)!"
+  },
+  {
+    diff: 'normal', score: 15,
+    text: "자율주행 AI 학습에 대량의 도로 이미지 데이터가 필요한 이유로 가장 적절한 것은?",
+    options: [
+      "더 많은 데이터로 AI가 빠르게 달릴 수 있어서",
+      "다양한 상황을 학습해야 예외적 장면에서도 정확히 인식하므로",
+      "법적으로 1만 장 이상 데이터 사용이 의무이므로",
+      "데이터 양이 많을수록 연산 속도가 빨라지므로"
+    ],
+    answer: 1,
+    explanation: "딥러닝 기반 AI는 다양한 데이터로 학습할수록 미경험 상황에서의 일반화 성능이 향상됩니다. 눈길, 야간, 공사구간 등 다양한 케이스가 필수입니다.",
+    subject: "🤖 정보(머신러닝·데이터)",
+    hint: "딥러닝의 '일반화(generalization)' 능력을 생각해보세요."
+  },
+  {
+    diff: 'normal', score: 15,
+    text: "자율주행 시스템의 안전을 위한 '페일세이프(Fail-Safe)' 설계 원칙이란?",
+    options: [
+      "시스템 오류 시 최대 속도로 주행해 빠르게 탈출",
+      "오류 발생 시 안전한 상태(정차 등)로 자동 전환",
+      "모든 센서 데이터를 삭제해 초기화",
+      "운전자에게 즉시 벌금 부과"
+    ],
+    answer: 1,
+    explanation: "페일세이프는 시스템 고장 시 안전한 방향으로 동작하도록 설계하는 원칙입니다. 자율주행은 센서 오류 감지 시 갓길 정차 등 안전 행동을 수행합니다.",
+    subject: "⚙️ 정보(시스템 안전설계)",
+    hint: "Fail(고장) + Safe(안전) — 고장 났을 때 안전하게!"
+  },
+  // HARD
+  {
+    diff: 'hard', score: 20,
+    text: "자율주행 AI의 '엣지 케이스(Edge Case)' 문제가 중요한 이유로 가장 적절한 분석은?",
+    options: [
+      "엣지 케이스는 흔한 상황이라 자주 발생하므로",
+      "드물지만 학습 데이터 부족으로 AI가 오판하기 쉽고, 사고로 이어질 수 있으므로",
+      "엣지 케이스만 해결하면 자율주행이 완성되므로",
+      "엣지 케이스는 AI가 아닌 인간만 해결 가능하므로"
+    ],
+    answer: 1,
+    explanation: "엣지 케이스는 발생 빈도는 낮지만 학습 데이터가 부족해 AI가 취약한 상황입니다. '날아오는 흰색 트럭을 하늘로 오인한 사고'처럼 드문 상황이 치명적 결과를 낳을 수 있습니다.",
+    subject: "🤖 정보(AI 한계·안전)",
+    hint: "2016년 테슬라 자율주행 첫 사망사고 원인이 엣지 케이스였습니다."
+  },
+  {
+    diff: 'hard', score: 20,
+    text: "자율주행 AI의 '블랙박스(Black Box) 문제'가 법적·윤리적으로 중요한 이유는?",
+    options: [
+      "AI가 결정을 내리는 과정이 불투명해 사고 원인 규명과 책임 소재 파악이 어렵기 때문에",
+      "블랙박스가 저장 공간을 많이 차지해 차량 무게가 증가하므로",
+      "블랙박스 데이터는 해킹되지 않아 보안에 완벽하므로",
+      "AI 설명 가능성은 성능과 무관하므로"
+    ],
+    answer: 0,
+    explanation: "딥러닝의 판단 과정은 수십억 개 파라미터의 복잡한 계산으로, '왜 이 결정을 했나'를 설명하기 어렵습니다. 이 때문에 사고 책임 규명이 복잡하고, XAI(설명 가능한 AI) 연구가 중요해집니다.",
+    subject: "⚖️ 정보·사회(AI 책임·XAI)",
+    hint: "'설명 가능한 AI(XAI, Explainable AI)' 키워드를 검색해보세요."
+  },
+  {
+    diff: 'hard', score: 20,
+    text: "자율주행 차량이 수집하는 도로·탑승자 데이터의 개인정보 보호 관련 가장 적절한 정책 방향은?",
+    options: [
+      "안전 향상을 위해 모든 데이터를 제한 없이 제조사와 정부가 공유",
+      "데이터 최소 수집 원칙, 동의 기반 활용, 익명화 처리 의무화",
+      "탑승자 동의 없이 광고 업체에 판매 허용",
+      "데이터 수집을 전면 금지해 자율주행 기술 개발 중단"
+    ],
+    answer: 1,
+    explanation: "GDPR(유럽), 국내 개인정보보호법 등은 데이터 최소 수집, 명시적 동의, 익명화를 요구합니다. 안전과 프라이버시의 균형이 핵심 정책 과제입니다.",
+    subject: "⚖️ 사회·정보(개인정보·법)",
+    hint: "GDPR의 핵심 원칙 중 '데이터 최소화'를 생각해보세요."
+  }
+];
+
+// ===== MISSION 3 DATA: ETHICAL DILEMMA =====
+const dilemmas = [
+  {
+    title: "시나리오 1: 트롤리 딜레마 2030",
+    text: "자율주행차가 시속 60km로 주행 중, 급작스러운 제동 실패가 발생했습니다. AI는 0.01초 안에 선택해야 합니다. ① 직진: 보행자 3명 충돌 위험. ② 우회전: 운전자 1명 중상 위험. 자율주행 시스템은 어떤 원칙으로 설계되어야 할까요?",
+    options: [
+      "A. 최대 다수의 안전 우선 — 피해자 수를 최소화하는 방향으로 설계",
+      "B. 탑승자 보호 우선 — 구매자인 탑승자를 최우선으로 보호",
+      "C. 무작위 선택 — AI가 윤리적 판단을 내려서는 안 됨",
+      "D. 법적 기준 우선 — 해당 국가의 교통법규를 따름"
+    ],
+    analysis: [
+      "📊 공리주의적 관점: 총 피해를 최소화하는 합리적 선택이나, '누가 희생당할지'를 AI가 결정한다는 윤리 문제가 있습니다. MIT 도덕기계(Moral Machine) 실험에서 많은 국가가 이 원칙을 지지했습니다.",
+      "🛡️ 계약론적 관점: 소비자는 자신을 보호하는 차를 구매했다는 신뢰가 있습니다. 그러나 이 설계가 알려지면 보행자·사회 전체가 자율주행차를 위험물로 인식할 수 있습니다.",
+      "🎲 비결정론적 접근: AI의 도덕적 판단 자체를 거부하는 관점입니다. 그러나 무작위 선택도 결국 결과에 책임이 있습니다.",
+      "⚖️ 법실증주의 접근: 가장 현실적 구현 방법이나, 국가마다 법이 달라 글로벌 표준화에 한계가 있습니다."
+    ]
+  },
+  {
+    title: "시나리오 2: AI 데이터 편향",
+    text: "MILAB Motors의 보행자 인식 AI가 특정 피부색의 보행자를 낮은 정확도로 인식한다는 내부 테스트 결과가 나왔습니다. 출시를 2개월 앞둔 상황입니다. 당신은 엔지니어로서 어떤 행동을 취해야 할까요?",
+    options: [
+      "A. 즉시 경영진에 보고하고, 문제 해결 전 출시 연기를 건의",
+      "B. 평균 인식률이 기준을 넘으므로 정상 출시 진행",
+      "C. 해당 지역 출시만 연기하고 다른 지역은 예정대로 출시",
+      "D. 사용자 설명서에 '특정 조건 인식 한계' 경고문만 추가"
+    ],
+    analysis: [
+      "✅ 윤리적으로 가장 올바른 선택입니다. AI 편향은 특정 집단의 생명 안전과 직결됩니다. 단기 비용보다 사회적 책임이 우선입니다. EU AI법(AI Act)도 고위험 AI의 공정성 검증을 의무화하고 있습니다.",
+      "⚠️ 평균값이 기준을 통과해도, 특정 집단에서 현저히 낮은 성능은 차별적 해악입니다. '평균의 함정'을 주의해야 합니다.",
+      "🤔 지역별 대응은 현실적이나, 인식 문제가 지역과 무관할 수 있습니다. 근본 원인 해결 없이는 어느 지역도 안전하지 않습니다.",
+      "⚠️ 경고문은 책임 회피 수단이 될 수 있습니다. 생명 안전 문제에 경고문으로 대응하는 것은 충분하지 않습니다."
+    ]
+  },
+  {
+    title: "시나리오 3: 자율주행과 개인정보",
+    text: "자율주행차가 수집한 탑승자의 이동 경로, 음성 데이터, 차량 내 영상이 보험사와 광고사에 판매된다면 편익(보험료 할인, 맞춤 광고)과 프라이버시 침해 중 무엇을 선택해야 할까요? 당신이 정책 결정자라면?",
+    options: [
+      "A. 탑승자 명시적 동의 하에만 선택적 데이터 공유 허용",
+      "B. 모든 데이터를 자유롭게 활용해 서비스 개선에 집중",
+      "C. 개인정보 수집 자체를 전면 금지",
+      "D. 정부가 모든 데이터를 독점 관리"
+    ],
+    analysis: [
+      "✅ 정보주체의 자기결정권을 보장하는 가장 균형 잡힌 접근입니다. GDPR의 '동의 기반 처리' 원칙과 일치하며, 신뢰 기반 데이터 경제를 구축합니다.",
+      "⚠️ 프라이버시 침해와 이를 이용한 차별(보험 거부, 가격 차별 등) 위험이 높습니다. 데이터 독점 기업의 권력 남용으로 이어질 수 있습니다.",
+      "🤔 프라이버시 보호 극대화이나, 안전 개선·서비스 발전에 필요한 데이터 활용도 불가해 기술 발전이 저해됩니다.",
+      "⚠️ 정부 독점도 또 다른 권력 남용 위험입니다. 감시 사회로 이어질 수 있습니다."
+    ]
+  }
+];
+
+// ===== MISSION 4 DATA: DATA ANALYSIS =====
+const dataCharts = [
+  {
+    title: "📊 자율주행 관련 직업별 채용 증가율 (2020→2030 예측, %)",
+    source: "출처: McKinsey Global Institute, 한국고용정보원 전망 데이터 기반 재구성",
+    bars: [
+      { label: "AI·ML 엔지니어", value: 340, color: "#00d4ff" },
+      { label: "자율주행 소프트웨어", value: 280, color: "#7c3aed" },
+      { label: "모빌리티 법률전문가", value: 210, color: "#10b981" },
+      { label: "데이터 라벨러", value: 190, color: "#f59e0b" },
+      { label: "HD맵 전문가", value: 165, color: "#ef4444" },
+      { label: "차량 보안 전문가", value: 220, color: "#06b6d4" }
+    ]
+  }
+];
+
+const dataQuestions = [
+  {
+    text: "위 그래프에서 가장 높은 채용 증가율을 보이는 직업은?",
+    options: ["HD맵 전문가", "AI·ML 엔지니어", "모빌리티 법률전문가", "데이터 라벨러"],
+    answer: 1,
+    explanation: "AI·ML 엔지니어가 340% 증가로 1위입니다. 자율주행의 핵심인 AI 개발 인력 수요가 폭발적으로 증가하고 있습니다.",
+    subject: "📊 정보(데이터 분석)"
+  },
+  {
+    text: "자율주행 기술 확산으로 '모빌리티 법률전문가' 수요가 증가하는 가장 적절한 이유는?",
+    options: [
+      "운전자 수가 줄어 법률 일이 없어지므로",
+      "자율주행 사고 책임, AI 규제, 국제 표준 등 새로운 법적 쟁점이 생기므로",
+      "법률 AI가 등장해 사람 변호사가 더 필요하므로",
+      "자율주행차 등록 서류가 많아지므로"
+    ],
+    answer: 1,
+    explanation: "기술 혁신은 새로운 법적 쟁점을 만듭니다. 사고 책임, 데이터 소유권, 국가 간 주행 규정 등 자율주행 전문 법률 수요가 급증합니다.",
+    subject: "⚖️ 사회·정보(법·기술 융합)"
+  },
+  {
+    text: "데이터 라벨러(Data Labeler)의 역할 중 자율주행 AI 개발에서 가장 중요한 것은?",
+    options: [
+      "차량 외관 디자인 작업",
+      "AI 학습용 이미지·영상에서 보행자·신호등·장애물을 정확하게 표시",
+      "자율주행차 시험 운전",
+      "소비자 판매 및 마케팅"
+    ],
+    answer: 1,
+    explanation: "데이터 라벨링은 AI가 '무엇을 봐야 하는지' 알려주는 작업입니다. 정확한 라벨이 없으면 AI가 도로 위 객체를 올바르게 인식하지 못합니다.",
+    subject: "🤖 정보(AI 데이터·학습)"
+  },
+  {
+    text: "그래프를 보고, 미래 자율주행 산업에서 '기술+법+윤리' 복합 역량이 중요해지는 이유를 분석하면?",
+    options: [
+      "채용 증가율이 높은 직업들이 모두 순수 기술직이어서",
+      "AI 엔지니어, 법률전문가, 보안전문가 등 다양한 분야 수요가 모두 증가하여 융합 역량이 경쟁력이 되므로",
+      "기술 직업만 증가하므로 법·윤리 공부는 불필요",
+      "데이터 라벨러만 필요하므로 단순 작업 능력이 핵심"
+    ],
+    answer: 1,
+    explanation: "AI 기술, 법·규제, 보안, 데이터 분야 모두 고성장 중입니다. 미래 엔지니어는 기술만이 아니라 법·윤리·사회 맥락을 이해하는 T자형 인재가 요구됩니다.",
+    subject: "🎓 진로(융합 역량·미래 직업)"
+  },
+  {
+    text: "차량 보안 전문가 수요가 220% 급증하는 이유로 가장 타당한 것은?",
+    options: [
+      "자율주행차는 오프라인이라 해킹이 불가능하므로",
+      "자율주행차가 네트워크에 연결될수록 사이버 공격 위험이 증가하므로",
+      "보안 전문가가 자동차를 직접 제조하므로",
+      "교통 카메라 수리가 주요 업무이므로"
+    ],
+    answer: 1,
+    explanation: "V2X, OTA 업데이트 등 네트워크 연결 증가로 자율주행차도 해킹 위협에 노출됩니다. 원격 차량 제어 해킹은 생명에 직결되므로 사이버보안이 핵심 과제입니다.",
+    subject: "🔐 정보(사이버보안·네트워크)"
+  }
+];
+
+// ===== SORT MISSION (Mission 2 마지막: 순서 정렬) =====
+const sortSets = [
+  {
+    question: "자율주행차가 도로 위 보행자를 인식하고 멈추는 과정을 순서대로 정렬하세요:",
+    items: ["센서(라이다·카메라)가 데이터 수집", "AI가 보행자로 분류·인식", "경로 계획 알고리즘 작동", "제동 시스템에 명령 전달", "차량 감속·정지"],
+    correct: [0,1,2,3,4],
+    explanation: "인식(Perception) → 예측(Prediction) → 계획(Planning) → 제어(Control)의 자율주행 4단계 파이프라인입니다."
+  }
+];
+
+// ============================================================
+// AUDIO ENGINE
+// ============================================================
+function getAudioCtx() {
+  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  if (audioCtx.state === 'suspended') audioCtx.resume();
+  return audioCtx;
+}
+let bgmNodes = [];
+let bgmInterval = null;
+function startBGM() {
+  if (!musicOn) return;
+  stopBGM();
+  try {
+    const ctx = getAudioCtx();
+    // 하이햇 패턴 (BPM 100, 600ms 간격)
+    // 멜로디 음표: C5·E5·G5·A5 (맑고 가벼운 전자음)
+    const melody = [523, 659, 784, 880, 784, 659, 523, 659];
+    let step = 0;
+    bgmInterval = setInterval(() => {
+      if (!musicOn) return;
+      try {
+        const now = ctx.currentTime;
+        // 하이햇 (짧은 화이트노이즈 느낌 — 고주파 필터링된 사각파)
+        const hh = ctx.createOscillator();
+        const hhg = ctx.createGain();
+        const hhf = ctx.createBiquadFilter();
+        hh.type = 'square';
+        hh.frequency.value = 6000 + Math.random() * 2000;
+        hhf.type = 'highpass'; hhf.frequency.value = 5000;
+        hhg.gain.setValueAtTime(0.018, now);
+        hhg.gain.exponentialRampToValueAtTime(0.001, now + 0.06);
+        hh.connect(hhf); hhf.connect(hhg); hhg.connect(ctx.destination);
+        hh.start(now); hh.stop(now + 0.07);
+
+        // 멜로디 음표 (4박마다 한 번 — 2400ms 주기)
+        if (step % 4 === 0) {
+          const note = melody[(step / 4) % melody.length];
+          const mo = ctx.createOscillator();
+          const mg = ctx.createGain();
+          mo.type = 'sine';
+          mo.frequency.value = note;
+          mg.gain.setValueAtTime(0.06, now);
+          mg.gain.linearRampToValueAtTime(0.04, now + 0.2);
+          mg.gain.exponentialRampToValueAtTime(0.001, now + 0.45);
+          mo.connect(mg); mg.connect(ctx.destination);
+          mo.start(now); mo.stop(now + 0.5);
+        }
+        step++;
+      } catch(e){}
+    }, 600);
+  } catch(e){}
+}
+function stopBGM() {
+  if (bgmInterval) { clearInterval(bgmInterval); bgmInterval = null; }
+  bgmNodes.forEach(n => { try { n.stop ? n.stop() : null; } catch(e){} });
+  bgmNodes = [];
+}
+function playSound(type) {
+  try {
+    const ctx = getAudioCtx();
+    const o = ctx.createOscillator();
+    const g = ctx.createGain();
+    if (type === 'correct') {
+      o.type = 'sine'; o.frequency.value = 880;
+      g.gain.setValueAtTime(0.15, ctx.currentTime);
+      g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.4);
+      o.start(); o.stop(ctx.currentTime + 0.4);
+    } else if (type === 'wrong') {
+      o.type = 'sawtooth'; o.frequency.value = 180;
+      g.gain.setValueAtTime(0.15, ctx.currentTime);
+      g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.3);
+      o.start(); o.stop(ctx.currentTime + 0.3);
+    } else if (type === 'tick') {
+      o.type = 'square'; o.frequency.value = 1200;
+      g.gain.setValueAtTime(0.05, ctx.currentTime);
+      g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.05);
+      o.start(); o.stop(ctx.currentTime + 0.05);
+    } else if (type === 'fanfare') {
+      [523,659,784,1047].forEach((f,i) => {
+        const oo = ctx.createOscillator(); const gg = ctx.createGain();
+        oo.type='sine'; oo.frequency.value=f;
+        gg.gain.setValueAtTime(0, ctx.currentTime+i*0.1);
+        gg.gain.linearRampToValueAtTime(0.12, ctx.currentTime+i*0.1+0.05);
+        gg.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime+i*0.1+0.3);
+        oo.connect(gg); gg.connect(ctx.destination);
+        oo.start(ctx.currentTime+i*0.1); oo.stop(ctx.currentTime+i*0.1+0.3);
+      });
+      return;
+    }
+    o.connect(g); g.connect(ctx.destination);
+  } catch(e){}
+}
+function toggleMusic() {
+  musicOn = !musicOn;
+  document.getElementById('musicBtn').textContent = musicOn ? '🎵' : '🔇';
+  if (musicOn) startBGM(); else stopBGM();
+}
+
+// ============================================================
+// ROAD BG INIT
+// ============================================================
+function initRoad() {
+  const bg = document.getElementById('roadBg');
+  for (let i = 0; i < 8; i++) {
+    const line = document.createElement('div');
+    line.className = 'road-line';
+    line.style.left = (10 + i * 11) + '%';
+    line.style.height = (40 + Math.random() * 60) + 'px';
+    line.style.animationDuration = (3 + Math.random() * 4) + 's';
+    line.style.animationDelay = (-Math.random() * 5) + 's';
+    bg.appendChild(line);
+  }
+}
+
+// ============================================================
+// QR CODE INIT
+// ============================================================
+function makeQR(id) {
+  const el = document.getElementById(id);
+  if (!el || el.children.length > 0) return;
+  const div = document.createElement('div');
+  el.appendChild(div);
+  try {
+    new QRCode(div, { text: GAME_URL, width: 80, height: 80,
+      colorDark: '#00d4ff', colorLight: '#0a0e1a', correctLevel: QRCode.CorrectLevel.M });
+  } catch(e) {}
+}
+
+// ============================================================
+// GAME FLOW
+// ============================================================
+function startGame() {
+  const nameEl = document.getElementById('playerName');
+  playerName = nameEl.value.trim() || '주니어 엔지니어';
+  totalScore = 0; currentMission = 0;
+  missionScores = [0,0,0,0];
+  showScreen('screenGame');
+  startBGM();
+  renderMission(0);
+}
+
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+function updateNav(m) {
+  for (let i = 0; i < 4; i++) {
+    const el = document.getElementById('nav'+i);
+    el.className = 'mnav-item' + (i < m ? ' done' : i === m ? ' active' : '');
+  }
+  const badges = ['미션 1', '미션 2', '미션 3', '미션 4'];
+  document.getElementById('missionBadge').textContent = badges[m];
+}
+
+function updateScore() {
+  document.getElementById('scoreDisplay').textContent = totalScore;
+}
+
+// ============================================================
+// MISSION 1: FACT CHECK
+// ============================================================
+let m1Index = 0, m1Timer, m1TimeLeft = 180, m1Answered = [];
+
+function renderMission(m) {
+  currentMission = m;
+  updateNav(m);
+  hintUsed = false;
+  if (m === 0) renderM1();
+  else if (m === 1) renderM2();
+  else if (m === 2) renderM3();
+  else if (m === 3) renderM4();
+}
+
+function renderM1() {
+  m1Index = 0; m1Answered = new Array(factQuestions.length).fill(null);
+  m1TimeLeft = difficulty === 'easy' ? 240 : difficulty === 'hard' ? 120 : 180;
+  const body = document.getElementById('missionBody');
+  body.innerHTML = '';
+
+  const titleBar = makeTitleBar('🔍', '미션 1: 자율주행 팩트체크',
+    `${factQuestions.length}개 뉴스의 진실을 밝혀라! | 제한시간 ${m1TimeLeft}초`);
+  body.appendChild(titleBar);
+
+  const prog = makeProgress();
+  body.appendChild(prog);
+  updateM1Progress();
+
+  renderM1Question();
+  startM1Timer();
+}
+
+function startM1Timer() {
+  clearInterval(m1Timer);
+  const td = document.getElementById('timerDisplay');
+  td.classList.remove('hidden','danger');
+  td.textContent = m1TimeLeft;
+  m1Timer = setInterval(() => {
+    m1TimeLeft--;
+    td.textContent = m1TimeLeft;
+    if (m1TimeLeft <= 10) { td.classList.add('danger'); playSound('tick'); }
+    if (m1TimeLeft <= 0) { clearInterval(m1Timer); finishM1(); }
+  }, 1000);
+}
+
+function renderM1Question() {
+  const body = document.getElementById('missionBody');
+  // remove old question card if exists
+  const old = body.querySelector('.question-card');
+  if (old) old.remove();
+
+  if (m1Index >= factQuestions.length) { finishM1(); return; }
+  const q = factQuestions[m1Index];
+
+  const card = document.createElement('div');
+  card.className = 'question-card';
+  card.innerHTML = `
+    <div class="question-num">문제 ${m1Index+1} / ${factQuestions.length} · ${q.subject}</div>
+    <div class="question-text">${q.text}</div>
+    <div class="hint-btn" id="hintBtn1" onclick="showM1Hint()">💡 힌트 보기 (점수 -30%)</div>
+    <div class="hint-box" id="hintBox1">🔑 힌트: ${q.hint}</div>
+    <div class="fact-btns">
+      <button class="fact-btn true-btn" onclick="answerM1(true)">✅<span>사실</span></button>
+      <button class="fact-btn false-btn" onclick="answerM1(false)">❌<span>가짜</span></button>
+    </div>
+    <div class="feedback-box" id="fb1"></div>
+    <button class="next-btn" id="nextBtn1" onclick="nextM1()">다음 문제 →</button>
+  `;
+  body.appendChild(card);
+  updateM1Progress();
+}
+
+function showM1Hint() {
+  document.getElementById('hintBox1').classList.add('show');
+  document.getElementById('hintBtn1').classList.add('used');
+  hintUsed = true;
+}
+
+function answerM1(val) {
+  const q = factQuestions[m1Index];
+  const correct = (val === q.answer);
+  let pts = correct ? 8 : 0;
+  if (correct && hintUsed) pts = Math.round(pts * 0.7);
+  if (correct) { totalScore += pts; missionScores[0] += pts; }
+  updateScore();
+  playSound(correct ? 'correct' : 'wrong');
+  m1Answered[m1Index] = correct;
+
+  document.querySelectorAll('.fact-btn').forEach(b => b.classList.add('disabled'));
+  const isTrue = (q.answer === true);
+  document.querySelectorAll('.fact-btn').forEach(b => {
+    if (b.classList.contains('true-btn')) b.classList.add(isTrue ? 'correct' : 'wrong');
+    else b.classList.add(isTrue ? 'wrong' : 'correct');
+  });
+
+  const fb = document.getElementById('fb1');
+  fb.className = 'feedback-box show ' + (correct ? 'correct' : 'wrong');
+  fb.innerHTML = `
+    <span class="hint-tag">${correct ? `✅ 정답! +${pts}점` : '❌ 오답!'}</span>
+    ${q.explanation}<br>
+    <small>📚 관련 교과: ${q.subject}</small>
+  `;
+  document.getElementById('nextBtn1').classList.add('show');
+  hintUsed = false;
+}
+
+function nextM1() {
+  m1Index++;
+  hintUsed = false;
+  if (m1Index >= factQuestions.length) finishM1();
+  else renderM1Question();
+}
+
+function finishM1() {
+  clearInterval(m1Timer);
+  document.getElementById('timerDisplay').classList.add('hidden');
+  showMissionComplete(0, missionScores[0], '자율주행 미디어 리터러시 배지 획득! 🏅', () => renderMission(1));
+}
+
+function updateM1Progress() {
+  const p = document.getElementById('progFill');
+  if (p) p.style.width = ((m1Index / factQuestions.length) * 100) + '%';
+}
+
+// ============================================================
+// MISSION 2: TECH QUIZ + SORT
+// ============================================================
+let m2Index = 0, m2Timer, m2TimeLeft = 45;
+let m2AllQ = [];
+
+function renderM2() {
+  // 난이도에 따라 문항 선택
+  let pool = [...techQuestions];
+  if (difficulty === 'easy') pool = techQuestions.filter(q => q.diff !== 'hard');
+  if (difficulty === 'hard') pool = [...techQuestions];
+  m2AllQ = pool;
+  m2Index = 0;
+
+  const td = document.getElementById('timerDisplay');
+  td.classList.remove('hidden','danger');
+
+  const body = document.getElementById('missionBody');
+  body.innerHTML = '';
+  const titleBar = makeTitleBar('⚙️', '미션 2: 센서·AI 기술 퀴즈',
+    `${m2AllQ.length}문항 | 문항당 45초`);
+  body.appendChild(titleBar);
+  const prog = makeProgress();
+  body.appendChild(prog);
+  renderM2Question();
+}
+
+function renderM2Question() {
+  const body = document.getElementById('missionBody');
+  const old = body.querySelector('.question-card');
+  if (old) old.remove();
+
+  if (m2Index >= m2AllQ.length) {
+    // Sort mission
+    renderSortMission();
+    return;
+  }
+  const q = m2AllQ[m2Index];
+  hintUsed = false;
+  m2TimeLeft = difficulty === 'easy' ? 60 : difficulty === 'hard' ? 30 : 45;
+
+  const card = document.createElement('div');
+  card.className = 'question-card';
+  const diffLabel = { easy:'🟢 쉬움', normal:'🟡 보통', hard:'🔴 도전' }[q.diff];
+  card.innerHTML = `
+    <div class="question-num">문제 ${m2Index+1}/${m2AllQ.length} · ${diffLabel} · ${q.score}점 · ${q.subject}</div>
+    <div class="question-text">${q.text}</div>
+    <div class="hint-btn" id="hintBtn2" onclick="showM2Hint(${m2Index})">💡 힌트 (점수 -30%)</div>
+    <div class="hint-box" id="hintBox2">${q.hint}</div>
+    <div class="options-grid" id="optsGrid">
+      ${q.options.map((o,i) => `<button class="option-btn" onclick="answerM2(${i})">${String.fromCharCode(9312+i)} ${o}</button>`).join('')}
+    </div>
+    <div class="feedback-box" id="fb2"></div>
+    <button class="next-btn" id="nextBtn2" onclick="nextM2()">다음 →</button>
+  `;
+  body.appendChild(card);
+
+  const p = document.getElementById('progFill');
+  if (p) p.style.width = ((m2Index / (m2AllQ.length + 1)) * 100) + '%';
+
+  startM2Timer();
+}
+
+function startM2Timer() {
+  clearInterval(m2Timer);
+  const td = document.getElementById('timerDisplay');
+  td.classList.remove('danger');
+  td.textContent = m2TimeLeft;
+  m2Timer = setInterval(() => {
+    m2TimeLeft--;
+    td.textContent = m2TimeLeft;
+    if (m2TimeLeft <= 10) { td.classList.add('danger'); playSound('tick'); }
+    if (m2TimeLeft <= 0) { clearInterval(m2Timer); autoWrongM2(); }
+  }, 1000);
+}
+
+function autoWrongM2() {
+  const q = m2AllQ[m2Index];
+  const grid = document.getElementById('optsGrid');
+  if (!grid) return;
+  grid.querySelectorAll('.option-btn').forEach((b,i) => {
+    b.classList.add('disabled');
+    if (i === q.answer) b.classList.add('reveal');
+  });
+  const fb = document.getElementById('fb2');
+  if (fb) { fb.className = 'feedback-box show wrong'; fb.innerHTML = `<span class="hint-tag">⏰ 시간 초과!</span>${q.explanation}`; }
+  const nb = document.getElementById('nextBtn2');
+  if (nb) nb.classList.add('show');
+  playSound('wrong');
+}
+
+function showM2Hint(idx) {
+  const q = m2AllQ[idx];
+  document.getElementById('hintBox2').textContent = q.hint;
+  document.getElementById('hintBox2').classList.add('show');
+  document.getElementById('hintBtn2').classList.add('used');
+  hintUsed = true;
+}
+
+function answerM2(selected) {
+  clearInterval(m2Timer);
+  const q = m2AllQ[m2Index];
+  const correct = selected === q.answer;
+  let pts = correct ? q.score : 0;
+  if (correct && hintUsed) pts = Math.round(pts * 0.7);
+  if (correct) { totalScore += pts; missionScores[1] += pts; }
+  updateScore();
+  playSound(correct ? 'correct' : 'wrong');
+
+  document.querySelectorAll('.option-btn').forEach((b,i) => {
+    b.classList.add('disabled');
+    if (i === q.answer) b.classList.add('correct');
+    else if (i === selected && !correct) b.classList.add('wrong');
+  });
+
+  const fb = document.getElementById('fb2');
+  fb.className = 'feedback-box show ' + (correct ? 'correct' : 'wrong');
+  fb.innerHTML = `
+    <span class="hint-tag">${correct ? `✅ 정답! +${pts}점` : '❌ 오답!'}</span>
+    ${q.explanation}<br><br>
+    <small style="color:var(--accent)">📚 고교 연계: ${q.subject} — 고1 통합과학·정보 선택과목에서 더 깊이 배워요!</small>
+  `;
+  const nb = document.getElementById('nextBtn2');
+  if (nb) nb.classList.add('show');
+}
+
+function nextM2() {
+  m2Index++;
+  hintUsed = false;
+  renderM2Question();
+}
+
+// SORT MISSION
+let sortItems = [], dragSrc = null;
+function renderSortMission() {
+  clearInterval(m2Timer);
+  document.getElementById('timerDisplay').classList.add('hidden');
+  const body = document.getElementById('missionBody');
+  const old = body.querySelector('.question-card');
+  if (old) old.remove();
+
+  const set = sortSets[0];
+  sortItems = [...set.items];
+
+  const card = document.createElement('div');
+  card.className = 'question-card';
+  card.innerHTML = `
+    <div class="question-num">🔢 순서 정렬 미션</div>
+    <div class="question-text" style="margin-bottom:16px;">${set.question}</div>
+    <div class="sort-area" id="sortArea"></div>
+    <button class="sort-submit" onclick="checkSort()">✅ 순서 확인!</button>
+    <div class="feedback-box" id="fbSort"></div>
+  `;
+  body.appendChild(card);
+  renderSortItems();
+}
+
+function renderSortItems() {
+  const area = document.getElementById('sortArea');
+  area.innerHTML = '';
+  // shuffle for display
+  const shuffled = [...sortItems];
+  if (!window._sortShuffled) {
+    for (let i = shuffled.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i+1));
+      [shuffled[i],shuffled[j]] = [shuffled[j],shuffled[i]];
+    }
+    window._sortShuffled = shuffled;
+    sortItems = shuffled;
+  }
+  sortItems.forEach((item, i) => {
+    const div = document.createElement('div');
+    div.className = 'sort-item';
+    div.draggable = true;
+    div.dataset.idx = i;
+    div.innerHTML = `<span class="sort-handle">⠿</span>${i+1}. ${item}`;
+    div.addEventListener('dragstart', e => { dragSrc = i; div.classList.add('dragging'); });
+    div.addEventListener('dragend', e => { div.classList.remove('dragging'); });
+    div.addEventListener('dragover', e => { e.preventDefault(); div.classList.add('over'); });
+    div.addEventListener('dragleave', () => div.classList.remove('over'));
+    div.addEventListener('drop', e => {
+      e.preventDefault(); div.classList.remove('over');
+      if (dragSrc !== i) {
+        const tmp = sortItems[dragSrc]; sortItems[dragSrc] = sortItems[i]; sortItems[i] = tmp;
+        window._sortShuffled = sortItems;
+        renderSortItems();
+      }
+    });
+    // Touch support
+    let touchStartY = 0, touchSrcIdx = -1;
+    div.addEventListener('touchstart', e => { touchStartY = e.touches[0].clientY; touchSrcIdx = i; div.style.opacity='0.6'; });
+    div.addEventListener('touchend', e => {
+      div.style.opacity='1';
+      const touch = e.changedTouches[0];
+      const els = document.querySelectorAll('.sort-item');
+      els.forEach((el, j) => {
+        const rect = el.getBoundingClientRect();
+        if (touch.clientY >= rect.top && touch.clientY <= rect.bottom && j !== touchSrcIdx) {
+          const tmp = sortItems[touchSrcIdx]; sortItems[touchSrcIdx] = sortItems[j]; sortItems[j] = tmp;
+          window._sortShuffled = sortItems;
+          renderSortItems();
+        }
+      });
+    });
+    area.appendChild(div);
+  });
+}
+
+function checkSort() {
+  const set = sortSets[0];
+  const correctOrder = set.correct.map(i => set.items[i]);
+  const correct = sortItems.every((item, i) => item === correctOrder[i]);
+  const pts = correct ? 20 : 10;
+  totalScore += pts; missionScores[1] += pts;
+  updateScore();
+  playSound(correct ? 'correct' : 'wrong');
+  window._sortShuffled = null;
+
+  const fb = document.getElementById('fbSort');
+  fb.className = 'feedback-box show ' + (correct ? 'correct' : 'wrong');
+  fb.innerHTML = `
+    <span class="hint-tag">${correct ? `✅ 완벽한 순서! +${pts}점` : `🔄 아쉬워요! +${pts}점`}</span>
+    올바른 순서: ${correctOrder.map((s,i)=>`${i+1}.${s}`).join(' → ')}<br>
+    <em>${set.explanation}</em>
+  `;
+  document.querySelector('.sort-submit').disabled = true;
+  document.querySelector('.sort-submit').style.opacity = '0.5';
+
+  setTimeout(() => {
+    showMissionComplete(1, missionScores[1], 'AI 기술 전문가 배지 획득! 🤖', () => renderMission(2));
+  }, 2000);
+}
+
+// ============================================================
+// MISSION 3: ETHICAL DILEMMA
+// ============================================================
+let m3Index = 0;
+function renderM3() {
+  m3Index = 0;
+  document.getElementById('timerDisplay').classList.add('hidden');
+  renderM3Scenario();
+}
+
+function renderM3Scenario() {
+  const body = document.getElementById('missionBody');
+  body.innerHTML = '';
+  const titleBar = makeTitleBar('⚖️', '미션 3: 도로 윤리 딜레마',
+    `AI 판단의 경계를 탐구하라 | 타이머 없음`);
+  body.appendChild(titleBar);
+  const prog = makeProgress();
+  body.appendChild(prog);
+  const p = document.getElementById('progFill');
+  if (p) p.style.width = ((m3Index / dilemmas.length) * 100) + '%';
+
+  if (m3Index >= dilemmas.length) {
+    showMissionComplete(2, missionScores[2], 'AI 윤리 전문가 배지 획득! ⚖️', () => renderMission(3));
+    return;
+  }
+
+  const d = dilemmas[m3Index];
+  const card = document.createElement('div');
+  card.className = 'question-card';
+  card.innerHTML = `
+    <div class="question-num">시나리오 ${m3Index+1} / ${dilemmas.length}</div>
+    <div class="scenario-card">
+      <div class="scenario-title">${d.title}</div>
+      <div class="scenario-text">${d.text}</div>
+    </div>
+    <div class="ai-warn">⚠️ AI가 생성한 정보는 사실과 다를 수 있습니다. 이 시나리오는 교육 목적으로 구성되었습니다.</div>
+    <div class="scenario-options" id="scenOpts">
+      ${d.options.map((o,i) => `<button class="scenario-opt" onclick="answerM3(${i})">${o}</button>`).join('')}
+    </div>
+    <div class="scenario-result" id="scenResult"></div>
+    <button class="next-btn" id="nextBtn3" onclick="nextM3()">다음 시나리오 →</button>
+  `;
+  body.appendChild(card);
+}
+
+function answerM3(selected) {
+  const d = dilemmas[m3Index];
+  const pts = 15;
+  totalScore += pts; missionScores[2] += pts;
+  updateScore();
+  playSound('correct');
+
+  document.querySelectorAll('.scenario-opt').forEach((b,i) => {
+    b.classList.add('disabled');
+    if (i === selected) b.classList.add('selected');
+  });
+
+  const res = document.getElementById('scenResult');
+  res.className = 'scenario-result show';
+  res.innerHTML = `
+    <strong>📋 당신의 선택 분석:</strong><br>
+    ${d.analysis[selected]}<br><br>
+    <strong>💬 다른 관점들:</strong><br>
+    ${d.analysis.filter((_,i)=>i!==selected).map((a,i)=>`<small>• ${a}</small>`).join('<br>')}
+    <br><br>
+    <em style="color:var(--muted);font-size:12px;">자율주행 윤리는 정답이 하나가 아닌 사회적 합의의 영역입니다. 어떤 관점도 진지하게 논의됩니다.</em>
+  `;
+  document.getElementById('nextBtn3').classList.add('show');
+}
+
+function nextM3() {
+  m3Index++;
+  renderM3Scenario();
+}
+
+// ============================================================
+// MISSION 4: DATA ANALYSIS
+// ============================================================
+let m4Index = 0;
+function renderM4() {
+  m4Index = 0;
+  document.getElementById('timerDisplay').classList.add('hidden');
+  const body = document.getElementById('missionBody');
+  body.innerHTML = '';
+  const titleBar = makeTitleBar('📊', '미션 4: 미래 직업 데이터 분석',
+    `자율주행 시대 진로 탐색 | 타이머 없음`);
+  body.appendChild(titleBar);
+  const prog = makeProgress();
+  body.appendChild(prog);
+
+  // Chart
+  const chart = dataCharts[0];
+  const cc = document.createElement('div');
+  cc.className = 'chart-container';
+  const maxVal = Math.max(...chart.bars.map(b => b.value));
+  cc.innerHTML = `
+    <div class="chart-title">${chart.title}</div>
+    <div class="bar-chart">
+      ${chart.bars.map(b => `
+        <div class="bar-row">
+          <div class="bar-label">${b.label}</div>
+          <div class="bar-track">
+            <div class="bar-fill" style="width:0%;background:linear-gradient(90deg,${b.color}88,${b.color})" data-target="${Math.round(b.value/maxVal*100)}">
+              <span class="bar-val">${b.value}%</span>
+            </div>
+          </div>
+        </div>
+      `).join('')}
+    </div>
+    <div class="chart-source">${chart.source}</div>
+  `;
+  body.appendChild(cc);
+
+  // Animate bars
+  setTimeout(() => {
+    cc.querySelectorAll('.bar-fill').forEach(el => {
+      el.style.width = el.dataset.target + '%';
+    });
+  }, 300);
+
+  renderM4Question();
+}
+
+function renderM4Question() {
+  const body = document.getElementById('missionBody');
+  const old = body.querySelector('.question-card');
+  if (old) old.remove();
+
+  const p = document.getElementById('progFill');
+  if (p) p.style.width = ((m4Index / dataQuestions.length) * 100) + '%';
+
+  if (m4Index >= dataQuestions.length) {
+    showMissionComplete(3, missionScores[3], '미래 진로 탐색가 배지 획득! 🎓', showResult);
+    return;
+  }
+
+  const q = dataQuestions[m4Index];
+  const card = document.createElement('div');
+  card.className = 'question-card';
+  card.innerHTML = `
+    <div class="question-num">분석 ${m4Index+1} / ${dataQuestions.length} · ${q.subject}</div>
+    <div class="question-text">${q.text}</div>
+    <div class="options-grid" id="optsM4">
+      ${q.options.map((o,i)=>`<button class="option-btn" onclick="answerM4(${i})">${String.fromCharCode(9312+i)} ${o}</button>`).join('')}
+    </div>
+    <div class="feedback-box" id="fbM4"></div>
+    <button class="next-btn" id="nextBtnM4" onclick="nextM4()">다음 →</button>
+  `;
+  body.appendChild(card);
+}
+
+function answerM4(selected) {
+  const q = dataQuestions[m4Index];
+  const correct = selected === q.answer;
+  const pts = correct ? 15 : 5;
+  totalScore += pts; missionScores[3] += pts;
+  updateScore();
+  playSound(correct ? 'correct' : 'wrong');
+
+  document.querySelectorAll('#optsM4 .option-btn').forEach((b,i) => {
+    b.classList.add('disabled');
+    if (i === q.answer) b.classList.add('correct');
+    else if (i === selected && !correct) b.classList.add('wrong');
+  });
+
+  const fb = document.getElementById('fbM4');
+  fb.className = 'feedback-box show ' + (correct ? 'correct' : 'wrong');
+  fb.innerHTML = `
+    <span class="hint-tag">${correct ? `✅ 정확한 분석! +${pts}점` : `💡 분석 보완! +${pts}점`}</span>
+    ${q.explanation}
+  `;
+  document.getElementById('nextBtnM4').classList.add('show');
+}
+
+function nextM4() {
+  m4Index++;
+  renderM4Question();
+}
+
+// ============================================================
+// HELPERS
+// ============================================================
+function makeTitleBar(icon, name, desc) {
+  const div = document.createElement('div');
+  div.className = 'mission-title-bar';
+  div.innerHTML = `<div class="mission-icon">${icon}</div><div><div class="mission-name">${name}</div><div class="mission-desc">${desc}</div></div>`;
+  return div;
+}
+function makeProgress() {
+  const div = document.createElement('div');
+  div.className = 'progress-bar-wrap';
+  div.innerHTML = '<div class="progress-bar-fill" id="progFill" style="width:0%"></div>';
+  return div;
+}
+
+function showMissionComplete(mIdx, score, badge, cb) {
+  const body = document.getElementById('missionBody');
+  body.innerHTML = '';
+  const div = document.createElement('div');
+  div.className = 'section-complete';
+  div.innerHTML = `
+    <div class="complete-icon">${['🔍','⚙️','⚖️','📊'][mIdx]}</div>
+    <div class="complete-title">미션 ${mIdx+1} 완료! ${badge}</div>
+    <div class="complete-score">+${score}점</div>
+    <div style="font-size:14px;color:var(--muted);margin-bottom:20px;">누적 점수: ${totalScore}점</div>
+    <button class="btn btn-primary" onclick="(${cb.toString()})()">
+      ${mIdx < 3 ? '다음 미션 →' : '🏁 최종 결과 확인!'}
+    </button>
+  `;
+  body.appendChild(div);
+  playSound('fanfare');
+  document.getElementById('nav'+mIdx).className = 'mnav-item done';
+}
+
+// ============================================================
+// RESULT
+// ============================================================
+function showResult() {
+  showScreen('screenResult');
+  stopBGM();
+
+  const max = difficulty === 'easy' ? 340 : difficulty === 'hard' ? 420 : 380;
+  const pct = Math.min(100, Math.round(totalScore / max * 100));
+
+  let ending, icon, msg, career;
+  if (pct >= 80) {
+    ending = '🏆 수석 엔지니어 승진!';
+    icon = '🚀';
+    msg = `${playerName} 엔지니어님, 놀라운 실력입니다! 자율주행의 기술·윤리·데이터 분석 모든 영역에서 탁월한 역량을 보여줬습니다. 당신은 MILAB Motors의 수석 AI 엔지니어로 발탁되었습니다!`;
+    career = '추천 선택과목: <strong>인공지능기초, 물리학, 정보과학, 법과정치</strong><br>관련 학과: AI공학, 컴퓨터공학, 전자공학<br>직업: AI 연구원, 자율주행 SW 엔지니어, 모빌리티 정책 전문가';
+  } else if (pct >= 60) {
+    ending = '🥈 팀장으로 승진!';
+    icon = '⭐';
+    msg = `${playerName} 엔지니어님, 훌륭합니다! 기술 이해와 윤리적 판단 모두 균형 잡힌 역량을 보여줬습니다. 자율주행 프로젝트 팀장으로 성장할 잠재력이 충분합니다!`;
+    career = '추천 선택과목: <strong>융합과학, 정보, 사회문화, 생활과윤리</strong><br>관련 학과: 메카트로닉스, 전자공학, 소프트웨어<br>직업: 자율주행 테스터, IoT 엔지니어, 데이터 분석가';
+  } else if (pct >= 40) {
+    ending = '🥉 주니어 엔지니어 합격!';
+    icon = '💪';
+    msg = `${playerName} 엔지니어님, 잘 했습니다! 자율주행의 기초 개념을 이해하고 있습니다. 더 많은 학습으로 실력을 키우면 멋진 엔지니어가 될 수 있어요!`;
+    career = '추천 선택과목: <strong>통합과학, 기술가정, 정보, 통합사회</strong><br>관련 학과: 기계공학, 전기공학, 컴퓨터공학<br>직업: 자동차 정비 엔지니어, 센서 기술자, SW 개발자';
+  } else {
+    ending = '🔄 인턴 재도전 추천!';
+    icon = '🌱';
+    msg = `${playerName} 엔지니어님, 포기하지 마세요! 자율주행 기술은 복잡하지만, 기초부터 차근차근 배우면 누구나 엔지니어가 될 수 있습니다. 다시 도전해 보세요!`;
+    career = '추천 선택과목: <strong>통합과학, 수학, 정보, 기술가정</strong><br>관련 학과: 이공계 기초 탐색<br>직업: 다양한 진로 탐색 중 — 모든 직업이 자율주행과 연결됩니다!';
+  }
+
+  document.getElementById('resultEndingIcon').textContent = icon;
+  document.getElementById('resultEnding').textContent = ending;
+  document.getElementById('resultTotal').textContent = totalScore + '점';
+  document.getElementById('resultGrade').textContent = `정확도 ${pct}% | 미션별: ${missionScores.map(s=>`${s}점`).join(' / ')}`;
+  document.getElementById('resultMsg').textContent = msg;
+  document.getElementById('careerList').innerHTML = career;
+
+  saveLeaderboard();
+  renderLeaderboard();
+  makeQR('qr-result');
+  outputPortfolioEntry();
+  playSound('fanfare');
+}
+
+function saveLeaderboard() {
+  try {
+    let lb = JSON.parse(localStorage.getItem('milab_042_lb') || '[]');
+    lb.push({ name: playerName, score: totalScore, date: new Date().toLocaleDateString() });
+    lb.sort((a,b) => b.score - a.score);
+    lb = lb.slice(0, 5);
+    localStorage.setItem('milab_042_lb', JSON.stringify(lb));
+  } catch(e){}
+}
+
+function renderLeaderboard() {
+  try {
+    const lb = JSON.parse(localStorage.getItem('milab_042_lb') || '[]');
+    const body = document.getElementById('lbBody');
+    if (!lb.length) { body.innerHTML = '<div style="color:var(--muted);font-size:13px;">아직 기록이 없습니다.</div>'; return; }
+    body.innerHTML = lb.map((r,i) => `
+      <div class="lb-row ${r.name === playerName && r.score === totalScore ? 'lb-me' : ''}">
+        <span><span class="lb-rank">${['🥇','🥈','🥉','4위','5위'][i]}</span>${r.name}</span>
+        <span>${r.score}점</span>
+      </div>
+    `).join('');
+  } catch(e){}
+}
+
+function outputPortfolioEntry() {
+  const portfolioEntry = {
+    id: "042",
+    title: "🚗 2030 자율주행 엔지니어",
+    target: "중학교 3학년",
+    grade: "middle3",
+    subjects: ["정보", "과학", "사회", "도덕"],
+    aiFeature: "자율주행 AI 원리 체험, AI 윤리 딜레마 탐구, AI 편향 문제 분석",
+    theme: "자율주행 엔지니어 진로체험 — 팩트체크·기술퀴즈·윤리딜레마·데이터분석",
+    missions: ["미션1: 자율주행 팩트체크(12문)", "미션2: 센서·AI 기술퀴즈+순서정렬", "미션3: 도로 윤리 딜레마(3시나리오)", "미션4: 미래 직업 데이터 분석(5문)"],
+    date: "2026-04-10",
+    url: GAME_URL
+  };
+  console.log('%c[MILAB Portfolio Entry #042]', 'color:#00d4ff;font-weight:bold;font-size:14px');
+  console.log(JSON.stringify(portfolioEntry, null, 2));
+}
+
+function restartGame() {
+  totalScore = 0; missionScores = [0,0,0,0];
+  window._sortShuffled = null;
+  showScreen('screenGame');
+  startBGM();
+  renderMission(0);
+}
+
+function goIntro() {
+  window._sortShuffled = null;
+  showScreen('screenIntro');
+  stopBGM();
+}
+
+// ============================================================
+// INIT
+// ============================================================
+window.addEventListener('load', () => {
+  initRoad();
+  makeQR('qr-intro');
+});
+
+document.getElementById('playerName').addEventListener('keydown', e => {
+  if (e.key === 'Enter') startGame();
+});
+</script>
+</body>
+</html>
