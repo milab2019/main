@@ -1,0 +1,697 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<!-- Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-WTY6YJQ1NS"></script>
+<script>
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-WTY6YJQ1NS');
+</script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>숫자 꽃밭 🌻 | 미랩</title>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;user-select:none;}
+  body{
+    font-family:'Nanum Gothic',sans-serif;
+    background:#FFF9C4;
+    min-height:100vh;
+    display:flex;flex-direction:column;align-items:center;justify-content:flex-start;
+    overflow:hidden;
+    touch-action:manipulation;
+  }
+
+  /* ===== SCREENS ===== */
+  .screen{
+    width:100%;max-width:600px;min-height:100vh;
+    display:none;flex-direction:column;align-items:center;justify-content:center;
+    padding:16px;position:relative;
+  }
+  .screen.active{display:flex;}
+
+  /* ===== HEADER ===== */
+  .top-bar{
+    width:100%;display:flex;align-items:center;justify-content:space-between;
+    padding:10px 12px;position:fixed;top:0;left:50%;transform:translateX(-50%);
+    max-width:600px;background:rgba(255,249,196,0.95);z-index:100;
+    border-bottom:2px solid #FFD600;
+  }
+  .activity-label{font-size:18px;font-weight:700;color:#F57F17;}
+  .star-row{display:flex;gap:4px;font-size:22px;}
+  .music-btn{
+    font-size:22px;background:none;border:none;cursor:pointer;
+    padding:6px;border-radius:50%;min-width:40px;min-height:40px;
+    display:flex;align-items:center;justify-content:center;
+  }
+
+  /* ===== TITLE SCREEN ===== */
+  #screen-title{background:#FFF9C4;}
+  .title-char{font-size:100px;animation:bounce 1.5s infinite ease-in-out;margin-bottom:8px;}
+  .title-main{font-size:36px;font-weight:900;color:#F57F17;text-align:center;line-height:1.3;}
+  .title-sub{font-size:20px;color:#795548;margin:12px 0 28px;text-align:center;}
+  .btn-start{
+    background:linear-gradient(135deg,#FFD600,#FF8F00);
+    border:none;border-radius:40px;padding:20px 60px;
+    font-size:28px;font-weight:900;color:#fff;cursor:pointer;
+    box-shadow:0 6px 20px rgba(255,143,0,0.5);
+    min-width:200px;min-height:80px;
+    animation:pulse 2s infinite;
+  }
+  .title-qr{margin-top:28px;display:flex;flex-direction:column;align-items:center;gap:6px;}
+  .qr-label{font-size:13px;color:#999;}
+
+  /* ===== ACTIVITY SCREEN ===== */
+  #screen-game{padding-top:70px;justify-content:flex-start;}
+  .question-area{
+    width:100%;display:flex;flex-direction:column;align-items:center;
+    margin:16px 0 12px;
+  }
+  .question-guide{font-size:20px;color:#795548;margin-bottom:8px;font-weight:700;}
+  .question-number{
+    font-size:100px;font-weight:900;color:#E65100;line-height:1;
+    text-shadow:3px 3px 0 #FFD600;
+  }
+
+  /* ===== CHARACTER ===== */
+  .char-wrap{
+    width:120px;height:120px;margin:0 auto 8px;
+    display:flex;align-items:center;justify-content:center;
+    cursor:pointer;
+  }
+  .char-svg{width:110px;height:110px;transition:transform 0.1s;}
+  .char-wrap.jump .char-svg{animation:charJump 0.5s ease;}
+  .char-wrap.shake .char-svg{animation:charShake 0.5s ease;}
+  .char-wrap.dance .char-svg{animation:charDance 1s infinite ease-in-out;}
+
+  /* ===== CARDS ===== */
+  .cards-area{
+    width:100%;display:flex;gap:12px;justify-content:center;align-items:stretch;
+    margin-top:4px;
+  }
+  .card{
+    flex:1;max-width:45%;min-height:160px;
+    background:#fff;border-radius:24px;border:4px solid #FFD600;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;
+    cursor:pointer;font-size:64px;font-weight:900;color:#E65100;
+    box-shadow:0 4px 16px rgba(0,0,0,0.1);
+    transition:transform 0.12s,box-shadow 0.12s;
+    padding:12px;
+    min-width:80px;
+  }
+  .card:active{transform:scale(0.96);}
+  .card.correct{border-color:#4CAF50;background:#E8F5E9;animation:correctFlash 0.4s ease;}
+  .card.wrong{border-color:#FFC107;background:#FFF8E1;}
+  .card.hint{border-color:#4CAF50;background:#E8F5E9;animation:hintPulse 0.8s infinite;}
+  .card-num{font-size:64px;font-weight:900;color:#E65100;line-height:1;}
+  .card-sub{font-size:14px;color:#999;margin-top:4px;}
+
+  /* 3-choice cards */
+  .cards-area.three .card{max-width:30%;font-size:48px;}
+  .cards-area.three .card .card-num{font-size:52px;}
+
+  /* ===== FEEDBACK ===== */
+  .feedback-overlay{
+    position:fixed;inset:0;display:flex;flex-direction:column;
+    align-items:center;justify-content:center;z-index:200;
+    pointer-events:none;
+  }
+  .feedback-emoji{font-size:80px;animation:popIn 0.3s ease;}
+  .feedback-text{font-size:32px;font-weight:900;margin-top:8px;}
+  .feedback-text.ok{color:#2E7D32;}
+  .feedback-text.retry{color:#F57F17;}
+
+  /* confetti */
+  .confetti-piece{
+    position:fixed;width:10px;height:10px;border-radius:3px;
+    animation:confettiFall 1s ease-out forwards;
+    pointer-events:none;z-index:300;
+  }
+
+  /* ===== ACTIVITY COMPLETE ===== */
+  .act-complete{
+    display:none;flex-direction:column;align-items:center;justify-content:center;
+    position:fixed;inset:0;background:rgba(255,249,196,0.97);z-index:150;
+    gap:16px;
+  }
+  .act-complete.show{display:flex;}
+  .act-complete-emoji{font-size:80px;}
+  .act-complete-text{font-size:28px;font-weight:900;color:#E65100;}
+  .btn-next-act{
+    background:linear-gradient(135deg,#FFD600,#FF8F00);
+    border:none;border-radius:40px;padding:18px 50px;
+    font-size:24px;font-weight:900;color:#fff;cursor:pointer;
+    box-shadow:0 4px 16px rgba(255,143,0,0.4);
+    min-height:70px;
+  }
+
+  /* progress */
+  .progress-bar{
+    width:90%;max-width:500px;height:14px;background:#FFE082;
+    border-radius:10px;overflow:hidden;margin:8px 0;
+  }
+  .progress-fill{height:100%;background:linear-gradient(90deg,#FFD600,#FF8F00);
+    border-radius:10px;transition:width 0.4s ease;}
+
+  /* ===== RESULT SCREEN ===== */
+  #screen-result{gap:12px;}
+  .result-char{font-size:100px;animation:charDance 1s infinite ease-in-out;}
+  .result-title{font-size:32px;font-weight:900;color:#E65100;text-align:center;}
+  .sticker-board{
+    display:flex;flex-wrap:wrap;gap:8px;justify-content:center;
+    background:#fff;border-radius:20px;padding:16px;width:90%;
+    box-shadow:0 4px 16px rgba(0,0,0,0.1);
+  }
+  .sticker-item{font-size:28px;}
+  .result-qr{display:flex;flex-direction:column;align-items:center;gap:6px;margin-top:4px;}
+  .btn-restart{
+    background:linear-gradient(135deg,#4CAF50,#2E7D32);
+    border:none;border-radius:40px;padding:16px 48px;
+    font-size:22px;font-weight:900;color:#fff;cursor:pointer;
+    box-shadow:0 4px 16px rgba(76,175,80,0.4);
+    min-height:64px;
+  }
+
+  /* ===== TEACHER MODE ===== */
+  .teacher-btn{
+    position:fixed;left:10px;bottom:10px;width:44px;height:44px;
+    background:transparent;border:none;cursor:pointer;z-index:500;
+  }
+  .teacher-panel{
+    display:none;position:fixed;left:10px;bottom:60px;
+    background:#fff;border-radius:16px;padding:16px;
+    box-shadow:0 4px 20px rgba(0,0,0,0.2);z-index:500;
+    flex-direction:column;gap:10px;min-width:200px;
+  }
+  .teacher-panel.open{display:flex;}
+  .teacher-panel h3{font-size:14px;color:#999;margin-bottom:4px;}
+  .t-btn{
+    background:#FFF9C4;border:2px solid #FFD600;border-radius:12px;
+    padding:10px;font-size:14px;font-weight:700;cursor:pointer;color:#E65100;
+  }
+
+  /* ===== SPEAK BTN (activity 3) ===== */
+  .speak-btn{
+    font-size:48px;background:#fff;border:4px solid #FFD600;
+    border-radius:50%;width:90px;height:90px;
+    display:flex;align-items:center;justify-content:center;
+    cursor:pointer;box-shadow:0 4px 16px rgba(0,0,0,0.1);
+    margin:8px auto;
+    min-width:80px;min-height:80px;
+  }
+  .speak-btn:active{transform:scale(0.94);}
+
+  /* ===== ANIMATIONS ===== */
+  @keyframes bounce{0%,100%{transform:translateY(0);}50%{transform:translateY(-18px);}}
+  @keyframes pulse{0%,100%{transform:scale(1);}50%{transform:scale(1.04);}}
+  @keyframes charJump{0%{transform:translateY(0);}30%{transform:translateY(-30px) scale(1.1);}70%{transform:translateY(-10px);}100%{transform:translateY(0);}}
+  @keyframes charShake{0%{transform:rotate(0);}20%{transform:rotate(-12deg);}40%{transform:rotate(12deg);}60%{transform:rotate(-8deg);}80%{transform:rotate(8deg);}100%{transform:rotate(0);}}
+  @keyframes charDance{0%,100%{transform:rotate(-8deg) scale(1);}50%{transform:rotate(8deg) scale(1.08);}}
+  @keyframes correctFlash{0%{background:#E8F5E9;}50%{background:#C8E6C9;}100%{background:#E8F5E9;}}
+  @keyframes hintPulse{0%,100%{border-color:#4CAF50;box-shadow:0 0 0 0 rgba(76,175,80,0.4);}50%{border-color:#2E7D32;box-shadow:0 0 0 8px rgba(76,175,80,0);}}
+  @keyframes popIn{0%{transform:scale(0.4);opacity:0;}70%{transform:scale(1.15);}100%{transform:scale(1);opacity:1;}}
+  @keyframes confettiFall{0%{transform:translateY(-20px) rotate(0);opacity:1;}100%{transform:translateY(80vh) rotate(720deg);opacity:0;}}
+</style>
+</head>
+<body>
+
+<!-- ====== TITLE SCREEN ====== -->
+<div class="screen active" id="screen-title">
+  <div class="title-char">🌻</div>
+  <div class="title-main">숫자 꽃밭</div>
+  <div class="title-sub">해미랑 꽃을 심어요! 🌸</div>
+  <button class="btn-start" id="btn-start" onclick="startGame()">시작 🌟</button>
+  <div class="title-qr">
+    <div id="qr-title"></div>
+    <div class="qr-label">📱 QR로 열기</div>
+  </div>
+</div>
+
+<!-- ====== GAME SCREEN ====== -->
+<div class="screen" id="screen-game">
+  <div class="top-bar">
+    <div class="activity-label" id="act-label">활동 1</div>
+    <div class="star-row" id="star-row"></div>
+    <button class="music-btn" id="music-btn" onclick="toggleMusic()">🎵</button>
+  </div>
+
+  <div class="progress-bar"><div class="progress-fill" id="prog-fill" style="width:0%"></div></div>
+
+  <div class="char-wrap" id="char-wrap" onclick="charTap()">
+    <svg class="char-svg" id="char-svg" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+      <!-- petals -->
+      <ellipse cx="60" cy="22" rx="11" ry="18" fill="#FFD600" opacity="0.9"/>
+      <ellipse cx="60" cy="98" rx="11" ry="18" fill="#FFD600" opacity="0.9"/>
+      <ellipse cx="22" cy="60" rx="18" ry="11" fill="#FFD600" opacity="0.9"/>
+      <ellipse cx="98" cy="60" rx="18" ry="11" fill="#FFD600" opacity="0.9"/>
+      <ellipse cx="32" cy="32" rx="11" ry="18" fill="#FFD600" opacity="0.85" transform="rotate(45 32 32)"/>
+      <ellipse cx="88" cy="32" rx="11" ry="18" fill="#FFD600" opacity="0.85" transform="rotate(-45 88 32)"/>
+      <ellipse cx="32" cy="88" rx="11" ry="18" fill="#FFD600" opacity="0.85" transform="rotate(-45 32 88)"/>
+      <ellipse cx="88" cy="88" rx="11" ry="18" fill="#FFD600" opacity="0.85" transform="rotate(45 88 88)"/>
+      <!-- face -->
+      <circle cx="60" cy="60" r="26" fill="#8D5524"/>
+      <circle cx="60" cy="60" r="24" fill="#A0522D"/>
+      <!-- eyes -->
+      <ellipse cx="52" cy="55" rx="4" ry="5" fill="#fff"/>
+      <ellipse cx="68" cy="55" rx="4" ry="5" fill="#fff"/>
+      <circle cx="53" cy="56" r="2.5" fill="#1a1a1a" id="eye-l"/>
+      <circle cx="69" cy="56" r="2.5" fill="#1a1a1a" id="eye-r"/>
+      <!-- smile -->
+      <path id="char-mouth" d="M50 66 Q60 74 70 66" stroke="#fff" stroke-width="3" fill="none" stroke-linecap="round"/>
+    </svg>
+  </div>
+
+  <div class="question-area">
+    <div class="question-guide" id="q-guide">이 숫자를 탭해요!</div>
+    <div id="q-display"></div>
+  </div>
+
+  <div class="cards-area" id="cards-area"></div>
+
+  <div class="feedback-overlay" id="feedback-overlay" style="display:none;">
+    <div class="feedback-emoji" id="fb-emoji"></div>
+    <div class="feedback-text" id="fb-text"></div>
+  </div>
+</div>
+
+<!-- ====== ACT COMPLETE ====== -->
+<div class="act-complete" id="act-complete">
+  <div class="act-complete-emoji">🎉</div>
+  <div class="act-complete-emoji" id="act-complete-char" style="font-size:70px;">🌻</div>
+  <div class="act-complete-text" id="act-complete-text">활동 1 완료!</div>
+  <button class="btn-next-act" id="btn-next-act" onclick="nextActivity()">다음으로 ➡️</button>
+</div>
+
+<!-- ====== RESULT SCREEN ====== -->
+<div class="screen" id="screen-result">
+  <div class="result-char">🌻</div>
+  <div class="result-title">다 했어요! 🎉<br>정말 잘 했어요!</div>
+  <div class="sticker-board" id="sticker-board"></div>
+  <div class="result-qr">
+    <div id="qr-result"></div>
+    <div class="qr-label">📱 QR로 열기</div>
+  </div>
+  <button class="btn-restart" onclick="restartGame()">다시 하기 🔄</button>
+</div>
+
+<!-- ====== TEACHER MODE ====== -->
+<button class="teacher-btn" id="teacher-btn"></button>
+<div class="teacher-panel" id="teacher-panel">
+  <h3>👩‍🏫 교사 모드</h3>
+  <button class="t-btn" onclick="toggleMusic()">🎵 음악 ON/OFF</button>
+  <button class="t-btn" onclick="toggleSfx()">🔔 효과음 ON/OFF</button>
+  <button class="t-btn" onclick="forceNextActivity()">⏭️ 다음 활동으로</button>
+  <button class="t-btn" onclick="closeTeacher()">✕ 닫기</button>
+</div>
+
+<!-- QRCode.js CDN -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
+<script>
+// ===== CONFIG =====
+const GAME_URL = 'https://milab2019.github.io/main/milab_number_garden_10to20_044.html';
+const NUMBERS = [10,11,12,13,14,15,16,17,18,19,20];
+
+// ===== STATE =====
+let currentActivity = 1; // 1,2,3
+let questions = [];
+let qIdx = 0;
+let wrongCount = 0;
+let stickers = [];
+let musicOn = true;
+let sfxOn = true;
+let audioCtx = null;
+let bgmOsc = null, bgmGain = null;
+let teacherHoldTimer = null;
+
+// ===== AUDIO =====
+function getAudio(){
+  if(!audioCtx) audioCtx = new (window.AudioContext||window.webkitAudioContext)();
+  return audioCtx;
+}
+function playTone(freq, dur, type='sine', vol=0.3, fadeIn=0.05){
+  if(!sfxOn) return;
+  try{
+    const ctx = getAudio();
+    const o = ctx.createOscillator();
+    const g = ctx.createGain();
+    o.connect(g); g.connect(ctx.destination);
+    o.type = type; o.frequency.value = freq;
+    g.gain.setValueAtTime(0, ctx.currentTime);
+    g.gain.linearRampToValueAtTime(vol, ctx.currentTime+fadeIn);
+    g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime+dur);
+    o.start(ctx.currentTime); o.stop(ctx.currentTime+dur+0.05);
+  }catch(e){}
+}
+function playCorrect(){
+  if(!sfxOn) return;
+  playTone(880,0.12,'sine',0.25,0.03);
+  setTimeout(()=>playTone(1100,0.12,'sine',0.2,0.03),120);
+  setTimeout(()=>playTone(1320,0.2,'sine',0.15,0.03),240);
+}
+function playWrong(){
+  if(!sfxOn) return;
+  playTone(440,0.15,'sine',0.12,0.05);
+}
+function playFanfare(){
+  if(!sfxOn) return;
+  const notes=[523,659,784,1047];
+  notes.forEach((f,i)=>setTimeout(()=>playTone(f,0.2,'sine',0.2,0.04),i*120));
+}
+function startBGM(){
+  if(!musicOn) return;
+  try{
+    const ctx = getAudio();
+    if(ctx.state==='suspended') ctx.resume();
+    stopBGM();
+    bgmGain = ctx.createGain(); bgmGain.gain.value=0.04;
+    bgmGain.connect(ctx.destination);
+    const melody=[523,587,659,523, 659,784,784,0, 784,880,784,659, 587,523,523,0];
+    let t = ctx.currentTime;
+    const beat=0.55;
+    function scheduleMelody(){
+      melody.forEach((f,i)=>{
+        if(f===0){t+=beat;return;}
+        const o=ctx.createOscillator();
+        const g=ctx.createGain();
+        o.connect(g);g.connect(bgmGain);
+        o.type='sine';o.frequency.value=f;
+        g.gain.setValueAtTime(0,t);
+        g.gain.linearRampToValueAtTime(0.6,t+0.05);
+        g.gain.exponentialRampToValueAtTime(0.001,t+beat-0.05);
+        o.start(t);o.stop(t+beat);
+        t+=beat;
+      });
+      // loop
+      setTimeout(scheduleMelody, (t - ctx.currentTime - 1)*1000);
+    }
+    scheduleMelody();
+    bgmOsc = true;
+  }catch(e){}
+}
+function stopBGM(){
+  if(bgmGain){
+    try{bgmGain.gain.setValueAtTime(0, audioCtx.currentTime);}catch(e){}
+    bgmGain = null; bgmOsc = null;
+  }
+}
+function toggleMusic(){
+  musicOn = !musicOn;
+  document.getElementById('music-btn').textContent = musicOn ? '🎵' : '🔇';
+  if(musicOn) startBGM(); else stopBGM();
+}
+function toggleSfx(){ sfxOn = !sfxOn; }
+
+// ===== QR CODE =====
+function makeQR(containerId, url){
+  const el = document.getElementById(containerId);
+  if(!el) return;
+  el.innerHTML = '';
+  try{
+    new QRCode(el, {
+      text: url,
+      width: 120,
+      height: 120,
+      colorDark: '#000000',
+      colorLight: '#ffffff',
+      correctLevel: QRCode.CorrectLevel.M
+    });
+  }catch(e){ console.warn('QR error:', e); }
+}
+
+// ===== SHUFFLE =====
+function shuffle(arr){ return [...arr].sort(()=>Math.random()-0.5); }
+
+// ===== BUILD QUESTIONS =====
+function buildActivity1(){
+  // 2-choice: show number, pick correct card (number text)
+  return shuffle(NUMBERS).map(n=>{
+    const wrong = shuffle(NUMBERS.filter(x=>x!==n))[0];
+    const opts = shuffle([n, wrong]);
+    return {type:1, answer:n, options:opts};
+  });
+}
+function buildActivity2(){
+  // 3-choice: show number at top, pick same from 3 cards
+  return shuffle(NUMBERS).map(n=>{
+    const wrongs = shuffle(NUMBERS.filter(x=>x!==n)).slice(0,2);
+    const opts = shuffle([n,...wrongs]);
+    return {type:2, answer:n, options:opts};
+  });
+}
+function buildActivity3(){
+  // speak number, pick correct card (2-choice)
+  return shuffle(NUMBERS).map(n=>{
+    const wrong = shuffle(NUMBERS.filter(x=>x!==n))[0];
+    const opts = shuffle([n, wrong]);
+    return {type:3, answer:n, options:opts};
+  });
+}
+
+// ===== INIT GAME =====
+function startGame(){
+  // unlock audio on user gesture
+  try{
+    const ctx = getAudio();
+    ctx.resume();
+  }catch(e){}
+  currentActivity=1;
+  stickers=[];
+  showScreen('screen-game');
+  startActivity(1);
+  startBGM();
+}
+
+function startActivity(act){
+  currentActivity = act;
+  qIdx = 0; wrongCount = 0;
+  document.getElementById('act-label').textContent = `활동 ${act}`;
+  updateStarRow();
+  if(act===1) questions = buildActivity1();
+  else if(act===2) questions = buildActivity2();
+  else questions = buildActivity3();
+  renderQuestion();
+}
+
+// ===== RENDER QUESTION =====
+function renderQuestion(){
+  if(qIdx >= questions.length){ activityComplete(); return; }
+  const q = questions[qIdx];
+  wrongCount = 0;
+  updateProgress();
+
+  const guide = document.getElementById('q-guide');
+  const qDisp = document.getElementById('q-display');
+  const cardsArea = document.getElementById('cards-area');
+
+  if(q.type===1){
+    guide.textContent = '이 숫자를 탭해요!';
+    qDisp.innerHTML = `<div class="question-number">${q.answer}</div>`;
+    cardsArea.className = 'cards-area';
+    cardsArea.innerHTML = q.options.map(n=>
+      `<div class="card" data-num="${n}" onclick="checkAnswer(${n})">
+         <div class="card-num">${n}</div>
+       </div>`
+    ).join('');
+  } else if(q.type===2){
+    guide.textContent = '같은 숫자를 탭해요!';
+    qDisp.innerHTML = `<div class="question-number" style="font-size:72px;">${q.answer}</div>`;
+    cardsArea.className = 'cards-area three';
+    cardsArea.innerHTML = q.options.map(n=>
+      `<div class="card" data-num="${n}" onclick="checkAnswer(${n})">
+         <div class="card-num">${n}</div>
+       </div>`
+    ).join('');
+  } else {
+    guide.textContent = '들리는 숫자를 탭해요!';
+    qDisp.innerHTML = `<button class="speak-btn" onclick="speakNumber(${q.answer})">🔊</button>`;
+    cardsArea.className = 'cards-area';
+    cardsArea.innerHTML = q.options.map(n=>
+      `<div class="card" data-num="${n}" onclick="checkAnswer(${n})">
+         <div class="card-num">${n}</div>
+       </div>`
+    ).join('');
+    // auto speak
+    setTimeout(()=>speakNumber(q.answer), 600);
+  }
+}
+
+function speakNumber(n){
+  try{
+    window.speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(String(n));
+    u.lang='ko-KR'; u.rate=0.85; u.pitch=1.1;
+    window.speechSynthesis.speak(u);
+  }catch(e){}
+}
+
+// ===== CHECK ANSWER =====
+function checkAnswer(chosen){
+  const q = questions[qIdx];
+  const cards = document.querySelectorAll('.card');
+  // disable all cards briefly
+  cards.forEach(c=>c.style.pointerEvents='none');
+
+  if(chosen === q.answer){
+    // CORRECT
+    playCorrect();
+    charAnim('jump');
+    const correctCard = [...cards].find(c=>+c.dataset.num===q.answer);
+    if(correctCard) correctCard.classList.add('correct');
+    stickers.push('🌟');
+    showFeedback('🎉','잘 했어요! 🎉','ok');
+    spawnConfetti();
+    setTimeout(()=>{
+      hideFeedback();
+      qIdx++;
+      renderQuestion();
+    }, 1100);
+  } else {
+    // WRONG
+    wrongCount++;
+    playWrong();
+    charAnim('shake');
+    const wrongCard = [...cards].find(c=>+c.dataset.num===chosen);
+    if(wrongCard) wrongCard.classList.add('wrong');
+    showFeedback('💛','한 번 더! 💛','retry');
+    setTimeout(()=>{
+      hideFeedback();
+      wrongCard && wrongCard.classList.remove('wrong');
+      if(wrongCount>=3){
+        // hint on correct
+        const correctCard = [...cards].find(c=>+c.dataset.num===q.answer);
+        if(correctCard) correctCard.classList.add('hint');
+      }
+      cards.forEach(c=>c.style.pointerEvents='');
+    }, 900);
+  }
+}
+
+// ===== FEEDBACK =====
+function showFeedback(emoji, text, cls){
+  const overlay = document.getElementById('feedback-overlay');
+  document.getElementById('fb-emoji').textContent = emoji;
+  const ft = document.getElementById('fb-text');
+  ft.textContent = text; ft.className = 'feedback-text '+cls;
+  overlay.style.display='flex';
+}
+function hideFeedback(){
+  document.getElementById('feedback-overlay').style.display='none';
+}
+
+// ===== CONFETTI =====
+function spawnConfetti(){
+  const colors=['#FFD600','#FF8F00','#4CAF50','#2196F3','#E91E63','#9C27B0'];
+  for(let i=0;i<18;i++){
+    const el = document.createElement('div');
+    el.className='confetti-piece';
+    el.style.left = (10+Math.random()*80)+'vw';
+    el.style.top = '-10px';
+    el.style.background = colors[Math.floor(Math.random()*colors.length)];
+    el.style.animationDuration = (0.7+Math.random()*0.6)+'s';
+    el.style.animationDelay = (Math.random()*0.3)+'s';
+    document.body.appendChild(el);
+    setTimeout(()=>el.remove(), 1400);
+  }
+}
+
+// ===== CHAR ANIM =====
+function charAnim(type){
+  const w = document.getElementById('char-wrap');
+  w.className='char-wrap '+type;
+  setTimeout(()=>w.className='char-wrap', 600);
+}
+function charTap(){ charAnim('jump'); playTone(660,0.15,'sine',0.2,0.03); }
+
+// ===== PROGRESS =====
+function updateProgress(){
+  const pct = questions.length ? (qIdx/questions.length)*100 : 0;
+  document.getElementById('prog-fill').style.width = pct+'%';
+}
+function updateStarRow(){
+  const row = document.getElementById('star-row');
+  row.textContent = stickers.slice(-8).join('');
+}
+
+// ===== ACTIVITY COMPLETE =====
+function activityComplete(){
+  playFanfare();
+  charAnim('dance');
+  const panel = document.getElementById('act-complete');
+  document.getElementById('act-complete-text').textContent = `활동 ${currentActivity} 완료! 🌸`;
+  const nextBtn = document.getElementById('btn-next-act');
+  if(currentActivity===3){
+    nextBtn.textContent = '결과 보기 🌻';
+  } else {
+    nextBtn.textContent = `활동 ${currentActivity+1} 시작 ➡️`;
+  }
+  panel.classList.add('show');
+}
+function nextActivity(){
+  document.getElementById('act-complete').classList.remove('show');
+  if(currentActivity < 3){
+    startActivity(currentActivity+1);
+  } else {
+    showResult();
+  }
+}
+
+// ===== RESULT =====
+function showResult(){
+  showScreen('screen-result');
+  playFanfare();
+  const board = document.getElementById('sticker-board');
+  board.innerHTML = stickers.map(s=>`<span class="sticker-item">${s}</span>`).join('');
+  setTimeout(()=>makeQR('qr-result', GAME_URL), 300);
+  console.log(portfolioEntry());
+}
+function restartGame(){
+  showScreen('screen-title');
+}
+
+// ===== SCREEN SWITCH =====
+function showScreen(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+// ===== TEACHER MODE =====
+const teacherBtn = document.getElementById('teacher-btn');
+teacherBtn.addEventListener('touchstart', e=>{ e.preventDefault(); teacherHoldTimer=setTimeout(openTeacher,3000); });
+teacherBtn.addEventListener('touchend', ()=>clearTimeout(teacherHoldTimer));
+teacherBtn.addEventListener('mousedown', ()=>{ teacherHoldTimer=setTimeout(openTeacher,3000); });
+teacherBtn.addEventListener('mouseup', ()=>clearTimeout(teacherHoldTimer));
+function openTeacher(){ document.getElementById('teacher-panel').classList.add('open'); }
+function closeTeacher(){ document.getElementById('teacher-panel').classList.remove('open'); }
+function forceNextActivity(){
+  closeTeacher();
+  document.getElementById('act-complete').classList.remove('show');
+  if(currentActivity<3) startActivity(currentActivity+1);
+  else showResult();
+}
+
+// ===== PORTFOLIO ENTRY =====
+function portfolioEntry(){
+  return {
+    id: "044",
+    title: "숫자 꽃밭 (10~20)",
+    target: "특수학급 Level A (발달연령 4~6세)",
+    level: "특수-A",
+    theme: "숫자 이해하기",
+    activities: 3,
+    numbers: "10~20",
+    date: "2026-04-11",
+    url: GAME_URL,
+    analytics: "G-WTY6YJQ1NS"
+  };
+}
+
+// ===== INIT QR on title =====
+window.addEventListener('load', ()=>{
+  setTimeout(()=>makeQR('qr-title', GAME_URL), 400);
+  console.log(portfolioEntry());
+});
+</script>
+</body>
+</html>
