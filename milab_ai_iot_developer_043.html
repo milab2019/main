@@ -1,0 +1,676 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<!-- Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-WTY6YJQ1NS"></script>
+<script>
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-WTY6YJQ1NS');
+</script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI IoT 개발자 진로체험 | 미랩(MILAB) #043</title>
+<meta name="description" content="2035 스마트 지구 위기 대응센터 — 고등학생을 위한 AI IoT 개발자 진로체험 게임. 미랩(MILAB) 충주">
+<meta property="og:title" content="AI IoT 개발자 진로체험 | 미랩(MILAB)">
+<meta property="og:description" content="6개 미션으로 AI IoT 개발자 진로를 체험하세요!">
+<meta property="og:type" content="website">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<style>
+:root {
+  --navy:#1A1A2E; --navy2:#16213E; --charcoal:#2C3E50;
+  --gold:#F0C040; --teal:#00D4AA; --red:#FF4757;
+  --text:#E8EAF0; --text2:#A0AEC0;
+  --card:rgba(44,62,80,0.7); --border:rgba(240,192,64,0.25);
+  --correct:#00D4AA; --wrong:#FF4757; --radius:12px;
+  --font:'Noto Sans KR','Apple SD Gothic Neo',sans-serif;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:var(--font);background:var(--navy);color:var(--text);min-height:100vh;overflow-x:hidden;}
+body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(240,192,64,0.03) 1px,transparent 1px),linear-gradient(90deg,rgba(240,192,64,0.03) 1px,transparent 1px);background-size:40px 40px;pointer-events:none;z-index:0;}
+.screen{display:none;min-height:100vh;position:relative;z-index:1;}
+.screen.active{display:flex;flex-direction:column;}
+.game-header{display:flex;align-items:center;justify-content:space-between;padding:14px 20px;background:rgba(22,33,62,0.95);border-bottom:1px solid var(--border);backdrop-filter:blur(10px);position:sticky;top:0;z-index:100;}
+.logo-tag{font-size:11px;color:var(--gold);letter-spacing:2px;font-weight:700;}
+.score-bar{display:flex;gap:14px;align-items:center;}
+.score-item{text-align:center;}
+.score-item .val{font-size:18px;font-weight:700;color:var(--gold);}
+.score-item .lbl{font-size:9px;color:var(--text2);letter-spacing:1px;}
+.timer-box{background:var(--charcoal);border:1px solid var(--border);border-radius:8px;padding:8px 18px;font-size:20px;font-weight:700;color:var(--gold);font-variant-numeric:tabular-nums;}
+.timer-box.urgent{color:var(--red);animation:pulse 0.5s infinite;}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.5}}
+.notimer{font-size:12px;color:var(--teal);border:1px solid var(--teal);border-radius:6px;padding:6px 12px;}
+.music-btn{background:none;border:1px solid var(--border);color:var(--gold);border-radius:6px;padding:6px 10px;cursor:pointer;font-size:14px;}
+
+/* === MAIN === */
+#screen-main{align-items:center;justify-content:center;padding:30px 20px;background:radial-gradient(ellipse at 50% 0%,rgba(240,192,64,0.08) 0%,transparent 60%);}
+.main-inner{max-width:680px;width:100%;text-align:center;}
+.main-badge{display:inline-block;background:rgba(240,192,64,0.15);border:1px solid var(--gold);color:var(--gold);font-size:11px;letter-spacing:3px;font-weight:700;padding:6px 18px;border-radius:20px;margin-bottom:18px;}
+.main-title{font-size:clamp(26px,5vw,42px);font-weight:900;line-height:1.2;margin-bottom:10px;color:#fff;}
+.main-title span{color:var(--gold);}
+.main-subtitle{font-size:15px;color:var(--text2);line-height:1.7;margin-bottom:24px;}
+.mascot-wrap{margin:10px auto 20px;position:relative;width:100px;height:120px;}
+.mission-preview{display:grid;grid-template-columns:repeat(6,1fr);gap:6px;margin-bottom:24px;}
+.mp-item{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:8px 4px;font-size:10px;color:var(--text2);}
+.mp-item .mp-num{color:var(--gold);font-weight:700;font-size:13px;margin-bottom:3px;}
+.name-input-wrap{margin-bottom:20px;}
+.name-input-wrap label{display:block;font-size:13px;color:var(--text2);margin-bottom:8px;}
+.name-input{background:var(--charcoal);border:1px solid var(--border);color:var(--text);font-size:16px;padding:12px 18px;border-radius:8px;width:100%;max-width:300px;text-align:center;outline:none;}
+.name-input:focus{border-color:var(--gold);}
+.start-btn{background:linear-gradient(135deg,var(--gold),#e6a800);color:var(--navy);font-size:17px;font-weight:900;padding:16px 48px;border:none;border-radius:10px;cursor:pointer;letter-spacing:1px;box-shadow:0 0 30px rgba(240,192,64,0.3);margin-bottom:28px;}
+.start-btn:hover{transform:translateY(-2px);}
+.qr-section{margin-top:4px;}
+.qr-label{font-size:11px;color:var(--text2);letter-spacing:2px;margin-bottom:10px;}
+.qr-box{display:inline-block;background:#fff;padding:8px;border-radius:8px;border:2px solid var(--gold);line-height:0;}
+.qr-box img{display:block;width:100px;height:100px;}
+.qr-sub{font-size:11px;color:var(--text2);margin-top:8px;}
+.milab-footer{margin-top:18px;font-size:11px;color:var(--text2);letter-spacing:1px;}
+
+/* === MISSIONS COMMON === */
+.mission-wrap{flex:1;display:flex;flex-direction:column;padding:20px;max-width:900px;margin:0 auto;width:100%;}
+.mission-badge{display:inline-block;background:rgba(240,192,64,0.15);border:1px solid var(--gold);color:var(--gold);font-size:11px;letter-spacing:2px;padding:5px 14px;border-radius:20px;font-weight:700;}
+.mission-title-main{font-size:clamp(18px,3vw,24px);font-weight:900;margin:8px 0 4px;color:#fff;}
+.mission-desc{font-size:13px;color:var(--text2);margin-bottom:18px;line-height:1.6;}
+.progress-dots{display:flex;gap:8px;margin-bottom:18px;}
+.prog-dot{width:10px;height:10px;border-radius:50%;background:var(--charcoal);border:1px solid var(--border);}
+.prog-dot.done{background:var(--gold);border-color:var(--gold);}
+.prog-dot.active{background:var(--gold);box-shadow:0 0 8px var(--gold);}
+.choices{display:flex;flex-direction:column;gap:10px;margin-top:12px;}
+.choice-btn{background:var(--card);border:1px solid var(--border);color:var(--text);font-size:15px;padding:14px 18px;border-radius:10px;cursor:pointer;text-align:left;line-height:1.5;min-height:54px;}
+.choice-btn:hover:not(:disabled){border-color:var(--gold);transform:translateX(4px);}
+.choice-btn.correct{border-color:var(--correct);background:rgba(0,212,170,0.15);color:var(--correct);}
+.choice-btn.wrong{border-color:var(--wrong);background:rgba(255,71,87,0.1);color:var(--wrong);}
+.choice-btn:disabled{cursor:default;}
+.feedback-box{background:var(--card);border-radius:10px;padding:16px;font-size:14px;line-height:1.7;margin-top:12px;display:none;border-left:3px solid var(--gold);}
+.feedback-box.show{display:block;}
+.feedback-box.correct-fb{border-color:var(--correct);}
+.feedback-box.wrong-fb{border-color:var(--wrong);}
+.next-btn{background:linear-gradient(135deg,var(--gold),#e6a800);color:var(--navy);font-size:15px;font-weight:900;padding:14px 32px;border:none;border-radius:10px;cursor:pointer;margin-top:14px;display:none;align-self:flex-start;}
+.next-btn.show{display:inline-block;}
+.question-text{font-size:15px;font-weight:700;line-height:1.6;color:#fff;}
+
+/* === M1 === */
+.m1-layout{display:grid;grid-template-columns:1fr;gap:16px;}
+@media(min-width:640px){.m1-layout{grid-template-columns:60% 40%;}}
+.passage-box{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:20px;font-size:15px;line-height:1.85;max-height:320px;overflow-y:auto;}
+.passage-box strong{color:var(--gold);}
+.passage-source{font-size:11px;color:var(--text2);margin-top:12px;padding-top:10px;border-top:1px solid var(--border);}
+.question-side{display:flex;flex-direction:column;gap:10px;}
+.hint-btn{background:none;border:1px solid var(--border);color:var(--text2);border-radius:6px;padding:7px 14px;font-size:12px;cursor:pointer;align-self:flex-start;}
+.hint-btn:hover{border-color:var(--gold);color:var(--gold);}
+.hint-box{background:rgba(240,192,64,0.1);border:1px solid var(--gold);border-radius:8px;padding:12px;font-size:13px;color:var(--gold);display:none;}
+.hint-box.show{display:block;}
+
+/* === M2 CHART === */
+.chart-wrap{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:20px;margin-bottom:16px;}
+.chart-title{font-size:13px;color:var(--gold);margin-bottom:14px;font-weight:700;letter-spacing:1px;}
+.bar-chart{display:flex;flex-direction:column;gap:10px;}
+.bar-row{display:flex;align-items:center;gap:10px;}
+.bar-label{width:110px;font-size:12px;color:var(--text2);text-align:right;flex-shrink:0;}
+.bar-track{flex:1;background:rgba(255,255,255,0.05);border-radius:4px;height:22px;overflow:hidden;}
+.bar-fill{height:100%;border-radius:4px;display:flex;align-items:center;padding-left:8px;font-size:11px;font-weight:700;transition:width 1s ease;}
+.bar-fill.kr{background:linear-gradient(90deg,#2980b9,#3498db);color:#fff;}
+.bar-fill.world{background:linear-gradient(90deg,#636e72,#95a5a6);color:#fff;}
+.bar-fill.accent{background:linear-gradient(90deg,#e67e22,#f39c12);color:#fff;}
+
+/* === M3 JOB INFO === */
+.job-info-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:18px;}
+@media(max-width:540px){.job-info-grid{grid-template-columns:1fr;}}
+.job-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:18px;}
+.job-card-title{font-size:12px;color:var(--gold);letter-spacing:2px;font-weight:700;margin-bottom:12px;}
+.salary-bar-wrap{margin-bottom:8px;}
+.salary-label{font-size:12px;color:var(--text2);margin-bottom:4px;}
+.salary-bar{height:18px;border-radius:4px;background:linear-gradient(90deg,var(--teal),#00a884);display:flex;align-items:center;padding-left:8px;font-size:11px;font-weight:700;color:#fff;transition:width 1.2s ease;}
+.dept-list{display:flex;flex-direction:column;gap:8px;}
+.dept-item{display:flex;align-items:center;gap:10px;font-size:13px;}
+.dept-dot{width:8px;height:8px;border-radius:50%;background:var(--gold);flex-shrink:0;}
+.work-list{display:flex;flex-direction:column;gap:8px;}
+.work-item{display:flex;align-items:flex-start;gap:10px;font-size:13px;line-height:1.5;}
+.work-icon{font-size:16px;flex-shrink:0;}
+.cert-wrap{display:flex;flex-wrap:wrap;gap:8px;}
+.cert-pill{background:rgba(0,212,170,0.1);border:1px solid rgba(0,212,170,0.4);color:var(--teal);border-radius:20px;padding:6px 14px;font-size:12px;}
+.job-quiz-section{margin-top:18px;}
+.job-quiz-title{font-size:14px;color:var(--gold);font-weight:700;margin-bottom:12px;padding:10px;background:rgba(240,192,64,0.08);border-radius:8px;border-left:3px solid var(--gold);}
+
+/* === M4 AI VERIFY === */
+.ai-badge-small{display:inline-block;background:rgba(255,71,87,0.2);border:1px solid var(--red);color:var(--red);font-size:10px;padding:3px 10px;border-radius:20px;margin-bottom:10px;letter-spacing:1px;}
+.ai-text-box{background:rgba(22,33,62,0.8);border:1px solid rgba(255,71,87,0.3);border-radius:var(--radius);padding:20px;font-size:15px;line-height:1.85;margin-bottom:16px;}
+
+/* === M5 DILEMMA === */
+.scenario-box{background:linear-gradient(135deg,rgba(240,192,64,0.08),rgba(44,62,80,0.5));border:1px solid var(--gold);border-radius:var(--radius);padding:24px;margin-bottom:20px;font-size:15px;line-height:1.8;}
+.scenario-year{color:var(--gold);font-weight:700;font-size:13px;letter-spacing:2px;margin-bottom:8px;}
+.dilemma-choices{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+@media(max-width:500px){.dilemma-choices{grid-template-columns:1fr;}}
+.dilemma-btn{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:16px 14px;cursor:pointer;text-align:left;font-size:14px;line-height:1.6;color:var(--text);}
+.dilemma-btn:hover:not(:disabled){border-color:var(--gold);background:rgba(240,192,64,0.08);}
+.dilemma-btn .d-title{font-weight:700;color:var(--gold);margin-bottom:6px;font-size:13px;}
+.dilemma-btn .d-pros{font-size:12px;color:var(--teal);margin-bottom:4px;}
+.dilemma-btn .d-cons{font-size:12px;color:var(--text2);}
+.dilemma-btn.selected{border-color:var(--teal);background:rgba(0,212,170,0.1);}
+
+/* === M6 RESULT === */
+.score-summary{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:18px;}
+.ss-item{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:14px;text-align:center;}
+.ss-val{font-size:22px;font-weight:900;color:var(--gold);}
+.ss-lbl{font-size:10px;color:var(--text2);margin-top:4px;}
+.roadmap-card{background:linear-gradient(135deg,var(--navy2),var(--charcoal));border:2px solid var(--gold);border-radius:16px;padding:28px;text-align:center;}
+.ending-tier{font-size:36px;margin-bottom:8px;}
+.ending-title{font-size:22px;font-weight:900;color:var(--gold);margin-bottom:6px;}
+.ending-desc{font-size:14px;color:var(--text2);line-height:1.7;margin-bottom:22px;}
+.roadmap-section{text-align:left;margin-bottom:16px;}
+.rs-title{font-size:12px;color:var(--gold);letter-spacing:2px;margin-bottom:10px;font-weight:700;}
+.career-pills{display:flex;flex-wrap:wrap;gap:8px;}
+.career-pill{background:rgba(240,192,64,0.15);border:1px solid rgba(240,192,64,0.4);color:var(--text);border-radius:20px;padding:8px 16px;font-size:13px;}
+.subject-pills{display:flex;flex-wrap:wrap;gap:8px;}
+.subject-pill{background:rgba(0,212,170,0.1);border:1px solid rgba(0,212,170,0.4);color:var(--teal);border-radius:20px;padding:8px 16px;font-size:13px;}
+.strategy-box{background:rgba(22,33,62,0.8);border:1px solid var(--border);border-radius:10px;padding:16px;font-size:14px;line-height:1.75;color:var(--text2);}
+.result-qr-wrap{text-align:center;margin:18px 0;}
+.restart-btn{background:var(--charcoal);border:1px solid var(--gold);color:var(--gold);font-size:15px;font-weight:700;padding:13px 32px;border-radius:10px;cursor:pointer;margin-top:10px;}
+.restart-btn:hover{background:rgba(240,192,64,0.15);}
+
+/* === MASCOT === */
+.mascot-container{position:fixed;bottom:20px;right:20px;width:70px;height:84px;z-index:200;pointer-events:none;}
+.mascot-container.hidden{display:none;}
+.mascot-speech{position:absolute;bottom:90px;right:0;background:var(--charcoal);border:1px solid var(--gold);border-radius:10px;padding:8px 12px;font-size:12px;color:var(--text);white-space:nowrap;animation:fadein 0.3s;}
+.mascot-speech::after{content:'';position:absolute;bottom:-8px;right:20px;border:8px solid transparent;border-top-color:var(--charcoal);border-bottom:none;}
+@keyframes fadein{from{opacity:0;transform:translateY(-5px)}to{opacity:1;transform:translateY(0)}}
+.ethics-notice{text-align:center;font-size:11px;color:var(--text2);padding:8px;letter-spacing:1px;border-top:1px solid var(--border);margin-top:auto;}
+::-webkit-scrollbar{width:4px;}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px;}
+</style>
+</head>
+<body>
+
+<!-- MAIN -->
+<div id="screen-main" class="screen active">
+  <div class="game-header">
+    <span class="logo-tag">MILAB · 충주 · 2026</span>
+    <div style="display:flex;gap:12px;align-items:center;">
+      <span style="font-size:11px;color:var(--text2);">고등학생 진로체험 #043</span>
+      <button class="music-btn" id="music-btn" onclick="toggleMusic()">🎵 ON</button>
+    </div>
+  </div>
+  <div style="flex:1;display:flex;align-items:center;justify-content:center;padding:30px 20px;">
+    <div class="main-inner">
+      <div class="main-badge">🌐 2035 스마트 지구 위기 대응센터</div>
+      <h1 class="main-title"><span>AI IoT</span> 개발자<br>진로체험</h1>
+      <p class="main-subtitle">전 세계 도시의 70%가 AI IoT 네트워크로 연결된 2035년,<br>한국의 스마트 인프라가 위협받고 있습니다.<br>6개 미션을 완수하고 나만의 진로 로드맵을 완성하세요!</p>
+      <div class="mascot-wrap">
+        <svg viewBox="0 0 100 120" width="100" height="120" xmlns="http://www.w3.org/2000/svg">
+          <rect x="20" y="50" width="60" height="55" rx="10" fill="#2C3E50" stroke="#F0C040" stroke-width="2"/>
+          <rect x="25" y="15" width="50" height="42" rx="10" fill="#2C3E50" stroke="#F0C040" stroke-width="2"/>
+          <rect x="35" y="25" width="12" height="10" rx="3" fill="#00D4AA"/>
+          <rect x="53" y="25" width="12" height="10" rx="3" fill="#00D4AA"/>
+          <line x1="50" y1="15" x2="50" y2="5" stroke="#F0C040" stroke-width="2"/>
+          <circle cx="50" cy="4" r="3" fill="#F0C040"/>
+          <path d="M37 42 Q50 50 63 42" stroke="#F0C040" stroke-width="2" fill="none"/>
+          <rect x="30" y="58" width="40" height="30" rx="6" fill="#16213E" stroke="#00D4AA" stroke-width="1.5"/>
+          <text x="50" y="78" text-anchor="middle" fill="#00D4AA" font-size="14">📡</text>
+          <rect x="5" y="55" width="15" height="8" rx="4" fill="#2C3E50" stroke="#F0C040" stroke-width="1.5"/>
+          <rect x="80" y="55" width="15" height="8" rx="4" fill="#2C3E50" stroke="#F0C040" stroke-width="1.5"/>
+          <rect x="28" y="103" width="18" height="12" rx="4" fill="#2C3E50" stroke="#F0C040" stroke-width="1.5"/>
+          <rect x="54" y="103" width="18" height="12" rx="4" fill="#2C3E50" stroke="#F0C040" stroke-width="1.5"/>
+        </svg>
+      </div>
+      <div class="mission-preview">
+        <div class="mp-item"><div class="mp-num">M1</div>뉴스룸탐정</div>
+        <div class="mp-item"><div class="mp-num">M2</div>데이터비교</div>
+        <div class="mp-item"><div class="mp-num">M3</div>직업탐구</div>
+        <div class="mp-item"><div class="mp-num">M4</div>AI검증관</div>
+        <div class="mp-item"><div class="mp-num">M5</div>딜레마</div>
+        <div class="mp-item"><div class="mp-num">M6</div>로드맵</div>
+      </div>
+      <div class="name-input-wrap">
+        <label for="player-name">📝 닉네임을 입력하세요</label>
+        <input id="player-name" class="name-input" type="text" maxlength="10" placeholder="예: IoT탐정" autocomplete="off">
+      </div>
+      <button class="start-btn" onclick="startGame()">🚀 미션 시작!</button>
+      <div class="qr-section">
+        <div class="qr-label">📱 QR로 친구에게 공유하기</div>
+        <div class="qr-box" id="main-qr-wrap"></div>
+        <div class="qr-sub">학생부 포트폴리오 · 진로 수업 공유용</div>
+      </div>
+      <div class="milab-footer">MILAB · 충주 · 2026 | 교육부 인증 4차산업 진로체험 교육기관</div>
+    </div>
+  </div>
+  <div class="ethics-notice">⚠️ 이 게임은 AI 리터러시 교육 목적으로 제작되었습니다. AI 정보는 반드시 비판적으로 검증하세요.</div>
+</div>
+
+<!-- MISSION 1 -->
+<div id="screen-m1" class="screen">
+  <div class="game-header">
+    <span class="logo-tag">MILAB #043</span>
+    <div class="score-bar">
+      <div class="score-item"><div class="val" id="m1-score-disp">0</div><div class="lbl">SCORE</div></div>
+      <div class="timer-box" id="m1-timer">3:00</div>
+    </div>
+  </div>
+  <div class="mission-wrap">
+    <div class="mission-badge">📖 MISSION 1 — 글로벌 데이터 탐정</div>
+    <h2 class="mission-title-main">IoT 뉴스룸 탐정 <span style="color:var(--text2);font-size:15px;">(문해력 기초)</span></h2>
+    <p class="mission-desc">실제 보고서·기사 지문을 읽고 핵심 수치·주장·근거를 추출하세요. ⏱ 전체 <strong style="color:var(--gold)">180초</strong> — 5개 지문 도전!</p>
+    <div class="progress-dots" id="m1-dots"></div>
+    <div id="m1-question-area">
+      <div class="m1-layout">
+        <div>
+          <div class="passage-box" id="m1-passage"></div>
+          <div style="margin-top:10px;">
+            <button class="hint-btn" onclick="showHint1()">💡 힌트 (배점 30% 차감)</button>
+            <div class="hint-box" id="m1-hint"></div>
+          </div>
+        </div>
+        <div class="question-side">
+          <div class="question-text" id="m1-question"></div>
+          <div class="choices" id="m1-choices"></div>
+          <div class="feedback-box" id="m1-feedback"></div>
+          <button class="next-btn" id="m1-next" onclick="m1Next()">다음 지문 →</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="ethics-notice">⚠️ AI 정보는 반드시 비판적으로 검증하세요.</div>
+</div>
+
+<!-- MISSION 2 -->
+<div id="screen-m2" class="screen">
+  <div class="game-header">
+    <span class="logo-tag">MILAB #043</span>
+    <div class="score-bar">
+      <div class="score-item"><div class="val" id="m2-score-disp">0</div><div class="lbl">SCORE</div></div>
+      <div class="timer-box" id="m2-timer">0:45</div>
+    </div>
+  </div>
+  <div class="mission-wrap">
+    <div class="mission-badge">🌍 MISSION 2 — 세계 vs 한국 비교 분석</div>
+    <h2 class="mission-title-main">IoT 데이터 비교 분석 <span style="color:var(--text2);font-size:15px;">(데이터 해석)</span></h2>
+    <p class="mission-desc">한국과 세계 AI IoT 데이터를 비교 분석하세요. 문제당 <strong style="color:var(--gold)">45초</strong>!</p>
+    <div class="progress-dots" id="m2-dots"></div>
+    <div id="m2-chart-area" class="chart-wrap" style="display:none"></div>
+    <div class="question-text" id="m2-question" style="margin-bottom:14px;font-size:16px;font-weight:700;"></div>
+    <div class="choices" id="m2-choices"></div>
+    <div class="feedback-box" id="m2-feedback"></div>
+    <button class="next-btn" id="m2-next" onclick="m2Next()">다음 문제 →</button>
+  </div>
+  <div class="ethics-notice">⚠️ AI 정보는 반드시 비판적으로 검증하세요.</div>
+</div>
+
+<!-- MISSION 3 : 직업 탐구 -->
+<div id="screen-m3" class="screen">
+  <div class="game-header">
+    <span class="logo-tag">MILAB #043</span>
+    <div class="score-bar">
+      <div class="score-item"><div class="val" id="m3-score-disp">0</div><div class="lbl">SCORE</div></div>
+      <div class="notimer">⏱ 타이머 없음</div>
+    </div>
+  </div>
+  <div class="mission-wrap">
+    <div class="mission-badge">💼 MISSION 3 — AI IoT 개발자 직업 탐구</div>
+    <h2 class="mission-title-main">하는 일 · 연봉 · 관련 학과 <span style="color:var(--text2);font-size:15px;">(진로 정보)</span></h2>
+    <p class="mission-desc">AI IoT 개발자의 실제 직무·연봉·필요 역량을 파악하고 퀴즈로 확인하세요!</p>
+    <div class="progress-dots" id="m3-dots"></div>
+    <div id="m3-info-area"></div>
+    <div id="m3-quiz-area" style="display:none">
+      <div class="job-quiz-title" id="m3-quiz-label"></div>
+      <div class="question-text" id="m3-question" style="margin-bottom:14px;"></div>
+      <div class="choices" id="m3-choices"></div>
+      <div class="feedback-box" id="m3-feedback"></div>
+    </div>
+    <button class="next-btn" id="m3-next" onclick="m3Next()">다음 →</button>
+  </div>
+  <div class="ethics-notice">⚠️ AI 정보는 반드시 비판적으로 검증하세요.</div>
+</div>
+
+<!-- MISSION 4 : AI 검증관 -->
+<div id="screen-m4" class="screen">
+  <div class="game-header">
+    <span class="logo-tag">MILAB #043</span>
+    <div class="score-bar">
+      <div class="score-item"><div class="val" id="m4-score-disp">0</div><div class="lbl">SCORE</div></div>
+      <div class="notimer">⏱ 타이머 없음</div>
+    </div>
+  </div>
+  <div class="mission-wrap">
+    <div class="mission-badge">🤖 MISSION 4 — AI 비판 검증관</div>
+    <h2 class="mission-title-main">AI 오류 검증관 <span style="color:var(--text2);font-size:15px;">(AI 리터러시)</span></h2>
+    <p class="mission-desc">AI가 생성한 IoT 정보에서 <strong style="color:var(--red)">오류·편향·허구</strong>를 찾아내세요!</p>
+    <div class="progress-dots" id="m4-dots"></div>
+    <div class="ai-badge-small" id="m4-type-badge">🤖 AI 생성 텍스트 — 검증 필요</div>
+    <div class="ai-text-box" id="m4-ai-text"></div>
+    <div class="question-text" id="m4-question" style="margin-bottom:14px;"></div>
+    <div class="choices" id="m4-choices"></div>
+    <div class="feedback-box" id="m4-feedback"></div>
+    <button class="next-btn" id="m4-next" onclick="m4Next()">다음 →</button>
+  </div>
+  <div class="ethics-notice">⚠️ AI가 생성한 정보는 항상 검증이 필요합니다.</div>
+</div>
+
+<!-- MISSION 5 : 딜레마 -->
+<div id="screen-m5" class="screen">
+  <div class="game-header">
+    <span class="logo-tag">MILAB #043</span>
+    <div class="score-bar">
+      <div class="score-item"><div class="val" id="m5-score-disp">0</div><div class="lbl">SCORE</div></div>
+      <div class="notimer">⏱ 타이머 없음</div>
+    </div>
+  </div>
+  <div class="mission-wrap">
+    <div class="mission-badge">🎯 MISSION 5 — 미래 직업 설계사</div>
+    <h2 class="mission-title-main">AI IoT 개발자 딜레마 <span style="color:var(--text2);font-size:15px;">(진로 심화)</span></h2>
+    <p class="mission-desc">2035년 AI IoT 개발자로서 어떤 선택을 하시겠습니까? <strong style="color:var(--gold)">근거 있는 선택이면 만점!</strong></p>
+    <div class="progress-dots" id="m5-dots"></div>
+    <div class="scenario-box" id="m5-scenario"></div>
+    <div class="question-text" id="m5-question" style="margin-bottom:16px;"></div>
+    <div class="dilemma-choices" id="m5-choices"></div>
+    <div class="feedback-box" id="m5-feedback"></div>
+    <button class="next-btn" id="m5-next" onclick="m5Next()">다음 →</button>
+  </div>
+  <div class="ethics-notice">⚠️ AI 정보는 반드시 비판적으로 검증하세요.</div>
+</div>
+
+<!-- MISSION 6 : 결과/로드맵 -->
+<div id="screen-m6" class="screen">
+  <div class="game-header">
+    <span class="logo-tag">MILAB #043</span>
+    <div class="score-bar">
+      <div class="score-item"><div class="val" id="final-score-disp">0</div><div class="lbl">FINAL</div></div>
+    </div>
+  </div>
+  <div class="mission-wrap">
+    <div class="mission-badge" style="margin-bottom:16px;">🗺️ MISSION 6 — 나의 IoT 개발자 로드맵</div>
+    <div class="score-summary">
+      <div class="ss-item"><div class="ss-val" id="res-m1">0</div><div class="ss-lbl">M1 문해력</div></div>
+      <div class="ss-item"><div class="ss-val" id="res-m2">0</div><div class="ss-lbl">M2 데이터</div></div>
+      <div class="ss-item"><div class="ss-val" id="res-m3">0</div><div class="ss-lbl">M3 직업탐구</div></div>
+    </div>
+    <div class="score-summary" style="margin-top:-6px;">
+      <div class="ss-item"><div class="ss-val" id="res-m4">0</div><div class="ss-lbl">M4 AI검증</div></div>
+      <div class="ss-item"><div class="ss-val" id="res-m5">0</div><div class="ss-lbl">M5 딜레마</div></div>
+      <div class="ss-item"><div class="ss-val" id="res-total">0</div><div class="ss-lbl">총점</div></div>
+    </div>
+    <div class="roadmap-card">
+      <div class="ending-tier" id="ending-emoji">🚀</div>
+      <div class="ending-title" id="ending-title"></div>
+      <div class="ending-desc" id="ending-desc"></div>
+      <div class="roadmap-section"><div class="rs-title">💼 추천 직업</div><div class="career-pills" id="career-pills"></div></div>
+      <div class="roadmap-section"><div class="rs-title">📚 추천 고교 선택과목</div><div class="subject-pills" id="subject-pills"></div></div>
+      <div class="roadmap-section"><div class="rs-title">🏫 추천 대학 학과</div><div class="career-pills" id="dept-pills"></div></div>
+      <div class="roadmap-section"><div class="rs-title">🤖 AI 시대 생존·성장 전략</div><div class="strategy-box" id="strategy-text"></div></div>
+    </div>
+    <div class="result-qr-wrap">
+      <div style="font-size:13px;color:var(--text2);margin-bottom:10px;">📱 내 로드맵 QR 공유</div>
+      <div class="qr-box" id="result-qr-wrap" style="display:inline-block;"></div>
+      <div class="qr-sub">학생부 포트폴리오 · 진로 수업 공유용</div>
+    </div>
+    <div id="leaderboard-wrap" style="margin-top:16px;"></div>
+    <div style="text-align:center;"><button class="restart-btn" onclick="restartGame()">🔄 다시 도전하기</button></div>
+  </div>
+  <div class="ethics-notice">⚠️ AI 정보는 반드시 비판적으로 검증하세요. | MILAB · 충주 · 2026</div>
+</div>
+
+<!-- Floating Mascot -->
+<div class="mascot-container hidden" id="float-mascot">
+  <div class="mascot-speech" id="mascot-speech" style="display:none"></div>
+  <svg viewBox="0 0 100 120" width="70" height="84" xmlns="http://www.w3.org/2000/svg">
+    <rect x="20" y="50" width="60" height="55" rx="10" fill="#2C3E50" stroke="#F0C040" stroke-width="2"/>
+    <rect x="25" y="15" width="50" height="42" rx="10" fill="#2C3E50" stroke="#F0C040" stroke-width="2"/>
+    <rect x="35" y="25" width="12" height="10" rx="3" fill="#00D4AA" id="float-eye-l"/>
+    <rect x="53" y="25" width="12" height="10" rx="3" fill="#00D4AA" id="float-eye-r"/>
+    <line x1="50" y1="15" x2="50" y2="5" stroke="#F0C040" stroke-width="2"/>
+    <circle cx="50" cy="4" r="3" fill="#F0C040"/>
+    <path d="M37 42 Q50 50 63 42" stroke="#F0C040" stroke-width="2" fill="none" id="float-mouth"/>
+    <rect x="30" y="58" width="40" height="30" rx="6" fill="#16213E" stroke="#00D4AA" stroke-width="1.5"/>
+    <text x="50" y="78" text-anchor="middle" fill="#00D4AA" font-size="14">📡</text>
+    <rect x="5" y="55" width="15" height="8" rx="4" fill="#2C3E50" stroke="#F0C040" stroke-width="1.5"/>
+    <rect x="80" y="55" width="15" height="8" rx="4" fill="#2C3E50" stroke="#F0C040" stroke-width="1.5"/>
+    <rect x="28" y="103" width="18" height="12" rx="4" fill="#2C3E50" stroke="#F0C040" stroke-width="1.5"/>
+    <rect x="54" y="103" width="18" height="12" rx="4" fill="#2C3E50" stroke="#F0C040" stroke-width="1.5"/>
+  </svg>
+</div>
+
+<script>
+const GAME_URL='https://milab2019.github.io/main/milab_ai_iot_developer_043.html';
+let playerName='',totalScore=0,musicOn=true,audioCtx=null;
+let missionScores={m1:0,m2:0,m3:0,m4:0,m5:0};
+
+const portfolioEntry={id:"043",title:"AI IoT 개발자 진로체험",target:"고등학생",grade:"high",theme:"AI·기술과 미래 직업",aiFeature:"AI 오류 검증·편향 탐지·프롬프트 설계",careerTheme:"AI IoT 개발자·스마트시티 아키텍트·임베디드 엔지니어",literacyFeature:"글로벌 데이터 지문 독해·한국-세계 IoT 비교 분석",date:"2026-04-11",url:GAME_URL};
+console.log('portfolioEntry',portfolioEntry);
+
+// ===== QR =====
+function makeQR(wrapId){
+  const wrap=document.getElementById(wrapId);
+  if(!wrap)return;
+  wrap.innerHTML='';
+  const div=document.createElement('div');
+  wrap.appendChild(div);
+  const qr=new QRCode(div,{text:GAME_URL,width:100,height:100,colorDark:'#1A1A2E',colorLight:'#ffffff',correctLevel:QRCode.CorrectLevel.M});
+  // QRCode.js generates both canvas and img; show only img (canvas can be buggy in some browsers)
+  setTimeout(()=>{
+    const canvas=div.querySelector('canvas');
+    const img=div.querySelector('img');
+    if(img){img.style.display='block';img.style.width='100px';img.style.height='100px';}
+    if(canvas){canvas.style.display='none';}
+  },300);
+}
+
+// ===== AUDIO =====
+function getACtx(){if(!audioCtx)audioCtx=new(window.AudioContext||window.webkitAudioContext)();if(audioCtx.state==='suspended')audioCtx.resume();return audioCtx;}
+function playTone(f,d,t='sine',v=0.15){if(!musicOn)return;try{const c=getACtx(),o=c.createOscillator(),g=c.createGain();o.connect(g);g.connect(c.destination);o.type=t;o.frequency.setValueAtTime(f,c.currentTime);g.gain.setValueAtTime(v,c.currentTime);g.gain.exponentialRampToValueAtTime(0.001,c.currentTime+d);o.start();o.stop(c.currentTime+d);}catch(e){}}
+function playCorrect(){playTone(523,.12,'sine',.2);setTimeout(()=>playTone(659,.12,'sine',.2),120);setTimeout(()=>playTone(784,.2,'sine',.2),240);}
+function playWrong(){playTone(220,.15,'sawtooth',.12);setTimeout(()=>playTone(196,.2,'sawtooth',.1),150);}
+function playLevelUp(){[523,587,659,784].forEach((f,i)=>setTimeout(()=>playTone(f,.15,'sine',.18),i*100));}
+function playFanfare(){[523,659,784,1047].forEach((f,i)=>setTimeout(()=>playTone(f,.25,'sine',.2),i*150));}
+let bgInt=null;
+function startBGM(){if(!musicOn)return;const notes=[220,246,261,293,220,196];let i=0;bgInt=setInterval(()=>{if(musicOn)playTone(notes[i%notes.length],.4,'sine',.04);i++;},800);}
+function stopBGM(){if(bgInt)clearInterval(bgInt);}
+function toggleMusic(){musicOn=!musicOn;document.getElementById('music-btn').textContent=musicOn?'🎵 ON':'🔇 OFF';if(musicOn)startBGM();else stopBGM();}
+
+// ===== MASCOT =====
+function mascotEmotion(t){
+  const mouth=document.getElementById('float-mouth'),eL=document.getElementById('float-eye-l'),eR=document.getElementById('float-eye-r');
+  if(!mouth)return;
+  if(t==='happy'){mouth.setAttribute('d','M35 42 Q50 52 65 42');eL.setAttribute('fill','#F0C040');eR.setAttribute('fill','#F0C040');}
+  else if(t==='sad'){mouth.setAttribute('d','M37 48 Q50 40 63 48');eL.setAttribute('fill','#FF4757');eR.setAttribute('fill','#FF4757');}
+  else{mouth.setAttribute('d','M37 42 Q50 50 63 42');eL.setAttribute('fill','#00D4AA');eR.setAttribute('fill','#00D4AA');}
+}
+function showSpeech(msg){const s=document.getElementById('mascot-speech');if(!s)return;s.textContent=msg;s.style.display='block';setTimeout(()=>{s.style.display='none';},2800);}
+
+// ===== NAV =====
+function showScreen(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active');window.scrollTo(0,0);}
+
+function startGame(){
+  playerName=document.getElementById('player-name').value.trim()||'IoT탐정';
+  getACtx();startBGM();
+  document.getElementById('float-mascot').classList.remove('hidden');
+  showScreen('screen-m1');initM1();
+}
+function restartGame(){totalScore=0;missionScores={m1:0,m2:0,m3:0,m4:0,m5:0};showScreen('screen-main');document.getElementById('float-mascot').classList.add('hidden');}
+
+// ===== M1 DATA =====
+const m1Data=[
+  {passage:`세계경제포럼(WEF)의 <strong>미래직업 보고서 2025</strong>에 따르면, 2030년까지 전 세계 직업의 약 <strong>40%가 AI 자동화</strong>의 영향을 받을 것으로 전망된다. 특히 반복적인 데이터 처리 업무는 대체 속도가 빠른 반면, AI IoT 개발자·데이터 사이언티스트·AI 윤리 전문가 등 신기술 직업군은 향후 5년간 <strong>연평균 23% 성장</strong>이 예상된다. 한국의 경우 스마트시티 및 스마트 제조 분야 IoT 인력 수요가 2024년 대비 35% 증가할 것으로 과기정통부가 예측하였다.`,source:'출처: WEF 미래직업보고서 2025, 과기정통부 AI IoT 인력수요 예측(2025) 기반 재구성',question:'이 지문에서 필자가 주장하는 핵심 근거는 무엇입니까?',choices:['AI로 인해 모든 직업이 사라질 위험에 처했다','AI IoT 관련 신기술 직업은 오히려 빠르게 성장하고 있다','한국은 AI 기술 개발에 투자를 줄여야 한다','스마트시티 사업은 비용 대비 효과가 낮다'],correct:1,hint:'지문에서 "연평균 23% 성장"과 "35% 증가"라는 수치가 핵심 근거입니다.',fb_ok:'✅ 정확해! 신기술 직업의 연평균 23% 성장과 한국 IoT 인력 수요 35% 증가가 핵심 근거야.',fb_no:'❌ 40% 영향이 "모든 직업 소멸"을 의미하지 않아. 오히려 신기술 직업의 성장을 강조하고 있어.',pts:10},
+  {passage:`국제데이터분석기관 IDC의 <strong>글로벌 IoT 시장 분석(2025)</strong>에 따르면, 전 세계 IoT 기기 연결 수는 2024년 <strong>약 176억 개</strong>에서 2030년 <strong>290억 개</strong>로 증가할 전망이다. 한국은 스마트 제조·스마트시티·디지털 헬스케어 분야를 중심으로 <strong>세계 IoT 경쟁력 7위</strong>(IMD 2024)를 기록하고 있다. 그러나 국내 AI IoT 전문 인력은 수요 대비 <strong>약 32% 부족</strong>한 것으로 집계되어, 관련 학과 및 직업훈련 확대가 시급한 과제로 제기된다.`,source:'출처: IDC 글로벌 IoT 시장 분석 2025, IMD 스마트시티 경쟁력 지수 2024 기반 재구성',question:'이 지문에서 추론할 수 있는 필자의 의도로 가장 적절한 것은?',choices:['한국이 IoT 분야에서 세계 최강국임을 자랑하기 위해','AI IoT 인력 부족 문제를 제기하여 교육 확대를 촉구하기 위해','IoT 기기의 폭발적 증가가 환경에 미치는 위험을 경고하기 위해','IMD 순위 방법론의 문제점을 비판하기 위해'],correct:1,hint:'지문 마지막 문장에 "시급한 과제"라는 표현이 필자의 의도를 드러냅니다.',fb_ok:'✅ 날카로운 분석! 필자는 인력 부족이라는 문제점을 강조해 교육 확대 필요성을 주장하고 있어.',fb_no:'❌ 세계 7위라는 긍정 데이터는 부족 문제를 부각하기 위한 배경 정보야. 마지막 "시급한 과제"가 핵심 의도야.',pts:10},
+  {passage:`OECD <strong>디지털경제전망 2025</strong>에 따르면, AI와 IoT의 융합(AI IoT)이 제조·의료·농업·교통 등 전 산업에 적용되며 이른바 <strong>'산업 4.0 전환'</strong>이 가속화되고 있다. 특히 AI IoT 시스템에서 발생하는 데이터의 <strong>73%가 엣지 디바이스</strong>에서 처리될 것으로 예측된다. 이는 기존 클라우드 중심 아키텍처에서 엣지 컴퓨팅 전문가 수요가 급증함을 의미하며, <strong>한국의 반도체·통신 인프라</strong>가 이 전환에서 강점으로 작용할 수 있다고 OECD는 분석했다.`,source:'출처: OECD Digital Economy Outlook 2025 기반 재구성',question:'이 지문에서 한국이 AI IoT 전환에서 경쟁 우위를 가질 수 있는 근거로 제시된 것은?',choices:['한국의 높은 대학 진학률과 교육열','한국 정부의 IoT 분야 R&D 예산 증가','한국의 반도체·통신 인프라 강점','K-콘텐츠의 글로벌 영향력 확대'],correct:2,hint:'지문 마지막 문장에 한국의 강점이 명시되어 있습니다.',fb_ok:'✅ 정확해! "한국의 반도체·통신 인프라"가 AI IoT 전환에서의 경쟁 우위 근거로 직접 제시되었어.',fb_no:'❌ 한국의 강점은 "반도체·통신 인프라"야. 교육열·예산·K콘텐츠는 이 지문에 언급되지 않았어.',pts:10},
+  {passage:`한국직업능력연구원(KRIVET)의 <strong>AI 시대 직업 변화 분석(2025)</strong>에 따르면, <strong>AI IoT 개발자</strong>는 향후 10년간 가장 유망한 직업군 상위 3위에 포함되었다. 이 직업은 단순 프로그래밍을 넘어, 센서·네트워크·AI 알고리즘을 통합 설계하는 역량과 함께 <strong>데이터 보안·윤리 판단력</strong>이 필수 역량으로 부상하고 있다. 특히 2026년부터 고교학점제 전면 시행으로 <strong>'인공지능기초'·'데이터과학'</strong> 선택과목이 AI IoT 진로와 직결되는 핵심 과목으로 주목받고 있다.`,source:'출처: 한국직업능력연구원 AI 시대 직업 변화 분석 2025 기반 재구성',question:'이 지문에서 AI IoT 개발자에게 "새롭게 필수"로 강조된 역량은?',choices:['외국어 능력과 글로벌 커뮤니케이션 스킬','수학·물리 등 이공계 기초 학력','데이터 보안·윤리 판단력','3D 모델링 및 CAD 설계 능력'],correct:2,hint:'"부상하고 있다"는 표현 앞의 내용을 집중하세요.',fb_ok:'✅ 완벽해! "데이터 보안·윤리 판단력"이 새롭게 필수 역량으로 부상하고 있다고 강조해.',fb_no:'❌ 핵심 키워드는 "데이터 보안·윤리 판단력"이야. 외국어·수학·CAD는 언급되지 않았어.',pts:10},
+  {passage:`글로벌 시장조사기관 가트너(Gartner)의 <strong>2025년 기술 하이프 사이클</strong>에 따르면, AI IoT(AIoT)는 현재 <strong>'기대의 정점'</strong>을 지나 실질적 성숙 단계로 진입하고 있다. 스마트 팩토리 분야에서는 AIoT 도입 기업의 생산성이 평균 <strong>28% 향상</strong>되었으며, 에너지 소비는 <strong>19% 절감</strong>된 것으로 나타났다. 반면, 한국 중소기업의 AIoT 도입률은 <strong>12%에 불과</strong>해 대기업(67%)과의 격차가 심각한 수준이다.`,source:'출처: Gartner Hype Cycle 2025, 중소벤처기업부 스마트공장 도입 현황 2024 기반 재구성',question:'이 지문에서 필자가 가장 우려하는 문제는 무엇인가?',choices:['스마트 팩토리 도입에 따른 실업자 증가','가트너 하이프 사이클 예측의 신뢰성 문제','한국 대기업과 중소기업 간 AIoT 기술 양극화','AIoT가 에너지를 과도하게 소비하는 환경 문제'],correct:2,hint:'지문 마지막 두 문장에 필자의 진짜 관심사가 나타납니다.',fb_ok:'✅ 탁월한 분석! 중소기업 12% vs 대기업 67%의 격차를 "심각한 수준"이라 표현한 것이 필자의 핵심 우려야.',fb_no:'❌ AIoT의 긍정 효과를 제시한 후, 마지막에 양극화 문제로 결론 짓고 있어. 필자의 주요 우려는 12% vs 67% 격차야.',pts:10}
+];
+let m1Idx=0,m1HintUsed=false,m1TimerVal=180,m1TimerRef=null,m1Answered=false;
+function initM1(){m1Idx=0;m1HintUsed=false;m1TimerVal=180;m1Answered=false;missionScores.m1=0;renderDots('m1-dots',m1Data.length,m1Idx);loadM1Q();startM1Timer();document.getElementById('m1-score-disp').textContent=0;mascotEmotion('neutral');showSpeech('지문을 꼼꼼히 읽어봐! 📖');}
+function renderDots(id,total,cur){const c=document.getElementById(id);c.innerHTML=Array.from({length:total},(_,i)=>`<div class="prog-dot ${i<cur?'done':i===cur?'active':''}"></div>`).join('');}
+function loadM1Q(){if(m1Idx>=m1Data.length){clearInterval(m1TimerRef);endM1();return;}const q=m1Data[m1Idx];m1HintUsed=false;m1Answered=false;document.getElementById('m1-passage').innerHTML=q.passage+`<div class="passage-source">${q.source}</div>`;document.getElementById('m1-question').textContent=q.question;document.getElementById('m1-hint').textContent='💡 '+q.hint;document.getElementById('m1-hint').classList.remove('show');hideFB('m1-feedback');hideNext('m1-next');document.getElementById('m1-choices').innerHTML=q.choices.map((c,i)=>`<button class="choice-btn" onclick="answerM1(${i})">${c}</button>`).join('');renderDots('m1-dots',m1Data.length,m1Idx);}
+function showHint1(){if(m1Answered)return;m1HintUsed=true;document.getElementById('m1-hint').classList.add('show');}
+function answerM1(idx){if(m1Answered)return;m1Answered=true;const q=m1Data[m1Idx];const btns=document.querySelectorAll('#m1-choices .choice-btn');btns.forEach(b=>b.disabled=true);btns[q.correct].classList.add('correct');const fb=document.getElementById('m1-feedback');fb.style.display='block';if(idx===q.correct){btns[idx].classList.add('correct');const pts=m1HintUsed?Math.round(q.pts*.7):q.pts;missionScores.m1+=pts;totalScore+=pts;document.getElementById('m1-score-disp').textContent=missionScores.m1;showFB('m1-feedback','correct',q.fb_ok+` <strong style="color:var(--gold)">(+${pts}점)</strong>`);playCorrect();mascotEmotion('happy');showSpeech('완벽해! 🎉');}else{btns[idx].classList.add('wrong');showFB('m1-feedback','wrong',q.fb_no);playWrong();mascotEmotion('sad');showSpeech('이 시각도 날카로워! 다시 생각해봐 💪');}showNext('m1-next',m1Idx===m1Data.length-1?'미션2 이동 →':'다음 지문 →');}
+function m1Next(){m1Idx++;loadM1Q();}
+function startM1Timer(){clearInterval(m1TimerRef);m1TimerRef=setInterval(()=>{m1TimerVal--;const m=Math.floor(m1TimerVal/60),s=m1TimerVal%60;document.getElementById('m1-timer').textContent=`${m}:${s.toString().padStart(2,'0')}`;document.getElementById('m1-timer').className='timer-box'+(m1TimerVal<=10?' urgent':'');if(m1TimerVal<=0){clearInterval(m1TimerRef);endM1();}},1000);}
+function endM1(){clearInterval(m1TimerRef);playLevelUp();showScreen('screen-m2');initM2();}
+
+// ===== M2 DATA =====
+const m2Data=[
+  {chartTitle:'📊 국가별 AI IoT 시장 규모 비교 (2024~2025, IDC)',chartData:[{label:'한국',value:18,max:100,type:'kr',unit:'조원'},{label:'미국',value:85,max:100,type:'world',unit:'조원(환산)'},{label:'중국',value:72,max:100,type:'world',unit:'조원(환산)'},{label:'독일',value:31,max:100,type:'world',unit:'조원(환산)'},{label:'일본',value:24,max:100,type:'world',unit:'조원(환산)'}],question:'위 데이터를 바탕으로, 한국의 AI IoT 시장 규모에 대한 올바른 분석은?',choices:['한국은 AI IoT 시장에서 미국과 동등한 수준이다','한국은 5개국 중 가장 작은 시장이지만 성장 잠재력이 있다','한국의 AI IoT 시장은 이미 포화 상태에 도달했다','독일과 일본의 시장 규모는 한국보다 항상 작다'],correct:1,fb_ok:'✅ 데이터 해석 능력 탁월! 한국(18조)은 가장 작지만 과기정통부는 35% 성장 전망을 발표했어. "규모는 작지만 성장 잠재력 있다"가 가장 정확한 분석이야.',fb_no:'❌ 한국(18조)은 5개국 중 가장 작은 시장이야. 하지만 성장률에서 잠재력이 있어. 현재 규모만으로 모든 결론을 내리지 않도록 주의해.',pts:15},
+  {chartTitle:'🤖 직업군별 AI 대체 가능성 비율 (WEF 2025)',chartData:[{label:'데이터 입력직',value:87,max:100,type:'world',unit:'%'},{label:'회계·경리직',value:72,max:100,type:'world',unit:'%'},{label:'AI IoT 개발자',value:8,max:100,type:'kr',unit:'%'},{label:'의사·의료직',value:21,max:100,type:'world',unit:'%'},{label:'AI 윤리전문가',value:4,max:100,type:'kr',unit:'%'}],question:'WEF 2025 데이터에서 AI 대체 위험이 가장 낮은 직업군의 공통적 특성은?',choices:['고임금 직업일수록 AI 대체율이 낮다','AI를 설계·감독·윤리적으로 판단하는 역할은 대체율이 낮다','의료·법률 등 전문직은 모두 AI 대체율이 10% 미만이다','한국 기업에 소속된 직업일수록 대체율이 낮다'],correct:1,fb_ok:'✅ 핵심 패턴 발견! AI IoT 개발자(8%)와 AI 윤리전문가(4%)는 AI를 직접 설계하거나 감독·윤리 판단하는 역할이야. AI를 만드는 사람과 관리하는 사람은 AI에 의해 대체되기 어렵다는 게 핵심이야.',fb_no:'❌ 의사는 21%로 생각보다 높고, 대체율이 낮은 직업의 공통점은 "AI를 설계·감독·윤리 판단"하는 역할이야.',pts:15},
+  {chartTitle:'🏙️ 국가별 스마트시티 경쟁력 순위 (IMD 2024)',chartData:[{label:'싱가포르',value:95,max:100,type:'world',unit:'점'},{label:'덴마크',value:91,max:100,type:'world',unit:'점'},{label:'스위스',value:88,max:100,type:'world',unit:'점'},{label:'한국(7위)',value:79,max:100,type:'kr',unit:'점'},{label:'미국',value:76,max:100,type:'world',unit:'점'}],question:'이 데이터에서 한국의 스마트시티 경쟁력에 대해 가장 타당한 추론은?',choices:['한국은 스마트시티 분야에서 아시아 1위 국가다','한국은 세계 7위로 강점을 가지나 북유럽·싱가포르와 격차가 있다','한국의 스마트시티 기술은 미국보다 현저히 뒤처져 있다','순위가 높을수록 IoT 인력이 더 부족하다'],correct:1,fb_ok:'✅ 균형 잡힌 분석! 한국(79점, 7위)은 미국(76점)보다 높지만 싱가포르(95점)·덴마크(91점)와는 격차가 존재해. "강점은 있으나 격차도 있다"가 가장 타당한 해석이야.',fb_no:'❌ 한국이 미국보다 높으니 "뒤처진다"는 틀렸어. 아시아 1위는 싱가포르야. 균형 잡힌 해석이 중요해.',pts:15}
+];
+let m2Idx=0,m2TimerVal=45,m2TimerRef=null,m2Answered=false;
+function initM2(){m2Idx=0;m2TimerVal=45;m2Answered=false;missionScores.m2=0;renderDots('m2-dots',m2Data.length,m2Idx);loadM2Q();document.getElementById('m2-score-disp').textContent=0;mascotEmotion('neutral');showSpeech('데이터를 비교해봐! 📊');}
+function loadM2Q(){if(m2Idx>=m2Data.length){endM2();return;}const q=m2Data[m2Idx];m2Answered=false;clearInterval(m2TimerRef);m2TimerVal=45;updateM2Timer();const ca=document.getElementById('m2-chart-area');ca.style.display='block';ca.innerHTML=`<div class="chart-title">${q.chartTitle}</div><div class="bar-chart">${q.chartData.map(d=>`<div class="bar-row"><div class="bar-label">${d.label}</div><div class="bar-track"><div class="bar-fill ${d.type}" style="width:0%" data-target="${d.value}%">${d.value}${d.unit}</div></div></div>`).join('')}</div>`;setTimeout(()=>{document.querySelectorAll('.bar-fill').forEach(b=>{b.style.width=b.dataset.target;});},100);document.getElementById('m2-question').textContent=q.question;hideFB('m2-feedback');hideNext('m2-next');document.getElementById('m2-choices').innerHTML=q.choices.map((c,i)=>`<button class="choice-btn" onclick="answerM2(${i})">${c}</button>`).join('');m2TimerRef=setInterval(()=>{m2TimerVal--;updateM2Timer();if(m2TimerVal<=0){clearInterval(m2TimerRef);if(!m2Answered)forceM2Wrong();}},1000);renderDots('m2-dots',m2Data.length,m2Idx);}
+function updateM2Timer(){const t=document.getElementById('m2-timer');t.textContent=`0:${m2TimerVal.toString().padStart(2,'0')}`;t.className='timer-box'+(m2TimerVal<=10?' urgent':'');}
+function answerM2(idx){if(m2Answered)return;m2Answered=true;clearInterval(m2TimerRef);const q=m2Data[m2Idx];const btns=document.querySelectorAll('#m2-choices .choice-btn');btns.forEach(b=>b.disabled=true);btns[q.correct].classList.add('correct');if(idx===q.correct){btns[idx].classList.add('correct');missionScores.m2+=q.pts;totalScore+=q.pts;document.getElementById('m2-score-disp').textContent=missionScores.m2;showFB('m2-feedback','correct',q.fb_ok+` <strong style="color:var(--gold)">(+${q.pts}점)</strong>`);playCorrect();mascotEmotion('happy');showSpeech('데이터 해석 완벽! 📊');}else{btns[idx].classList.add('wrong');showFB('m2-feedback','wrong',q.fb_no);playWrong();mascotEmotion('sad');showSpeech('다른 각도로 분석해봐! 🔍');}showNext('m2-next',m2Idx===m2Data.length-1?'미션3 이동 →':'다음 문제 →');}
+function forceM2Wrong(){if(m2Answered)return;m2Answered=true;const q=m2Data[m2Idx];const btns=document.querySelectorAll('#m2-choices .choice-btn');btns.forEach(b=>b.disabled=true);btns[q.correct].classList.add('correct');showFB('m2-feedback','wrong','⏱ 시간 초과! 정답은 표시해두었어. '+q.fb_no);playWrong();showNext('m2-next',m2Idx===m2Data.length-1?'미션3 이동 →':'다음 문제 →');}
+function m2Next(){m2Idx++;loadM2Q();}
+function endM2(){clearInterval(m2TimerRef);playLevelUp();showScreen('screen-m3');initM3();}
+
+// ===== M3 JOB INFO DATA =====
+const m3Pages=[
+  {
+    type:'info',
+    html:`<div class="job-info-grid">
+<div class="job-card">
+  <div class="job-card-title">💼 AI IoT 개발자가 하는 일</div>
+  <div class="work-list">
+    <div class="work-item"><span class="work-icon">📡</span><span>IoT 센서·디바이스 펌웨어 개발 및 네트워크 연동</span></div>
+    <div class="work-item"><span class="work-icon">🧠</span><span>AI 알고리즘을 IoT 시스템에 통합 (엣지 AI 구현)</span></div>
+    <div class="work-item"><span class="work-icon">☁️</span><span>클라우드 플랫폼(AWS IoT, Azure IoT Hub)과 데이터 연동</span></div>
+    <div class="work-item"><span class="work-icon">🔒</span><span>IoT 보안 취약점 분석 및 데이터 암호화 설계</span></div>
+    <div class="work-item"><span class="work-icon">📊</span><span>수집된 IoT 데이터 시각화 및 이상 탐지 모델 구축</span></div>
+    <div class="work-item"><span class="work-icon">🏙️</span><span>스마트시티·스마트팩토리·스마트홈 솔루션 개발</span></div>
+  </div>
+</div>
+<div class="job-card">
+  <div class="job-card-title">💰 연봉 정보 (한국, 2025년 기준)</div>
+  <div class="salary-bar-wrap">
+    <div class="salary-label">신입 (0~3년) — 약 3,500~4,500만원</div>
+    <div class="salary-bar" style="width:0%" data-target="45%">3,500~4,500만원</div>
+  </div>
+  <div class="salary-bar-wrap" style="margin-top:10px;">
+    <div class="salary-label">중급 (3~7년) — 약 5,000~7,000만원</div>
+    <div class="salary-bar" style="width:0%" data-target="65%">5,000~7,000만원</div>
+  </div>
+  <div class="salary-bar-wrap" style="margin-top:10px;">
+    <div class="salary-label">시니어 (7년+) — 약 7,000~1억원 이상</div>
+    <div class="salary-bar" style="width:0%" data-target="85%">7,000만~1억+</div>
+  </div>
+  <div class="salary-bar-wrap" style="margin-top:10px;">
+    <div class="salary-label">스타트업 CTO급 — 스톡옵션 포함 1.5억+</div>
+    <div class="salary-bar" style="width:0%" data-target="95%">1.5억+ (스톡옵션)</div>
+  </div>
+  <div style="margin-top:12px;font-size:11px;color:var(--text2);">출처: 잡코리아·원티드 2025 IT 직군 연봉 리포트 기반</div>
+</div>
+<div class="job-card">
+  <div class="job-card-title">🏫 관련 대학 학과</div>
+  <div class="dept-list">
+    <div class="dept-item"><div class="dept-dot"></div><span><strong>전자공학과</strong> — 회로·센서·임베디드 기초</span></div>
+    <div class="dept-item"><div class="dept-dot"></div><span><strong>소프트웨어학과</strong> — 알고리즘·클라우드·AI</span></div>
+    <div class="dept-item"><div class="dept-dot"></div><span><strong>컴퓨터공학과</strong> — 네트워크·보안·OS</span></div>
+    <div class="dept-item"><div class="dept-dot"></div><span><strong>인공지능학과</strong> — AI 모델·데이터사이언스</span></div>
+    <div class="dept-item"><div class="dept-dot"></div><span><strong>정보통신공학과</strong> — 5G·IoT 프로토콜</span></div>
+    <div class="dept-item"><div class="dept-dot"></div><span><strong>스마트IoT학과</strong> (신설 증가 중)</span></div>
+  </div>
+</div>
+<div class="job-card">
+  <div class="job-card-title">📜 필요 자격증 & 핵심 기술</div>
+  <div class="cert-wrap">
+    <div class="cert-pill">정보처리기사</div>
+    <div class="cert-pill">AWS IoT Core</div>
+    <div class="cert-pill">Azure IoT Hub</div>
+    <div class="cert-pill">리눅스마스터 2급</div>
+    <div class="cert-pill">Python / C언어</div>
+    <div class="cert-pill">Arduino / ESP32</div>
+    <div class="cert-pill">TensorFlow Lite</div>
+    <div class="cert-pill">MQTT 프로토콜</div>
+    <div class="cert-pill">Docker / Kubernetes</div>
+    <div class="cert-pill">사이버보안기사</div>
+  </div>
+</div>
+</div>`
+  },
+  {type:'quiz',qidx:0},
+  {type:'quiz',qidx:1},
+  {type:'quiz',qidx:2}
+];
+const m3Quizzes=[
+  {label:'📝 퀴즈 1/3 — 직무 이해',question:'AI IoT 개발자가 하는 일 중 "엣지 AI"와 관련이 있는 업무는?',choices:['클라우드 서버에 모든 데이터를 전송 후 처리','IoT 디바이스 자체에서 AI 알고리즘을 실행·처리','회계 데이터를 AI로 분석하는 업무','소셜미디어 콘텐츠를 AI로 분류하는 업무'],correct:1,fb_ok:'✅ 정확해! 엣지 AI는 클라우드가 아닌 IoT 기기(센서, 라즈베리파이 등) 자체에서 AI를 실행하는 기술이야. 지연시간을 줄이고 데이터 보안을 높이는 핵심 기술이야!',fb_no:'❌ 엣지 AI(Edge AI)는 데이터를 클라우드로 보내지 않고, IoT 디바이스 자체에서 AI 연산을 수행하는 것이야. "엣지"는 네트워크의 끝단(기기)을 의미해.',pts:15},
+  {label:'📝 퀴즈 2/3 — 연봉 이해',question:'다음 중 AI IoT 개발자 연봉에 대한 올바른 설명은?',choices:['신입과 시니어의 연봉 차이는 거의 없다','경력이 쌓일수록 연봉이 크게 증가하는 직군이다','정부 공무원처럼 연봉이 법으로 정해져 있다','AI IoT 개발자는 모두 동일한 연봉을 받는다'],correct:1,fb_ok:'✅ 맞아! 신입(3,500~4,500만원)에서 시니어(7,000만~1억+)까지 경력에 따라 2~3배 이상 차이가 나. 스타트업에서 스톡옵션까지 포함하면 훨씬 더 높아질 수 있어!',fb_no:'❌ AI IoT 개발자는 경력·역량·회사 규모에 따라 연봉 차이가 매우 크게 나. 신입(~4,500만원)과 시니어(1억+)의 차이를 다시 확인해봐.',pts:15},
+  {label:'📝 퀴즈 3/3 — 진로 준비',question:'고등학교에서 AI IoT 개발자를 준비하기 위해 가장 효과적인 활동은?',choices:['국어 작문 능력 강화에 집중','외국어만 집중적으로 학습','인공지능기초·정보과학 과목 선택 + Arduino 실습 경험','미술·디자인 포트폴리오 준비'],correct:2,fb_ok:'✅ 완벽한 선택! 고교학점제에서 "인공지능기초"·"정보과학" 선택 + Arduino·라즈베리파이 실습이 AI IoT 개발자 진로의 최강 조합이야. 실제로 만들어보는 경험이 가장 강력한 포트폴리오야!',fb_no:'❌ AI IoT 개발자를 위한 고교 준비는 "인공지능기초"·"정보과학" 선택과목과 실제 Arduino 등 임베디드 실습이 가장 중요해. 이론과 실습의 조합이 핵심이야.',pts:15}
+];
+let m3PageIdx=0,m3Answered=false;
+function initM3(){m3PageIdx=0;m3Answered=false;missionScores.m3=0;renderDots('m3-dots',m3Pages.length,m3PageIdx);loadM3Page();document.getElementById('m3-score-disp').textContent=0;mascotEmotion('neutral');showSpeech('직업 정보를 파악해봐! 💼');}
+function loadM3Page(){if(m3PageIdx>=m3Pages.length){endM3();return;}const page=m3Pages[m3PageIdx];renderDots('m3-dots',m3Pages.length,m3PageIdx);if(page.type==='info'){document.getElementById('m3-info-area').innerHTML=page.html;document.getElementById('m3-info-area').style.display='';document.getElementById('m3-quiz-area').style.display='none';hideFB('m3-feedback');setTimeout(()=>{document.querySelectorAll('.salary-bar').forEach(b=>{if(b.dataset.target)b.style.width=b.dataset.target;});},200);showNext('m3-next','퀴즈 시작 →');}else{document.getElementById('m3-info-area').style.display='none';document.getElementById('m3-quiz-area').style.display='block';const qz=m3Quizzes[page.qidx];m3Answered=false;document.getElementById('m3-quiz-label').textContent=qz.label;document.getElementById('m3-question').textContent=qz.question;hideFB('m3-feedback');hideNext('m3-next');document.getElementById('m3-choices').innerHTML=qz.choices.map((c,i)=>`<button class="choice-btn" onclick="answerM3(${i})">${c}</button>`).join('');}}
+function answerM3(idx){if(m3Answered)return;m3Answered=true;const qz=m3Quizzes[m3Pages[m3PageIdx].qidx];const btns=document.querySelectorAll('#m3-choices .choice-btn');btns.forEach(b=>b.disabled=true);btns[qz.correct].classList.add('correct');if(idx===qz.correct){btns[idx].classList.add('correct');missionScores.m3+=qz.pts;totalScore+=qz.pts;document.getElementById('m3-score-disp').textContent=missionScores.m3;showFB('m3-feedback','correct',qz.fb_ok+` <strong style="color:var(--gold)">(+${qz.pts}점)</strong>`);playCorrect();mascotEmotion('happy');showSpeech('직업 탐구 완료! 🎯');}else{btns[idx].classList.add('wrong');showFB('m3-feedback','wrong',qz.fb_no);playWrong();mascotEmotion('sad');showSpeech('다시 생각해봐! 💡');}showNext('m3-next',m3PageIdx===m3Pages.length-1?'미션4 이동 →':'다음 →');}
+function m3Next(){m3PageIdx++;document.getElementById('m3-info-area').style.display='';loadM3Page();}
+function endM3(){playLevelUp();showScreen('screen-m4');initM4();}
+
+// ===== M4 AI VERIFY DATA =====
+const m4Data=[
+  {type:'① Hallucination 탐지',aiText:`[🤖 AI 생성 답변] 한국은 2024년 기준 전 세계 IoT 연결 기기 수의 약 35%를 차지하는 세계 최대 IoT 시장이며, 서울은 세계 최초로 100% AI IoT 기반 완전 자율주행 도시로 전환되었습니다. 또한 한국의 IoT 수출액은 2024년 약 500조원으로 반도체를 앞질렀습니다.`,question:'위 AI 답변에서 사실과 다른 정보(hallucination)를 고른 것은?',choices:['한국이 세계 IoT의 35% 점유 + 서울 100% 자율주행 전환','한국이 세계 IoT의 35% 점유 + IoT 수출 500조원','AI IoT 답변 전체가 hallucination이라 판단할 수 없다','서울 자율주행 전환 + IoT 수출 500조원이 과장되었다'],correct:0,fb_ok:'✅ AI 검증관 합격! 한국의 글로벌 IoT 점유율은 실제로 약 1.6%, 서울 완전 자율주행 전환은 허구, IoT 수출 500조원도 허구야. AI는 그럴듯하게 틀린다!',fb_no:'❌ AI 답변의 수치가 대부분 허구야. 한국의 글로벌 IoT 점유율 35%는 실제 약 1.6%, 서울 100% 자율주행 전환은 2024년 기준 허구야. AI hallucination을 잡아내는 게 핵심!',pts:20},
+  {type:'② AI 편향 탐지',aiText:`[🤖 AI 생성 답변] AI IoT 기술은 오직 긍정적인 영향만을 가져옵니다. 스마트 팩토리 도입으로 생산성이 향상되고 일자리가 더욱 풍부해지며, 개인 데이터 수집은 서비스 개선을 위한 것이므로 프라이버시 침해 우려는 과장된 것입니다. AI가 모든 결정을 내리면 인간의 실수를 완전히 제거할 수 있어 더욱 안전한 사회가 됩니다.`,question:'위 AI 답변에서 발견되는 편향(Bias)을 가장 잘 설명한 것은?',choices:['특정 국가에 유리한 민족적 편향이 포함되어 있다','기술의 긍정적 측면만 강조하고 부작용·리스크를 무시하는 기술 낙관 편향','인간의 능력을 과대평가하는 인간중심 편향이 있다','데이터 출처를 명시하지 않은 것이 편향의 증거다'],correct:1,fb_ok:'✅ 편향 탐지 성공! "오직 긍정적인 영향만"·"프라이버시 침해 우려는 과장"·"AI가 모든 결정" 등은 기술 낙관 편향이야. 실업·보안·AI 오판 등 부작용을 완전히 배제하고 있어!',fb_no:'❌ 이 AI 답변은 기술의 부작용(실업, 프라이버시, AI 오판)을 모두 무시하고 장점만 강조하는 "기술 낙관 편향"이야.',pts:20},
+  {type:'③ 프롬프트 설계',aiText:`[🤖 AI에게 물어보기] 다음 중 AI IoT 개발자가 되기 위한 진로 정보를 더 정확하게 얻을 수 있는 프롬프트는 어느 것일까요?`,question:'AI에게 "AI IoT 개발자 진로 정보"를 물을 때, 가장 구체적이고 좋은 프롬프트는?',choices:['"AI IoT 개발자에 대해 알려줘"','"2025년 한국 AI IoT 개발자의 평균 연봉, 필요 자격증, 추천 대학 학과를 KRIVET 데이터 기반으로 알려줘"','"좋은 직업 추천해줘"','"IoT가 뭔지 간단히 설명해줘"'],correct:1,fb_ok:'✅ 프롬프트 설계 마스터! 좋은 프롬프트의 3요소: ①구체적 주제(AI IoT 개발자) ②원하는 정보 종류(연봉·자격증·학과) ③데이터 출처 명시(KRIVET). 구체적 프롬프트가 정확한 답을 만들어!',fb_no:'❌ 막연한 프롬프트는 AI hallucination 위험이 높아. 좋은 프롬프트는 ①원하는 구체적 정보 ②시점(2025년) ③출처(KRIVET)까지 명시하는 거야.',pts:20}
+];
+let m4Idx=0,m4Answered=false;
+function initM4(){m4Idx=0;m4Answered=false;missionScores.m4=0;renderDots('m4-dots',m4Data.length,m4Idx);loadM4Q();document.getElementById('m4-score-disp').textContent=0;mascotEmotion('neutral');showSpeech('AI 오류를 찾아라! 🔍');}
+function loadM4Q(){if(m4Idx>=m4Data.length){endM4();return;}const q=m4Data[m4Idx];m4Answered=false;document.getElementById('m4-type-badge').textContent='🤖 AI 생성 텍스트 '+q.type;document.getElementById('m4-ai-text').textContent=q.aiText;document.getElementById('m4-question').textContent=q.question;hideFB('m4-feedback');hideNext('m4-next');document.getElementById('m4-choices').innerHTML=q.choices.map((c,i)=>`<button class="choice-btn" onclick="answerM4(${i})">${c}</button>`).join('');renderDots('m4-dots',m4Data.length,m4Idx);}
+function answerM4(idx){if(m4Answered)return;m4Answered=true;const q=m4Data[m4Idx];const btns=document.querySelectorAll('#m4-choices .choice-btn');btns.forEach(b=>b.disabled=true);btns[q.correct].classList.add('correct');if(idx===q.correct){btns[idx].classList.add('correct');missionScores.m4+=q.pts;totalScore+=q.pts;document.getElementById('m4-score-disp').textContent=missionScores.m4;showFB('m4-feedback','correct',q.fb_ok+` <strong style="color:var(--gold)">(+${q.pts}점)</strong>`);playCorrect();mascotEmotion('happy');showSpeech('AI 검증관 합격! 🏅');}else{btns[idx].classList.add('wrong');showFB('m4-feedback','wrong',q.fb_no);playWrong();mascotEmotion('sad');showSpeech('이 시각도 날카로워! 단, 놓친 게 있어 💡');}showNext('m4-next',m4Idx===m4Data.length-1?'미션5 이동 →':'다음 검증 →');}
+function m4Next(){m4Idx++;loadM4Q();}
+function endM4(){playLevelUp();showScreen('screen-m5');initM5();}
+
+// ===== M5 DILEMMA DATA =====
+const m5Data=[
+  {scenario:'🏭 당신은 2035년 스마트 팩토리의 AI IoT 개발자입니다. AI 센서 시스템이 공장 근로자의 행동을 24시간 모니터링하여 생산성을 30% 높일 수 있지만, 근로자들은 프라이버시 침해를 이유로 강하게 반대하고 있습니다.',question:'당신은 어떤 선택을 하겠습니까?',choices:[{title:'A: AI 모니터링 전면 도입',pros:'✅ 생산성 30% 향상, 경쟁력 확보',cons:'⚠️ 근로자 신뢰 손상, 노사 갈등'},{title:'B: 근로자 동의 기반 선택형 도입',pros:'✅ 신뢰 유지, 지속가능한 운영',cons:'⚠️ 도입 속도 느림, 효과 제한'},{title:'C: 익명화·집계 데이터만 수집',pros:'✅ 프라이버시 보호 + 일부 효과',cons:'⚠️ 데이터 정밀도 감소'},{title:'D: AI 모니터링 도입 포기',pros:'✅ 근로자 완전 신뢰 유지',cons:'⚠️ 경쟁력 저하 위험'}],feedback:'이것은 정답이 없는 딜레마야! AI IoT 개발자는 기술 효율성과 인권·윤리 사이에서 균형을 찾아야 해. 이 시각도 타당해! 단, 선택한 방향의 리스크를 항상 인식해야 해.',pts:20},
+  {scenario:'🌐 당신이 개발한 AI IoT 스마트시티 플랫폼을 해외에 수출하려 합니다. 중동의 한 국가에서 대규모 계약을 제안했지만, 그 국가는 AI IoT를 시민 감시에 활용할 가능성이 높습니다.',question:'당신은 어떤 선택을 하겠습니까?',choices:[{title:'A: 해외 수출 계약 체결',pros:'✅ 큰 수익, 글로벌 진출',cons:'⚠️ AI 감시 활용 시 윤리 책임'},{title:'B: 수출 거부, 국내 프로젝트 집중',pros:'✅ 윤리 원칙 유지',cons:'⚠️ 성장 기회 포기'},{title:'C: 조건부 수출 (감시 목적 금지 계약)',pros:'✅ 수익 + 윤리 조건 설정',cons:'⚠️ 계약 이행 감시 어려움'},{title:'D: 정부·국제기구와 협의 후 결정',pros:'✅ 리스크 분산, 전문가 판단',cons:'⚠️ 결정 지연'}],feedback:'글로벌 시장 vs 윤리 원칙의 딜레마야! 어떤 선택이든 근거가 명확하다면 AI IoT 개발자로서의 윤리 의식을 갖춘 거야!',pts:20},
+  {scenario:'🔒 당신이 운영하는 AI IoT 보안 시스템이 대규모 사이버 공격을 받았습니다. 미확인 AI 패치를 즉시 적용하면 90% 확률로 복구 가능하지만, 10% 확률로 전체 장애가 발생할 수 있습니다. 검증에는 72시간이 소요됩니다.',question:'당신은 어떤 선택을 하겠습니까?',choices:[{title:'A: 미확인 AI 패치 즉시 적용',pros:'✅ 빠른 복구, 피해 최소화',cons:'⚠️ 10% 전면 장애 위험'},{title:'B: 72시간 검증 후 적용',pros:'✅ 안전한 복구',cons:'⚠️ 72시간 서비스 중단'},{title:'C: 핵심 인프라만 수동 복구',pros:'✅ 위험 분산, 부분 운영',cons:'⚠️ 완전 복구까지 시간 소요'},{title:'D: 전문 보안기관에 즉시 도움 요청',pros:'✅ 전문성 활용, 책임 분산',cons:'⚠️ 외부 의존, 비용 발생'}],feedback:'실제 사이버 보안 현장의 딜레마야! 어떤 선택이든 논리적 근거가 있다면 AI IoT 개발자로서 올바른 판단을 한 거야!',pts:20}
+];
+let m5Idx=0,m5Answered=false;
+function initM5(){m5Idx=0;m5Answered=false;missionScores.m5=0;renderDots('m5-dots',m5Data.length,m5Idx);loadM5Q();document.getElementById('m5-score-disp').textContent=0;mascotEmotion('neutral');showSpeech('어떤 선택을 할 것인가? 🤔');}
+function loadM5Q(){if(m5Idx>=m5Data.length){endM5();return;}const q=m5Data[m5Idx];m5Answered=false;document.getElementById('m5-scenario').innerHTML=`<div class="scenario-year">🎯 2035 시나리오 ${m5Idx+1}/3</div>${q.scenario}`;document.getElementById('m5-question').textContent=q.question;hideFB('m5-feedback');hideNext('m5-next');document.getElementById('m5-choices').innerHTML=q.choices.map((c,i)=>`<button class="dilemma-btn" onclick="answerM5(${i})"><div class="d-title">${c.title}</div><div class="d-pros">${c.pros}</div><div class="d-cons">${c.cons}</div></button>`).join('');renderDots('m5-dots',m5Data.length,m5Idx);}
+function answerM5(idx){if(m5Answered)return;m5Answered=true;const q=m5Data[m5Idx];const btns=document.querySelectorAll('#m5-choices .dilemma-btn');btns.forEach(b=>b.disabled=true);btns[idx].classList.add('selected');missionScores.m5+=q.pts;totalScore+=q.pts;document.getElementById('m5-score-disp').textContent=missionScores.m5;showFB('m5-feedback','correct',`이 선택도 타당해! 단, 이 리스크를 고려해야 해: <strong style="color:var(--gold)">${q.choices[idx].cons}</strong><br><br>${q.feedback} <strong style="color:var(--gold)">(+${q.pts}점)</strong>`);playCorrect();mascotEmotion('happy');showSpeech('근거 있는 선택! 만점! 🎯');showNext('m5-next',m5Idx===m5Data.length-1?'🗺️ 나의 로드맵 보기 →':'다음 딜레마 →');}
+function m5Next(){m5Idx++;loadM5Q();}
+function endM5(){playFanfare();showScreen('screen-m6');renderResult();}
+
+// ===== M6 RESULT =====
+const endings=[
+  {range:[0,39],emoji:'🔭',title:'탐색가 — IoT 기초 탐구자',desc:'아직 발견 중인 당신! AI IoT의 세계는 이제 막 시작이야. 기초부터 차근차근 쌓아가면 무한한 가능성이 기다리고 있어.',careers:['IoT 하드웨어 엔지니어','임베디드 개발자','네트워크 엔지니어'],subjects:['정보과학','물리학','수학Ⅱ'],depts:['전자공학과','컴퓨터공학과'],strategy:'AI 시대에 기초 기술(전자회로·C언어·네트워크)은 절대 대체되지 않아. Python·아두이노부터 시작해서 실제 IoT 센서를 만져보는 경험이 가장 강력한 포트폴리오가 될 거야.'},
+  {range:[40,54],emoji:'⚙️',title:'도전가 — 임베디드·센서 개발자',desc:'실력을 키우며 성장하는 당신! 센서·마이크로컨트롤러를 다루는 임베디드 분야는 AI가 가장 대체하기 어려운 영역 중 하나야.',careers:['임베디드 SW 개발자','센서 시스템 엔지니어','IoT 플랫폼 개발자'],subjects:['인공지능기초','정보과학','물리학Ⅱ'],depts:['전자공학과','소프트웨어학과'],strategy:'임베디드 개발자는 2030년까지 수요가 꾸준히 성장해. ESP32·라즈베리파이로 실제 IoT 프로젝트를 만들고 GitHub에 올려봐.'},
+  {range:[55,69],emoji:'🛰️',title:'전문가 예비 — AI IoT 플랫폼 엔지니어',desc:'전문성을 갖춰가는 당신! 클라우드·엣지 컴퓨팅·AI 모델 통합이 가능한 플랫폼 엔지니어는 2035년 가장 핵심적인 직업군이야.',careers:['AI IoT 플랫폼 엔지니어','엣지 컴퓨팅 전문가','클라우드 아키텍트'],subjects:['인공지능기초','데이터과학','현대사회와윤리'],depts:['소프트웨어학과','인공지능학과'],strategy:'AWS IoT Core·Azure IoT Hub를 학습하고, Python+TensorFlow Lite로 엣지 AI 모델을 만들어봐. 클라우드 자격증(AWS·Azure)은 AI 시대 최강의 취업 무기야.'},
+  {range:[70,84],emoji:'🏙️',title:'리더 예비 — 스마트시티 아키텍트',desc:'변화를 이끌 리더십을 가진 당신! 도시 전체의 AI IoT 인프라를 설계하는 스마트시티 아키텍트는 기술과 정책을 동시에 이해해야 해.',careers:['스마트시티 아키텍트','AI IoT 솔루션 설계자','디지털 트윈 전문가'],subjects:['인공지능기초','사회문제탐구','국제관계의이해'],depts:['도시공학과','인공지능학과'],strategy:'스마트시티 아키텍트는 기술뿐 아니라 도시 행정·법·윤리를 이해해야 해. 한국의 스마트시티 시범도시(세종·부산)에서 인턴십 기회를 탐색하고, 국제 스마트시티 챌린지에 도전해봐.'},
+  {range:[85,999],emoji:'🌍',title:'글로벌 선도자 — AI IoT 정책·표준화 전문가',desc:'세계를 바꿀 당신! AI IoT 기술을 국제 표준으로 만들고 정책에 반영하는 전문가는 세계에서 가장 희소하고 영향력 있는 직업이야.',careers:['AI IoT 정책 전문가','ITU·IEEE 표준화 전문가','AI 윤리 컨설턴트'],subjects:['인공지능기초','현대사회와윤리','국제관계의이해'],depts:['AI정책학과(대학원)','전자공학과'],strategy:'기술 표준화는 WEF·ITU·ISO 등 국제기구를 통해 이루어져. 영어 논문 읽기·IEEE 학회 참여부터 시작하고, 한국의 AI 거버넌스 공청회나 정책 공모전에 참여해봐.'}
+];
+function renderResult(){
+  const total=totalScore;
+  document.getElementById('final-score-disp').textContent=total;
+  document.getElementById('res-m1').textContent=missionScores.m1;
+  document.getElementById('res-m2').textContent=missionScores.m2;
+  document.getElementById('res-m3').textContent=missionScores.m3;
+  document.getElementById('res-m4').textContent=missionScores.m4;
+  document.getElementById('res-m5').textContent=missionScores.m5;
+  document.getElementById('res-total').textContent=total;
+  const maxPts=50+45+45+60+60;
+  const pct=Math.round((total/maxPts)*100);
+  let ending=endings[0];
+  for(const e of endings){if(pct>=e.range[0]&&pct<=e.range[1]){ending=e;break;}}
+  document.getElementById('ending-emoji').textContent=ending.emoji;
+  document.getElementById('ending-title').textContent=ending.title;
+  document.getElementById('ending-desc').textContent=`${playerName}님의 AI IoT 개발자 적성 점수: ${pct}점 | ${ending.desc}`;
+  document.getElementById('career-pills').innerHTML=ending.careers.map(c=>`<div class="career-pill">${c}</div>`).join('');
+  document.getElementById('subject-pills').innerHTML=ending.subjects.map(s=>`<div class="subject-pill">${s}</div>`).join('');
+  document.getElementById('dept-pills').innerHTML=ending.depts.map(d=>`<div class="career-pill">${d}</div>`).join('');
+  document.getElementById('strategy-text').textContent=ending.strategy;
+  // Leaderboard
+  const key='milab_hs_043_lb';
+  let lb=JSON.parse(localStorage.getItem(key)||'[]');
+  lb.push({name:playerName,score:total,pct,title:ending.title,date:new Date().toLocaleDateString('ko-KR')});
+  lb.sort((a,b)=>b.score-a.score);lb=lb.slice(0,5);
+  localStorage.setItem(key,JSON.stringify(lb));
+  document.getElementById('leaderboard-wrap').innerHTML=`<div style="margin-bottom:10px;font-size:13px;color:var(--gold);letter-spacing:2px;font-weight:700;">🏆 명예의 전당 (이 기기 기준 상위 5명)</div>`+lb.map((r,i)=>`<div style="display:flex;justify-content:space-between;padding:8px 14px;background:var(--card);border-radius:8px;margin-bottom:6px;font-size:13px;"><span>${['🥇','🥈','🥉','4️⃣','5️⃣'][i]} ${r.name}</span><span style="color:var(--gold)">${r.score}점 | ${r.pct}%</span></div>`).join('');
+  makeQR('result-qr-wrap');
+  mascotEmotion('happy');showSpeech('로드맵 완성! 🗺️');
+}
+
+// ===== HELPERS =====
+function showFB(id,type,html){const el=document.getElementById(id);el.style.display='block';el.className='feedback-box show '+(type==='correct'?'correct-fb':'wrong-fb');el.innerHTML=html;}
+function hideFB(id){const el=document.getElementById(id);el.style.display='none';el.className='feedback-box';}
+function showNext(id,label){const el=document.getElementById(id);el.style.display='inline-block';el.classList.add('show');el.textContent=label;}
+function hideNext(id){const el=document.getElementById(id);el.style.display='none';el.classList.remove('show');}
+
+window.addEventListener('load',()=>{makeQR('main-qr-wrap');});
+</script>
+</body>
+</html>
