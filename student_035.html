@@ -47,42 +47,47 @@ async function sbInsert(table, data) {
 let sbSessionId = null;  // 세션 ID 전역 보관
 
 async function sbCreateSession(studentName, classCode) {
+  // sessions 테이블 실제 컬럼: id, class_code, teacher_name, created_at, is_active
   const row = await sbInsert('sessions', {
-    student_name: studentName,
+    teacher_name: studentName,   // 학생 이름을 teacher_name에 저장
     class_code: classCode,
-    game_id: 'milab_035',
-    started_at: new Date().toISOString()
+    is_active: true
+    // created_at: DB 기본값(now()) 사용
   });
   sbSessionId = row ? row.id : null;
   console.log('[Supabase] 세션 생성:', sbSessionId);
 }
 
+// mission_logs용 결과 ID 보관 (student_results 먼저 저장 후 연결)
+let sbResultId = null;
+
 async function sbLogMission(missionNum, score, extraData) {
-  if (!sbSessionId) return;
+  // mission_logs 실제 컬럼: id, result_id, mission_num, mission_name, score, is_correct, time_spent_sec, logged_at
+  const missionNames = { 1:'로봇 구조 탐색', 2:'엔지니어 자격시험', 3:'AI 알고리즘 실습', 4:'로봇 윤리 재판' };
   await sbInsert('mission_logs', {
-    session_id: sbSessionId,
-    mission_number: missionNum,
+    result_id: sbResultId,           // student_results ID (결과 저장 후 연결)
+    mission_num: missionNum,
+    mission_name: missionNames[missionNum] || `미션${missionNum}`,
     score: score,
-    extra_data: extraData ? JSON.stringify(extraData) : null,
-    completed_at: new Date().toISOString()
+    is_correct: score > 0,
+    time_spent_sec: extraData && extraData.timer_left ? (60 - extraData.timer_left) : null
+    // logged_at: DB 기본값 사용
   });
   console.log(`[Supabase] M${missionNum} 저장 완료 (${score}점)`);
 }
 
 async function sbSaveResult(totalScore, rank, endingType, badgeData) {
-  if (!sbSessionId) return;
-  await sbInsert('student_results', {
+  // student_results 실제 컬럼: id, session_id, student_name, total_score, mission_scores, ending_type, completed_at
+  const row = await sbInsert('student_results', {
     session_id: sbSessionId,
     student_name: window._studentName || '',
-    class_code: window._classCode || '',
     total_score: totalScore,
-    rank: rank,
+    mission_scores: { m1: m1Score, m2: m2Score, m3: m3Score, m4: m4Score },
     ending_type: endingType,
-    badges: JSON.stringify(badgeData),
-    game_id: 'milab_035',
     completed_at: new Date().toISOString()
   });
-  console.log('[Supabase] 최종 결과 저장 완료');
+  sbResultId = row ? row.id : null;
+  console.log('[Supabase] 최종 결과 저장 완료, result_id:', sbResultId);
 }
 </script>
 <style>
