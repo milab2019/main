@@ -60,12 +60,13 @@ async function sbCreateSession(studentName, classCode) {
 
 // mission_logs용 결과 ID 보관 (student_results 먼저 저장 후 연결)
 let sbResultId = null;
+let sbMissionLogIds = [];  // 각 미션 로그의 row id 보관 → 게임 종료 후 result_id UPDATE용
 
 async function sbLogMission(missionNum, score, extraData) {
   // mission_logs 실제 컬럼: id, result_id, mission_num, mission_name, score, is_correct, time_spent_sec, logged_at
   const missionNames = { 1:'로봇 구조 탐색', 2:'엔지니어 자격시험', 3:'AI 알고리즘 실습', 4:'로봇 윤리 재판' };
-  await sbInsert('mission_logs', {
-    result_id: sbResultId,           // student_results ID (결과 저장 후 연결)
+  const row = await sbInsert('mission_logs', {
+    result_id: null,                  // 게임 종료 후 sbLinkMissions()로 채워짐
     mission_num: missionNum,
     mission_name: missionNames[missionNum] || `미션${missionNum}`,
     score: score,
@@ -73,7 +74,8 @@ async function sbLogMission(missionNum, score, extraData) {
     time_spent_sec: extraData && extraData.timer_left ? (60 - extraData.timer_left) : null
     // logged_at: DB 기본값 사용
   });
-  console.log(`[Supabase] M${missionNum} 저장 완료 (${score}점)`);
+  if (row && row.id) sbMissionLogIds.push(row.id);
+  console.log(`[Supabase] M${missionNum} 저장 완료 (${score}점), log_id:`, row ? row.id : null);
 }
 
 async function sbSaveResult(totalScore, rank, endingType, badgeData) {
@@ -88,6 +90,29 @@ async function sbSaveResult(totalScore, rank, endingType, badgeData) {
   });
   sbResultId = row ? row.id : null;
   console.log('[Supabase] 최종 결과 저장 완료, result_id:', sbResultId);
+}
+
+async function sbLinkMissions(resultId) {
+  if (!resultId) { console.warn('[Supabase] sbLinkMissions: result_id 없음, 스킵'); return; }
+  if (!sbMissionLogIds.length) { console.warn('[Supabase] sbLinkMissions: log id 목록 없음, 스킵'); return; }
+  // 저장된 각 mission_log row를 id 기준으로 PATCH
+  const promises = sbMissionLogIds.map(logId =>
+    fetch(`${SUPABASE_URL}/rest/v1/mission_logs?id=eq.${logId}`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+        'apikey': SUPABASE_KEY,
+        'Authorization': `Bearer ${SUPABASE_KEY}`,
+        'Prefer': 'return=minimal'
+      },
+      body: JSON.stringify({ result_id: resultId })
+    }).then(res => {
+      if (!res.ok) res.text().then(e => console.warn(`[Supabase] log ${logId} UPDATE 실패:`, e));
+      else console.log(`[Supabase] mission_log ${logId} → result_id ${resultId} 연결 완료`);
+    }).catch(e => console.warn(`[Supabase] log ${logId} 네트워크 오류:`, e.message))
+  );
+  await Promise.all(promises);
+  console.log('[Supabase] sbLinkMissions 전체 완료, 총', sbMissionLogIds.length, '건');
 }
 </script>
 <style>
@@ -1580,8 +1605,11 @@ function showResult(){
   sfx('clear');
   makeQR('qr-result');
 
-  // Supabase 최종 결과 저장
-  sbSaveResult(totalScore, rank, title, badges);
+  // Supabase 최종 결과 저장 → 완료 후 mission_logs에 result_id 연결
+  (async () => {
+    await sbSaveResult(totalScore, rank, title, badges);
+    await sbLinkMissions(sbResultId);
+  })();
 
   console.log(JSON.stringify({
     id:"milab_m1_035",
