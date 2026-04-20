@@ -1338,31 +1338,24 @@ if (speechSynthesis.onvoiceschanged !== undefined) {
 
 // 텍스트를 구두점·공백 기준으로 100자 이하 청크로 분할
 function splitChunks(text) {
-  const MAX = 80; // iOS 안전 마진
+  const MAX = 80;
   const chunks = [];
-  // 문장 구분자: .!?·, 등 + 공백
-  const sentences = text.split(/(?<=[.!?。·,，、
-])\s*/);
-  for (const sen of sentences) {
-    if (!sen.trim()) continue;
-    if (sen.length <= MAX) {
-      chunks.push(sen.trim());
-    } else {
-      // 긴 문장은 공백이나 쉼표로 재분할
-      const words = sen.split(/([,，、\s]+)/);
-      let cur = '';
-      for (const w of words) {
-        if ((cur + w).length > MAX) {
-          if (cur.trim()) chunks.push(cur.trim());
-          cur = w;
-        } else {
-          cur += w;
-        }
-      }
-      if (cur.trim()) chunks.push(cur.trim());
+  // 구두점 뒤에서 자르기 (lookbehind 없이 안전하게 처리)
+  const delimiters = ['.', '!', '?', '。', '·', ',', '，', '、', '\n'];
+  let current = '';
+  for (let i = 0; i < text.length; i++) {
+    current += text[i];
+    const isDelim = delimiters.indexOf(text[i]) !== -1;
+    const nextIsSpace = (i + 1 < text.length && text[i + 1] === ' ');
+    // 구두점 뒤이거나 MAX 초과 시 청크 분리
+    if ((isDelim && (nextIsSpace || i === text.length - 1)) || current.length >= MAX) {
+      const trimmed = current.trim();
+      if (trimmed.length > 0) chunks.push(trimmed);
+      current = '';
     }
   }
-  return chunks.filter(c => c.length > 0);
+  if (current.trim().length > 0) chunks.push(current.trim());
+  return chunks.filter(function(c) { return c.length > 0; });
 }
 
 // 다음 청크 재생
