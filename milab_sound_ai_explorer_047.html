@@ -1315,43 +1315,113 @@ function vibrate(pattern) {
 }
 
 // ============================================================
-// TTS (모바일/iOS 완전 대응)
+// TTS (모바일/iOS 청크 분할 재생 — 중간 잘림 완전 해결)
 // ============================================================
-let ttsUnlocked = false; // 사용자 제스처 후 true
-let ttsTimer = null;     // iOS watchdog 타이머
+// iOS Safari 는 한 utterance 가 약 200자를 넘으면 중간에 멈춤.
+// → 문장을 100자 이하 청크로 분할, onend 콜백으로 순차 재생.
+// ============================================================
+let ttsUnlocked = false;   // 첫 사용자 제스처 후 true
+let ttsChunkQueue = [];    // 분할된 청크 대기열
+let ttsSpeaking = false;   // 재생 중 여부
+let ttsWatchTimer = null;  // iOS 무한 pending 방지 타이머
+let ttsKoVoice = null;     // 한국어 음성 캐시
 
-// iOS Safari: speechSynthesis가 멈추는 버그 방지 워치독
-function ttsWatchdog() {
-  if (ttsTimer) clearInterval(ttsTimer);
-  ttsTimer = setInterval(() => {
-    if (speechSynthesis.speaking) {
-      speechSynthesis.pause();
-      speechSynthesis.resume();
+// 한국어 음성 사전 로드
+function loadKoVoice() {
+  if (ttsKoVoice) return;
+  const voices = speechSynthesis.getVoices();
+  ttsKoVoice = voices.find(v => v.lang.startsWith('ko')) || null;
+}
+if (speechSynthesis.onvoiceschanged !== undefined) {
+  speechSynthesis.addEventListener('voiceschanged', loadKoVoice);
+}
+
+// 텍스트를 구두점·공백 기준으로 100자 이하 청크로 분할
+function splitChunks(text) {
+  const MAX = 80; // iOS 안전 마진
+  const chunks = [];
+  // 문장 구분자: .!?·, 등 + 공백
+  const sentences = text.split(/(?<=[.!?。·,，、
+])\s*/);
+  for (const sen of sentences) {
+    if (!sen.trim()) continue;
+    if (sen.length <= MAX) {
+      chunks.push(sen.trim());
+    } else {
+      // 긴 문장은 공백이나 쉼표로 재분할
+      const words = sen.split(/([,，、\s]+)/);
+      let cur = '';
+      for (const w of words) {
+        if ((cur + w).length > MAX) {
+          if (cur.trim()) chunks.push(cur.trim());
+          cur = w;
+        } else {
+          cur += w;
+        }
+      }
+      if (cur.trim()) chunks.push(cur.trim());
     }
-  }, 5000);
+  }
+  return chunks.filter(c => c.length > 0);
+}
+
+// 다음 청크 재생
+function playNextChunk() {
+  if (ttsChunkQueue.length === 0) {
+    ttsSpeaking = false;
+    if (ttsWatchTimer) clearInterval(ttsWatchTimer);
+    return;
+  }
+  const chunk = ttsChunkQueue.shift();
+  try {
+    loadKoVoice();
+    const utt = new SpeechSynthesisUtterance(chunk);
+    utt.lang = 'ko-KR';
+    utt.rate = 0.93;
+    utt.pitch = 1.0;
+    utt.volume = 1.0;
+    if (ttsKoVoice) utt.voice = ttsKoVoice;
+
+    // iOS watchdog: 청크가 3초 이상 pending 이면 강제 재개
+    if (ttsWatchTimer) clearInterval(ttsWatchTimer);
+    ttsWatchTimer = setInterval(() => {
+      if (speechSynthesis.paused) speechSynthesis.resume();
+    }, 3000);
+
+    utt.onend = () => {
+      if (ttsWatchTimer) clearInterval(ttsWatchTimer);
+      // 짧은 딜레이 후 다음 청크 (iOS 안정성)
+      setTimeout(playNextChunk, 50);
+    };
+    utt.onerror = (e) => {
+      if (ttsWatchTimer) clearInterval(ttsWatchTimer);
+      // 에러 시에도 다음 청크 계속
+      setTimeout(playNextChunk, 80);
+    };
+    speechSynthesis.speak(utt);
+  } catch(e) {
+    setTimeout(playNextChunk, 80);
+  }
 }
 
 function ttsSpeak(text, priority = false) {
   if (!state.ttsEnabled || !state.ttsSupported) return;
-  if (!ttsUnlocked) {
-    // 아직 제스처 없음 → 큐에 저장만
-    return;
-  }
+  if (!ttsUnlocked) return; // 제스처 전 차단
   try {
-    if (priority) speechSynthesis.cancel();
-    const utt = new SpeechSynthesisUtterance(text);
-    utt.lang = 'ko-KR';
-    utt.rate = 0.95;
-    utt.pitch = 1.0;
-    utt.volume = 1.0;
-    // 한국어 목소리 선택 (있으면)
-    const voices = speechSynthesis.getVoices();
-    const koVoice = voices.find(v => v.lang.startsWith('ko'));
-    if (koVoice) utt.voice = koVoice;
-    utt.onstart = () => { ttsWatchdog(); };
-    utt.onend = () => { if (ttsTimer) clearInterval(ttsTimer); };
-    utt.onerror = () => { if (ttsTimer) clearInterval(ttsTimer); };
-    speechSynthesis.speak(utt);
+    if (priority) {
+      speechSynthesis.cancel();
+      ttsChunkQueue = [];
+      ttsSpeaking = false;
+      if (ttsWatchTimer) clearInterval(ttsWatchTimer);
+    }
+    const chunks = splitChunks(text);
+    if (chunks.length === 0) return;
+    ttsChunkQueue.push(...chunks);
+    if (!ttsSpeaking) {
+      ttsSpeaking = true;
+      // iOS: cancel 직후 즉시 speak 하면 씹힘 → 짧게 대기
+      setTimeout(playNextChunk, priority ? 120 : 50);
+    }
   } catch(e) {}
 }
 
@@ -1359,17 +1429,23 @@ function ttsSpeak(text, priority = false) {
 function unlockTTS() {
   if (ttsUnlocked) return;
   ttsUnlocked = true;
+  loadKoVoice();
   try {
-    // 무음 utterance로 iOS 잠금 해제
-    const unlock = new SpeechSynthesisUtterance('');
+    // 무음 utterance 로 iOS 잠금 해제
+    const unlock = new SpeechSynthesisUtterance(' ');
     unlock.volume = 0;
+    unlock.lang = 'ko-KR';
     speechSynthesis.speak(unlock);
   } catch(e) {}
 }
 
 function ttsStop() {
-  try { if (state.ttsSupported) speechSynthesis.cancel(); } catch(e) {}
-  if (ttsTimer) clearInterval(ttsTimer);
+  try {
+    if (state.ttsSupported) speechSynthesis.cancel();
+  } catch(e) {}
+  ttsChunkQueue = [];
+  ttsSpeaking = false;
+  if (ttsWatchTimer) clearInterval(ttsWatchTimer);
 }
 
 // ============================================================
