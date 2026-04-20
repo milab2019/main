@@ -1,0 +1,1781 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>소리로 여는 미래 – AI 음성인식 탐험대 | MILAB #047</title>
+
+<!-- Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-WTY6YJQ1NS"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-WTY6YJQ1NS');
+</script>
+
+<!-- QRCode.js -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
+<style>
+:root {
+  --bg: #0a0a0f;
+  --bg2: #111118;
+  --bg3: #1a1a28;
+  --gold: #FFD700;
+  --cyan: #00FFFF;
+  --coral: #F09070;
+  --green: #00FF88;
+  --purple: #9B6DFF;
+  --text: #F0F0F0;
+  --muted: #888;
+  --btn-h: 80px;
+  --radius: 16px;
+  --font-main: 'Noto Sans KR', sans-serif;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700;900&display=swap');
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-main);
+  font-size: 18px;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* 접근성 스킵 링크 */
+.skip-link {
+  position: absolute;
+  top: -100px;
+  left: 0;
+  background: var(--gold);
+  color: #000;
+  padding: 12px 20px;
+  font-size: 18px;
+  font-weight: 700;
+  z-index: 9999;
+  border-radius: 0 0 12px 0;
+}
+.skip-link:focus { top: 0; }
+
+/* SR 전용 */
+.sr-only {
+  position: absolute; width: 1px; height: 1px;
+  padding: 0; margin: -1px; overflow: hidden;
+  clip: rect(0,0,0,0); border: 0;
+}
+
+/* 라이브 리전 */
+#live-region {
+  position: absolute;
+  left: -9999px;
+  width: 1px; height: 1px;
+  overflow: hidden;
+}
+
+/* === 화면 공통 === */
+.screen {
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  min-height: 100vh;
+  padding: 24px 20px 40px;
+  max-width: 600px;
+  margin: 0 auto;
+}
+.screen.active { display: flex; }
+
+/* === 인트로 화면 === */
+#screen-intro {
+  justify-content: center;
+  text-align: center;
+  background: radial-gradient(ellipse at 50% 30%, #1a1a40 0%, var(--bg) 70%);
+}
+
+.milab-badge {
+  background: linear-gradient(135deg, var(--coral), #e06040);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  padding: 6px 18px;
+  border-radius: 20px;
+  margin-bottom: 20px;
+  display: inline-block;
+}
+
+.mascot-wrap {
+  position: relative;
+  margin: 20px auto;
+  width: 140px;
+  height: 140px;
+}
+
+.mascot {
+  width: 140px;
+  height: 140px;
+  background: linear-gradient(135deg, #1a2a4a, #0a1a3a);
+  border-radius: 50%;
+  border: 3px solid var(--cyan);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 64px;
+  position: relative;
+  animation: mascot-float 3s ease-in-out infinite;
+  box-shadow: 0 0 30px rgba(0,255,255,0.3);
+}
+
+@keyframes mascot-float {
+  0%,100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+
+.sound-wave {
+  position: absolute;
+  border-radius: 50%;
+  border: 2px solid var(--cyan);
+  animation: wave-out 2s ease-out infinite;
+  opacity: 0;
+}
+.sound-wave:nth-child(1) { width: 160px; height: 160px; top: -10px; left: -10px; animation-delay: 0s; }
+.sound-wave:nth-child(2) { width: 190px; height: 190px; top: -25px; left: -25px; animation-delay: 0.5s; }
+.sound-wave:nth-child(3) { width: 220px; height: 220px; top: -40px; left: -40px; animation-delay: 1s; }
+
+@keyframes wave-out {
+  0% { opacity: 0.6; transform: scale(0.8); }
+  100% { opacity: 0; transform: scale(1.2); }
+}
+
+.intro-title {
+  font-size: clamp(22px, 5vw, 30px);
+  font-weight: 900;
+  color: var(--gold);
+  line-height: 1.3;
+  margin-bottom: 10px;
+}
+
+.intro-sub {
+  font-size: 16px;
+  color: var(--cyan);
+  margin-bottom: 8px;
+}
+
+.intro-desc {
+  font-size: 15px;
+  color: var(--muted);
+  line-height: 1.6;
+  margin-bottom: 30px;
+}
+
+.difficulty-section {
+  width: 100%;
+  margin-bottom: 24px;
+}
+
+.difficulty-label {
+  font-size: 15px;
+  color: var(--muted);
+  margin-bottom: 12px;
+  text-align: center;
+}
+
+.difficulty-btns {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+}
+
+.diff-btn {
+  flex: 1;
+  max-width: 160px;
+  height: 56px;
+  border: 2px solid var(--muted);
+  background: transparent;
+  color: var(--text);
+  border-radius: 12px;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: var(--font-main);
+}
+.diff-btn:focus {
+  outline: 3px solid var(--gold);
+  outline-offset: 3px;
+}
+.diff-btn.selected {
+  border-color: var(--gold);
+  background: rgba(255,215,0,0.15);
+  color: var(--gold);
+}
+.diff-btn:hover { border-color: var(--gold); color: var(--gold); }
+
+/* === 메인 버튼 === */
+.btn-primary {
+  width: 100%;
+  max-width: 400px;
+  height: var(--btn-h);
+  background: linear-gradient(135deg, var(--gold), #e6a800);
+  color: #000;
+  border: none;
+  border-radius: var(--radius);
+  font-size: 22px;
+  font-weight: 900;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: var(--font-main);
+  letter-spacing: 1px;
+  box-shadow: 0 4px 20px rgba(255,215,0,0.3);
+}
+.btn-primary:focus {
+  outline: 4px solid var(--cyan);
+  outline-offset: 4px;
+}
+.btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(255,215,0,0.4); }
+.btn-primary:active { transform: translateY(0); }
+
+.btn-secondary {
+  width: 100%;
+  max-width: 400px;
+  height: 60px;
+  background: transparent;
+  color: var(--cyan);
+  border: 2px solid var(--cyan);
+  border-radius: var(--radius);
+  font-size: 18px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: var(--font-main);
+  margin-top: 12px;
+}
+.btn-secondary:focus { outline: 4px solid var(--gold); outline-offset: 4px; }
+.btn-secondary:hover { background: rgba(0,255,255,0.1); }
+
+/* === 게임 화면 === */
+#screen-game {
+  padding-top: 16px;
+}
+
+/* 상단 HUD */
+.hud {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+  gap: 8px;
+}
+
+.hud-mission {
+  font-size: 13px;
+  color: var(--gold);
+  font-weight: 700;
+  letter-spacing: 1px;
+}
+
+.progress-bar-wrap {
+  flex: 1;
+  height: 8px;
+  background: var(--bg3);
+  border-radius: 4px;
+  overflow: hidden;
+}
+.progress-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--cyan), var(--gold));
+  border-radius: 4px;
+  transition: width 0.5s ease;
+}
+
+.hud-score {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--gold);
+  white-space: nowrap;
+}
+
+/* 미션 헤더 */
+.mission-header {
+  width: 100%;
+  background: var(--bg3);
+  border-radius: 12px;
+  padding: 14px 16px;
+  margin-bottom: 16px;
+  border-left: 4px solid var(--cyan);
+}
+
+.mission-number {
+  font-size: 12px;
+  color: var(--cyan);
+  font-weight: 700;
+  letter-spacing: 2px;
+  margin-bottom: 4px;
+}
+
+.mission-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+/* 마스코트 피드백 */
+.mascot-feedback {
+  width: 100%;
+  background: var(--bg2);
+  border-radius: 14px;
+  padding: 16px;
+  margin-bottom: 16px;
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  border: 1px solid var(--bg3);
+  min-height: 80px;
+}
+
+.mascot-mini {
+  font-size: 44px;
+  flex-shrink: 0;
+  animation: mascot-float 3s ease-in-out infinite;
+}
+
+.mascot-text {
+  font-size: 16px;
+  line-height: 1.6;
+  color: var(--text);
+}
+
+.mascot-name {
+  font-size: 12px;
+  color: var(--cyan);
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+/* 문제 카드 */
+.question-card {
+  width: 100%;
+  background: var(--bg2);
+  border-radius: 16px;
+  padding: 20px;
+  margin-bottom: 16px;
+  border: 1px solid #333;
+}
+
+.question-num {
+  font-size: 12px;
+  color: var(--muted);
+  margin-bottom: 8px;
+  letter-spacing: 1px;
+}
+
+.question-text {
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 1.5;
+  color: var(--text);
+  margin-bottom: 12px;
+}
+
+/* 소리 재생 버튼 (M1 전용) */
+.sound-play-btn {
+  width: 100%;
+  height: 64px;
+  background: linear-gradient(135deg, #1a3a5a, #0a2040);
+  border: 2px solid var(--cyan);
+  color: var(--cyan);
+  border-radius: 12px;
+  font-size: 18px;
+  font-weight: 700;
+  cursor: pointer;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  font-family: var(--font-main);
+  transition: all 0.2s;
+}
+.sound-play-btn:focus { outline: 3px solid var(--gold); outline-offset: 3px; }
+.sound-play-btn:hover { background: rgba(0,255,255,0.1); }
+.sound-play-btn.playing {
+  background: rgba(0,255,255,0.2);
+  animation: pulse-border 1s ease-in-out infinite;
+}
+@keyframes pulse-border {
+  0%,100% { box-shadow: 0 0 0 0 rgba(0,255,255,0.4); }
+  50% { box-shadow: 0 0 0 8px rgba(0,255,255,0); }
+}
+
+/* 선택지 */
+.choices {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.choice-btn {
+  width: 100%;
+  min-height: 72px;
+  background: var(--bg3);
+  border: 2px solid #333;
+  color: var(--text);
+  border-radius: 14px;
+  font-size: 19px;
+  font-weight: 700;
+  cursor: pointer;
+  padding: 16px 20px;
+  text-align: left;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  transition: all 0.2s;
+  font-family: var(--font-main);
+  line-height: 1.4;
+}
+.choice-btn:focus {
+  outline: 4px solid var(--gold);
+  outline-offset: 2px;
+  border-color: var(--gold);
+  background: rgba(255,215,0,0.08);
+}
+.choice-btn:hover {
+  border-color: var(--cyan);
+  background: rgba(0,255,255,0.08);
+}
+.choice-btn.correct {
+  border-color: var(--green);
+  background: rgba(0,255,136,0.15);
+  color: var(--green);
+}
+.choice-btn.wrong {
+  border-color: var(--coral);
+  background: rgba(240,144,112,0.15);
+  color: var(--coral);
+}
+.choice-btn:disabled { cursor: default; }
+
+.choice-key {
+  min-width: 36px;
+  height: 36px;
+  background: rgba(255,255,255,0.1);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: 900;
+  color: var(--muted);
+  flex-shrink: 0;
+}
+.choice-btn.correct .choice-key { background: rgba(0,255,136,0.3); color: var(--green); }
+.choice-btn.wrong .choice-key { background: rgba(240,144,112,0.3); color: var(--coral); }
+
+/* 피드백 박스 */
+.feedback-box {
+  width: 100%;
+  border-radius: 12px;
+  padding: 16px 20px;
+  margin-bottom: 12px;
+  font-size: 16px;
+  line-height: 1.6;
+  display: none;
+}
+.feedback-box.show { display: block; }
+.feedback-box.correct-fb {
+  background: rgba(0,255,136,0.1);
+  border: 1px solid var(--green);
+  color: var(--green);
+}
+.feedback-box.wrong-fb {
+  background: rgba(240,144,112,0.1);
+  border: 1px solid var(--coral);
+  color: var(--coral);
+}
+
+.btn-next {
+  width: 100%;
+  height: 68px;
+  background: linear-gradient(135deg, var(--cyan), #00b8b8);
+  color: #000;
+  border: none;
+  border-radius: var(--radius);
+  font-size: 20px;
+  font-weight: 900;
+  cursor: pointer;
+  display: none;
+  font-family: var(--font-main);
+  transition: all 0.2s;
+}
+.btn-next.show { display: block; }
+.btn-next:focus { outline: 4px solid var(--gold); outline-offset: 4px; }
+.btn-next:hover { transform: translateY(-2px); }
+
+/* TTS 버튼 */
+.tts-bar {
+  width: 100%;
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+.tts-btn {
+  flex: 1;
+  height: 44px;
+  background: rgba(155,109,255,0.15);
+  border: 1px solid var(--purple);
+  color: var(--purple);
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: var(--font-main);
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+.tts-btn:focus { outline: 3px solid var(--gold); outline-offset: 2px; }
+.tts-btn:hover { background: rgba(155,109,255,0.3); }
+
+/* === 미션 완료 화면 === */
+#screen-mission-complete {
+  justify-content: center;
+  text-align: center;
+}
+.complete-icon { font-size: 72px; margin-bottom: 16px; animation: pop-in 0.5s ease; }
+@keyframes pop-in {
+  0% { transform: scale(0); opacity: 0; }
+  80% { transform: scale(1.2); }
+  100% { transform: scale(1); opacity: 1; }
+}
+.complete-title { font-size: 26px; font-weight: 900; color: var(--gold); margin-bottom: 8px; }
+.complete-desc { font-size: 16px; color: var(--muted); line-height: 1.6; margin-bottom: 30px; }
+.stars { font-size: 36px; margin-bottom: 20px; letter-spacing: 4px; }
+
+/* === 엔딩 화면 === */
+#screen-ending {
+  justify-content: center;
+  text-align: center;
+  background: radial-gradient(ellipse at 50% 30%, #1a1a40 0%, var(--bg) 70%);
+}
+
+.ending-badge {
+  font-size: 80px;
+  margin-bottom: 16px;
+  animation: ending-glow 2s ease-in-out infinite;
+}
+@keyframes ending-glow {
+  0%,100% { filter: drop-shadow(0 0 10px rgba(255,215,0,0.5)); }
+  50% { filter: drop-shadow(0 0 30px rgba(255,215,0,0.9)); }
+}
+
+.ending-title {
+  font-size: 28px;
+  font-weight: 900;
+  color: var(--gold);
+  margin-bottom: 6px;
+}
+.ending-job {
+  font-size: 20px;
+  color: var(--cyan);
+  font-weight: 700;
+  margin-bottom: 16px;
+}
+.ending-desc {
+  font-size: 15px;
+  color: var(--text);
+  line-height: 1.7;
+  margin-bottom: 24px;
+  max-width: 480px;
+}
+
+.final-score-box {
+  width: 100%;
+  max-width: 400px;
+  background: var(--bg3);
+  border-radius: 16px;
+  padding: 20px;
+  margin-bottom: 24px;
+  border: 1px solid var(--gold);
+}
+.score-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+  border-bottom: 1px solid #333;
+  font-size: 16px;
+}
+.score-row:last-child { border-bottom: none; }
+.score-label { color: var(--muted); }
+.score-value { color: var(--gold); font-weight: 700; }
+
+.badge-section { margin-bottom: 24px; }
+.badge-title { font-size: 14px; color: var(--muted); margin-bottom: 10px; }
+.badges { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+.badge-item {
+  background: var(--bg3);
+  border: 1px solid #444;
+  border-radius: 10px;
+  padding: 10px 14px;
+  font-size: 13px;
+  color: var(--text);
+}
+.badge-item.earned { border-color: var(--gold); background: rgba(255,215,0,0.1); color: var(--gold); }
+
+/* QR 섹션 */
+.qr-section {
+  width: 100%;
+  max-width: 400px;
+  background: var(--bg2);
+  border-radius: 16px;
+  padding: 20px;
+  margin-bottom: 20px;
+  text-align: center;
+}
+.qr-label { font-size: 14px; color: var(--muted); margin-bottom: 12px; }
+#qrcode { display: flex; justify-content: center; }
+#qrcode img { border-radius: 8px; }
+
+/* === 반응형 === */
+@media (max-width: 400px) {
+  .question-text { font-size: 18px; }
+  .choice-btn { font-size: 17px; min-height: 68px; }
+  .btn-primary { font-size: 20px; }
+}
+
+/* 포커스 표시 강화 (전맹용) */
+*:focus-visible {
+  outline: 4px solid var(--gold) !important;
+  outline-offset: 3px !important;
+}
+
+/* 애니메이션 축소 선호 */
+@media (prefers-reduced-motion: reduce) {
+  * { animation: none !important; transition: none !important; }
+}
+</style>
+</head>
+<body>
+
+<!-- 접근성 -->
+<a href="#main-content" class="skip-link">본문으로 바로가기</a>
+<div id="live-region" aria-live="assertive" aria-atomic="true" role="alert"></div>
+
+<!-- ===== 인트로 화면 ===== -->
+<div id="screen-intro" class="screen active" role="main" id="main-content">
+  <div class="milab-badge" aria-label="미랩 4차산업 진로체험 047번">MILAB #047</div>
+
+  <div class="mascot-wrap" aria-hidden="true">
+    <div class="sound-wave"></div>
+    <div class="sound-wave"></div>
+    <div class="sound-wave"></div>
+    <div class="mascot" id="intro-mascot">🤖</div>
+  </div>
+
+  <h1 class="intro-title">소리로 여는 미래<br>AI 음성인식 탐험대</h1>
+  <p class="intro-sub" aria-label="대상: 시각장애 중학생">🎓 시각장애 중학생 대상</p>
+  <p class="intro-desc">
+    귀로 듣고, 손으로 느끼고,<br>
+    마음으로 탐험하는 AI 여행!<br>
+    <strong style="color:var(--gold)">소나(SONA)</strong>와 함께 4미션 18문제를 도전해보세요.
+  </p>
+
+  <div class="difficulty-section" role="group" aria-labelledby="diff-label">
+    <p class="difficulty-label" id="diff-label">난이도를 선택하세요</p>
+    <div class="difficulty-btns">
+      <button class="diff-btn selected" data-level="1" aria-pressed="true" aria-label="쉬움 난이도">🌱 쉬움</button>
+      <button class="diff-btn" data-level="2" aria-pressed="false" aria-label="보통 난이도">🔥 보통</button>
+      <button class="diff-btn" data-level="3" aria-pressed="false" aria-label="어려움 난이도">⚡ 어려움</button>
+    </div>
+  </div>
+
+  <button class="btn-primary" id="btn-start" aria-label="게임 시작하기">🚀 탐험 시작!</button>
+  <button class="btn-secondary" id="btn-tts-intro" aria-label="게임 설명 음성으로 듣기">🔊 설명 듣기</button>
+</div>
+
+<!-- ===== 게임 화면 ===== -->
+<div id="screen-game" class="screen" role="main" aria-label="게임 진행 화면">
+  <!-- HUD -->
+  <div class="hud" aria-label="게임 진행 상황">
+    <span class="hud-mission" id="hud-mission" aria-live="polite">M1</span>
+    <div class="progress-bar-wrap" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" id="progress-bar-role">
+      <div class="progress-bar-fill" id="progress-bar" style="width:0%"></div>
+    </div>
+    <span class="hud-score" id="hud-score" aria-live="polite">⭐ 0점</span>
+  </div>
+
+  <!-- 미션 헤더 -->
+  <div class="mission-header" aria-label="현재 미션 정보">
+    <div class="mission-number" id="mission-number">MISSION 1</div>
+    <div class="mission-title" id="mission-title-text">소리란 무엇인가?</div>
+  </div>
+
+  <!-- TTS 바 -->
+  <div class="tts-bar">
+    <button class="tts-btn" id="tts-question" aria-label="문제 음성으로 듣기">🔊 문제 듣기</button>
+    <button class="tts-btn" id="tts-choices" aria-label="선택지 음성으로 듣기">📢 선택지 듣기</button>
+    <button class="tts-btn" id="tts-stop" aria-label="음성 중지">⏹ 중지</button>
+  </div>
+
+  <!-- 마스코트 피드백 -->
+  <div class="mascot-feedback" aria-live="polite" role="status">
+    <div class="mascot-mini" id="game-mascot" aria-hidden="true">🤖</div>
+    <div>
+      <div class="mascot-name">AI 마스코트 소나(SONA)</div>
+      <div class="mascot-text" id="mascot-msg">안녕! 나는 소나야. 함께 소리의 세계를 탐험해보자!</div>
+    </div>
+  </div>
+
+  <!-- 문제 카드 -->
+  <div class="question-card" id="question-card" role="article">
+    <div class="question-num" id="question-num" aria-label="">1번 문제 / 3문제 중</div>
+    <div class="question-text" id="question-text" aria-label="">문제가 여기 나타납니다.</div>
+
+    <!-- 소리 재생 버튼 (M1 문제 1용) -->
+    <button class="sound-play-btn" id="sound-play-btn" aria-label="소리 재생하기" style="display:none">
+      <span>🎵</span> <span id="sound-btn-label">소리 재생</span>
+    </button>
+  </div>
+
+  <!-- 선택지 -->
+  <div class="choices" id="choices" role="radiogroup" aria-labelledby="question-text">
+    <button class="choice-btn" id="choice-0" aria-label="">
+      <span class="choice-key">1</span><span id="choice-text-0"></span>
+    </button>
+    <button class="choice-btn" id="choice-1" aria-label="">
+      <span class="choice-key">2</span><span id="choice-text-1"></span>
+    </button>
+  </div>
+
+  <!-- 피드백 박스 -->
+  <div class="feedback-box" id="feedback-box" role="alert" aria-live="assertive"></div>
+
+  <!-- 다음 버튼 -->
+  <button class="btn-next" id="btn-next" aria-label="다음 문제로 이동">다음 ▶</button>
+</div>
+
+<!-- ===== 미션 완료 화면 ===== -->
+<div id="screen-mission-complete" class="screen" role="main" aria-label="미션 완료">
+  <div class="complete-icon" id="mission-complete-icon" aria-hidden="true">🎉</div>
+  <h2 class="complete-title" id="mission-complete-title">미션 1 완료!</h2>
+  <div class="stars" id="mission-stars" aria-label="별점 3개">⭐⭐⭐</div>
+  <p class="complete-desc" id="mission-complete-desc">소리의 기본을 완벽하게 이해했어!</p>
+  <button class="btn-primary" id="btn-next-mission" aria-label="다음 미션으로 이동">다음 미션 도전! 🚀</button>
+</div>
+
+<!-- ===== 엔딩 화면 ===== -->
+<div id="screen-ending" class="screen" role="main" aria-label="게임 완료 엔딩">
+  <div class="ending-badge" id="ending-badge" aria-hidden="true">🔊</div>
+  <h2 class="ending-title" id="ending-title">축하합니다!</h2>
+  <div class="ending-job" id="ending-job">음향 공학자</div>
+  <p class="ending-desc" id="ending-desc">소리의 세계를 완벽하게 탐험했습니다!</p>
+
+  <div class="final-score-box" aria-label="최종 점수 정보">
+    <div class="score-row"><span class="score-label">총 점수</span><span class="score-value" id="final-score">0점</span></div>
+    <div class="score-row"><span class="score-label">정답 수</span><span class="score-value" id="final-correct">0 / 18</span></div>
+    <div class="score-row"><span class="score-label">최고 연속 정답</span><span class="score-value" id="final-streak">0회</span></div>
+  </div>
+
+  <div class="badge-section" aria-label="획득 뱃지">
+    <div class="badge-title">🏅 획득한 뱃지</div>
+    <div class="badges" id="badges-container"></div>
+  </div>
+
+  <div class="qr-section">
+    <div class="qr-label">다시 도전하거나 친구에게 공유해보세요!</div>
+    <div id="qrcode"></div>
+  </div>
+
+  <button class="btn-primary" id="btn-restart" style="max-width:400px;margin-top:8px" aria-label="처음부터 다시 시작">🔄 다시 도전!</button>
+</div>
+
+<script>
+// ============================================================
+// 전역 상수
+// ============================================================
+const GAME_URL = 'https://milab2019.github.io/main/milab_sound_ai_explorer_047.html';
+
+// ============================================================
+// 문제 데이터 (난이도별 3세트 / 정답 무작위 배치)
+// answer: 0 = 1번 선택지, 1 = 2번 선택지
+// ============================================================
+
+// ── 쉬움 (Level 1): 일상 언어, 쉬운 개념, 명확한 단서 포함 ──
+const MISSIONS_LV1 = [
+  {
+    id: 1, title: '소리란 무엇인가?', icon: '🔊',
+    questions: [
+      {
+        text: '지금 재생되는 소리를 들어보세요. 이 소리는 높은 소리인가요, 낮은 소리인가요?',
+        hasSound: true, soundType: 'high', soundLabel: '소리 듣기 (고음)',
+        choices: ['높은 소리예요', '낮은 소리예요'], answer: 0,
+        feedback: { correct: '맞아요! 빠르게 떨리는 소리일수록 높은 소리가 나요. 새소리나 휘파람이 고음이에요.', wrong: '다시 들어볼까요? 빠르게 떨리는 소리는 높은 소리예요.' }
+      },
+      {
+        text: 'TV의 "볼륨"을 높이면 어떻게 될까요?',
+        choices: ['소리가 더 작아진다', '소리가 더 커진다'], answer: 1,
+        feedback: { correct: '정답! 볼륨을 높이면 소리가 커져요. 볼륨은 소리의 크기를 조절하는 기능이에요.', wrong: '볼륨을 높이면 소리가 작아지지 않아요. 볼륨을 높이면 소리가 더 커진답니다!' }
+      },
+      {
+        text: '다음 중 자연에서 나는 소리는 무엇인가요?',
+        choices: ['자동차 경적 소리', '새가 우는 소리'], answer: 1,
+        feedback: { correct: '잘했어요! 새소리는 자연 소리예요. 물소리, 바람 소리도 자연 소리랍니다.', wrong: '자동차 경적은 기계 소리예요. 새가 우는 소리가 자연에서 나는 소리랍니다.' }
+      }
+    ]
+  },
+  {
+    id: 2, title: 'AI는 소리를 어떻게 듣나?', icon: '🤖',
+    questions: [
+      {
+        text: '"시리야, 오늘 날씨 알려줘"처럼 말로 명령을 내리면 AI가 알아듣는 기술을 뭐라 할까요?',
+        choices: ['AI 음성인식', 'AI 그림인식'], answer: 0,
+        feedback: { correct: '정답! 말소리를 듣고 이해하는 기술이 바로 AI 음성인식이에요!', wrong: '그림인식은 사진을 보는 기술이에요. 말소리를 듣는 기술은 AI 음성인식이랍니다.' }
+      },
+      {
+        text: '스마트폰 음성비서에게 말을 했는데 잘 못 알아들었어요. 가장 큰 이유는?',
+        choices: ['배터리가 너무 많이 남아 있어서', '주변이 너무 시끄러워서'], answer: 1,
+        feedback: { correct: '맞아요! 시끄러운 환경에서는 AI가 내 목소리를 잡음과 구별하기 어려워요.', wrong: '배터리와는 관계없어요. 주변 소음이 많으면 AI가 목소리를 잘 못 알아듣는답니다.' }
+      },
+      {
+        text: '음성비서(빅스비, 시리)를 사용할 때 가장 잘 인식되는 환경은?',
+        choices: ['지하철 안처럼 시끄러운 곳', '조용한 방 안'], answer: 1,
+        feedback: { correct: '정답! 조용한 환경에서 또렷하게 말하면 AI가 가장 잘 알아들어요.', wrong: '시끄러운 곳에서는 AI가 잡음과 목소리를 헷갈릴 수 있어요. 조용한 곳이 훨씬 좋아요.' }
+      },
+      {
+        text: '스마트폰 음성비서가 여러 사람의 말을 이해할 수 있는 이유는?',
+        choices: ['작은 사람이 폰 안에 살고 있어서', '수많은 목소리 데이터로 학습했기 때문에'], answer: 1,
+        feedback: { correct: '맞아요! AI는 수백만 개의 목소리 데이터를 학습해서 다양한 말투를 이해할 수 있어요.', wrong: '폰 안에 사람은 없어요. AI가 엄청난 양의 목소리 데이터를 학습했기 때문이랍니다!' }
+      }
+    ]
+  },
+  {
+    id: 3, title: '스마트 기기와 나', icon: '📱',
+    questions: [
+      {
+        text: '"기가지니야, 음악 틀어줘"처럼 목소리로 작동하는 기기는?',
+        choices: ['스마트 스피커', '일반 선풍기'], answer: 0,
+        feedback: { correct: '정답! 스마트 스피커는 목소리 명령으로 음악, 날씨, 알람 등을 제어할 수 있어요.', wrong: '일반 선풍기는 버튼으로만 작동해요. 목소리로 작동하는 건 스마트 스피커랍니다.' }
+      },
+      {
+        text: '시각장애인이 혼자서 길을 안전하게 찾을 때 도움이 되는 스마트 기술은?',
+        choices: ['음성 내비게이션 앱', '사진 필터 앱'], answer: 0,
+        feedback: { correct: '맞아요! 음성 내비게이션은 귀로 길 안내를 들을 수 있어 시각장애인에게 매우 유용해요.', wrong: '사진 필터는 눈으로 보는 기술이에요. 귀로 길을 안내하는 음성 내비게이션이 훨씬 도움이 돼요.' }
+      },
+      {
+        text: 'IoT란 무엇의 줄임말인가요?',
+        choices: ['인터넷 오브 씽스 (사물인터넷)', '인공지능 오브 텔레비전'], answer: 0,
+        feedback: { correct: '정답! IoT는 Internet of Things, 즉 사물인터넷이에요. 기기들이 인터넷으로 연결된 것을 말해요.', wrong: 'IoT는 인터넷 오브 씽스(사물인터넷)의 줄임말이에요. 기기들이 인터넷으로 연결되는 기술이랍니다.' }
+      },
+      {
+        text: '스마트 기기의 비밀번호는 어떻게 관리하는 것이 안전할까요?',
+        choices: ['모르는 사람과 공유하지 않고 주기적으로 바꾼다', '외우기 쉽게 "1234"로 설정한다'], answer: 0,
+        feedback: { correct: '맞아요! 강한 비밀번호를 쓰고 주기적으로 바꾸는 것이 스마트 기기 보안의 기본이에요.', wrong: '"1234"같은 쉬운 비밀번호는 해킹에 매우 취약해요. 복잡하고 주기적으로 바꿔야 안전해요.' }
+      },
+      {
+        text: '"내일 오전 9시 알람 설정해줘"라는 말에서 AI가 꼭 파악해야 하는 정보는?',
+        choices: ['날짜, 시간, 기능 (알람)', '날씨, 기온, 오늘의 운세'], answer: 0,
+        feedback: { correct: '잘했어요! AI는 명령에서 날짜(내일), 시간(9시), 기능(알람)을 뽑아내서 실행해요.', wrong: '알람을 설정하는 데 날씨나 운세는 필요 없어요. 날짜·시간·기능이 핵심 정보랍니다.' }
+      }
+    ]
+  },
+  {
+    id: 4, title: '미래 직업 탐험', icon: '🚀',
+    questions: [
+      {
+        text: '소리와 AI 기술을 연구하는 미래 직업은?',
+        choices: ['요리사', '음성 AI 연구원'], answer: 1,
+        feedback: { correct: '정답! 음성 AI 연구원은 AI가 더 잘 듣고 이해하도록 연구하는 중요한 미래 직업이에요.', wrong: '요리사도 훌륭한 직업이지만 AI를 연구하진 않아요. 음성 AI 연구원이 정답이랍니다.' }
+      },
+      {
+        text: '듣기 불편한 사람을 위한 보청기나 앱을 만드는 전문가는?',
+        choices: ['청각 보조 기술 전문가', '패션 디자이너'], answer: 0,
+        feedback: { correct: '맞아요! 청각 보조 기술 전문가는 듣기 어려운 사람들이 더 잘 소통할 수 있도록 기술을 만들어요.', wrong: '패션 디자이너는 옷을 디자인해요. 보청기·앱을 만드는 건 청각 보조 기술 전문가랍니다.' }
+      },
+      {
+        text: '장애인이 더 편리하게 생활할 수 있도록 보조 기술을 연구하는 전문가는?',
+        choices: ['재활 보조공학사', '소방관'], answer: 0,
+        feedback: { correct: '정답! 재활 보조공학사는 장애가 있는 사람들을 위한 기술을 연구하고 보급하는 전문가예요.', wrong: '소방관은 화재를 진압해요. 보조 기술 전문가는 재활 보조공학사랍니다.' }
+      },
+      {
+        text: 'AI 개발자가 되기 위해 가장 중요한 능력은?',
+        choices: ['100m를 빨리 달리는 능력', '논리적으로 생각하고 문제를 해결하는 능력'], answer: 1,
+        feedback: { correct: '정답! 논리적 사고력과 문제 해결 능력이 AI 개발자에게 가장 중요한 역량이에요.', wrong: '달리기 능력은 AI 개발과 관계없어요. 논리적 사고와 문제 해결 능력이 핵심이랍니다.' }
+      },
+      {
+        text: '미래에 소리와 AI 기술로 할 수 있는 일은?',
+        choices: ['장애가 있는 사람들도 더 자유롭게 소통하도록 도와주기', 'AI로 사람 없이 전쟁하기'], answer: 0,
+        feedback: { correct: '멋진 생각이에요! AI 기술은 모든 사람이 평등하게 소통하도록 돕는 데 쓰여야 해요.', wrong: 'AI 기술은 사람을 돕는 데 써야 해요. 장애인의 소통을 돕는 것이 훨씬 올바른 방향이랍니다.' }
+      },
+      {
+        text: '오늘 탐험을 마친 소감은? (나의 생각 고르기)',
+        choices: ['AI 기술은 나와 전혀 관계없는 것 같아요', 'AI 기술이 나와 사회를 더 좋게 만들 수 있다고 느꼈어요'], answer: 1,
+        feedback: { correct: '훌륭해요! AI는 이미 우리 곁에 있어요. 오늘 배운 것이 미래의 씨앗이 될 거예요!', wrong: '사실 AI는 이미 스마트폰, 스피커 곳곳에 있어요. 오늘 탐험으로 조금 더 가까워졌길 바라요!' }
+      }
+    ]
+  }
+];
+
+// ── 보통 (Level 2): 개념 이해 + 원리 적용, 오답이 더 그럴듯함 ──
+const MISSIONS_LV2 = [
+  {
+    id: 1, title: '소리란 무엇인가?', icon: '🔊',
+    questions: [
+      {
+        text: '지금 재생되는 소리를 들어보세요. 진동수(Hz)가 높을수록 어떤 소리가 날까요?',
+        hasSound: true, soundType: 'high', soundLabel: '소리 듣기 (고음)',
+        choices: ['낮고 묵직한 소리', '높고 날카로운 소리'], answer: 1,
+        feedback: { correct: '맞아요! 진동수(Hz)가 높을수록 높고 날카로운 소리가 나요. 방금 들은 소리가 바로 고주파 소리예요.', wrong: '낮고 묵직한 소리는 진동수가 낮을 때 나요. 진동수가 높으면 높고 날카로운 소리가 난답니다.' }
+      },
+      {
+        text: '소리의 3요소는 크기·높낮이·음색이에요. 바이올린과 피아노가 같은 음을 연주해도 소리가 다르게 들리는 이유는?',
+        choices: ['음색(음의 특성)이 다르기 때문에', '크기(볼륨)가 다르기 때문에'], answer: 0,
+        feedback: { correct: '정답! 악기마다 고유한 음색이 있어서 같은 높이의 소리도 다르게 들려요. 이를 "음색"이라 해요.', wrong: '볼륨이 같아도 다르게 들릴 수 있어요. 악기마다 고유한 음색이 다르기 때문이랍니다.' }
+      },
+      {
+        text: '소리는 어떤 상태에서 가장 빠르게 전달될까요?',
+        choices: ['딱딱한 고체를 통해서', '아무것도 없는 진공 상태에서'], answer: 0,
+        feedback: { correct: '잘했어요! 소리는 고체 > 액체 > 기체 순으로 빠르게 전달돼요. 진공에서는 소리가 전달되지 않아요.', wrong: '진공에서는 소리가 전달되지 않아요. 분자가 촘촘한 고체에서 가장 빠르게 전달된답니다.' }
+      }
+    ]
+  },
+  {
+    id: 2, title: 'AI는 소리를 어떻게 듣나?', icon: '🤖',
+    questions: [
+      {
+        text: 'AI 음성인식 과정의 올바른 순서는?',
+        choices: ['소리 입력 → 디지털 변환 → 언어 분석 → 결과 출력', '언어 분석 → 소리 입력 → 결과 출력 → 디지털 변환'], answer: 0,
+        feedback: { correct: '정확해요! 소리 입력 → 디지털 변환 → 언어 분석 → 결과 출력 순서로 음성인식이 이루어져요.', wrong: '소리를 먼저 받아야 분석할 수 있어요. 소리 입력 → 디지털 변환 → 언어 분석 → 출력 순이랍니다.' }
+      },
+      {
+        text: 'AI가 "자연어 처리(NLP)"를 하는 이유는?',
+        choices: ['사람이 자연스럽게 말하는 언어의 의미를 이해하기 위해', '자연 속 동물 소리를 분류하기 위해'], answer: 0,
+        feedback: { correct: '맞아요! 자연어 처리(NLP)는 AI가 사람이 쓰는 일상 언어를 이해하고 처리하는 기술이에요.', wrong: '자연어 처리는 동물 소리가 아니라 사람이 쓰는 일상 언어를 AI가 이해하도록 돕는 기술이에요.' }
+      },
+      {
+        text: 'AI 음성인식의 정확도를 높이기 위해 가장 중요한 것은?',
+        choices: ['더 비싼 마이크를 사용하는 것', '다양하고 많은 양의 음성 데이터로 학습하는 것'], answer: 1,
+        feedback: { correct: '정답! AI는 다양한 말투·억양·환경의 음성 데이터가 많을수록 더 정확하게 인식할 수 있어요.', wrong: '마이크 성능도 중요하지만, 핵심은 AI 학습 데이터의 양과 다양성이에요.' }
+      },
+      {
+        text: 'AI가 사투리나 외국인 말투를 잘 못 알아듣는 이유는?',
+        choices: ['그 말투의 학습 데이터가 부족하기 때문에', 'AI가 고의로 특정 사람의 말을 무시하기 때문에'], answer: 0,
+        feedback: { correct: '맞아요! AI는 학습하지 못한 말투나 억양은 인식하기 어려워요. 이것이 AI 편향 문제의 하나예요.', wrong: 'AI는 고의가 없어요. 단순히 해당 말투 데이터가 부족해서 인식이 어려운 거랍니다.' }
+      }
+    ]
+  },
+  {
+    id: 3, title: '스마트 기기와 나', icon: '📱',
+    questions: [
+      {
+        text: 'IoT(사물인터넷)의 핵심 개념은?',
+        choices: ['기기들이 인터넷으로 서로 연결되어 데이터를 주고받는 것', '인터넷 없이 기기 혼자 스스로 생각하는 것'], answer: 0,
+        feedback: { correct: '정답! IoT는 스마트폰·냉장고·조명 등이 인터넷으로 연결되어 서로 소통하는 기술이에요.', wrong: 'IoT는 기기들이 인터넷으로 연결되어 데이터를 주고받는 기술이에요. 혼자 작동하는 게 아니랍니다.' }
+      },
+      {
+        text: '"조명 꺼줘"라는 음성 명령이 실제 조명을 끄기까지의 순서는?',
+        choices: ['조명 꺼짐 → 신호 전송 → AI 인식 → 말하기', '말하기 → AI 인식 → 신호 전송 → 조명 꺼짐'], answer: 1,
+        feedback: { correct: '맞아요! 말하기 → AI 인식 → 신호 전송 → 조명 꺼짐 순서로 작동해요. 정확한 순서가 중요해요!', wrong: '조명이 먼저 꺼질 수는 없어요. 말하기 → AI 인식 → 신호 전송 → 기기 작동 순이랍니다.' }
+      },
+      {
+        text: '시각장애인이 스마트폰 화면을 읽을 수 있도록 도와주는 접근성 기능은?',
+        choices: ['화면 확대 기능', '스크린 리더(화면 낭독) 기능'], answer: 1,
+        feedback: { correct: '정답! 스크린 리더는 화면의 텍스트와 버튼을 음성으로 읽어주어 시각장애인이 스마트폰을 사용할 수 있게 해요.', wrong: '화면 확대는 저시력자에게 도움이 돼요. 전맹 시각장애인에게는 스크린 리더가 핵심 기능이랍니다.' }
+      },
+      {
+        text: 'AI 음성비서가 개인 일정을 관리해줄 때 반드시 고려해야 할 것은?',
+        choices: ['개인정보 보호 및 데이터 보안', '배터리 절약'], answer: 0,
+        feedback: { correct: '맞아요! AI가 일정·위치 등 개인 정보를 다루므로 보안과 개인정보 보호가 매우 중요해요.', wrong: '배터리도 중요하지만, AI가 개인 데이터를 다룰 때는 개인정보 보호와 보안이 가장 중요해요.' }
+      },
+      {
+        text: '스마트홈 기기가 해킹당하면 어떤 문제가 생길 수 있을까요?',
+        choices: ['집 안의 조명·잠금장치·카메라가 외부에서 조종될 수 있다', '스마트폰 배터리가 빨리 닳는다'], answer: 0,
+        feedback: { correct: '정확해요! 스마트홈 해킹은 집 안 기기들이 외부에서 제어되는 심각한 보안 문제예요. 강력한 보안이 필수랍니다.', wrong: '배터리 문제가 아니라 훨씬 심각한 문제가 생겨요. 집 안 기기 전체가 외부에서 조종될 수 있어요.' }
+      }
+    ]
+  },
+  {
+    id: 4, title: '미래 직업 탐험', icon: '🚀',
+    questions: [
+      {
+        text: '음성 AI 연구원이 실제로 하는 일은?',
+        choices: ['노래를 더 예쁘게 부르는 연습', 'AI가 다양한 말투와 언어를 더 잘 이해하도록 알고리즘 개발'], answer: 1,
+        feedback: { correct: '맞아요! 음성 AI 연구원은 AI의 언어 이해 알고리즘을 연구하고 개선하는 일을 해요.', wrong: '노래 연습은 가수가 해요. 음성 AI 연구원은 AI 알고리즘을 개발하고 개선하는 일을 한답니다.' }
+      },
+      {
+        text: '재활 보조공학사가 개발하는 기술의 목표는?',
+        choices: ['장애가 있는 사람들이 더 독립적으로 생활할 수 있도록 돕는 것', '최첨단 군사 무기를 개발하는 것'], answer: 0,
+        feedback: { correct: '정답! 재활 보조공학사는 장애인의 독립적인 생활과 사회 참여를 돕는 기술을 연구해요.', wrong: '군사 무기 개발이 아니에요. 장애인이 더 자유롭고 독립적으로 생활하도록 돕는 기술을 만든답니다.' }
+      },
+      {
+        text: 'AI 윤리 전문가는 어떤 문제를 다루나요?',
+        choices: ['AI 기술이 특정 사람을 차별하거나 잘못 사용되는 문제', 'AI 컴퓨터의 발열 문제'], answer: 0,
+        feedback: { correct: '맞아요! AI 윤리 전문가는 AI가 공정하고 올바르게 사용되도록 연구하고 정책을 만드는 일을 해요.', wrong: '발열은 엔지니어가 담당해요. AI 윤리 전문가는 AI의 공정성·차별 문제를 다룬답니다.' }
+      },
+      {
+        text: '미래에 AI와 함께 일하려면 어떤 자세가 중요할까요?',
+        choices: ['AI가 다 해주니까 아무것도 배우지 않아도 된다', 'AI를 도구로 활용하며 창의적으로 문제를 해결하는 능력'], answer: 1,
+        feedback: { correct: '정확해요! AI는 도구예요. AI를 잘 활용하며 창의적으로 사고하는 능력이 미래에 가장 중요해요.', wrong: 'AI가 모든 걸 대신해주진 않아요. AI를 창의적으로 활용하는 능력이 미래 핵심 역량이랍니다.' }
+      },
+      {
+        text: '소리·AI 기술이 사회를 더 평등하게 만들 수 있는 이유는?',
+        choices: ['장애가 있는 사람도 음성기술로 더 자유롭게 소통하고 정보에 접근할 수 있기 때문에', 'AI가 모든 시험 문제의 정답을 알려주기 때문에'], answer: 0,
+        feedback: { correct: '훌륭해요! 음성 AI 기술은 시각장애·지체장애가 있는 사람들도 정보에 자유롭게 접근하게 해줘요.', wrong: '시험 정답은 아니에요. 장애가 있는 사람도 정보에 평등하게 접근할 수 있게 해주는 게 핵심이에요.' }
+      },
+      {
+        text: '내가 미래에 AI 기술로 가장 하고 싶은 일은? (나의 선택)',
+        choices: ['AI로 장애인·노인 등 취약계층의 생활을 돕는 서비스 개발', 'AI로 나만 이익이 되는 서비스 개발'], answer: 0,
+        feedback: { correct: '정말 멋진 선택이에요! 기술은 사회 전체를 위해 사용될 때 가장 빛나요.', wrong: '기술은 혼자만을 위한 것이 아니에요. 사회 전체, 특히 도움이 필요한 사람들을 위해 쓸 때 가장 가치 있어요.' }
+      }
+    ]
+  }
+];
+
+// ── 어려움 (Level 3): 심화 개념, 비판적 사고, 현실적 딜레마 포함 ──
+const MISSIONS_LV3 = [
+  {
+    id: 1, title: '소리란 무엇인가?', icon: '🔊',
+    questions: [
+      {
+        text: '지금 재생되는 고주파 소리를 들어보세요. 사람이 들을 수 있는 소리 범위(가청 주파수)는?',
+        hasSound: true, soundType: 'high', soundLabel: '고주파 소리 재생',
+        choices: ['약 20Hz ~ 20,000Hz (20kHz)', '약 1Hz ~ 1,000Hz (1kHz)'], answer: 0,
+        feedback: { correct: '정확해요! 사람의 가청 범위는 약 20Hz~20kHz예요. 개는 이보다 더 높은 주파수도 들을 수 있어요.', wrong: '1Hz~1kHz는 너무 좁아요. 사람은 약 20Hz~20,000Hz 범위의 소리를 들을 수 있답니다.' }
+      },
+      {
+        text: '소리의 파형을 디지털로 저장할 때 "샘플링 레이트"가 높을수록 어떤 효과가 있나요?',
+        choices: ['소리 정보를 더 정밀하게 기록할 수 있다', '파일 크기가 줄어들고 음질이 낮아진다'], answer: 0,
+        feedback: { correct: '맞아요! 샘플링 레이트가 높을수록 초당 더 많은 정보를 기록해 음질이 향상되요. CD는 44,100Hz를 사용해요.', wrong: '샘플링 레이트가 높으면 파일이 커지고 음질이 좋아져요. 정밀하게 기록할수록 원음에 가까워져요.' }
+      },
+      {
+        text: '노이즈 캔슬링 이어폰이 주변 소음을 없애는 원리는?',
+        choices: ['주변 소음과 반대 위상의 소리를 만들어 서로 상쇄시킨다', '이어폰이 귀를 완전히 막아 물리적으로 소음을 차단한다'], answer: 1,
+        feedback: { correct: '정확해요! 노이즈 캔슬링은 소음 파형을 분석해 정반대 위상의 소리를 생성, 두 소리가 상쇄되는 원리예요.', wrong: '물리적 차단도 일부 있지만, 능동형 노이즈 캔슬링의 핵심은 반대 위상 소리로 소음을 상쇄하는 거예요.' }
+      }
+    ]
+  },
+  {
+    id: 2, title: 'AI는 소리를 어떻게 듣나?', icon: '🤖',
+    questions: [
+      {
+        text: 'AI 음성인식에서 "어쿠스틱 모델"의 역할은?',
+        choices: ['소리의 파형을 음소(ㄱ,ㄴ,ㅏ 같은 소리 단위)로 변환하는 것', '텍스트의 의미를 문맥에 맞게 해석하는 것'], answer: 0,
+        feedback: { correct: '정답! 어쿠스틱 모델은 음향 신호를 음소 단위로 변환해요. 이후 언어 모델이 의미를 해석하죠.', wrong: '의미 해석은 언어 모델이 담당해요. 어쿠스틱 모델은 소리 파형을 음소로 변환하는 역할이에요.' }
+      },
+      {
+        text: 'AI 음성인식에서 "언어 모델"이 하는 일은?',
+        choices: ['음소 배열의 확률을 계산해 가장 자연스러운 단어·문장을 선택', '마이크의 입력 신호를 디지털로 변환'], answer: 1,
+        feedback: { correct: '맞아요! 언어 모델은 "나는 [밥/법]을 먹었다"처럼 문맥상 더 자연스러운 단어를 확률로 선택해요.', wrong: '디지털 변환은 ADC(아날로그-디지털 변환기)가 해요. 언어 모델은 문맥에 맞는 단어를 확률로 선택해요.' }
+      },
+      {
+        text: 'AI 음성인식이 특정 지역 사투리나 장애인의 말투를 잘 못 인식하는 것은 어떤 문제와 관련이 있나요?',
+        choices: ['AI 데이터 편향(Bias) 문제', '인터넷 속도 문제'], answer: 0,
+        feedback: { correct: '정답! AI 학습 데이터에 특정 집단의 목소리가 적으면 편향이 생겨요. 이것이 AI 공정성의 핵심 문제예요.', wrong: '인터넷 속도와는 관련 없어요. 학습 데이터의 불균형으로 발생하는 AI 편향(Bias) 문제랍니다.' }
+      },
+      {
+        text: '딥러닝 기반 음성인식이 기존 방식보다 뛰어난 이유는?',
+        choices: ['규칙을 사람이 직접 입력하지 않고 스스로 패턴을 학습하기 때문에', '컴퓨터가 더 빠르게 계산하기 때문에'], answer: 1,
+        feedback: { correct: '맞아요! 딥러닝은 수많은 데이터에서 스스로 패턴을 찾아 학습하므로 복잡한 언어 변화에도 적응할 수 있어요.', wrong: '속도도 관련 있지만 핵심은 스스로 패턴을 학습하는 능력이에요. 사람이 규칙을 일일이 입력할 필요가 없답니다.' }
+      }
+    ]
+  },
+  {
+    id: 3, title: '스마트 기기와 나', icon: '📱',
+    questions: [
+      {
+        text: 'AI 스피커가 항상 마이크를 켜두는 "웨이크 워드(Wake Word)" 방식의 개인정보 문제는?',
+        choices: ['사용자의 일상 대화가 의도치 않게 수집·저장될 수 있다', '스피커가 갑자기 꺼질 수 있다'], answer: 0,
+        feedback: { correct: '정답! AI 스피커는 "헤이 카카오" 같은 웨이크 워드를 기다리며 주변 소리를 듣고 있어 개인정보 침해 우려가 있어요.', wrong: '전원 문제가 아니에요. 상시 대기 중인 마이크가 일상 대화를 수집할 수 있다는 것이 핵심 문제예요.' }
+      },
+      {
+        text: 'TTS(Text-To-Speech)와 STT(Speech-To-Text)의 차이는?',
+        choices: ['TTS는 글자를 소리로, STT는 소리를 글자로 변환', 'TTS는 소리를 글자로, STT는 글자를 소리로 변환'], answer: 1,
+        feedback: { correct: '맞아요! TTS(Text-To-Speech)는 텍스트→음성, STT(Speech-To-Text)는 음성→텍스트예요. 스크린 리더는 TTS를 사용해요.', wrong: '반대예요. TTS는 Text→Speech(글자→소리), STT는 Speech→Text(소리→글자) 변환이랍니다.' }
+      },
+      {
+        text: '스마트홈 IoT 기기 보안을 강화하기 위한 가장 효과적인 방법은?',
+        choices: ['기기 소프트웨어를 최신 버전으로 유지하고 강력한 개별 비밀번호 사용', '모든 기기를 같은 비밀번호로 통일해 관리를 쉽게 함'], answer: 0,
+        feedback: { correct: '정답! 최신 보안 패치 적용과 기기별 강력한 비밀번호가 스마트홈 보안의 핵심이에요.', wrong: '같은 비밀번호 통일은 매우 위험해요. 하나만 뚫려도 모든 기기가 해킹되니 반드시 각각 다른 비밀번호를 써야 해요.' }
+      },
+      {
+        text: '시각장애인을 위한 AI 기반 "오브젝트 인식 앱"의 기능은?',
+        choices: ['카메라로 사물을 촬영하면 AI가 무엇인지 음성으로 설명해준다', '사물을 예쁘게 포토샵해서 SNS에 올려준다'], answer: 1,
+        feedback: { correct: '맞아요! 오브젝트 인식 앱은 카메라로 찍은 사물을 AI가 분석해 "빨간 사과가 있습니다"처럼 음성으로 알려줘요.', wrong: '사진 보정이 아니에요. AI가 사물을 인식해 음성으로 설명해주는 시각장애인 보조 기술이랍니다.' }
+      },
+      {
+        text: '자율주행 자동차에서 음성 AI가 하는 핵심 역할은?',
+        choices: ['운전자의 음성 명령을 인식하고 내비·음악 등을 제어하여 운전 중 안전을 높임', '자동차 엔진의 출력을 직접 제어함'], answer: 1,
+        feedback: { correct: '정답! 자율주행차에서 음성 AI는 핸즈프리 제어를 가능하게 해 운전 중 시선과 손을 도로에 집중하게 도와요.', wrong: '엔진 출력은 별도 시스템이 담당해요. 음성 AI는 핸즈프리 명령 처리로 운전 안전을 높이는 역할이에요.' }
+      }
+    ]
+  },
+  {
+    id: 4, title: '미래 직업 탐험', icon: '🚀',
+    questions: [
+      {
+        text: '음성 AI 개발에서 "엣지 컴퓨팅(Edge Computing)"을 사용하는 이유는?',
+        choices: ['클라우드 서버 없이 기기 자체에서 빠르게 처리해 지연을 줄이기 위해', '더 많은 데이터를 클라우드에 저장하기 위해'], answer: 1,
+        feedback: { correct: '정답! 엣지 컴퓨팅은 스마트 스피커 자체에서 처리해 응답 속도를 높이고 개인정보도 보호해요.', wrong: '클라우드 저장이 아니에요. 기기 자체에서 직접 처리해 속도를 높이고 개인정보를 보호하는 방식이랍니다.' }
+      },
+      {
+        text: 'AI 접근성 전문가(Accessibility Engineer)가 해결하려는 핵심 문제는?',
+        choices: ['장애·연령·언어에 관계없이 모든 사람이 AI 기술을 평등하게 사용할 수 있도록 하는 것', 'AI 기술을 더 빠르게 만드는 것'], answer: 0,
+        feedback: { correct: '맞아요! AI 접근성 전문가는 장애인·노인·다국어 사용자 등 모든 사람이 기술에서 소외되지 않도록 연구해요.', wrong: '속도 개선은 다른 엔지니어가 담당해요. 접근성 전문가는 기술의 포용성·평등성에 집중한답니다.' }
+      },
+      {
+        text: 'AI 음성 합성 기술(딥페이크 음성)의 윤리적 문제는?',
+        choices: ['동의 없이 특정인의 목소리를 복제해 사기·가짜 정보에 악용될 수 있다', '음질이 너무 좋아서 저작권 문제가 생긴다'], answer: 1,
+        feedback: { correct: '정확해요! AI 음성 합성은 목소리를 가짜로 만들 수 있어 보이스피싱·딥페이크 범죄에 악용될 수 있는 심각한 윤리 문제예요.', wrong: '음질 저작권보다 훨씬 심각한 문제가 있어요. 동의 없는 목소리 복제는 사기·범죄에 악용될 수 있답니다.' }
+      },
+      {
+        text: '미래 사회에서 AI와 공존하기 위해 인간이 갖춰야 할 가장 중요한 역량은?',
+        choices: ['AI가 못하는 창의성·공감·윤리적 판단력', 'AI보다 빠른 계산 능력'], answer: 0,
+        feedback: { correct: '정답! 계산·반복은 AI가 더 잘해요. 창의적 사고·공감·윤리적 판단은 인간 고유의 강점이에요.', wrong: '계산 속도는 AI가 압도적으로 빠르니 인간이 이길 수 없어요. 창의성·공감·윤리 판단이 인간만의 강점이랍니다.' }
+      },
+      {
+        text: '시각장애인이 더 자유롭게 세상을 탐험하도록 돕는 미래 기술로 가장 가능성이 큰 것은?',
+        choices: ['AI 시각 보조 웨어러블: 카메라+AI가 주변을 실시간으로 음성 설명', '더 밝은 화면의 스마트폰'], answer: 0,
+        feedback: { correct: '맞아요! 카메라+AI를 결합한 웨어러블 기기는 주변 환경을 실시간으로 음성으로 설명해 시각장애인의 이동을 크게 도울 수 있어요.', wrong: '밝은 화면은 저시력자에게 일부 도움이 되지만, AI+카메라 웨어러블이 전맹 시각장애인에게 훨씬 혁신적인 기술이에요.' }
+      },
+      {
+        text: 'AI 기술이 진정으로 모든 사람을 위한 기술이 되려면 무엇이 필요한가?',
+        choices: ['다양한 사람들의 목소리·언어·장애 유형을 반영한 포용적 데이터와 설계', 'AI를 가장 빠른 컴퓨터에서만 실행하는 것'], answer: 1,
+        feedback: { correct: '훌륭해요! 포용적 AI 설계는 다양한 사람들이 기술에서 소외되지 않도록 하는 미래 기술의 핵심 방향이에요.', wrong: '속도보다 중요한 것은 포용성이에요. 다양한 사람들을 반영한 데이터와 설계가 진정한 AI 평등의 시작이랍니다.' }
+      }
+    ]
+  }
+];
+
+// 난이도에 따라 선택되는 MISSIONS (게임 시작 시 설정)
+let MISSIONS = MISSIONS_LV1;
+
+// ============================================================
+// 엔딩 데이터
+// ============================================================
+const ENDINGS = [
+  {
+    id: 'engineer',
+    badge: '🔊',
+    title: '완벽한 탐험 완료!',
+    job: '🏆 음향 공학자',
+    desc: '소리의 과학부터 AI, IoT, 미래 직업까지 모든 것을 완벽하게 이해했어요! 소리와 AI로 세상을 바꿀 음향 공학자의 자질을 갖추었습니다.',
+    condition: (score, total, m2Perfect, m3Perfect) => score >= total * 0.9
+  },
+  {
+    id: 'ai_researcher',
+    badge: '🤖',
+    title: 'AI 전문가 탄생!',
+    job: '🤖 AI 연구원',
+    desc: 'AI 음성인식 미션을 완벽하게 통과했어요! AI가 어떻게 소리를 듣고 이해하는지 깊이 알고 있는 미래의 AI 연구원입니다.',
+    condition: (score, total, m2Perfect, m3Perfect) => m2Perfect
+  },
+  {
+    id: 'welfare_tech',
+    badge: '♿',
+    title: '보조기술 전문가!',
+    job: '♿ 복지 기술 전문가',
+    desc: '스마트 기기와 보조 기술 미션에서 뛰어난 이해력을 보여줬어요! 장애가 있는 사람들을 위한 기술을 개발할 복지 기술 전문가입니다.',
+    condition: (score, total, m2Perfect, m3Perfect) => m3Perfect
+  },
+  {
+    id: 'explorer',
+    badge: '🌟',
+    title: '용감한 탐험가!',
+    job: '🌟 미래 탐험가',
+    desc: '소리의 세계를 용감하게 탐험했어요! 도전하는 정신이 있다면 어떤 미래도 열어갈 수 있어요.',
+    condition: () => true
+  }
+];
+
+// ============================================================
+// 게임 상태
+// ============================================================
+let state = {
+  difficulty: 1,
+  missionIndex: 0,
+  questionIndex: 0,
+  score: 0,
+  totalCorrect: 0,
+  streak: 0,
+  maxStreak: 0,
+  answered: false,
+  missionScores: [0, 0, 0, 0],
+  missionCorrects: [0, 0, 0, 0],
+  audioCtx: null,
+  ttsSupported: 'speechSynthesis' in window,
+  ttsEnabled: true
+};
+
+const SCORE_PER_CORRECT = [5, 10, 15]; // 난이도별 점수
+
+// ============================================================
+// 오디오
+// ============================================================
+function getAudioCtx() {
+  if (!state.audioCtx) {
+    state.audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  }
+  return state.audioCtx;
+}
+
+function playTone(freq, duration, type = 'sine', vol = 0.3, delay = 0) {
+  try {
+    const ctx = getAudioCtx();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.type = type;
+    osc.frequency.setValueAtTime(freq, ctx.currentTime + delay);
+    gain.gain.setValueAtTime(vol, ctx.currentTime + delay);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + delay + duration);
+    osc.start(ctx.currentTime + delay);
+    osc.stop(ctx.currentTime + delay + duration);
+  } catch(e) {}
+}
+
+function playCorrect() {
+  playTone(523, 0.15, 'sine', 0.3, 0);
+  playTone(659, 0.15, 'sine', 0.3, 0.15);
+  playTone(784, 0.3, 'sine', 0.3, 0.3);
+}
+
+function playWrong() {
+  playTone(300, 0.2, 'sawtooth', 0.2, 0);
+  playTone(250, 0.3, 'sawtooth', 0.2, 0.2);
+}
+
+function playMissionClear() {
+  [523,659,784,1047].forEach((f,i) => playTone(f, 0.2, 'sine', 0.3, i*0.15));
+}
+
+function playEndingFanfare() {
+  const melody = [523,587,659,698,784,880,988,1047];
+  melody.forEach((f,i) => playTone(f, 0.2, 'sine', 0.25, i*0.12));
+}
+
+function playFocusTick() {
+  playTone(800, 0.05, 'sine', 0.1);
+}
+
+function playHighSound() {
+  playTone(1200, 0.6, 'sine', 0.3);
+}
+function playLowSound() {
+  playTone(200, 0.6, 'sine', 0.3);
+}
+
+function vibrate(pattern) {
+  if (navigator.vibrate) navigator.vibrate(pattern);
+}
+
+// ============================================================
+// TTS
+// ============================================================
+let ttsQueue = [];
+
+function ttsSpeak(text, priority = false) {
+  if (!state.ttsEnabled || !state.ttsSupported) return;
+  if (priority) speechSynthesis.cancel();
+  const utt = new SpeechSynthesisUtterance(text);
+  utt.lang = 'ko-KR';
+  utt.rate = 0.95;
+  utt.pitch = 1.0;
+  speechSynthesis.speak(utt);
+}
+
+function ttsStop() {
+  if (state.ttsSupported) speechSynthesis.cancel();
+}
+
+// ============================================================
+// 라이브 리전
+// ============================================================
+function announce(text) {
+  const el = document.getElementById('live-region');
+  el.textContent = '';
+  setTimeout(() => { el.textContent = text; }, 50);
+}
+
+// ============================================================
+// 화면 전환
+// ============================================================
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo(0, 0);
+}
+
+// ============================================================
+// 마스코트 감정
+// ============================================================
+const MASCOT_EMOTIONS = {
+  happy:    { emoji: '😊', color: '#FFD700' },
+  cheer:    { emoji: '🤩', color: '#00FFFF' },
+  think:    { emoji: '🤔', color: '#9B6DFF' },
+  comfort:  { emoji: '🥺', color: '#F09070' },
+  celebrate:{ emoji: '🎉', color: '#00FF88' }
+};
+
+function setMascot(emotion, message) {
+  const el = document.getElementById('game-mascot');
+  const msg = document.getElementById('mascot-msg');
+  const em = MASCOT_EMOTIONS[emotion] || MASCOT_EMOTIONS.happy;
+  el.textContent = em.emoji;
+  msg.textContent = message;
+  announce('소나: ' + message);
+}
+
+// ============================================================
+// 진행도
+// ============================================================
+function updateProgress() {
+  const totalQ = MISSIONS.reduce((s,m) => s + m.questions.length, 0);
+  const doneQ = MISSIONS.slice(0, state.missionIndex).reduce((s,m) => s + m.questions.length, 0) + state.questionIndex;
+  const pct = Math.round(doneQ / totalQ * 100);
+  document.getElementById('progress-bar').style.width = pct + '%';
+  document.getElementById('progress-bar-role').setAttribute('aria-valuenow', pct);
+  document.getElementById('hud-mission').textContent = 'M' + (state.missionIndex + 1);
+  document.getElementById('hud-score').textContent = '⭐ ' + state.score + '점';
+}
+
+// ============================================================
+// 문제 렌더
+// ============================================================
+function renderQuestion() {
+  const mission = MISSIONS[state.missionIndex];
+  const q = mission.questions[state.questionIndex];
+  state.answered = false;
+
+  // 미션 헤더
+  document.getElementById('mission-number').textContent = 'MISSION ' + mission.id;
+  document.getElementById('mission-title-text').textContent = mission.title;
+  document.getElementById('hud-mission').textContent = 'M' + mission.id;
+
+  // 문제 번호
+  const qNum = state.questionIndex + 1;
+  const qTotal = mission.questions.length;
+  document.getElementById('question-num').textContent = qNum + '번 문제 / 총 ' + qTotal + '문제';
+  document.getElementById('question-num').setAttribute('aria-label', '문제 ' + qNum + '번, 총 ' + qTotal + '문제 중');
+
+  // 문제 텍스트
+  document.getElementById('question-text').textContent = q.text;
+
+  // 소리 버튼
+  const soundBtn = document.getElementById('sound-play-btn');
+  if (q.hasSound) {
+    soundBtn.style.display = 'flex';
+    document.getElementById('sound-btn-label').textContent = q.soundLabel;
+    soundBtn.setAttribute('aria-label', q.soundLabel + ' 재생하기');
+    soundBtn.classList.remove('playing');
+  } else {
+    soundBtn.style.display = 'none';
+  }
+
+  // 선택지 (2개 고정)
+  const choices = document.getElementById('choices');
+  q.choices.forEach((c, i) => {
+    const btn = document.getElementById('choice-' + i);
+    document.getElementById('choice-text-' + i).textContent = c;
+    btn.setAttribute('aria-label', (i+1) + '번: ' + c);
+    btn.className = 'choice-btn';
+    btn.disabled = false;
+    btn.style.display = 'flex';
+  });
+
+  // 피드백·다음 버튼 초기화
+  const fb = document.getElementById('feedback-box');
+  fb.className = 'feedback-box';
+  fb.textContent = '';
+  document.getElementById('btn-next').className = 'btn-next';
+
+  // 마스코트 메시지
+  const mascotMsgs = [
+    '문제를 잘 읽고 정답을 선택해봐!',
+    '집중! 정답이 보일 거야.',
+    '천천히 생각해도 괜찮아.',
+    '소나가 응원하고 있어!'
+  ];
+  setMascot('think', mascotMsgs[Math.floor(Math.random() * mascotMsgs.length)]);
+
+  updateProgress();
+
+  // 자동 TTS
+  setTimeout(() => {
+    ttsSpeak('문제 ' + qNum + '번. ' + q.text + '. 1번: ' + q.choices[0] + '. 2번: ' + q.choices[1], true);
+  }, 400);
+
+  // 첫 선택지 포커스
+  setTimeout(() => { document.getElementById('choice-0').focus(); }, 200);
+}
+
+// ============================================================
+// 선택지 처리
+// ============================================================
+function handleChoice(idx) {
+  if (state.answered) return;
+  state.answered = true;
+
+  const mission = MISSIONS[state.missionIndex];
+  const q = mission.questions[state.questionIndex];
+  const isCorrect = idx === q.answer;
+
+  // 버튼 스타일
+  document.getElementById('choice-' + idx).classList.add(isCorrect ? 'correct' : 'wrong');
+  if (!isCorrect) {
+    document.getElementById('choice-' + q.answer).classList.add('correct');
+  }
+  document.getElementById('choice-0').disabled = true;
+  document.getElementById('choice-1').disabled = true;
+
+  // 점수
+  if (isCorrect) {
+    const pts = SCORE_PER_CORRECT[state.difficulty - 1];
+    state.score += pts;
+    state.totalCorrect++;
+    state.streak++;
+    state.missionCorrects[state.missionIndex]++;
+    if (state.streak > state.maxStreak) state.maxStreak = state.streak;
+    playCorrect();
+    vibrate([50, 50, 50]);
+    setMascot('cheer', '훌륭해! 완벽한 답이야! 🎉');
+    announce('정답! ' + q.feedback.correct);
+  } else {
+    state.streak = 0;
+    playWrong();
+    vibrate([200]);
+    setMascot('comfort', '괜찮아, 다시 도전하면 돼! 💪');
+    announce('아쉽지만 틀렸어요. ' + q.feedback.wrong);
+  }
+
+  // 피드백 박스
+  const fb = document.getElementById('feedback-box');
+  fb.textContent = (isCorrect ? '✅ 정답! ' : '❌ 아쉬워요. ') + (isCorrect ? q.feedback.correct : q.feedback.wrong);
+  fb.className = 'feedback-box show ' + (isCorrect ? 'correct-fb' : 'wrong-fb');
+
+  // TTS 피드백
+  ttsSpeak((isCorrect ? '정답입니다. ' : '틀렸어요. ') + (isCorrect ? q.feedback.correct : q.feedback.wrong), true);
+
+  // 다음 버튼
+  const nextBtn = document.getElementById('btn-next');
+  const isLastQ = state.questionIndex >= mission.questions.length - 1;
+  const isLastM = state.missionIndex >= MISSIONS.length - 1;
+  nextBtn.textContent = isLastQ ? (isLastM ? '🏁 결과 보기' : '✅ 미션 완료!') : '다음 문제 ▶';
+  nextBtn.className = 'btn-next show';
+  nextBtn.setAttribute('aria-label', nextBtn.textContent);
+
+  document.getElementById('hud-score').textContent = '⭐ ' + state.score + '점';
+  setTimeout(() => { nextBtn.focus(); }, 300);
+}
+
+// ============================================================
+// 다음 문제 / 미션
+// ============================================================
+function goNext() {
+  ttsStop();
+  const mission = MISSIONS[state.missionIndex];
+  const isLastQ = state.questionIndex >= mission.questions.length - 1;
+  const isLastM = state.missionIndex >= MISSIONS.length - 1;
+
+  if (isLastQ) {
+    if (isLastM) {
+      showEnding();
+    } else {
+      showMissionComplete();
+    }
+  } else {
+    state.questionIndex++;
+    renderQuestion();
+  }
+}
+
+// ============================================================
+// 미션 완료
+// ============================================================
+function showMissionComplete() {
+  const mission = MISSIONS[state.missionIndex];
+  const correct = state.missionCorrects[state.missionIndex];
+  const total = mission.questions.length;
+  const ratio = correct / total;
+
+  playMissionClear();
+  vibrate([100, 50, 100, 50, 200]);
+
+  document.getElementById('mission-complete-icon').textContent = mission.icon;
+  document.getElementById('mission-complete-title').textContent = 'MISSION ' + mission.id + ' 완료!';
+
+  let stars = ratio >= 0.8 ? '⭐⭐⭐' : ratio >= 0.5 ? '⭐⭐' : '⭐';
+  document.getElementById('mission-stars').textContent = stars;
+  document.getElementById('mission-stars').setAttribute('aria-label', '별점 ' + (ratio >= 0.8 ? 3 : ratio >= 0.5 ? 2 : 1) + '개');
+
+  const msgs = [
+    '소리의 기본을 이해했어요!',
+    'AI 음성인식 원리를 배웠어요!',
+    '스마트 기기의 세계를 탐험했어요!',
+    '미래 직업의 문을 열었어요!'
+  ];
+  document.getElementById('mission-complete-desc').textContent = msgs[state.missionIndex] + ' (' + correct + '/' + total + ' 정답)';
+
+  announce('미션 ' + mission.id + ' 완료! ' + correct + '문제 정답. ' + msgs[state.missionIndex]);
+  ttsSpeak('미션 ' + mission.id + ' 완료! ' + correct + '문제 중 ' + correct + '개 정답. ' + msgs[state.missionIndex], true);
+
+  showScreen('screen-mission-complete');
+  document.getElementById('btn-next-mission').focus();
+}
+
+function startNextMission() {
+  state.missionIndex++;
+  state.questionIndex = 0;
+  showScreen('screen-game');
+  renderQuestion();
+}
+
+// ============================================================
+// 엔딩
+// ============================================================
+function showEnding() {
+  const totalQ = MISSIONS.reduce((s,m) => s + m.questions.length, 0);
+  const m2Perfect = state.missionCorrects[1] === MISSIONS[1].questions.length;
+  const m3Perfect = state.missionCorrects[2] === MISSIONS[2].questions.length;
+
+  let ending = ENDINGS.find(e => e.condition(state.score, totalQ * SCORE_PER_CORRECT[state.difficulty-1], m2Perfect, m3Perfect));
+  if (!ending) ending = ENDINGS[ENDINGS.length - 1];
+
+  playEndingFanfare();
+  vibrate([100,50,100,50,100,50,300]);
+
+  document.getElementById('ending-badge').textContent = ending.badge;
+  document.getElementById('ending-title').textContent = ending.title;
+  document.getElementById('ending-job').textContent = ending.job;
+  document.getElementById('ending-desc').textContent = ending.desc;
+  document.getElementById('final-score').textContent = state.score + '점';
+  document.getElementById('final-correct').textContent = state.totalCorrect + ' / ' + totalQ;
+  document.getElementById('final-streak').textContent = state.maxStreak + '회';
+
+  // 뱃지
+  const badges = [];
+  if (state.totalCorrect === totalQ) badges.push({ text: '🏆 완벽한 탐험가', earned: true });
+  if (m2Perfect) badges.push({ text: '🤖 AI 마스터', earned: true });
+  if (m3Perfect) badges.push({ text: '📱 IoT 전문가', earned: true });
+  if (state.maxStreak >= 5) badges.push({ text: '🔥 연속 정답왕', earned: true });
+  badges.push({ text: '🎓 탐험 완료', earned: true });
+
+  const bc = document.getElementById('badges-container');
+  bc.innerHTML = badges.map(b => `<div class="badge-item ${b.earned ? 'earned' : ''}">${b.text}</div>`).join('');
+
+  // LocalStorage 저장
+  saveRecord(ending.id);
+
+  // QR코드
+  setTimeout(() => {
+    const qrEl = document.getElementById('qrcode');
+    qrEl.innerHTML = '';
+    try {
+      const qr = new QRCode(qrEl, {
+        text: GAME_URL,
+        width: 160, height: 160,
+        colorDark: '#FFD700', colorLight: '#111118',
+        correctLevel: QRCode.CorrectLevel.M
+      });
+    } catch(e) {
+      const img = document.createElement('img');
+      img.src = 'https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=' + encodeURIComponent(GAME_URL);
+      qrEl.appendChild(img);
+    }
+  }, 500);
+
+  announce('게임 완료! ' + ending.job + ' 엔딩. 총 점수 ' + state.score + '점.');
+  ttsSpeak('게임 완료! ' + ending.title + '. ' + ending.desc, true);
+
+  showScreen('screen-ending');
+  document.getElementById('btn-restart').focus();
+
+  // portfolioEntry 콘솔 출력
+  const entry = {
+    id: '047',
+    title: '소리로 여는 미래 – AI 음성인식 탐험대',
+    filename: 'milab_sound_ai_explorer_047.html',
+    url: GAME_URL,
+    category: '특수·AI',
+    target: '시각장애 중학생 (전맹·중증·경증)',
+    difficulty: ['쉬움','보통','어려움'][state.difficulty - 1],
+    missions: 4,
+    totalQuestions: totalQ,
+    tags: ['AI리터러시','음성인식','접근성','IoT','특수교육','사운드'],
+    aiFeature: 'AI 음성인식 원리 체험 미션 포함 (M2)',
+    accessibility: '전맹 완전 접근: TalkBack/VoiceOver 호환, Web Speech API TTS, 진동 피드백, 키보드 단일 조작, aria-live',
+    multiEnding: ['음향 공학자','AI 연구원','복지 기술 전문가','탐험가'],
+    webAudio: true,
+    localStorage: true,
+    qrcode: 'QRCode.js v1.0.0',
+    ga: 'G-WTY6YJQ1NS',
+    date: new Date().toISOString().slice(0,10),
+    result: {
+      score: state.score,
+      correct: state.totalCorrect,
+      maxStreak: state.maxStreak,
+      ending: ending.id
+    }
+  };
+  console.log('%c📋 portfolioEntry', 'color:#FFD700;font-weight:bold;font-size:14px');
+  console.log(JSON.stringify(entry, null, 2));
+}
+
+// ============================================================
+// LocalStorage
+// ============================================================
+function saveRecord(endingId) {
+  try {
+    const key = 'milab_047_record';
+    const prev = JSON.parse(localStorage.getItem(key) || '{}');
+    const totalQ = MISSIONS.reduce((s,m) => s + m.questions.length, 0);
+    const rec = {
+      bestScore: Math.max(state.score, prev.bestScore || 0),
+      bestCorrect: Math.max(state.totalCorrect, prev.bestCorrect || 0),
+      playCount: (prev.playCount || 0) + 1,
+      lastEnding: endingId,
+      lastDate: new Date().toISOString().slice(0,10)
+    };
+    localStorage.setItem(key, JSON.stringify(rec));
+  } catch(e) {}
+}
+
+// ============================================================
+// 인트로 이벤트
+// ============================================================
+document.querySelectorAll('.diff-btn').forEach(btn => {
+  btn.addEventListener('click', function() {
+    document.querySelectorAll('.diff-btn').forEach(b => {
+      b.classList.remove('selected');
+      b.setAttribute('aria-pressed', 'false');
+    });
+    this.classList.add('selected');
+    this.setAttribute('aria-pressed', 'true');
+    state.difficulty = parseInt(this.dataset.level);
+    playFocusTick();
+    announce('난이도 ' + this.textContent + ' 선택');
+  });
+  btn.addEventListener('focus', playFocusTick);
+});
+
+document.getElementById('btn-start').addEventListener('click', () => {
+  ttsStop();
+  if (state.difficulty === 1) MISSIONS = MISSIONS_LV1;
+  else if (state.difficulty === 2) MISSIONS = MISSIONS_LV2;
+  else MISSIONS = MISSIONS_LV3;
+  state.missionIndex = 0;
+  state.questionIndex = 0;
+  state.score = 0;
+  state.totalCorrect = 0;
+  state.streak = 0;
+  state.maxStreak = 0;
+  state.missionCorrects = [0,0,0,0];
+  showScreen('screen-game');
+  renderQuestion();
+});
+
+document.getElementById('btn-tts-intro').addEventListener('click', () => {
+  ttsSpeak('소리로 여는 미래, AI 음성인식 탐험대입니다. 소나와 함께 4개 미션, 18문제를 도전해보세요. 난이도를 선택하고 탐험 시작 버튼을 누르세요.', true);
+});
+
+// ============================================================
+// 게임 이벤트
+// ============================================================
+document.getElementById('choice-0').addEventListener('click', () => handleChoice(0));
+document.getElementById('choice-1').addEventListener('click', () => handleChoice(1));
+
+document.getElementById('choice-0').addEventListener('focus', playFocusTick);
+document.getElementById('choice-1').addEventListener('focus', () => {
+  playFocusTick();
+  if (!state.answered) {
+    const mission = MISSIONS[state.missionIndex];
+    const q = mission.questions[state.questionIndex];
+    announce('2번: ' + q.choices[1]);
+  }
+});
+
+document.getElementById('btn-next').addEventListener('click', goNext);
+document.getElementById('btn-next-mission').addEventListener('click', startNextMission);
+document.getElementById('btn-restart').addEventListener('click', () => {
+  ttsStop();
+  showScreen('screen-intro');
+  ttsSpeak('처음 화면으로 돌아왔어요. 난이도를 선택하고 다시 도전해보세요!', true);
+});
+
+// TTS 버튼
+document.getElementById('tts-question').addEventListener('click', () => {
+  const mission = MISSIONS[state.missionIndex];
+  const q = mission.questions[state.questionIndex];
+  ttsSpeak(q.text, true);
+});
+document.getElementById('tts-choices').addEventListener('click', () => {
+  const mission = MISSIONS[state.missionIndex];
+  const q = mission.questions[state.questionIndex];
+  ttsSpeak('1번: ' + q.choices[0] + '. 2번: ' + q.choices[1], true);
+});
+document.getElementById('tts-stop').addEventListener('click', ttsStop);
+
+// 소리 재생 버튼
+document.getElementById('sound-play-btn').addEventListener('click', function() {
+  const mission = MISSIONS[state.missionIndex];
+  const q = mission.questions[state.questionIndex];
+  this.classList.add('playing');
+  if (q.soundType === 'high') {
+    playHighSound();
+    ttsSpeak('고음을 재생합니다.', true);
+  } else {
+    playLowSound();
+    ttsSpeak('저음을 재생합니다.', true);
+  }
+  setTimeout(() => this.classList.remove('playing'), 800);
+  vibrate(50);
+});
+
+// ============================================================
+// 키보드 단축키 (전맹용)
+// ============================================================
+document.addEventListener('keydown', (e) => {
+  const gameActive = document.getElementById('screen-game').classList.contains('active');
+  if (!gameActive) return;
+
+  if (e.key === '1') {
+    e.preventDefault();
+    if (!state.answered) handleChoice(0);
+  } else if (e.key === '2') {
+    e.preventDefault();
+    if (!state.answered) handleChoice(1);
+  } else if (e.key === 'Enter' || e.key === ' ') {
+    // 기본 동작 유지
+  } else if (e.key === 'r' || e.key === 'R') {
+    // 문제 다시 읽기
+    const mission = MISSIONS[state.missionIndex];
+    const q = mission.questions[state.questionIndex];
+    ttsSpeak(q.text + '. 1번: ' + q.choices[0] + '. 2번: ' + q.choices[1], true);
+  }
+});
+
+// ============================================================
+// 초기화
+// ============================================================
+window.addEventListener('load', () => {
+  // TTS 지원 여부 확인
+  if (!state.ttsSupported) {
+    console.warn('이 브라우저는 Web Speech API를 지원하지 않습니다.');
+  }
+  // 인트로 TTS
+  setTimeout(() => {
+    ttsSpeak('안녕하세요! 소리로 여는 미래, AI 음성인식 탐험대에 오신 것을 환영합니다. 난이도를 선택하고 탐험 시작 버튼을 눌러주세요.', true);
+  }, 1000);
+});
+</script>
+</body>
+</html>
