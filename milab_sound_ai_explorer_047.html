@@ -3,6 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
 <title>소리로 여는 미래 – AI 음성인식 탐험대 | MILAB #047</title>
 
 <!-- Google Analytics -->
@@ -663,6 +666,10 @@ body {
 @media (prefers-reduced-motion: reduce) {
   * { animation: none !important; transition: none !important; }
 }
+</style>
+<style>
+/* 모바일 터치 지연(300ms) 제거 */
+* { touch-action: manipulation; }
 </style>
 </head>
 <body>
@@ -1567,6 +1574,8 @@ function renderQuestion() {
 // ============================================================
 function handleChoice(idx) {
   if (state.answered) return;
+  // MISSIONS 미설정 방어
+  if (!MISSIONS || !MISSIONS[state.missionIndex]) return;
   state.answered = true;
 
   const mission = MISSIONS[state.missionIndex];
@@ -1850,8 +1859,14 @@ document.getElementById('choice-1').addEventListener('focus', () => {
   }
 });
 
-document.getElementById('btn-next').addEventListener('click', goNext);
-document.getElementById('btn-next-mission').addEventListener('click', startNextMission);
+document.getElementById('btn-next').addEventListener('click', () => {
+  unlockAudio(); unlockTTS();
+  goNext();
+});
+document.getElementById('btn-next-mission').addEventListener('click', () => {
+  unlockAudio(); unlockTTS();
+  startNextMission();
+});
 document.getElementById('btn-restart').addEventListener('click', () => {
   ttsStop();
   showScreen('screen-intro');
