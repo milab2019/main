@@ -1218,28 +1218,64 @@ let state = {
 const SCORE_PER_CORRECT = [5, 10, 15]; // 난이도별 점수
 
 // ============================================================
-// 오디오
+// 오디오 (모바일 자동 잠금 해제 포함)
 // ============================================================
 function getAudioCtx() {
   if (!state.audioCtx) {
     state.audioCtx = new (window.AudioContext || window.webkitAudioContext)();
   }
+  // 모바일: suspended 상태면 resume (사용자 제스처 후 호출 시 즉시 해제)
+  if (state.audioCtx.state === 'suspended') {
+    state.audioCtx.resume();
+  }
   return state.audioCtx;
 }
+
+// 첫 번째 사용자 터치/클릭 시 AudioContext를 사전 unlock
+function unlockAudio() {
+  try {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const buf = ctx.createBuffer(1, 1, 22050);
+    const src = ctx.createBufferSource();
+    src.buffer = buf;
+    src.connect(ctx.destination);
+    src.start(0);
+    setTimeout(() => { ctx.close(); }, 100);
+    if (!state.audioCtx) {
+      state.audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    }
+    if (state.audioCtx.state === 'suspended') state.audioCtx.resume();
+  } catch(e) {}
+  document.removeEventListener('touchstart', unlockAudio);
+  document.removeEventListener('click', unlockAudio);
+}
+document.addEventListener('touchstart', unlockAudio, { once: true });
+document.addEventListener('click', unlockAudio, { once: true });
 
 function playTone(freq, duration, type = 'sine', vol = 0.3, delay = 0) {
   try {
     const ctx = getAudioCtx();
-    const osc = ctx.createOscillator();
-    const gain = ctx.createGain();
-    osc.connect(gain);
-    gain.connect(ctx.destination);
-    osc.type = type;
-    osc.frequency.setValueAtTime(freq, ctx.currentTime + delay);
-    gain.gain.setValueAtTime(vol, ctx.currentTime + delay);
-    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + delay + duration);
-    osc.start(ctx.currentTime + delay);
-    osc.stop(ctx.currentTime + delay + duration);
+    if (!ctx) return;
+    // suspended 상태면 resume 후 재생
+    const play = () => {
+      try {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.type = type;
+        osc.frequency.setValueAtTime(freq, ctx.currentTime + delay);
+        gain.gain.setValueAtTime(vol, ctx.currentTime + delay);
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + delay + duration);
+        osc.start(ctx.currentTime + delay);
+        osc.stop(ctx.currentTime + delay + duration);
+      } catch(e) {}
+    };
+    if (ctx.state === 'suspended') {
+      ctx.resume().then(play);
+    } else {
+      play();
+    }
   } catch(e) {}
 }
 
@@ -1279,22 +1315,61 @@ function vibrate(pattern) {
 }
 
 // ============================================================
-// TTS
+// TTS (모바일/iOS 완전 대응)
 // ============================================================
-let ttsQueue = [];
+let ttsUnlocked = false; // 사용자 제스처 후 true
+let ttsTimer = null;     // iOS watchdog 타이머
+
+// iOS Safari: speechSynthesis가 멈추는 버그 방지 워치독
+function ttsWatchdog() {
+  if (ttsTimer) clearInterval(ttsTimer);
+  ttsTimer = setInterval(() => {
+    if (speechSynthesis.speaking) {
+      speechSynthesis.pause();
+      speechSynthesis.resume();
+    }
+  }, 5000);
+}
 
 function ttsSpeak(text, priority = false) {
   if (!state.ttsEnabled || !state.ttsSupported) return;
-  if (priority) speechSynthesis.cancel();
-  const utt = new SpeechSynthesisUtterance(text);
-  utt.lang = 'ko-KR';
-  utt.rate = 0.95;
-  utt.pitch = 1.0;
-  speechSynthesis.speak(utt);
+  if (!ttsUnlocked) {
+    // 아직 제스처 없음 → 큐에 저장만
+    return;
+  }
+  try {
+    if (priority) speechSynthesis.cancel();
+    const utt = new SpeechSynthesisUtterance(text);
+    utt.lang = 'ko-KR';
+    utt.rate = 0.95;
+    utt.pitch = 1.0;
+    utt.volume = 1.0;
+    // 한국어 목소리 선택 (있으면)
+    const voices = speechSynthesis.getVoices();
+    const koVoice = voices.find(v => v.lang.startsWith('ko'));
+    if (koVoice) utt.voice = koVoice;
+    utt.onstart = () => { ttsWatchdog(); };
+    utt.onend = () => { if (ttsTimer) clearInterval(ttsTimer); };
+    utt.onerror = () => { if (ttsTimer) clearInterval(ttsTimer); };
+    speechSynthesis.speak(utt);
+  } catch(e) {}
+}
+
+// 첫 사용자 제스처 시 TTS unlock
+function unlockTTS() {
+  if (ttsUnlocked) return;
+  ttsUnlocked = true;
+  try {
+    // 무음 utterance로 iOS 잠금 해제
+    const unlock = new SpeechSynthesisUtterance('');
+    unlock.volume = 0;
+    speechSynthesis.speak(unlock);
+  } catch(e) {}
 }
 
 function ttsStop() {
-  if (state.ttsSupported) speechSynthesis.cancel();
+  try { if (state.ttsSupported) speechSynthesis.cancel(); } catch(e) {}
+  if (ttsTimer) clearInterval(ttsTimer);
 }
 
 // ============================================================
@@ -1654,6 +1729,7 @@ function saveRecord(endingId) {
 // ============================================================
 document.querySelectorAll('.diff-btn').forEach(btn => {
   btn.addEventListener('click', function() {
+    unlockAudio(); unlockTTS();
     document.querySelectorAll('.diff-btn').forEach(b => {
       b.classList.remove('selected');
       b.setAttribute('aria-pressed', 'false');
@@ -1668,6 +1744,7 @@ document.querySelectorAll('.diff-btn').forEach(btn => {
 });
 
 document.getElementById('btn-start').addEventListener('click', () => {
+  unlockAudio(); unlockTTS();
   ttsStop();
   if (state.difficulty === 1) MISSIONS = MISSIONS_LV1;
   else if (state.difficulty === 2) MISSIONS = MISSIONS_LV2;
@@ -1684,14 +1761,15 @@ document.getElementById('btn-start').addEventListener('click', () => {
 });
 
 document.getElementById('btn-tts-intro').addEventListener('click', () => {
+  unlockAudio(); unlockTTS();
   ttsSpeak('소리로 여는 미래, AI 음성인식 탐험대입니다. 소나와 함께 4개 미션, 18문제를 도전해보세요. 난이도를 선택하고 탐험 시작 버튼을 누르세요.', true);
 });
 
 // ============================================================
 // 게임 이벤트
 // ============================================================
-document.getElementById('choice-0').addEventListener('click', () => handleChoice(0));
-document.getElementById('choice-1').addEventListener('click', () => handleChoice(1));
+document.getElementById('choice-0').addEventListener('click', () => { unlockAudio(); unlockTTS(); handleChoice(0); });
+document.getElementById('choice-1').addEventListener('click', () => { unlockAudio(); unlockTTS(); handleChoice(1); });
 
 document.getElementById('choice-0').addEventListener('focus', playFocusTick);
 document.getElementById('choice-1').addEventListener('focus', () => {
@@ -1771,10 +1849,8 @@ window.addEventListener('load', () => {
   if (!state.ttsSupported) {
     console.warn('이 브라우저는 Web Speech API를 지원하지 않습니다.');
   }
-  // 인트로 TTS
-  setTimeout(() => {
-    ttsSpeak('안녕하세요! 소리로 여는 미래, AI 음성인식 탐험대에 오신 것을 환영합니다. 난이도를 선택하고 탐험 시작 버튼을 눌러주세요.', true);
-  }, 1000);
+  // 인트로 자동 TTS는 모바일 차단 → 제거
+  // 대신 "설명 듣기" 버튼을 통해 안내
 });
 </script>
 </body>
