@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SUHO ROBOTICS: Precision 3D Simulator</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@600;700&family=JetBrains+Mono&display=swap');
+        body { margin: 0; background-color: #050505; color: #fff; font-family: 'Inter', sans-serif; overflow: hidden; }
+        canvas { display: block; }
+        .ui-panel {
+            position: absolute; right: 24px; top: 24px; width: 320px;
+            background: rgba(15, 23, 42, 0.9); backdrop-filter: blur(20px);
+            border: 1px solid rgba(255,255,255,0.15); border-radius: 12px; padding: 24px; z-index: 100;
+        }
+        input[type=range] { -webkit-appearance: none; width: 100%; background: #334155; height: 4px; border-radius: 2px; outline: none; margin: 15px 0; }
+        input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 16px; height: 16px; background: #3b82f6; border-radius: 50%; cursor: pointer; border: 2px solid #fff; }
+        .label-row { display: flex; justify-content: space-between; font-size: 11px; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.05em; }
+        .angle-val { color: #60a5fa; font-family: 'JetBrains Mono'; }
+    </style>
+</head>
+<body>
+
+    <div class="ui-panel shadow-2xl">
+        <h1 class="text-sm font-bold mb-6 tracking-widest text-blue-500">SUHO PRECISION v6.4</h1>
+        <div class="space-y-4">
+            <div><div class="label-row"><span>Servo 1 (Base)</span><span id="v1" class="angle-val">90°</span></div><input type="range" id="i1" min="0" max="180" value="90"></div>
+            <div><div class="label-row"><span>Servo 2 (Shoulder)</span><span id="v2" class="angle-val">90°</span></div><input type="range" id="i2" min="0" max="180" value="90"></div>
+            <div><div class="label-row"><span>Servo 3 (Elbow)</span><span id="v3" class="angle-val">90°</span></div><input type="range" id="i3" min="0" max="180" value="90"></div>
+            <div><div class="label-row"><span>Servo 4 (Gripper)</span><span id="v4" class="angle-val">0</span></div><input type="range" id="i4" min="0" max="100" value="0"></div>
+        </div>
+        <button onclick="resetJoints()" class="w-full mt-6 py-3 bg-blue-600 text-white text-xs font-bold rounded shadow-lg shadow-blue-900/40 hover:bg-blue-500 transition-all">Reset L-Pose (Horizontal)</button>
+    </div>
+
+    <script>
+        let scene, camera, renderer, base, link1, link2, gripperBase, gripperL, gripperR;
+        const target = { b: 90, s: 90, e: 90, g: 0 };
+        const current = { b: 90, s: 90, e: 90, g: 0 };
+        const lerpSpeed = 0.1;
+
+        function init() {
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color(0x050505);
+            camera = new THREE.PerspectiveCamera(40, window.innerWidth / window.innerHeight, 0.1, 1000);
+            camera.position.set(10, 6, 12);
+            camera.lookAt(0, 1.5, 0);
+
+            renderer = new THREE.WebGLRenderer({ antialias: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            document.body.appendChild(renderer.domElement);
+
+            scene.add(new THREE.AmbientLight(0xffffff, 0.5));
+            const light = new THREE.DirectionalLight(0xffffff, 1);
+            light.position.set(5, 10, 7);
+            scene.add(light);
+
+            scene.add(new THREE.GridHelper(20, 40, 0x1e293b, 0x0f172a));
+
+            // 모터 질감 강화 (화이트 글로시)
+            const servoMat = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.1, metalness: 0.2 });
+            const acrylicMat = new THREE.MeshStandardMaterial({ color: 0x3b82f6, transparent: true, opacity: 0.4, side: THREE.DoubleSide });
+
+            base = new THREE.Group();
+            scene.add(base);
+
+            // Link 1 (세로)
+            link1 = new THREE.Group();
+            const s1 = new THREE.Mesh(new THREE.BoxGeometry(0.8, 1.2, 0.8), servoMat);
+            s1.position.y = 0.6;
+            link1.add(s1);
+            const a1 = new THREE.Mesh(new THREE.BoxGeometry(0.4, 2.4, 0.05), acrylicMat);
+            a1.position.set(0.3, 1.8, 0);
+            link1.add(a1);
+            base.add(link1);
+
+            // Link 2 (가로 - 집게가 정면을 향하도록 회전축 조정)
+            link2 = new THREE.Group();
+            link2.position.y = 3.0;
+            const s2 = new THREE.Mesh(new THREE.BoxGeometry(0.8, 0.8, 0.8), servoMat);
+            link2.add(s2);
+            
+            // 팔 프레임
+            const a2 = new THREE.Mesh(new THREE.BoxGeometry(2.0, 0.4, 0.05), acrylicMat);
+            a2.position.set(1.0, 0, 0.2);
+            link2.add(a2);
+            link1.add(link2);
+
+            // 집게 뭉치 (정면 응시)
+            gripperBase = new THREE.Group();
+            gripperBase.position.set(2.0, 0, 0);
+            link2.add(gripperBase);
+            
+            const s3 = new THREE.Mesh(new THREE.BoxGeometry(0.6, 0.6, 0.6), servoMat);
+            gripperBase.add(s3);
+
+            // 집게 날 (수평으로 배치)
+            const gMat = new THREE.MeshStandardMaterial({ color: 0x94a3b8 });
+            gripperL = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.1, 0.2), gMat);
+            gripperL.position.set(0.3, 0.15, 0);
+            gripperR = gripperL.clone();
+            gripperR.position.y = -0.15;
+            gripperBase.add(gripperL, gripperR);
+
+            const inputs = ['i1', 'i2', 'i3', 'i4'];
+            const keys = ['b', 's', 'e', 'g'];
+            inputs.forEach((id, idx) => {
+                document.getElementById(id).oninput = (e) => target[keys[idx]] = parseInt(e.target.value);
+            });
+
+            animate();
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+            current.b += (target.b - current.b) * lerpSpeed;
+            current.s += (target.s - current.s) * lerpSpeed;
+            current.e += (target.e - current.e) * lerpSpeed;
+            current.g += (target.g - current.g) * lerpSpeed;
+
+            // 🤖 수호님 요청 사항 반영
+            // 1. 1번 모터 90도일 때 왼쪽(180도 위치) 고정
+            link1.rotation.y = THREE.MathUtils.degToRad(current.b - 90) + Math.PI; 
+            
+            // 2. ㄱ자 형태 유지 (90도일 때 수직/수평)
+            link1.rotation.z = THREE.MathUtils.degToRad(current.s - 90);
+            link2.rotation.z = THREE.MathUtils.degToRad(current.e - 90);
+
+            // 3. 집게 벌어짐 (수평 집게 기준)
+            const gVal = current.g / 100;
+            gripperL.position.y = 0.1 + (gVal * 0.2);
+            gripperR.position.y = -0.1 - (gVal * 0.2);
+
+            document.getElementById('v1').innerText = target.b + '°';
+            document.getElementById('v2').innerText = target.s + '°';
+            document.getElementById('v3').innerText = target.e + '°';
+            document.getElementById('v4').innerText = target.g;
+
+            renderer.render(scene, camera);
+        }
+
+        function resetJoints() {
+            target.b = 90; target.s = 90; target.e = 90; target.g = 0;
+            for(let i=1; i<=4; i++) document.getElementById('i'+i).value = (i===4?0:90);
+        }
+
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight; camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+
+        init();
+    </script>
+</body>
+</html>
