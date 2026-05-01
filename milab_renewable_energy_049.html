@@ -1,0 +1,873 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>🌿 신재생에너지 개발자 | MILAB #049</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Noto+Sans+KR:wght@300;400;500;700&display=swap');
+:root{
+  --bg:#071520;--bg2:#0b1f30;--panel:#0e2640;--panel2:#122d4e;
+  --green:#00e5a0;--green2:#00b87a;--blue:#00cfff;--yellow:#ffd600;
+  --orange:#ff7043;--red:#ff4757;--text:#e0f4f8;--muted:#6a9ab8;
+  --border:rgba(0,229,160,0.18);--glow:0 0 18px rgba(0,229,160,0.35);
+  --safe-b:env(safe-area-inset-bottom,0px);--safe-t:env(safe-area-inset-top,0px);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+html{height:-webkit-fill-available;}
+body{background:var(--bg);color:var(--text);font-family:'Noto Sans KR',sans-serif;
+  min-height:100vh;min-height:-webkit-fill-available;overflow-x:hidden;-webkit-font-smoothing:antialiased;}
+#bg-canvas{position:fixed;inset:0;z-index:0;pointer-events:none;}
+#app{position:relative;z-index:1;}
+.screen{display:none;min-height:100vh;min-height:-webkit-fill-available;}
+.screen.active{display:flex;flex-direction:column;}
+
+/* ─── 타이틀 ─── */
+#screen-title{
+  align-items:center;justify-content:flex-start;
+  padding:calc(20px + var(--safe-t)) 16px calc(24px + var(--safe-b));
+  overflow-y:auto;-webkit-overflow-scrolling:touch;
+  background:radial-gradient(ellipse at 50% 28%,#0d2e50 0%,#071520 70%);
+  text-align:center;
+}
+.title-badge{display:inline-block;background:linear-gradient(135deg,var(--green),var(--blue));
+  color:#071520;font-family:'Orbitron',sans-serif;font-size:.62rem;font-weight:700;
+  padding:4px 14px;border-radius:20px;letter-spacing:2px;margin-bottom:12px;}
+.mascot-wrap{width:100px;height:100px;margin:0 auto 14px;position:relative;}
+.mascot-aura{position:absolute;inset:-10px;border-radius:50%;
+  background:radial-gradient(circle,rgba(0,229,160,.18) 0%,transparent 70%);
+  animation:pulse 2.5s ease-in-out infinite;}
+@keyframes pulse{0%,100%{transform:scale(1);opacity:.7}50%{transform:scale(1.12);opacity:1}}
+.title-main{font-family:'Orbitron',sans-serif;font-size:clamp(1.3rem,5vw,2.2rem);font-weight:900;
+  background:linear-gradient(135deg,var(--green),var(--blue));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+  line-height:1.2;margin-bottom:4px;}
+.title-sub{font-size:.86rem;color:var(--muted);margin-bottom:18px;}
+.setup-card{background:var(--panel);border:1.5px solid var(--border);border-radius:18px;
+  padding:18px;width:100%;max-width:420px;margin-bottom:14px;text-align:left;}
+.setup-lbl{font-size:.78rem;color:var(--muted);margin-bottom:5px;}
+.nick-input{width:100%;background:var(--bg2);border:1.5px solid var(--border);border-radius:10px;
+  color:var(--text);font-family:'Noto Sans KR',sans-serif;font-size:1rem;
+  padding:11px 14px;outline:none;-webkit-appearance:none;transition:border-color .2s;}
+.nick-input:focus{border-color:var(--green);}
+.diff-row{display:flex;gap:8px;margin-top:12px;}
+.diff-btn{flex:1;padding:10px 4px;border-radius:10px;border:1.5px solid var(--border);
+  background:var(--bg2);color:var(--muted);font-family:'Noto Sans KR',sans-serif;
+  font-size:.76rem;cursor:pointer;text-align:center;line-height:1.5;transition:all .2s;}
+.diff-btn.selected{border-color:var(--green);background:rgba(0,229,160,.12);color:var(--green);box-shadow:var(--glow);}
+.diff-info{background:var(--bg2);border:1px solid var(--border);border-radius:10px;
+  padding:9px 13px;margin-top:9px;font-size:.78rem;color:var(--muted);line-height:1.6;}
+.diff-info strong{color:var(--text);}
+.btn-start{width:100%;max-width:420px;background:linear-gradient(135deg,var(--green),var(--blue));
+  color:#071520;font-family:'Orbitron',sans-serif;font-weight:700;font-size:.9rem;
+  padding:15px;border:none;border-radius:14px;cursor:pointer;letter-spacing:1px;
+  box-shadow:0 4px 22px rgba(0,229,160,.35);margin-bottom:8px;}
+.btn-start:active{transform:scale(.97);}
+
+/* ─── 게임 헤더 ─── */
+#screen-game{justify-content:flex-start;align-items:stretch;}
+.game-hdr{background:rgba(14,38,64,.95);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
+  border-bottom:1px solid var(--border);
+  padding:calc(10px + var(--safe-t)) 15px 10px;
+  display:grid;grid-template-columns:1fr auto auto auto;align-items:center;gap:10px;
+  position:sticky;top:0;z-index:20;}
+.game-badge{font-family:'Orbitron',sans-serif;font-size:.64rem;color:var(--green);letter-spacing:1px;}
+.m-dots{display:flex;gap:5px;}
+.dot{width:9px;height:9px;border-radius:50%;background:var(--panel2);border:1.5px solid var(--border);transition:all .3s;}
+.dot.done{background:var(--green);border-color:var(--green);box-shadow:0 0 6px rgba(0,229,160,.6);}
+.dot.active{background:var(--blue);border-color:var(--blue);animation:blink 1s ease-in-out infinite;}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.4}}
+.score-badge{font-family:'Orbitron',sans-serif;font-size:.8rem;color:var(--yellow);white-space:nowrap;}
+.timer-badge{font-family:'Orbitron',sans-serif;font-size:.8rem;color:var(--text);min-width:38px;text-align:right;}
+.timer-badge.warn{color:var(--red);animation:blink-r .5s ease-in-out infinite;}
+@keyframes blink-r{0%,100%{opacity:1}50%{opacity:.3}}
+.mbody{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;
+  padding:16px 14px calc(72px + var(--safe-b));max-width:680px;width:100%;margin:0 auto;}
+.prog-wrap{background:var(--bg2);border-radius:4px;height:4px;margin-bottom:16px;overflow:hidden;}
+.prog-fill{height:100%;background:linear-gradient(90deg,var(--green),var(--blue));transition:width .6s ease;border-radius:4px;}
+.m-head{text-align:center;margin-bottom:16px;}
+.m-num{font-family:'Orbitron',sans-serif;font-size:.64rem;color:var(--green);letter-spacing:3px;margin-bottom:3px;}
+.m-title{font-size:1.1rem;font-weight:700;margin-bottom:3px;}
+.m-desc{font-size:.8rem;color:var(--muted);line-height:1.5;}
+.card{background:var(--panel);border:1.5px solid var(--border);border-radius:16px;padding:15px;margin-bottom:13px;}
+.music-fab{position:fixed;bottom:calc(16px + var(--safe-b));right:14px;z-index:30;
+  background:var(--panel2);border:1px solid var(--border);color:var(--muted);
+  border-radius:50%;width:40px;height:40px;font-size:.95rem;
+  display:flex;align-items:center;justify-content:center;cursor:pointer;
+  box-shadow:0 4px 14px rgba(0,0,0,.4);}
+
+/* ─── 미션1 ─── */
+.energy-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;margin-bottom:12px;}
+.energy-item{background:var(--bg2);border:2px solid var(--border);border-radius:11px;
+  padding:9px 3px;text-align:center;cursor:pointer;user-select:none;-webkit-user-select:none;}
+.ei-icon{font-size:1.5rem;line-height:1;}
+.ei-name{font-size:.62rem;margin-top:3px;color:var(--muted);}
+.energy-item.sel{border-color:var(--blue);outline:2px solid var(--blue);outline-offset:1px;}
+.energy-item.sr{border-color:var(--green);background:rgba(0,229,160,.1);}
+.energy-item.sr .ei-name{color:var(--green);}
+.energy-item.sf{border-color:var(--orange);background:rgba(255,112,67,.1);}
+.energy-item.sf .ei-name{color:var(--orange);}
+.energy-item.ev-ok{border-color:var(--green);background:rgba(0,229,160,.18);animation:pop .3s;}
+.energy-item.ev-ng{border-color:var(--red);background:rgba(255,71,87,.14);animation:shake .3s;}
+@keyframes pop{0%,100%{transform:scale(1)}50%{transform:scale(1.08)}}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
+.clf-btns{display:flex;gap:8px;}
+.btn-renew,.btn-fossil{flex:1;padding:11px 6px;border-radius:10px;border:none;
+  font-family:'Noto Sans KR',sans-serif;font-size:.8rem;font-weight:600;cursor:pointer;}
+.btn-renew{background:linear-gradient(135deg,var(--green),var(--green2));color:#071520;}
+.btn-fossil{background:linear-gradient(135deg,var(--orange),#bf360c);color:#fff;}
+.btn-renew:active,.btn-fossil:active{transform:scale(.96);}
+.cnt-row{display:flex;justify-content:space-between;align-items:center;margin:9px 0 11px;font-size:.75rem;color:var(--muted);}
+.btn-submit{width:100%;padding:13px;border-radius:12px;border:none;
+  background:linear-gradient(135deg,var(--green),var(--blue));
+  color:#071520;font-family:'Orbitron',sans-serif;font-weight:700;font-size:.82rem;
+  cursor:pointer;letter-spacing:1px;box-shadow:0 3px 14px rgba(0,229,160,.3);}
+.btn-submit:disabled{opacity:.38;pointer-events:none;}
+.btn-submit:active{transform:scale(.97);}
+
+/* ─── 미션2 ─── */
+.diff-tabs{display:flex;gap:5px;margin-bottom:13px;}
+.diff-tab{flex:1;min-width:68px;padding:8px 3px;border-radius:8px;border:1.5px solid var(--border);
+  background:var(--bg2);color:var(--muted);font-size:.72rem;cursor:pointer;text-align:center;
+  white-space:nowrap;font-family:'Noto Sans KR',sans-serif;}
+.diff-tab.active{border-color:var(--blue);background:rgba(0,207,255,.1);color:var(--blue);}
+.diff-tab.tab-done{border-color:var(--green);color:var(--green2);}
+.qcount-badge{display:inline-block;background:rgba(0,207,255,.14);border:1px solid rgba(0,207,255,.3);
+  border-radius:20px;padding:2px 10px;font-size:.7rem;color:var(--blue);margin-bottom:9px;}
+.quiz-q{font-size:.89rem;font-weight:500;line-height:1.6;padding:11px 13px;
+  background:var(--bg2);border-radius:10px;border-left:3px solid var(--blue);margin-bottom:9px;}
+.q-num{font-family:'Orbitron',sans-serif;font-size:.62rem;color:var(--blue);margin-bottom:3px;}
+.data-box{background:var(--bg);border:1px solid var(--border);border-radius:8px;
+  padding:9px 12px;margin-bottom:9px;font-size:.76rem;color:var(--muted);line-height:1.7;white-space:pre-line;}
+.quiz-opts{display:flex;flex-direction:column;gap:6px;margin-bottom:9px;}
+.quiz-opt{background:var(--bg2);border:1.5px solid var(--border);border-radius:10px;
+  padding:11px 13px;cursor:pointer;font-size:.84rem;text-align:left;color:var(--text);
+  font-family:'Noto Sans KR',sans-serif;line-height:1.4;-webkit-appearance:none;}
+.quiz-opt:active{background:rgba(0,207,255,.06);}
+.quiz-opt.opt-ok{border-color:var(--green);background:rgba(0,229,160,.11);color:var(--green);}
+.quiz-opt.opt-ng{border-color:var(--red);background:rgba(255,71,87,.08);color:var(--red);}
+.quiz-opt:disabled{pointer-events:none;}
+.hint-row{display:flex;align-items:flex-start;gap:8px;flex-wrap:wrap;margin-bottom:7px;}
+.hint-btn{background:none;border:1px dashed var(--yellow);color:var(--yellow);border-radius:8px;
+  padding:5px 11px;font-size:.73rem;cursor:pointer;font-family:'Noto Sans KR',sans-serif;}
+.hint-btn:disabled{opacity:.35;pointer-events:none;}
+.hint-txt{font-size:.75rem;color:var(--yellow);line-height:1.5;display:none;}
+.fb{border-radius:10px;padding:9px 13px;font-size:.8rem;line-height:1.6;margin-top:7px;display:none;}
+.fb-ok{background:rgba(0,229,160,.09);border:1px solid rgba(0,229,160,.3);color:var(--green);}
+.fb-ng{background:rgba(255,71,87,.07);border:1px solid rgba(255,71,87,.25);color:#ff8a96;}
+.q-prog{display:flex;gap:4px;}
+.q-dot{width:7px;height:7px;border-radius:50%;background:var(--bg2);border:1px solid var(--border);}
+.q-dot.done{background:var(--green);border-color:var(--green);}
+.q-dot.cur{background:var(--blue);border-color:var(--blue);}
+
+/* ─── 공통 버튼 ─── */
+.btn-next{background:linear-gradient(135deg,var(--green),var(--blue));color:#071520;
+  font-family:'Orbitron',sans-serif;font-weight:700;font-size:.78rem;
+  padding:11px 22px;border:none;border-radius:10px;cursor:pointer;letter-spacing:.5px;}
+.btn-next:active{transform:scale(.96);}
+.btn-sec{background:transparent;color:var(--muted);border:1.5px solid var(--border);
+  border-radius:10px;font-family:'Noto Sans KR',sans-serif;font-size:.8rem;padding:10px 18px;cursor:pointer;}
+
+/* ─── 미션3 ─── */
+.ai-sc{background:var(--bg2);border-radius:12px;padding:13px;border-left:3px solid var(--orange);margin-bottom:9px;}
+.ai-tag{font-size:.68rem;color:var(--orange);font-weight:700;letter-spacing:1px;margin-bottom:5px;}
+.ai-txt{font-size:.84rem;line-height:1.6;}
+.ai-choices{display:flex;flex-direction:column;gap:6px;margin-top:9px;}
+.ai-choice{background:var(--panel2);border:1.5px solid var(--border);border-radius:9px;
+  padding:10px 12px;cursor:pointer;font-size:.82rem;text-align:left;color:var(--text);
+  font-family:'Noto Sans KR',sans-serif;line-height:1.4;}
+.ai-choice:active{background:rgba(255,112,67,.07);}
+.ai-choice.ac-ok{border-color:var(--green);background:rgba(0,229,160,.11);color:var(--green);}
+.ai-choice.ac-ng{border-color:var(--red);background:rgba(255,71,87,.08);color:var(--red);}
+.ai-choice:disabled{pointer-events:none;}
+.ethics-notice{background:rgba(255,214,0,.07);border:1px solid rgba(255,214,0,.25);
+  border-radius:8px;padding:7px 12px;font-size:.73rem;color:var(--yellow);margin-bottom:11px;}
+
+/* ─── 미션4 ─── */
+.chart-box{background:var(--bg2);border-radius:12px;padding:13px;border:1px solid var(--border);margin-bottom:11px;}
+.chart-lbl{font-size:.75rem;color:var(--muted);margin-bottom:9px;font-weight:500;}
+.chart-src{font-size:.65rem;color:rgba(106,154,184,.5);text-align:right;margin-top:4px;}
+.bar-chart{display:flex;align-items:flex-end;gap:5px;height:100px;}
+.bar-item{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;height:100%;justify-content:flex-end;}
+.bar-lbl{font-size:.58rem;color:var(--muted);text-align:center;}
+.bar-vt{font-size:.64rem;color:var(--text);font-weight:600;}
+.bar-fill{width:100%;border-radius:4px 4px 0 0;transition:height .8s cubic-bezier(.34,1.56,.64,1);min-height:3px;}
+.line-svg{width:100%;height:100px;overflow:visible;}
+.alt-choices{display:flex;flex-direction:column;gap:7px;}
+.alt-choice{background:var(--panel2);border:1.5px solid var(--border);border-radius:10px;
+  padding:11px 13px;cursor:pointer;font-size:.82rem;text-align:left;color:var(--text);
+  font-family:'Noto Sans KR',sans-serif;line-height:1.4;}
+.alt-choice:active{background:rgba(0,229,160,.07);}
+.alt-choice.chosen{border-color:var(--blue);background:rgba(0,207,255,.09);color:var(--blue);}
+.alt-choice:disabled{pointer-events:none;}
+
+/* ─── 마스코트 플로팅 ─── */
+#mascot-float{position:fixed;bottom:calc(64px + var(--safe-b));right:13px;
+  width:64px;z-index:25;display:none;cursor:pointer;
+  animation:pop-in .35s cubic-bezier(.34,1.56,.64,1);}
+@keyframes pop-in{0%{transform:scale(0) translateY(20px);opacity:0}100%{transform:scale(1) translateY(0);opacity:1}}
+
+/* ─── 결과 화면 ─── */
+#screen-result{align-items:center;justify-content:flex-start;overflow-y:auto;
+  -webkit-overflow-scrolling:touch;
+  padding:calc(24px + var(--safe-t)) 15px calc(24px + var(--safe-b));
+  background:radial-gradient(ellipse at 50% 25%,#0d2e50 0%,#071520 70%);
+  text-align:center;}
+.res-emoji{font-size:3rem;margin-bottom:5px;}
+.res-rank{font-family:'Orbitron',sans-serif;font-size:.64rem;color:var(--muted);letter-spacing:3px;margin-bottom:3px;}
+.res-title{font-size:1.3rem;font-weight:700;margin-bottom:2px;}
+.res-score{font-family:'Orbitron',sans-serif;font-size:2.4rem;font-weight:900;
+  color:var(--green);text-shadow:0 0 20px rgba(0,229,160,.5);margin-bottom:5px;}
+.res-desc{font-size:.82rem;color:var(--muted);max-width:300px;line-height:1.6;margin:0 auto 16px;}
+.career-sec{background:var(--panel);border:1.5px solid var(--border);border-radius:16px;
+  padding:15px 16px;width:100%;max-width:420px;margin-bottom:13px;text-align:left;}
+.career-sec-ttl{font-size:.72rem;color:var(--green);letter-spacing:1px;font-weight:700;margin-bottom:11px;}
+.career-card{background:var(--bg2);border-radius:12px;padding:11px 13px;margin-bottom:7px;border-left:3px solid var(--green);}
+.career-card:last-child{margin-bottom:0;}
+.career-name{font-weight:700;font-size:.88rem;color:var(--text);margin-bottom:2px;}
+.career-dept{font-size:.72rem;color:var(--muted);margin-bottom:5px;}
+.career-sal{display:inline-flex;align-items:center;gap:4px;background:rgba(255,214,0,.1);
+  border:1px solid rgba(255,214,0,.25);border-radius:20px;padding:2px 9px;
+  font-size:.72rem;color:var(--yellow);font-weight:600;}
+.career-dsc{font-size:.73rem;color:var(--muted);margin-top:5px;line-height:1.5;}
+.lb-sec{background:var(--panel);border:1.5px solid var(--border);border-radius:16px;
+  padding:15px 16px;width:100%;max-width:420px;margin-bottom:13px;text-align:left;}
+.lb-ttl{font-family:'Orbitron',sans-serif;font-size:.65rem;color:var(--yellow);letter-spacing:2px;margin-bottom:9px;}
+.lb-row{display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid rgba(255,255,255,.05);font-size:.81rem;}
+.lb-row:last-child{border-bottom:none;}
+.lb-rank{font-family:'Orbitron',sans-serif;font-size:.68rem;color:var(--yellow);min-width:20px;}
+.lb-name{flex:1;color:var(--text);}
+.lb-pts{color:var(--green);font-weight:700;font-family:'Orbitron',sans-serif;font-size:.73rem;}
+.lb-me{background:rgba(0,229,160,.07);border-radius:6px;padding:4px 6px;}
+.qr-sec{margin-bottom:16px;}
+.qr-lbl{font-size:.68rem;color:var(--muted);margin-top:5px;}
+.res-btns{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;width:100%;max-width:420px;}
+::-webkit-scrollbar{width:4px;}::-webkit-scrollbar-track{background:var(--bg);}
+::-webkit-scrollbar-thumb{background:var(--panel2);border-radius:2px;}
+</style>
+</head>
+<body>
+<canvas id="bg-canvas"></canvas>
+<div id="app">
+
+<!-- 타이틀 -->
+<div id="screen-title" class="screen active">
+  <div class="title-badge">MILAB #049 · 중학교 공통</div>
+  <div class="mascot-wrap">
+    <div class="mascot-aura"></div>
+    <svg viewBox="0 0 110 110" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%">
+      <ellipse cx="55" cy="74" rx="26" ry="18" fill="#0e2640" stroke="#00e5a0" stroke-width="1.5"/>
+      <circle cx="55" cy="44" r="22" fill="#122d4e" stroke="#00e5a0" stroke-width="1.5"/>
+      <ellipse cx="46" cy="42" rx="4.5" ry="5.5" fill="#00e5a0" opacity=".9"/>
+      <ellipse cx="64" cy="42" rx="4.5" ry="5.5" fill="#00e5a0" opacity=".9"/>
+      <circle cx="47" cy="43" r="2.2" fill="#071520"/>
+      <circle cx="65" cy="43" r="2.2" fill="#071520"/>
+      <circle cx="48" cy="42" r=".9" fill="white"/>
+      <circle cx="66" cy="42" r=".9" fill="white"/>
+      <path d="M48 53 Q55 59 62 53" stroke="#00e5a0" stroke-width="1.8" fill="none" stroke-linecap="round"/>
+      <path d="M35 40 Q37 24 55 22 Q73 24 75 40" stroke="#00cfff" stroke-width="1.5" fill="rgba(0,207,255,.07)" stroke-dasharray="3,2"/>
+      <line x1="55" y1="22" x2="55" y2="12" stroke="#00e5a0" stroke-width="1.5"/>
+      <circle cx="55" cy="10" r="2.5" fill="#00e5a0"><animate attributeName="opacity" values="1;.3;1" dur="1.5s" repeatCount="indefinite"/></circle>
+      <rect x="22" y="67" width="16" height="11" rx="2" fill="#0d1f3c" stroke="#00cfff" stroke-width=".9"/>
+      <line x1="30" y1="67" x2="30" y2="78" stroke="#00cfff" stroke-width=".7" opacity=".6"/>
+      <line x1="22" y1="72" x2="38" y2="72" stroke="#00cfff" stroke-width=".7" opacity=".6"/>
+      <rect x="72" y="67" width="16" height="11" rx="2" fill="#0d1f3c" stroke="#00cfff" stroke-width=".9"/>
+      <line x1="80" y1="67" x2="80" y2="78" stroke="#00cfff" stroke-width=".7" opacity=".6"/>
+      <line x1="72" y1="72" x2="88" y2="72" stroke="#00cfff" stroke-width=".7" opacity=".6"/>
+      <text x="55" y="79" text-anchor="middle" font-size="8" fill="#00e5a0" font-weight="bold">E</text>
+    </svg>
+  </div>
+  <div class="title-main">신재생에너지 개발자</div>
+  <div class="title-sub">🌍 지구를 구하는 에너지 탐구자!</div>
+
+  <div class="setup-card">
+    <div class="setup-lbl">🧑 탐구자 이름</div>
+    <input class="nick-input" id="nick-input" type="text" placeholder="예) 에너지왕 홍길동" maxlength="12" autocomplete="off" autocorrect="off">
+    <div class="setup-lbl" style="margin-top:14px">⚡ 난이도 선택</div>
+    <div class="diff-row">
+      <button class="diff-btn" data-d="easy">🌱 쉬움<br><small>문제 8개씩</small></button>
+      <button class="diff-btn selected" data-d="normal">⚡ 보통<br><small>문제 9개씩</small></button>
+      <button class="diff-btn" data-d="hard">🔥 도전<br><small>문제 10개씩</small></button>
+    </div>
+    <div class="diff-info" id="diff-info">
+      <strong>⚡ 보통</strong> — 미션2 각 단계 3문제 · 타이머 45초<br>분석·추론형 문제로 사고력을 키워요!
+    </div>
+  </div>
+  <button class="btn-start" id="start-btn">탐구 시작하기 ▶</button>
+  <div style="font-size:.72rem;color:var(--muted);text-align:center;padding-bottom:4px">중학교 과학·사회·정보·기술가정 융합</div>
+</div>
+
+<!-- 게임 -->
+<div id="screen-game" class="screen">
+  <div class="game-hdr">
+    <div class="game-badge">MILAB #049</div>
+    <div class="m-dots"><div class="dot" id="d1"></div><div class="dot" id="d2"></div><div class="dot" id="d3"></div><div class="dot" id="d4"></div></div>
+    <div class="score-badge">⚡<span id="score-disp">0</span>pt</div>
+    <div class="timer-badge" id="timer-disp">--</div>
+  </div>
+  <div class="mbody" id="mbody"></div>
+  <button class="music-fab" id="music-fab">🎵</button>
+  <div id="mascot-float" onclick="this.style.display='none'">
+    <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" style="width:100%">
+      <circle cx="32" cy="26" r="18" fill="#122d4e" stroke="#00e5a0" stroke-width="1.5"/>
+      <ellipse cx="24" cy="24" rx="3.5" ry="4.5" fill="#00e5a0"/>
+      <ellipse cx="40" cy="24" rx="3.5" ry="4.5" fill="#00e5a0"/>
+      <circle cx="25" cy="25" r="1.8" fill="#071520"/>
+      <circle cx="41" cy="25" r="1.8" fill="#071520"/>
+      <path id="fm-mouth" d="M25 33 Q32 39 39 33" stroke="#00e5a0" stroke-width="1.8" fill="none" stroke-linecap="round"/>
+      <text id="fm-lbl" x="32" y="56" text-anchor="middle" font-size="10" fill="#00e5a0">👍</text>
+    </svg>
+  </div>
+</div>
+
+<!-- 결과 -->
+<div id="screen-result" class="screen">
+  <div class="res-emoji" id="res-emoji">🏆</div>
+  <div class="res-rank" id="res-rank">에너지 마스터</div>
+  <div class="res-title" id="res-title">신재생에너지 박사!</div>
+  <div class="res-score" id="res-score">0점</div>
+  <div class="res-desc" id="res-desc"></div>
+  <div class="career-sec"><div class="career-sec-ttl">🎓 관련 진로 · 직업 · 연봉</div><div id="career-list"></div></div>
+  <div class="lb-sec"><div class="lb-ttl">🏅 TOP 5 리더보드</div><div id="lb-list"></div></div>
+  <div class="qr-sec"><div id="qr-inner" style="background:#fff;padding:7px;border-radius:8px;display:inline-block"></div><div class="qr-lbl">MILAB 포트폴리오 QR</div></div>
+  <div class="res-btns">
+    <button class="btn-next" onclick="restartGame()">🔄 다시 도전</button>
+    <button class="btn-sec" onclick="shareResult()">📤 공유</button>
+  </div>
+</div>
+</div>
+
+<script>
+/* ═══ 설정 ═══ */
+const DCFG={
+  easy:  {qc:8,tm1:90,tq:30,pts:[10,12,15],desc:'<strong>🌱 쉬움</strong> — 미션2 각 단계 8문제 · 타이머 30초<br>개념·사실 파악형으로 기초를 다져요!'},
+  normal:{qc:9,tm1:60,tq:45,pts:[10,15,20],desc:'<strong>⚡ 보통</strong> — 미션2 각 단계 9문제 · 타이머 45초<br>분석·추론형 문제로 사고력을 키워요!'},
+  hard:  {qc:10,tm1:45,tq:60,pts:[10,15,20],desc:'<strong>🔥 도전</strong> — 미션2 각 단계 10문제 · 타이머 60초<br>비판·종합·AI윤리 문항까지 도전해요!'},
+};
+
+/* ═══ 문제 데이터 (각 단계 10문제 / 정답 ①②③④ 균등 분산) ═══ */
+const QB={
+  easy:[
+    {q:'다음 중 신재생에너지에 해당하는 것은?',data:'● 신재생에너지: 태양광, 풍력, 수력, 지열, 바이오에너지\n● 화석에너지: 석탄, 석유, 천연가스',opts:['태양광','석탄','석유','천연가스'],ans:0,hint:'태양 빛을 전기로 바꾸는 에너지예요.',fb_ok:'✅ 정답! 태양광은 무한 공급되는 신재생에너지의 대표 주자예요.',fb_no:'🤔 화석에너지는 매장량이 한정적이지만 신재생에너지는 자연에서 계속 공급돼요.'},
+    {q:'풍력발전기는 무엇을 이용해 전기를 만드나요?',data:'● 풍력: 바람 운동에너지 → 날개 회전 → 발전기 → 전기',opts:['태양열','바람','파도','지열'],ans:1,hint:'바람이 불면 날개가 돌아가요.',fb_ok:'✅ 맞아요! 바람의 힘으로 날개를 회전시켜 전기를 만들어요.',fb_no:'🤔 풍력(風力)의 풍(風)은 "바람"을 의미해요!'},
+    {q:'지열에너지는 무엇을 이용하나요?',data:'● 지열: 지구 내부 열에너지 활용\n● 활용처: 온수, 난방, 발전소',opts:['태양의 열','바닷물의 열','지구 내부의 열','공기의 열'],ans:2,hint:'지(地)는 "땅"을 뜻해요.',fb_ok:'✅ 정확해요! 지열은 지구 내부 열을 활용해요.',fb_no:'🤔 지열(地熱) — 땅(地) 속 열(熱)이에요!'},
+    {q:'탄소를 가장 적게 배출하는 발전 방식은?',data:'● 석탄: 820gCO₂/kWh  ● 천연가스: 490gCO₂/kWh\n● 태양광: 48gCO₂/kWh  ● 풍력: 11gCO₂/kWh',opts:['석탄발전','천연가스발전','태양광발전','풍력발전'],ans:3,hint:'표에서 가장 작은 숫자를 찾아봐요.',fb_ok:'✅ 완벽! 풍력은 11gCO₂/kWh로 가장 탄소 배출이 적어요.',fb_no:'🤔 데이터에서 제일 낮은 수치(11)는 풍력이에요!'},
+    {q:'바이오에너지(바이오매스)의 원료로 맞는 것은?',data:'● 바이오에너지: 동식물에서 나온 유기물을 연료로 사용\n● 예시: 옥수수, 사탕수수, 음식물쓰레기, 목재',opts:['음식물쓰레기·농업 부산물','석탄','플라스틱','철광석'],ans:0,hint:'자연에서 나온 유기물(생물 자원)이에요.',fb_ok:'✅ 맞아요! 음식물쓰레기, 농업 부산물 등 유기물이 바이오에너지의 원료예요.',fb_no:'🤔 바이오(Bio)는 "생물"을 뜻해요. 생물에서 온 유기물이 원료예요!'},
+    {q:'수력발전소는 어떤 에너지를 이용하나요?',data:'● 수력: 높은 곳의 물이 떨어지는 위치에너지 → 운동에너지 → 전기\n● 댐으로 물을 저장 후 낙차를 이용',opts:['물의 온도','물이 떨어지는 힘(위치에너지)','물의 화학성분','바닷물의 염분'],ans:1,hint:'높은 곳에서 낮은 곳으로 물이 떨어지면 어떻게 되나요?',fb_ok:'✅ 훌륭해요! 물의 낙차(위치에너지)로 터빈을 돌려 전기를 만들어요.',fb_no:'🤔 수력은 물의 높이 차이(낙차)에서 생기는 에너지예요!'},
+    {q:'"탄소중립"이란 무엇을 의미하나요?',data:'● 탄소중립: 배출한 온실가스를 흡수·제거해 실질 배출량을 0으로 만드는 것\n● 우리나라 목표: 2050년 탄소중립',opts:['탄소 배출을 완전히 금지하는 것','탄소세를 내는 것','배출한 탄소만큼 흡수해 순 배출량을 0으로','탄소 에너지만 사용하는 것'],ans:2,hint:'배출-흡수=0이에요.',fb_ok:'✅ 정확해요! 배출량 = 흡수량이 되도록 균형을 맞추는 게 탄소중립이에요.',fb_no:'🤔 탄소중립은 완전히 배출을 금지하는 게 아니라 배출=흡수로 균형을 맞추는 거예요!'},
+    {q:'신재생에너지의 공통적인 장점은?',data:'● 태양광·풍력·수력: 연료비 없음, 탄소 배출 적음\n● 화석연료: 연료비 발생, CO₂ 배출',opts:['언제 어디서나 대량 생산 가능','초기 설치비용이 전혀 없음','날씨와 상관없이 안정적으로 발전','탄소 배출이 적고 자원이 지속 공급됨'],ans:3,hint:'환경과 지속가능성 측면을 생각해봐요.',fb_ok:'✅ 정답! 탄소 배출이 적고 자연에서 지속 공급되는 것이 핵심 장점이에요.',fb_no:'🤔 신재생에너지는 초기 비용이 있고 날씨 영향을 받지만, 탄소 배출이 적고 지속 공급된다는 게 핵심 장점이에요!'},
+    {q:'태양광 패널이 전기를 만드는 원리는?',data:'● 광전효과: 빛(광자)이 반도체에 닿으면 전자가 방출되어 전류 발생\n● 태양전지: 실리콘 반도체 소자로 구성',opts:['빛이 반도체에 닿아 전자가 움직임','빛의 열로 물을 끓여 터빈 회전','바람으로 날개를 돌려 발전','화학반응으로 전기 생산'],ans:0,hint:'광전효과와 반도체를 떠올려봐요.',fb_ok:'✅ 정확! 빛(광자) → 반도체 → 전자 방출 → 전류 발생이에요.',fb_no:'🤔 태양광은 열이 아닌 "빛"을 직접 전기로 바꿔요!'},
+    {q:'다음 중 화석연료의 특징이 아닌 것은?',data:'● 화석연료: 수억 년 전 생물이 변해 만들어진 연료\n● 종류: 석탄, 석유, 천연가스',opts:['한 번 쓰면 사라진다','연소 시 CO₂가 발생한다','매장량이 한정되어 있다','자연에서 계속 만들어진다'],ans:3,hint:'신재생에너지는 자연에서 "계속" 공급돼요.',fb_ok:'✅ 맞아요! 화석연료는 재생이 불가능해요. 계속 만들어지는 건 신재생에너지의 특징이에요.',fb_no:'🤔 화석연료는 수억 년이 걸려 만들어져서 사람이 쓰는 속도로 재생되지 않아요!'},
+  ],
+  normal:[
+    {q:'태양광 발전량이 가장 높은 계절과 이유는?',data:'● 일조시간: 봄·여름 9~11h/일, 가을·겨울 5~7h/일\n● 발전효율: 일조시간에 비례',opts:['여름 — 일조시간이 길어서','겨울 — 공기가 맑아서','가을 — 바람이 많아서','봄 — 황사가 없어서'],ans:0,hint:'일조시간이 길수록 발전량이 늘어요.',fb_ok:'⚡ 정답! 여름은 일조시간이 가장 길어 태양광 효율이 높아요.',fb_no:'🤔 발전량은 일조시간에 비례해요. 여름이 가장 길죠!'},
+    {q:'신재생에너지 확대가 일자리에 미치는 영향은?',data:'● IEA(2023): 재생에너지 1GW 설치당 약 4,000개 일자리 창출\n● 한국 재생에너지 목표(2030): 60GW',opts:['일자리가 감소한다','새로운 일자리가 창출된다','기존 에너지 일자리만 증가','일자리 변화가 없다'],ans:1,hint:'60GW × 4,000개를 계산해봐요.',fb_ok:'🌱 맞아요! 60GW×4,000개 = 약 24만 개의 새 일자리가 생길 수 있어요.',fb_no:'🤔 1GW당 4,000개 × 60GW를 계산해봐요!'},
+    {q:'재생에너지 비중 확대의 가장 큰 장애물은?',data:'● 국내 재생에너지 비중(2023): 약 9.2%\n● OECD 평균: 약 33%\n● 초기 설치비용: 기존 대비 1.5~2배\n● 국내 일조량: 유럽 대비 60~70%',opts:['국민 환경 관심 부족','정부 정책 반대','높은 초기비용+자연조건 한계','기술이 개발 중'],ans:2,hint:'비용과 자연 조건 수치를 같이 보세요.',fb_ok:'💡 훌륭해요! 초기비용 1.5~2배 + 일조량 부족이 복합 장애물이에요.',fb_no:'🤔 기술은 상용화 단계, 정책도 추진 중이에요. 비용과 자연 조건이 핵심입니다.'},
+    {q:'에너지 저장장치(ESS)가 재생에너지에 필요한 이유는?',data:'● ESS(Energy Storage System): 전기를 저장했다가 필요할 때 공급\n● 태양광·풍력: 날씨에 따라 발전량이 변동\n● 전력망: 공급과 수요의 균형 필요',opts:['발전비용을 낮추기 위해','태양광 패널 효율을 높이기 위해','탄소 배출을 줄이기 위해','날씨에 따른 발전량 변동을 안정화하기 위해'],ans:3,hint:'태양이 없으면 태양광이 발전을 못할 때 어떻게 해야 할까요?',fb_ok:'⚡ 맞아요! ESS는 낮에 생산된 전기를 저장해 밤이나 흐린 날에 공급해요.',fb_no:'🤔 태양광·풍력은 날씨에 따라 발전량이 달라져요. ESS로 남은 전기를 저장해두는 거예요!'},
+    {q:'전기차 보급 확대가 재생에너지와 연결되는 이유는?',data:'● 전기차: 전기로 구동 → 전력 수요 증가\n● V2G(Vehicle to Grid): 전기차 배터리를 ESS로 활용 가능\n● 재생에너지 + 전기차 = 탄소 배출 최소화',opts:['전기차 배터리가 재생에너지를 저장·활용하는 ESS 역할 가능','전기차는 석유를 사용하지 않아서','전기차가 더 빠르게 달릴 수 있어서','전기차 생산에 재생에너지가 필요해서'],ans:0,hint:'V2G 기술을 생각해봐요.',fb_ok:'⚡ 훌륭해요! 전기차 배터리가 이동형 ESS로 활용되면 재생에너지 효율이 크게 높아져요.',fb_no:'🤔 V2G(Vehicle to Grid): 전기차를 달리는 배터리이자 전력 저장소로 활용하는 기술이에요!'},
+    {q:'우리나라 재생에너지 비중이 OECD 평균보다 낮은 이유로 적절하지 않은 것은?',data:'● 국내 재생에너지 비중(2023): 9.2%\n● OECD 평균: 33%\n● 국토면적: OECD 국가 중 작은 편\n● 인구밀도: 높은 편 (대규모 시설 부지 확보 어려움)',opts:['좁은 국토로 대규모 시설 부지 확보 어려움','재생에너지 기술 자체가 아직 개발되지 않아서','높은 인구밀도로 설치 공간 부족','상대적으로 짧은 일조시간·풍량'],ans:1,hint:'"기술"은 이미 상용화 단계예요.',fb_ok:'💡 정확! 재생에너지 기술은 이미 상용화됐어요. 문제는 기술이 아니라 부지·조건이에요.',fb_no:'🤔 태양광·풍력 기술은 이미 전 세계에서 상용화됐어요. 기술 부재는 이유가 아니에요!'},
+    {q:'스마트그리드(Smart Grid)란 무엇인가요?',data:'● 스마트그리드: 기존 전력망 + ICT 기술 결합\n● 기능: 실시간 전력 수요·공급 모니터링, 자동 조절\n● 효과: 전력 낭비 감소, 재생에너지 효율적 활용',opts:['전기를 더 빠르게 전송하는 굵은 전선','태양광 패널을 연결하는 케이블','IT 기술로 전력 생산·소비를 실시간 조절하는 지능형 전력망','스마트폰으로 전기 요금을 납부하는 앱'],ans:2,hint:'스마트(Smart) + 그리드(Grid·전력망)예요.',fb_ok:'✅ 정확! ICT 기술로 전력 흐름을 실시간 관리하는 지능형 전력망이에요.',fb_no:'🤔 스마트그리드는 단순히 빠른 전선이 아닌, AI·ICT로 전력을 지능적으로 관리하는 시스템이에요!'},
+    {q:'재생에너지 발전 단가가 지속적으로 하락하는 이유는?',data:'● 태양광 발전 단가: 2010년 대비 2023년 약 90% 하락\n● 원인: 기술 발전, 대량 생산, 설치 경험 축적',opts:['정부가 전기요금을 강제로 낮춰서','원자재 가격이 오르지 않아서','재생에너지 수요가 줄어들어서','기술 발전과 대량 생산으로 제조비용이 감소해서'],ans:3,hint:'기술이 발전하면 생산비용은 어떻게 될까요?',fb_ok:'✅ 정확! 기술 혁신 + 대량 생산 → 학습 효과(Learning Curve)로 비용이 계속 하락해요.',fb_no:'🤔 기술이 발전하고 대량 생산될수록 제조비용이 낮아지는 "학습 효과"가 발생해요!'},
+    {q:'다음 데이터를 보고 재생에너지 증가 추세를 가장 잘 설명한 것은?',data:'● 2019년: 6.1%  ● 2020년: 7.2%\n● 2021년: 7.9%  ● 2022년: 8.5%\n● 2023년: 9.2%',opts:['연평균 약 0.8%p씩 꾸준히 증가','매년 2%p 이상 급격히 증가','2021년 이후 감소세','2022~2023년 사이 가장 크게 증가'],ans:0,hint:'2023-2019 = 3.1%p ÷ 4년을 계산해봐요.',fb_ok:'💡 정확! 3.1%p ÷ 4년 = 약 0.78%p로 연평균 0.8%p씩 성장했어요.',fb_no:'🤔 (9.2-6.1)÷4 = 약 0.78%p/년이에요. 꾸준하지만 느린 증가예요!'},
+    {q:'AI 머신러닝 예측이 가장 부정확할 상황은?',data:'● AI 예측 오류 원인: 훈련 데이터와 다른 상황\n● 훈련 데이터: 맑은 날 위주로 학습',opts:['평균 기온 22도 맑음','여름 평년 날씨','훈련 데이터와 유사한 날씨','갑작스러운 황사 발생'],ans:3,hint:'AI는 "처음 보는" 상황에 취약해요.',fb_ok:'🤖 정확해요! 황사는 훈련 데이터에 없는 "분포 외" 상황이에요.',fb_no:'🤔 AI는 학습한 데이터와 다른 상황에서 오류가 많이 발생해요!'},
+  ],
+  hard:[
+    {q:'에너지 전환 과정에서 "정의로운 전환(Just Transition)"이 필요한 이유는?',data:'● 정의로운 전환: 화석연료 산업 종사자·지역사회가 받는 피해를 보완하며 전환\n● 국내 석탄 발전소 폐쇄 예정: 2036년까지 단계적 폐쇄\n● 관련 고용 인원: 약 3만 명 이상',opts:['에너지 전환 시 일자리를 잃는 노동자와 지역을 보호해야 해서','화석연료가 더 저렴해서','재생에너지가 아직 기술적으로 불완전해서','탄소세 수입을 나눠야 해서'],ans:0,hint:'에너지 전환의 혜택과 피해가 고르게 분배되어야 해요.',fb_ok:'🌍 완벽해요! 에너지 전환의 이익만큼 피해를 받는 집단도 보호해야 하는 게 정의로운 전환이에요.',fb_no:'🤔 석탄발전소 폐쇄로 3만 명이 일자리를 잃을 수 있어요. 이들을 보호하며 전환해야 해요!'},
+    {q:'해상풍력 건설 반대 주민 설득에 AI를 활용할 수 있는 방법은?',data:'● 반대 이유: 소음, 경관 훼손, 해양 생태계 파괴, 의견 미반영\n● AI 활용 영역: 소음 예측 모델, 경관 시뮬레이션, 생태 모니터링',opts:['주민 보상금 지급','AI 소음·경관·생태 시뮬레이션 검증','무조건 공사 강행','단지를 더 멀리 이동'],ans:1,hint:'AI는 예측·시뮬레이션에 강해요.',fb_ok:'🤖 정확해요! AI 시뮬레이션으로 영향을 미리 검증하면 신뢰를 높일 수 있어요.',fb_no:'🤔 AI는 소음 예측, 경관 시뮬레이션, 생태 모니터링에 활용할 수 있어요!'},
+    {q:'맑은 날 데이터 95%로 학습한 AI 태양광 예측 앱의 문제와 AI 윤리 원칙은?',data:'● AI 편향(Bias): 특정 데이터에 치우쳐 오류 발생\n● AI 윤리 4원칙: ①투명성 ②공정성 ③책임성 ④안전성\n⚠️ AI 결과물은 데이터 품질에 따라 신뢰도가 달라집니다.',opts:['투명성 — 작동 방식 미공개','책임성 — 개발자 책임 회피','공정성 — 편향 데이터로 불공정 예측','안전성 — 해킹 취약'],ans:2,hint:'데이터가 한쪽으로 치우칠 때 어떤 윤리 문제가 생길까요?',fb_ok:'🤖 완벽! 편향 데이터 → 편향 예측 → 공정성 위반이에요.',fb_no:'🤔 AI는 데이터로 배우기 때문에 치우친 데이터는 불공정한 결과를 만들어요!'},
+    {q:'2050 탄소중립을 위한 가장 효과적인 에너지 정책 조합은?',data:'● 재생에너지 확대: 최대 40% 감축\n● 에너지 효율화: 최대 25% 감축\n● 탄소 포집(CCS): 최대 15% 감축',opts:['화석연료 유지+CCS만','원자력만 확대','에너지 소비 완전 금지','재생에너지 확대+에너지 효율화'],ans:3,hint:'감축 % 가장 큰 두 항목을 합해봐요.',fb_ok:'🌍 완벽한 분석! 40%+25%=65% 감축 — 가장 효율적 조합이에요.',fb_no:'🤔 데이터에서 감축 % 가장 큰 두 항목을 더해봐요!'},
+    {q:'에너지 빈곤층이 재생에너지 전환 과정에서 불이익을 받을 수 있는 이유는?',data:'● 에너지 빈곤층: 소득의 10% 이상을 에너지 비용으로 지출\n● 재생에너지 초기 설치비: 태양광 가정용 약 500~800만원\n● 전기요금 인상 가능성: 전환 비용이 요금에 반영될 수 있음',opts:['초기 설치비용을 감당하기 어렵고 요금 인상 부담이 큼','재생에너지 전기가 더 불안정해서','에너지 빈곤층은 전기를 적게 써서','재생에너지 지역에 살지 않아서'],ans:0,hint:'초기 비용과 요금 인상 데이터를 봐요.',fb_ok:'🌍 날카로운 분석! 초기 비용 500~800만원 + 요금 인상이 에너지 빈곤층에 더 큰 부담이에요.',fb_no:'🤔 에너지 전환의 혜택이 모두에게 공평하게 돌아가려면 빈곤층 지원 정책도 함께 필요해요!'},
+    {q:'생성형 AI로 "에너지 절약 아이디어"를 얻었을 때 올바른 활용 방법은?',data:'● 생성형 AI 강점: 다양한 아이디어·초안 빠르게 생성\n● 생성형 AI 약점: 최신 데이터 반영 미흡, 오류 가능\n● AI 책임성: 결과물 검증·수정 책임은 사용자에게 있음',opts:['AI가 제안한 그대로 즉시 실행','아이디어를 참고해 실제 데이터로 검증 후 적용','AI 제안을 무조건 믿고 보고서 제출','AI가 틀렸으므로 아이디어를 버림'],ans:1,hint:'AI는 도구예요. 최종 판단은 누가 해야 할까요?',fb_ok:'✅ 완벽! AI 아이디어 → 데이터 검증 → 수정 적용이 올바른 사용법이에요.',fb_no:'🤔 AI는 훌륭한 도우미지만 검증 없이 그대로 쓰면 오류가 생길 수 있어요. 항상 검증하세요!'},
+    {q:'AI가 전력망 수요를 예측할 때 가장 관련성이 낮은 데이터는?',data:'● 전력 수요 영향 요인: 기온, 요일, 계절, 산업 활동, 인구\n● 머신러닝 입력변수: 상관관계가 높은 데이터 선택이 중요',opts:['시간대별 기온 데이터','요일 및 공휴일 정보','소셜미디어 팔로워 수','산업단지 가동률'],ans:2,hint:'전력 사용과 직접 연관된 데이터를 찾아봐요.',fb_ok:'🤖 정확! 소셜미디어 팔로워 수는 전력 수요와 상관관계가 없는 노이즈 데이터예요.',fb_no:'🤔 AI 모델에는 전력 수요와 실제로 연관된 변수만 넣어야 해요. 팔로워 수는 관련이 없어요!'},
+    {q:'ChatGPT가 제시한 풍력 발전 통계를 확인 없이 보고서에 쓰면?',data:'● 생성형 AI 환각(Hallucination): 그럴듯하지만 틀린 정보 생성\n● 데이터 신뢰도: 공식 출처(에너지공단, 통계청) 교차 검증 필수',opts:['위험하다, 환각으로 틀릴 수 있다','괜찮다, AI는 정확하다','AI는 통계를 모른다','AI는 실시간 데이터를 쓴다'],ans:0,hint:'생성형 AI의 "환각(Hallucination)" 현상을 떠올려봐요.',fb_ok:'✅ 훌륭해요! 생성형 AI는 잘못된 수치를 자신 있게 말하기도 해요.',fb_no:'🤔 생성형 AI의 환각 — 그럴듯하지만 틀린 정보를 생성해요!'},
+    {q:'국가 간 재생에너지 협력이 필요한 이유를 데이터로 설명한 것은?',data:'● 사막 지역: 일조량 세계 최고 수준\n● 북해·해안 지역: 풍력 최적 조건\n● HVDC(초고압 직류송전): 수천 km 전력 전송 기술\n● 에너지 자원 분포: 국가별로 불균형',opts:['모든 국가가 자국 재생에너지만으로 충분해서','재생에너지 기술이 특정 국가만 보유해서','자원 분포 불균형을 협력으로 보완하고 HVDC로 장거리 전송 가능','국제 협력이 전기요금을 낮추어서'],ans:2,hint:'재생에너지 자원이 어느 지역에 많이 있는지 생각해봐요.',fb_ok:'🌐 완벽해요! 사막의 태양광, 북해의 풍력을 HVDC로 공유하는 게 국제 협력의 핵심이에요.',fb_no:'🤔 재생에너지 자원은 특정 지역에 집중돼 있어요. 협력으로 자원 불균형을 해결하는 거예요!'},
+    {q:'재생에너지 확대로 인한 "에너지 안보" 관점의 긍정적 효과는?',data:'● 에너지 안보: 필요한 에너지를 안정적으로 확보하는 능력\n● 국내 에너지 수입 의존도(2023): 약 93%\n● 재생에너지: 국내 자원(태양·바람) 활용',opts:['에너지 수입 비용이 증가함','해외 에너지 기업과 협력이 늘어남','전력 요금이 단기적으로 낮아짐','국내 자원 활용으로 수입 의존도를 낮출 수 있음'],ans:3,hint:'국내에서 생산할 수 있다면 수입을 줄일 수 있어요.',fb_ok:'🌟 훌륭한 분석! 93%의 수입 의존도를 낮추는 게 재생에너지의 에너지 안보 효과예요.',fb_no:'🤔 태양과 바람은 수입 없이 국내에서 얻을 수 있어요. 수입 의존도를 낮춰 에너지 안보가 강화돼요!'},
+  ],
+};
+
+/* ═══ 에너지 아이템 ═══ */
+const EI=[
+  {icon:'☀️',name:'태양광',type:'renew'},{icon:'💨',name:'풍력',type:'renew'},
+  {icon:'💧',name:'수력',type:'renew'},{icon:'🌋',name:'지열',type:'renew'},
+  {icon:'🌿',name:'바이오매스',type:'renew'},{icon:'⛽',name:'석유',type:'fossil'},
+  {icon:'🪨',name:'석탄',type:'fossil'},{icon:'🔥',name:'천연가스',type:'fossil'},
+];
+
+/* ═══ 진로 데이터 ═══ */
+const CAREERS={
+  high:[
+    {name:'신재생에너지 엔지니어',dept:'에너지공학·전기공학',sal:'연 4,500~7,000만원',dsc:'태양광·풍력 발전소 설계, 설치, 유지보수 전문가'},
+    {name:'에너지 데이터 사이언티스트',dept:'컴퓨터공학·통계학',sal:'연 5,000~9,000만원',dsc:'AI·빅데이터로 발전량 예측 및 에너지 최적화 분석'},
+    {name:'환경정책 연구원',dept:'환경공학·행정학',sal:'연 4,000~6,500만원',dsc:'탄소중립 정책 설계·평가, 국제 기후 협약 대응'},
+    {name:'AI 에너지 솔루션 개발자',dept:'소프트웨어공학·정보학',sal:'연 5,500~1억원+',dsc:'스마트그리드·에너지 관리 AI 소프트웨어 개발'},
+  ],
+  mid:[
+    {name:'에너지 컨설턴트',dept:'경영학·환경공학',sal:'연 4,000~6,500만원',dsc:'기업·기관의 에너지 효율화 및 탄소절감 전략 자문'},
+    {name:'기후변화 연구원',dept:'지구과학·환경학',sal:'연 3,800~5,500만원',dsc:'기후 데이터 분석, 온실가스 감축 방안 연구'},
+    {name:'스마트그리드 전문가',dept:'전기·전자공학',sal:'연 4,500~7,500만원',dsc:'지능형 전력망 설계·운영, ESS 관리 시스템 개발'},
+  ],
+  low:[
+    {name:'환경교육사',dept:'환경교육·교육학',sal:'연 3,200~4,500만원',dsc:'학교·기관에서 기후·환경 교육 프로그램 운영'},
+    {name:'태양광 설치 기술자',dept:'전기·설비 직업교육',sal:'연 3,500~5,500만원',dsc:'가정·상업용 태양광 패널 설치 및 유지보수 전문가'},
+    {name:'지속가능발전 전문가',dept:'환경학·사회학',sal:'연 3,500~5,000만원',dsc:'SDGs 관련 프로그램 기획 및 평가'},
+  ],
+  seed:[
+    {name:'환경 NGO 활동가',dept:'사회학·환경학',sal:'연 2,800~4,000만원',dsc:'기후위기 대응 캠페인, 정책 제안 시민단체 활동'},
+    {name:'에너지 콘텐츠 크리에이터',dept:'언론·미디어학',sal:'수입 다양 (활동 규모에 따라)',dsc:'신재생에너지 정보를 콘텐츠로 제작·공유'},
+  ],
+};
+
+/* ═══ 전역 상태 ═══ */
+const G={nick:'',diff:'normal',score:0,mission:0,
+  m1Answers:{},m1Sel:null,m1Done:false,
+  m2Qs:{},m2Res:{easy:[],normal:[],hard:[]},m2Lv:0,m2QIdx:0,
+  m3Done:false,m4Done:false,_hint:false,
+  timer:null,timerLeft:0,musicOn:true,ctx:null};
+
+/* ═══ 배경 파티클 ═══ */
+(function(){
+  const cv=document.getElementById('bg-canvas'),cx=cv.getContext('2d');
+  let W,H,ps=[];
+  const r=()=>{W=cv.width=innerWidth;H=cv.height=innerHeight;};
+  r();addEventListener('resize',r);
+  for(let i=0;i<70;i++)ps.push({x:Math.random()*9999,y:Math.random()*9999,
+    rr:Math.random()*1.2+.3,s:Math.random()*.25+.05,
+    c:Math.random()<.5?'rgba(0,229,160,':'rgba(0,207,255,',o:Math.random()*.4+.1});
+  function draw(){
+    cx.clearRect(0,0,W,H);
+    ps.forEach(p=>{p.y-=p.s;if(p.y<0){p.y=H;p.x=Math.random()*W;}
+      cx.beginPath();cx.arc(p.x%W,p.y,p.rr,0,Math.PI*2);cx.fillStyle=p.c+p.o+')';cx.fill();});
+    requestAnimationFrame(draw);
+  }draw();
+})();
+
+/* ═══ 오디오 ═══ */
+function initAudio(){
+  if(G.ctx)return;
+  G.ctx=new(window.AudioContext||window.webkitAudioContext)();
+  playAmb();
+}
+function playAmb(){
+  if(!G.ctx||!G.musicOn)return;
+  const N=[130.8,146.8,164.8,174.6,196,220];
+  function n(){
+    if(!G.musicOn||!G.ctx)return;
+    const o=G.ctx.createOscillator(),g=G.ctx.createGain(),f=G.ctx.createBiquadFilter();
+    f.type='lowpass';f.frequency.value=500;
+    o.connect(f);f.connect(g);g.connect(G.ctx.destination);
+    o.type='sine';o.frequency.value=N[Math.floor(Math.random()*N.length)];
+    g.gain.setValueAtTime(0,G.ctx.currentTime);
+    g.gain.linearRampToValueAtTime(.032,G.ctx.currentTime+.3);
+    g.gain.linearRampToValueAtTime(0,G.ctx.currentTime+1.1);
+    o.start();o.stop(G.ctx.currentTime+1.4);
+    setTimeout(n,900+Math.random()*1100);
+  }n();
+}
+function beep(f,d,t='sine',v=.12){
+  if(!G.ctx)return;
+  const o=G.ctx.createOscillator(),g=G.ctx.createGain();
+  o.connect(g);g.connect(G.ctx.destination);
+  o.type=t;o.frequency.value=f;
+  g.gain.setValueAtTime(v,G.ctx.currentTime);
+  g.gain.exponentialRampToValueAtTime(.001,G.ctx.currentTime+d);
+  o.start();o.stop(G.ctx.currentTime+d+.05);
+}
+function sfxOK(){beep(880,.12);setTimeout(()=>beep(1100,.1),130);}
+function sfxNG(){beep(180,.3,'sawtooth',.09);}
+function sfxTap(){beep(440,.05,'square',.06);}
+
+/* ═══ 타이머 ═══ */
+function startTimer(sec,cb){
+  clearTimer();G.timerLeft=sec;updTimer();
+  G.timer=setInterval(()=>{G.timerLeft--;updTimer();if(G.timerLeft<=0){clearTimer();cb();}},1000);
+}
+function clearTimer(){if(G.timer){clearInterval(G.timer);G.timer=null;}
+  const el=document.getElementById('timer-disp');if(el){el.textContent='--';el.classList.remove('warn');}}
+function updTimer(){const el=document.getElementById('timer-disp');if(!el)return;
+  el.textContent=G.timerLeft+'s';
+  G.timerLeft<=10?el.classList.add('warn'):el.classList.remove('warn');}
+
+/* ═══ 화면 전환 ═══ */
+function showScreen(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo(0,0);
+}
+function updDots(){
+  for(let i=1;i<=4;i++){
+    const d=document.getElementById('d'+i);
+    d.className='dot';
+    if(i-1<G.mission)d.classList.add('done');
+    else if(i-1===G.mission)d.classList.add('active');
+  }
+}
+function addScore(n){G.score+=n;document.getElementById('score-disp').textContent=G.score;}
+
+/* ═══ 마스코트 ═══ */
+function mascot(type,lbl){
+  const el=document.getElementById('mascot-float'),m=document.getElementById('fm-mouth'),lb=document.getElementById('fm-lbl');
+  if(!el)return;
+  if(type==='ok'){m.setAttribute('d','M25 33 Q32 40 39 33');el.querySelector('circle').setAttribute('stroke','#00e5a0');}
+  else{m.setAttribute('d','M25 36 Q32 30 39 36');el.querySelector('circle').setAttribute('stroke','#ff4757');}
+  lb.textContent=lbl||'';el.style.display='block';
+  clearTimeout(el._t);el._t=setTimeout(()=>{el.style.display='none';},2500);
+}
+
+/* ═══ 유틸 ═══ */
+function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+function lname(lv){return['easy','normal','hard'][lv];}
+function goNextMission(){
+  clearTimer();sfxTap();G.mission++;updDots();
+  [renderM1,renderM2,renderM3,renderM4][G.mission]&&[renderM1,renderM2,renderM3,renderM4][G.mission]();
+  const b=document.getElementById('mbody');if(b)b.scrollTop=0;window.scrollTo(0,0);
+}
+
+/* ═══ 미션1 ═══ */
+function renderM1(){
+  const cfg=DCFG[G.diff];
+  G.m1Answers={};G.m1Sel=null;G.m1Done=false;
+  const b=document.getElementById('mbody');
+  b.innerHTML=`
+    <div class="prog-wrap"><div class="prog-fill" style="width:15%"></div></div>
+    <div class="m-head"><div class="m-num">MISSION 01</div>
+      <div class="m-title">⚡ 에너지 데이터 맵 탐색</div>
+      <div class="m-desc">에너지를 선택 후 분류하세요! 타이머: <strong style="color:var(--yellow)">${cfg.tm1}초</strong></div>
+    </div>
+    <div class="card">
+      <div class="energy-grid" id="egrid">
+        ${EI.map((e,i)=>`<div class="energy-item" id="ei${i}" data-i="${i}"><div class="ei-icon">${e.icon}</div><div class="ei-name">${e.name}</div></div>`).join('')}
+      </div>
+      <div class="cnt-row"><span>분류 완료: <strong id="cnt">0</strong>/8</span><span>터치 후 아래 버튼으로 분류</span></div>
+      <div class="clf-btns">
+        <button class="btn-renew" onclick="classify('renew')">🌿 신재생에너지</button>
+        <button class="btn-fossil" onclick="classify('fossil')">⛽ 화석에너지</button>
+      </div>
+      <div style="margin-top:11px"><button class="btn-submit" id="m1sub" onclick="submitM1()" disabled>✅ 분류 완료!</button></div>
+    </div>
+    <div style="font-size:.68rem;color:var(--muted);text-align:center">출처: 산업통상자원부 에너지 분류 기준(2023)</div>`;
+
+  document.querySelectorAll('.energy-item').forEach(el=>{
+    el.addEventListener('click',()=>{
+      sfxTap();
+      document.querySelectorAll('.energy-item').forEach(e=>e.classList.remove('sel'));
+      el.classList.add('sel');G.m1Sel=parseInt(el.dataset.i);
+    });
+  });
+  startTimer(cfg.tm1,()=>{if(!G.m1Done)submitM1(true);});
+}
+
+function classify(type){
+  if(G.m1Done||G.m1Sel===null&&G.m1Sel!==0)return;
+  sfxTap();const i=G.m1Sel;
+  const el=document.getElementById('ei'+i);
+  el.classList.remove('sel','sr','sf');
+  el.classList.add(type==='renew'?'sr':'sf');
+  G.m1Answers[i]=type;
+  const cnt=Object.keys(G.m1Answers).length;
+  document.getElementById('cnt').textContent=cnt;
+  const sub=document.getElementById('m1sub');
+  if(cnt>=8)sub.disabled=false;
+  G.m1Sel=null;
+  document.querySelectorAll('.energy-item').forEach(e=>e.classList.remove('sel'));
+}
+
+function submitM1(auto=false){
+  if(G.m1Done)return;G.m1Done=true;clearTimer();
+  let ok=0;
+  EI.forEach((e,i)=>{
+    const el=document.getElementById('ei'+i);
+    if(G.m1Answers[i]===e.type){ok++;el.classList.add('ev-ok');}
+    else el.classList.add('ev-ng');
+  });
+  const pts=ok*5;addScore(pts);
+  setTimeout(()=>{
+    const r=document.createElement('div');r.className='card';
+    r.style.cssText='border-color:var(--green);text-align:center;margin-top:0';
+    r.innerHTML=`<div style="font-size:1.05rem;font-weight:700;color:var(--green);margin-bottom:5px">${ok}/8 정답! +${pts}점 🎉</div>
+      <div style="font-size:.8rem;color:var(--muted);margin-bottom:12px">${ok>=6?'⚡ 에너지 분류 마스터!':ok>=4?'🌱 잘했어요! 더 연습해봐요':'🤔 신재생에너지 특징을 다시 공부해봐요'}</div>
+      <button class="btn-next" onclick="goNextMission()">미션 2로 →</button>`;
+    document.getElementById('mbody').appendChild(r);
+    r.scrollIntoView({behavior:'smooth',block:'nearest'});
+  },700);
+}
+
+/* ═══ 미션2 ═══ */
+function renderM2(){
+  const cfg=DCFG[G.diff];
+  G.m2Qs={easy:shuffle([...QB.easy]).slice(0,cfg.qc),normal:shuffle([...QB.normal]).slice(0,cfg.qc),hard:shuffle([...QB.hard]).slice(0,cfg.qc)};
+  G.m2Res={easy:[],normal:[],hard:[]};G.m2Lv=0;G.m2QIdx=0;
+  const b=document.getElementById('mbody');
+  b.innerHTML=`
+    <div class="prog-wrap"><div class="prog-fill" style="width:40%"></div></div>
+    <div class="m-head"><div class="m-num">MISSION 02</div>
+      <div class="m-title">🔬 교과 융합 심화 퀴즈</div>
+      <div class="m-desc">과학·사회·정보 융합 — 3단계 모두 클리어!</div>
+    </div>
+    <div class="diff-tabs" id="dtabs">
+      <div class="diff-tab active" data-lv="0">🌱 쉬움 (${cfg.qc}문제)</div>
+      <div class="diff-tab" data-lv="1">⚡ 보통 (${cfg.qc}문제)</div>
+      <div class="diff-tab" data-lv="2">🔥 도전 (${cfg.qc}문제)</div>
+    </div>
+    <div id="qwrap"></div>`;
+  renderQQ();
+}
+
+function renderQQ(){
+  const lv=lname(G.m2Lv),qs=G.m2Qs[lv],qi=G.m2QIdx,cfg=DCFG[G.diff];
+  const qw=document.getElementById('qwrap');if(!qw)return;
+  if(qi>=qs.length){
+    document.querySelectorAll('.diff-tab')[G.m2Lv].classList.add('tab-done');
+    if(G.m2Lv<2){
+      qw.innerHTML=`<div class="card" style="text-align:center">
+        <div style="font-size:.98rem;font-weight:700;color:var(--green);margin-bottom:6px">${['쉬움','보통','도전'][G.m2Lv]} 단계 완료! 🎉</div>
+        <div style="font-size:.8rem;color:var(--muted);margin-bottom:12px">다음 단계로 도전해봐요!</div>
+        <button class="btn-next" onclick="switchLv(${G.m2Lv+1})">다음 단계 →</button></div>`;
+    } else {
+      qw.innerHTML=`<div class="card" style="text-align:center">
+        <div style="font-size:.98rem;font-weight:700;color:var(--green);margin-bottom:6px">3단계 모두 완료! 🌟</div>
+        <div style="font-size:.8rem;color:var(--muted);margin-bottom:12px">훌륭한 분석력이에요!</div>
+        <button class="btn-next" onclick="goNextMission()">미션 3으로 →</button></div>`;
+    }return;
+  }
+  const q=qs[qi];const done=G.m2Res[lv][qi]!==undefined;
+  const dots=qs.map((_,di)=>`<div class="q-dot ${di<qi?'done':di===qi?'cur':''}"></div>`).join('');
+  qw.innerHTML=`<div class="card">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+      <span class="qcount-badge">문제 ${qi+1}/${qs.length}</span>
+      <div class="q-prog">${dots}</div>
+    </div>
+    <div class="quiz-q"><div class="q-num">${['쉬움','보통','도전'][G.m2Lv]} Q${qi+1}</div>${q.q}</div>
+    ${q.data?`<div class="data-box">${q.data}</div>`:''}
+    <div class="quiz-opts" id="qopts">
+      ${q.opts.map((o,i)=>`<button class="quiz-opt ${done?(i===q.ans?'opt-ok':(G.m2Res[lv][qi]===i&&i!==q.ans?'opt-ng':'')):''}
+      " ${done?'disabled':''} onclick="answerQ(${i})">${['①','②','③','④'][i]} ${o}</button>`).join('')}
+    </div>
+    <div class="hint-row">
+      <button class="hint-btn" id="hbtn" ${done?'disabled':''} onclick="showHint()">💡 힌트 (-2점)</button>
+      <span class="hint-txt" id="htxt"></span>
+    </div>
+    <div class="fb" id="fbx"></div>
+    ${done?`<div style="text-align:center;margin-top:11px"><button class="btn-next" onclick="nextQ()">다음 문제 →</button></div>`:''}
+  </div>`;
+  if(!done)startTimer(cfg.tq,()=>answerQ(-1));
+}
+
+function switchLv(lv){clearTimer();G.m2Lv=lv;G.m2QIdx=0;
+  document.querySelectorAll('.diff-tab').forEach(t=>t.classList.toggle('active',parseInt(t.dataset.lv)===lv));renderQQ();}
+
+function showHint(){sfxTap();G._hint=true;
+  const lv=lname(G.m2Lv),q=G.m2Qs[lv][G.m2QIdx];
+  const ht=document.getElementById('htxt'),hb=document.getElementById('hbtn');
+  if(ht){ht.style.display='inline';ht.textContent='💡 '+q.hint;}if(hb)hb.disabled=true;}
+
+function answerQ(chosen){
+  clearTimer();
+  const lv=lname(G.m2Lv),q=G.m2Qs[lv][G.m2QIdx],cfg=DCFG[G.diff];
+  G.m2Res[lv][G.m2QIdx]=chosen;
+  const opts=document.querySelectorAll('.quiz-opt');
+  opts.forEach((o,i)=>{o.disabled=true;if(i===q.ans)o.classList.add('opt-ok');else if(i===chosen)o.classList.add('opt-ng');});
+  const isOk=chosen===q.ans;const pen=G._hint?2:0;const pts=isOk?Math.max(cfg.pts[G.m2Lv]-pen,1):0;
+  if(isOk){sfxOK();addScore(pts);mascot('ok','👍정답!');}
+  else if(chosen===-1){sfxNG();mascot('ng','⏰시간!');}
+  else{sfxNG();mascot('ng','😅다시!');}
+  const fb=document.getElementById('fbx');if(fb){fb.style.display='block';
+    if(isOk){fb.className='fb fb-ok';fb.innerHTML=q.fb_ok+`<strong> (+${pts}점)</strong>`;}
+    else{fb.className='fb fb-ng';fb.textContent=chosen===-1?'⏰ 시간 초과! '+q.fb_no:q.fb_no;}}
+  G._hint=false;
+  const card=document.querySelector('#qwrap .card');
+  if(card&&!card.querySelector('.btn-next')){const nb=document.createElement('div');
+    nb.style.cssText='text-align:center;margin-top:11px';
+    nb.innerHTML=`<button class="btn-next" onclick="nextQ()">다음 문제 →</button>`;card.appendChild(nb);}
+}
+
+function nextQ(){sfxTap();G.m2QIdx++;renderQQ();const b=document.getElementById('mbody');if(b)b.scrollTop=0;}
+
+/* ═══ 미션3 ═══ */
+const AI_SC=[
+  {tag:'시나리오 1 — AI 발전량 예측 체험',txt:'AI가 3년치 기상 데이터로 태양광 발전량을 예측합니다. 예측이 가장 부정확할 상황은?',
+   ch:['평균 기온 20도, 맑음, 초속 3m','갑자기 황사가 심한 봄날','평년과 비슷한 여름 맑은 날','훈련 데이터에 자주 등장한 날씨'],
+   ans:1,fb:'🤖 황사는 훈련 데이터에 없는 "분포 외(Out-of-Distribution)" 상황! AI는 처음 보는 데이터에 취약해요.'},
+  {tag:'시나리오 2 — 생성형 AI 윤리 판단',txt:'ChatGPT에 풍력 발전 통계를 물었더니 구체적 수치를 답했습니다. 그대로 보고서에 쓰면?',
+   ch:['AI가 답했으니 정확하다','공식 출처에서 반드시 교차검증해야 한다','AI는 통계를 전혀 모른다','AI는 실시간 데이터를 가져온다'],
+   ans:1,fb:'✅ 생성형 AI는 환각(Hallucination)으로 틀린 수치를 자신 있게 말할 수 있어요. 교차 검증 필수!'},
+];
+
+function renderM3(){
+  G.m3Done=false;let sc3=0,done=[false,false];
+  const b=document.getElementById('mbody');
+  b.innerHTML=`
+    <div class="prog-wrap"><div class="prog-fill" style="width:65%"></div></div>
+    <div class="m-head"><div class="m-num">MISSION 03</div>
+      <div class="m-title">🤖 AI 원리 실험실</div>
+      <div class="m-desc">머신러닝·생성형 AI 원리를 직접 체험!</div>
+    </div>
+    <div class="ethics-notice">⚠️ AI 사용 윤리: AI 결과물은 데이터 품질과 검증에 달려 있습니다.</div>
+    ${AI_SC.map((sc,si)=>`
+      <div class="card" id="sc${si}">
+        <div class="ai-sc"><div class="ai-tag">${sc.tag}</div><div class="ai-txt">${sc.txt}</div></div>
+        <div class="ai-choices" id="ach${si}">
+          ${sc.ch.map((c,ci)=>`<button class="ai-choice" onclick="ansAI(${si},${ci})">${['①','②','③','④'][ci]} ${c}</button>`).join('')}
+        </div>
+        <div class="fb" id="afb${si}"></div>
+      </div>`).join('')}
+    <div id="m3next" style="display:none;text-align:center;margin-top:4px">
+      <button class="btn-next" onclick="goNextMission()">미션 4로 🌍</button></div>`;
+
+  window.ansAI=function(si,ci){
+    if(done[si])return;sfxTap();done[si]=true;
+    const sc=AI_SC[si];
+    document.querySelectorAll(`#ach${si} .ai-choice`).forEach((b,i)=>{
+      b.disabled=true;if(i===sc.ans)b.classList.add('ac-ok');else if(i===ci)b.classList.add('ac-ng');});
+    const fb=document.getElementById('afb'+si);
+    if(ci===sc.ans){sfxOK();sc3+=10;fb.className='fb fb-ok';fb.style.display='block';fb.innerHTML=sc.fb+' <strong>(+10점)</strong>';mascot('ok','🤖정답!');}
+    else{sfxNG();fb.className='fb fb-ng';fb.style.display='block';fb.textContent='🤔 '+sc.fb;mascot('ng','😅');}
+    if(done.every(Boolean)&&!G.m3Done){G.m3Done=true;addScore(sc3);document.getElementById('m3next').style.display='block';}
+  };
+}
+
+/* ═══ 미션4 ═══ */
+function renderM4(){
+  G.m4Done=false;
+  const barD=[{l:'태양광',v:42,c:'#ffd600'},{l:'풍력',v:28,c:'#00cfff'},{l:'바이오',v:18,c:'#00e5a0'},{l:'수력',v:8,c:'#7c4dff'},{l:'기타',v:4,c:'#ff7043'}];
+  const lY=[2019,2020,2021,2022,2023],lV=[6.1,7.2,7.9,8.5,9.2];
+  const maxB=42,maxL=9.2;
+  const bars=barD.map(d=>`<div class="bar-item"><div class="bar-vt">${d.v}%</div><div class="bar-fill" style="height:${Math.round((d.v/maxB)*88)}px;background:${d.c}"></div><div class="bar-lbl">${d.l}</div></div>`).join('');
+  const sw=280,sh=90,pl=26,pb=16,pt=8,pr=6;const cw=sw-pl-pr,ch=sh-pb-pt;
+  const pts=lV.map((v,i)=>[pl+(i/(lV.length-1))*cw,pt+(1-v/maxL)*ch]);
+  const poly=pts.map(p=>p.join(',')).join(' ');
+  const area='M'+pts[0].join(',')+'L'+pts.map(p=>p.join(',')).join('L')+`L${pts[pts.length-1][0]},${sh-pb}L${pts[0][0]},${sh-pb}Z`;
+  const svg=`<svg class="line-svg" viewBox="0 0 ${sw} ${sh}" xmlns="http://www.w3.org/2000/svg">
+    <defs><linearGradient id="lg" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#00e5a0" stop-opacity=".3"/><stop offset="100%" stop-color="#00e5a0" stop-opacity="0"/></linearGradient></defs>
+    ${[0,50,100].map(p=>`<line x1="${pl}" y1="${pt+p/100*ch}" x2="${sw-pr}" y2="${pt+p/100*ch}" stroke="rgba(255,255,255,.06)" stroke-width="1"/>`).join('')}
+    ${[0,5,9.2].map(v=>`<text x="${pl-3}" y="${pt+(1-v/maxL)*ch+3}" text-anchor="end" fill="#6a9ab8" font-size="7">${v}</text>`).join('')}
+    ${lY.map((yr,i)=>`<text x="${pl+(i/(lY.length-1))*cw}" y="${sh-pb+10}" text-anchor="middle" fill="#6a9ab8" font-size="7">${yr}</text>`).join('')}
+    <path d="${area}" fill="url(#lg)"/>
+    <polyline points="${poly}" fill="none" stroke="#00e5a0" stroke-width="2" stroke-linejoin="round"/>
+    ${pts.map((p,i)=>`<circle cx="${p[0]}" cy="${p[1]}" r="2.5" fill="#00e5a0"/><text x="${p[0]}" y="${p[1]-4}" text-anchor="middle" fill="#00e5a0" font-size="7">${lV[i]}</text>`).join('')}
+  </svg>`;
+
+  const b=document.getElementById('mbody');
+  b.innerHTML=`
+    <div class="prog-wrap"><div class="prog-fill" style="width:90%"></div></div>
+    <div class="m-head"><div class="m-num">MISSION 04</div>
+      <div class="m-title">🌍 데이터 분석 대시보드</div>
+      <div class="m-desc">실제 데이터를 분석하고 최선의 정책을 도출하세요!</div>
+    </div>
+    <div class="chart-box"><div class="chart-lbl">📊 국내 재생에너지원별 비중 (2023)</div>
+      <div class="bar-chart">${bars}</div>
+      <div class="chart-src">출처: 한국에너지공단 신재생에너지 보급통계 (2023)</div>
+    </div>
+    <div class="chart-box"><div class="chart-lbl">📈 재생에너지 발전 비중 추이 (%)</div>
+      ${svg}<div class="chart-src">출처: 산업통상자원부 에너지통계연보 (2019~2023)</div>
+    </div>
+    <div class="card">
+      <div style="font-weight:600;font-size:.88rem;margin-bottom:8px">📋 2030년 재생에너지 확대를 위한 최선의 전략은?</div>
+      <div class="data-box">● 태양광: 비중 42%, 기술 성숙 단계\n● 풍력: 성장 잠재력 높음, 해상풍력 주목\n● 연평균 증가: 약 0.8%p/년\n● OECD 평균 33% 대비 여전히 낮음</div>
+      <div class="alt-choices" id="alts">
+        <button class="alt-choice" onclick="altAns(this,0)">① 태양광 집중 투자 — 검증된 기술로 최우선 확대</button>
+        <button class="alt-choice" onclick="altAns(this,1)">② 해상풍력 + 태양광 동시 확대 — 리스크 분산</button>
+        <button class="alt-choice" onclick="altAns(this,2)">③ 화석연료 유지 — 안정적 전력 공급 우선</button>
+        <button class="alt-choice" onclick="altAns(this,3)">④ 바이오매스 집중 — 비용 절감 우선</button>
+      </div>
+      <div class="fb" id="altfb"></div>
+      <div id="m4next" style="display:none;text-align:center;margin-top:12px">
+        <button class="btn-next" onclick="finishGame()">🏆 결과 확인!</button></div>
+    </div>`;
+
+  window.altAns=function(el,idx){
+    if(G.m4Done)return;G.m4Done=true;sfxTap();
+    document.querySelectorAll('.alt-choice').forEach(b=>b.disabled=true);el.classList.add('chosen');
+    const msgs=[
+      {ok:true,txt:'💡 좋은 선택! 태양광은 검증된 기술이에요. 날씨 의존도 보완 대책도 함께 고민해봐요. (+15점)'},
+      {ok:true,txt:'🌟 최선의 선택! 태양광+풍력 조합으로 날씨 리스크 분산, OECD 목표에 가장 빠르게 도달! (+15점)'},
+      {ok:false,txt:'🤔 화석연료는 탄소 배출로 기후위기를 가속해요. 데이터의 재생에너지 성장 추세를 다시 보세요.'},
+      {ok:false,txt:'🤔 바이오매스도 가능하지만 현재 비중(18%)을 고려하면 주 전략으로는 부족해요.'},
+    ];
+    const m=msgs[idx];const fb=document.getElementById('altfb');
+    fb.className='fb '+(m.ok?'fb-ok':'fb-ng');fb.style.display='block';fb.innerHTML=m.txt;
+    if(m.ok){sfxOK();addScore(15);mascot('ok','🌍훌륭!');}else{sfxNG();mascot('ng','😅');}
+    document.getElementById('m4next').style.display='block';
+  };
+}
+
+/* ═══ 결과 ═══ */
+function finishGame(){
+  clearTimer();showScreen('screen-result');const s=G.score;
+  const ends=[
+    {min:80,emoji:'🏆',rank:'에너지 마스터',title:'신재생에너지 박사!',desc:'완벽한 데이터 분석과 AI 이해력! 미래 에너지 정책을 이끌 최고의 인재입니다.',tier:'high'},
+    {min:60,emoji:'⚡',rank:'에너지 엔지니어',title:'탁월한 탐구자!',desc:'뛰어난 분석력! 조금 더 익히면 에너지 전문가로 성장할 수 있어요.',tier:'mid'},
+    {min:40,emoji:'🌱',rank:'에너지 탐구자',title:'좋은 시작이에요!',desc:'기본 개념을 파악했어요. 데이터 분석 능력을 더 키워봐요!',tier:'low'},
+    {min:0, emoji:'🌿',rank:'에너지 새싹',title:'첫 걸음을 내딛었어요!',desc:'신재생에너지는 우리의 미래! 다시 도전해봐요.',tier:'seed'},
+  ];
+  const e=ends.find(en=>s>=en.min)||ends[ends.length-1];
+  document.getElementById('res-emoji').textContent=e.emoji;
+  document.getElementById('res-rank').textContent=e.rank;
+  document.getElementById('res-title').textContent=e.title;
+  document.getElementById('res-score').textContent=s+'점';
+  document.getElementById('res-desc').textContent=e.desc;
+
+  // 진로 카드
+  const cl=document.getElementById('career-list');
+  cl.innerHTML=(CAREERS[e.tier]||CAREERS.seed).map(c=>`
+    <div class="career-card">
+      <div class="career-name">💼 ${c.name}</div>
+      <div class="career-dept">🎓 ${c.dept}</div>
+      <div><span class="career-sal">💰 ${c.sal}</span></div>
+      <div class="career-dsc">${c.dsc}</div>
+    </div>`).join('');
+
+  // 리더보드
+  const lb=JSON.parse(localStorage.getItem('m049lb')||'[]');
+  lb.push({nick:G.nick,score:s});lb.sort((a,b)=>b.score-a.score);
+  const top5=lb.slice(0,5);localStorage.setItem('m049lb',JSON.stringify(top5));
+  document.getElementById('lb-list').innerHTML=top5.map((r,i)=>`
+    <div class="lb-row${r.nick===G.nick?' lb-me':''}">
+      <span class="lb-rank">${['🥇','🥈','🥉','4위','5위'][i]}</span>
+      <span class="lb-name">${r.nick}</span>
+      <span class="lb-pts">${r.score}pt</span>
+    </div>`).join('')||'<div style="color:var(--muted);font-size:.8rem">기록이 없어요!</div>';
+
+  // QR
+  try{document.getElementById('qr-inner').innerHTML='';
+    new QRCode(document.getElementById('qr-inner'),{text:'https://milab2019.github.io/main/milab_portfolio.html',width:90,height:90,colorDark:'#071520',colorLight:'#ffffff'});}catch(err){}
+
+  console.log(JSON.stringify({id:'#049',title:'신재생에너지 개발자',target:'중학교 공통',grade:'중1~3',
+    subjects:['과학','사회','정보','기술·가정'],aiFeature:'머신러닝 편향 체험+생성형AI 윤리 판단',
+    theme:'신재생에너지 데이터 탐구+AI윤리+진로연계',date:'2026-05-01',
+    url:'https://milab2019.github.io/main/milab_renewable_energy_049.html'},null,2));
+}
+
+function restartGame(){
+  clearTimer();
+  Object.assign(G,{score:0,mission:0,m1Answers:{},m1Sel:null,m1Done:false,m2Qs:{},m2Res:{easy:[],normal:[],hard:[]},m2Lv:0,m2QIdx:0,m3Done:false,m4Done:false,_hint:false});
+  document.getElementById('score-disp').textContent='0';updDots();showScreen('screen-title');
+}
+function shareResult(){
+  const txt=`🌿 MILAB #049 신재생에너지 개발자\n✨ ${G.nick} — ${G.score}점!\nhttps://milab2019.github.io/main/milab_renewable_049.html`;
+  if(navigator.share)navigator.share({title:'MILAB #049',text:txt});
+  else navigator.clipboard?.writeText(txt).then(()=>alert('결과가 복사됐어요!'));
+}
+
+/* ═══ 이벤트 바인딩 ═══ */
+document.querySelectorAll('.diff-btn').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    document.querySelectorAll('.diff-btn').forEach(b=>b.classList.remove('selected'));
+    btn.classList.add('selected');G.diff=btn.dataset.d;
+    document.getElementById('diff-info').innerHTML=DCFG[G.diff].desc;sfxTap();
+  });
+});
+document.getElementById('start-btn').addEventListener('click',()=>{
+  G.nick=document.getElementById('nick-input').value.trim()||'에너지탐구자';
+  initAudio();showScreen('screen-game');G.mission=0;updDots();renderM1();
+});
+document.getElementById('nick-input').addEventListener('keydown',e=>{if(e.key==='Enter')document.getElementById('start-btn').click();});
+document.getElementById('music-fab').addEventListener('click',()=>{
+  G.musicOn=!G.musicOn;document.getElementById('music-fab').textContent=G.musicOn?'🎵':'🔇';
+  if(G.musicOn)initAudio();sfxTap();
+});
+</script>
+</body>
+</html>
