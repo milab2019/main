@@ -5403,14 +5403,17 @@ function toggleRun() {
 
 function startArduino() {
   isRunning = true;
-  lastSyncState = ''; // 강제 재전송
+  lastSyncState = ''; // 반드시 강제 재전송
   const btn = document.getElementById('btnRun');
   btn.textContent = '⏹ 정지';
   btn.classList.add('running');
-  // 상태바에도 반영
-  addLog(`[${new Date().toLocaleTimeString()}] ▶ 실행 시작`);
+  addLog(`[${new Date().toLocaleTimeString()}] ▶ 실행 시작 — 블록 분석 중...`);
   toast('▶ 아두이노 실행 시작!', 'success');
-  syncToArduino(); // 즉시 전송
+  // 즉시 동기화 실행
+  syncToArduino().catch(e => {
+    addLog(`[오류] syncToArduino 실패: ${e.message}`);
+    toast('❌ 전송 오류: ' + e.message, 'error');
+  });
 }
 
 async function stopArduino() {
@@ -5465,41 +5468,22 @@ function scheduleArduinoSync() {
 // 현재 블록 상태를 아두이노 명령으로 변환 후 전송
 async function syncToArduino() {
   if (!serialPort || !serialPort.writable) return;
-  if (!isRunning) return; // 실행 중이 아니면 전송 안 함
+  if (!isRunning) return;
 
   const state = analyzeBlocks();
   const { pinHigh, pinLow, pinBlink, pinPwm, tones, servos } = state;
 
-  // 명령 리스트 생성
-  // 프로토콜: "CMD:핀번호:값\n" 형식
-  // M:SYNC:START  → 동기화 시작
-  // D:13:HIGH     → 디지털 핀 13 HIGH
-  // D:13:LOW      → 디지털 핀 13 LOW
-  // B:13:500      → 핀 13 깜빡임 500ms
-  // P:9:128       → PWM 핀 9 값 128
-  // T:6:440       → tone 핀 6 주파수 440Hz
-  // S:9:90        → 서보 핀 9 각도 90
-  // M:SYNC:END    → 동기화 완료
   const cmds = ['M:SYNC:START'];
-
-  // 디지털 HIGH
-  pinHigh.forEach(pin => cmds.push(`D:${pin}:HIGH`));
-  // 디지털 LOW
-  pinLow.forEach(pin => cmds.push(`D:${pin}:LOW`));
-  // 깜빡임 (BLINK)
-  pinBlink.forEach((ms, pin) => cmds.push(`B:${pin}:${ms}`));
-  // PWM
-  pinPwm.forEach((val, pin) => cmds.push(`P:${pin}:${val}`));
-  // 버저
-  tones.forEach((freq, pin) => cmds.push(`T:${pin}:${freq}`));
-  // 서보
-  servos.forEach((angle, pin) => cmds.push(`S:${pin}:${angle}`));
-
+  // Set은 forEach(value) / Map은 forEach(value, key) 순서
+  pinHigh.forEach(pin  => cmds.push(`D:${pin}:HIGH`));
+  pinLow.forEach(pin   => cmds.push(`D:${pin}:LOW`));
+  pinBlink.forEach((ms, pin) => cmds.push(`B:${pin}:${ms}`));  // Map: (value=ms, key=pin)
+  pinPwm.forEach((val, pin)  => cmds.push(`P:${pin}:${val}`));
+  tones.forEach((freq, pin)  => cmds.push(`T:${pin}:${freq}`));
+  servos.forEach((ang, pin)  => cmds.push(`S:${pin}:${ang}`));
   cmds.push('M:SYNC:END');
 
   const payload = cmds.join('\n') + '\n';
-
-  // 동일한 상태면 재전송 생략
   if (payload === lastSyncState) return;
   lastSyncState = payload;
 
@@ -5510,10 +5494,11 @@ async function syncToArduino() {
     } finally {
       w.releaseLock();
     }
-    showLiveSend('✅ 아두이노 동기화 완료', false);
-    addLog(`[${new Date().toLocaleTimeString()}] ⚡ 블록→아두이노 동기화 (${cmds.length-2}개 명령)`);
+    showLiveSend(`✅ 동기화 완료 (${cmds.length - 2}개 명령)`, false);
+    addLog(`[${new Date().toLocaleTimeString()}] ⚡ 블록→아두이노 (${cmds.length-2}개): ${cmds.slice(1,-1).join(', ')}`);
   } catch(e) {
     showLiveSend('❌ 전송 실패: ' + e.message, true);
+    addLog(`[${new Date().toLocaleTimeString()}] ❌ 전송 오류: ${e.message}`);
   }
 }
 
@@ -5860,29 +5845,55 @@ function updateConnUI(connected, boardName) {
 }
 
 async function doConnect() {
+  // Web Serial API 지원 확인
   if (!('serial' in navigator)) {
-    toast('Chrome 또는 Edge 브라우저를 사용해주세요', 'error'); return;
-  }
-  try {
-    // Android OTG 대응: 필터 사용 시 OTG 기기가 목록에 안 나옴
-    // → 항상 필터 없이 전체 포트 목록 표시 (사용자가 직접 선택)
     const isAndroid = /Android/i.test(navigator.userAgent);
-    let filters = [];
-    if (!isAndroid && selectedBoard) {
-      filters = selectedBoard.vids.map(v => ({ usbVendorId: v }));
+    if (isAndroid) {
+      toast('❌ Android Chrome 에서는 chrome://flags/#enable-experimental-web-platform-features 를 활성화해야 합니다', 'error');
+      addLog('[오류] Android Chrome Web Serial 미지원 — 플래그 활성화 필요');
+    } else {
+      toast('Chrome 또는 Edge 브라우저를 사용해주세요', 'error');
+    }
+    return;
+  }
+
+  try {
+    const isAndroid = /Android/i.test(navigator.userAgent);
+
+    // Step 1: 이미 허용된 포트가 있으면 재사용 (Android OTG 연결 후 재접속 시)
+    let existingPorts = [];
+    try { existingPorts = await navigator.serial.getPorts(); } catch(e) {}
+
+    if (existingPorts.length > 0) {
+      addLog(`[연결] 기존 허용 포트 ${existingPorts.length}개 감지 — 재사용 시도`);
+      serialPort = existingPorts[0];
+    } else {
+      // Step 2: 새 포트 선택 다이얼로그
+      // Android는 필터 없이, PC는 VID 필터 적용
+      let filters = [];
+      if (!isAndroid && selectedBoard) {
+        filters = selectedBoard.vids.map(v => ({ usbVendorId: v }));
+      }
+      try {
+        serialPort = await navigator.serial.requestPort(
+          filters.length > 0 ? { filters } : {}
+        );
+      } catch(filterErr) {
+        if (filterErr.name === 'NotFoundError' && filters.length > 0) {
+          // VID 필터 실패 → 필터 없이 재시도
+          toast('⚠ 필터 실패 — 전체 포트 목록으로 재시도합니다', 'info');
+          await new Promise(r => setTimeout(r, 400));
+          serialPort = await navigator.serial.requestPort({});
+        } else {
+          throw filterErr;
+        }
+      }
     }
 
-    try {
-      serialPort = await navigator.serial.requestPort(filters.length > 0 ? { filters } : {});
-    } catch(filterErr) {
-      if (filterErr.name === 'NotFoundError' && filters.length > 0) {
-        // VID 필터 실패 → 필터 없이 재시도 (클론 보드 대응)
-        toast('⚠ 필터 실패 — 전체 포트 목록으로 재시도합니다', 'info');
-        await new Promise(r => setTimeout(r, 600));
-        serialPort = await navigator.serial.requestPort({});
-      } else {
-        throw filterErr;
-      }
+    // Step 3: 포트 열기 (이미 열려있으면 건너뜀)
+    const baud = parseInt(document.getElementById('baudRate').value) || 9600;
+    if (!serialPort.readable) {
+      await serialPort.open({ baudRate: baud });
     }
 
     const info = serialPort.getInfo();
@@ -5890,27 +5901,22 @@ async function doConnect() {
     const boardName = detected?.name || selectedBoard?.name || 'Arduino';
     detectedBoard = detected || selectedBoard;
 
-    // 선택 보드와 다른 경우 경고
     if (selectedBoard && detected && detected.id !== selectedBoard.id) {
-      toast(`⚠ 선택: ${selectedBoard.name} / 감지: ${detected.name} — 계속 진행합니다.`, 'info');
+      toast(`⚠ 선택: ${selectedBoard.name} / 감지: ${detected.name}`, 'info');
     }
 
     document.getElementById('boardChipLabel').textContent = detectedBoard?.short || 'BOARD';
     document.getElementById('boardStatus').textContent = detectedBoard?.short || boardName;
 
-    const baud = parseInt(document.getElementById('baudRate').value) || 9600;
-    await serialPort.open({ baudRate: baud });
-
     updateConnUI(true, boardName);
-    toast(`✔ ${boardName} 연결 성공!`, 'success');
-    addLog(`[${new Date().toLocaleTimeString()}] ✔ ${boardName} 연결됨 (VID:${info.usbVendorId?.toString(16).toUpperCase()}, Baud:${baud})`);
+    toast(`✔ ${boardName} 연결 성공! ▶ 실행 버튼을 누르세요.`, 'success');
+    addLog(`[${new Date().toLocaleTimeString()}] ✔ ${boardName} 연결됨 (VID:${info.usbVendorId?.toString(16)?.toUpperCase() ?? '알수없음'}, Baud:${baud})`);
     startReading();
-    // 연결 직후 현재 블록 상태를 아두이노로 전송
     checkFirmwareAndSync();
 
   } catch(e) {
     serialPort = null;
-    if (e.name !== 'NotFoundError') {
+    if (e.name !== 'NotFoundError' && e.name !== 'AbortError') {
       toast('연결 실패: ' + e.message, 'error');
       addLog(`[${new Date().toLocaleTimeString()}] ✘ 연결 실패: ${e.message}`);
     }
