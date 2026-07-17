@@ -1,0 +1,849 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MILAB 웹코딩 실습 - 나만의 학과 소개 페이지 만들기</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<style>
+  :root{
+    --bg:#0d1117; --panel:#161b22; --panel2:#1c2330; --border:#2a3342;
+    --accent:#7c5cff; --accent2:#00e5c7; --warn:#ff6b6b; --gold:#ffd447;
+    --text:#e6edf3; --sub:#8b96a5;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;background:var(--bg);color:var(--text);
+    font-family:'Malgun Gothic', 'Pretendard', -apple-system, sans-serif;
+    -webkit-user-select:none; user-select:none;}
+  textarea{ -webkit-user-select:text; user-select:text; }
+  #app{max-width:1200px;margin:0 auto;padding:16px;min-height:100vh;}
+  .hidden{display:none !important;}
+
+  /* ---------- 시작 화면 ---------- */
+  #screen-start{display:flex;flex-direction:column;align-items:center;justify-content:center;
+    min-height:90vh;text-align:center;gap:18px;}
+  #screen-start h1{font-size:clamp(24px,4vw,38px);margin:0;
+    background:linear-gradient(90deg,var(--accent),var(--accent2));-webkit-background-clip:text;background-clip:text;color:transparent;}
+  #screen-start p{color:var(--sub);max-width:560px;line-height:1.6;}
+  .start-card{background:var(--panel);border:1px solid var(--border);border-radius:16px;padding:28px;width:min(420px,90vw);}
+  .start-card input{width:100%;padding:12px 14px;border-radius:10px;border:1px solid var(--border);
+    background:var(--panel2);color:var(--text);font-size:16px;margin-bottom:14px;}
+  .diff-row{display:flex;gap:8px;margin-bottom:18px;}
+  .diff-btn{flex:1;padding:10px 6px;border-radius:10px;border:1px solid var(--border);background:var(--panel2);
+    color:var(--text);cursor:pointer;font-size:13px;font-weight:600;transition:.15s;}
+  .diff-btn.active{border-color:var(--accent);background:rgba(124,92,255,.18);}
+  .big-btn{width:100%;padding:14px;border:none;border-radius:12px;font-size:16px;font-weight:700;
+    background:linear-gradient(90deg,var(--accent),var(--accent2));color:#0d1117;cursor:pointer;}
+  .big-btn:disabled{opacity:.4;cursor:not-allowed;}
+  .continue-note{font-size:12px;color:var(--accent2);margin-top:10px;}
+
+  /* ---------- 메인 학습 화면 ---------- */
+  #screen-main{display:none;}
+  .topbar{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;
+    background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:10px 16px;margin-bottom:14px;}
+  .progress{display:flex;gap:6px;}
+  .dot{width:34px;height:34px;border-radius:50%;background:var(--panel2);border:2px solid var(--border);
+    display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:var(--sub);}
+  .dot.done{background:var(--accent2);border-color:var(--accent2);color:#0d1117;}
+  .dot.now{border-color:var(--accent);color:var(--accent);box-shadow:0 0 0 4px rgba(124,92,255,.18);}
+  .dot.clickable{cursor:pointer;}
+  .score-badge{font-size:13px;color:var(--gold);font-weight:700;}
+  .stage-panel{background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:18px;margin-bottom:14px;}
+  .stage-title{font-size:19px;font-weight:800;margin:0 0 6px;}
+  .stage-mission{color:var(--sub);font-size:14px;line-height:1.6;margin-bottom:10px;}
+  .work-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+  @media (max-width:820px){.work-grid{grid-template-columns:1fr;}}
+  .reference-box{background:#12161f;border:1px solid var(--border);border-radius:12px;overflow:hidden;margin-bottom:14px;}
+  .media-picker{background:#12161f;border:1px solid var(--accent2);border-radius:12px;padding:14px;margin-bottom:14px;}
+  .picker-guide{font-size:13px;color:var(--sub);line-height:1.6;margin-bottom:10px;}
+  .picker-links{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;}
+  .picker-links a.btn{text-decoration:none;display:inline-block;}
+  .picker-row{display:flex;align-items:center;gap:10px;margin-bottom:8px;flex-wrap:wrap;}
+  .picker-status{font-size:13px;color:var(--accent2);font-weight:600;}
+  .reference-box pre{margin:0;padding:12px;font-family:'Consolas','D2Coding',monospace;font-size:14px;line-height:1.55;
+    color:#ffd447;white-space:pre-wrap;word-break:break-all;max-height:220px;overflow:auto;}
+  .editor-box, .preview-box{background:var(--panel2);border:1px solid var(--border);border-radius:12px;overflow:hidden;}
+  .box-head{padding:8px 12px;font-size:12px;color:var(--sub);border-bottom:1px solid var(--border);display:flex;justify-content:space-between;}
+  textarea#codeInput{width:100%;height:260px;background:#0b0f16;color:#c9f7e5;border:none;padding:12px;
+    font-family:'Consolas','D2Coding',monospace;font-size:14px;line-height:1.55;resize:vertical;}
+  iframe#previewFrame{width:100%;height:260px;border:none;background:#fff;}
+  .action-row{display:flex;gap:10px;margin-top:12px;flex-wrap:wrap;}
+  .review-banner{background:rgba(255,212,71,.12);border:1px solid var(--gold);color:var(--gold);
+    padding:9px 14px;border-radius:10px;font-size:13px;font-weight:700;margin-top:10px;}
+  textarea#codeInput[readonly]{opacity:.65;cursor:not-allowed;}
+  #backBtn:disabled, #reviewBackBtn:disabled{opacity:.35;cursor:not-allowed;}
+  .btn{padding:11px 18px;border-radius:10px;border:1px solid var(--border);background:var(--panel2);
+    color:var(--text);font-weight:700;cursor:pointer;font-size:14px;}
+  .btn.primary{background:linear-gradient(90deg,var(--accent),var(--accent2));color:#0d1117;border:none;}
+  .btn.ghost{background:transparent;}
+  .btn.warn{background:rgba(255,107,107,.14);border:1px solid var(--warn);color:var(--warn);}
+  .feedback{margin-top:10px;padding:10px 12px;border-radius:10px;font-size:14px;display:none;}
+  .feedback.ok{display:block;background:rgba(0,229,199,.12);border:1px solid var(--accent2);color:var(--accent2);}
+  .feedback.bad{display:block;background:rgba(255,107,107,.12);border:1px solid var(--warn);color:var(--warn);}
+  .hint-box{margin-top:10px;padding:10px 12px;border-radius:10px;background:rgba(255,212,71,.1);
+    border:1px dashed var(--gold);color:var(--gold);font-size:13px;display:none;white-space:pre-wrap;}
+
+  /* ---------- 마스코트 ---------- */
+  #mascot-wrap{position:fixed;right:18px;bottom:18px;display:flex;align-items:flex-end;gap:8px;z-index:50;}
+  #mascot-bubble{max-width:220px;background:var(--panel);border:1px solid var(--accent);border-radius:14px 14px 4px 14px;
+    padding:10px 12px;font-size:13px;box-shadow:0 6px 18px rgba(0,0,0,.4);display:none;}
+  #mascot-face{width:64px;height:64px;border-radius:50%;background:var(--panel);border:2px solid var(--accent);
+    display:flex;align-items:center;justify-content:center;font-size:32px;cursor:pointer;}
+  #mascot-face.bounce{animation:bounce .6s ease;}
+  #mascot-face.wiggle{animation:wiggle .5s ease;}
+  @keyframes bounce{0%,100%{transform:translateY(0);}30%{transform:translateY(-14px);}60%{transform:translateY(0);}}
+  @keyframes wiggle{0%,100%{transform:rotate(0);}25%{transform:rotate(-10deg);}75%{transform:rotate(10deg);}}
+
+  .toast{position:fixed;top:16px;left:50%;transform:translateX(-50%);background:var(--panel);
+    border:1px solid var(--accent);color:var(--text);padding:10px 16px;border-radius:10px;font-size:13px;
+    z-index:80;opacity:0;transition:opacity .3s;}
+  .toast.show{opacity:1;}
+
+  /* ---------- 완료 화면 ---------- */
+  #screen-complete{display:none;flex-direction:column;align-items:center;text-align:center;gap:14px;padding:40px 10px;}
+  .badge-emoji{font-size:64px;}
+  #qrcode{background:#fff;padding:10px;border-radius:12px;display:inline-block;}
+  .final-preview-wrap{width:100%;max-width:520px;}
+  .final-preview-frame{width:100%;height:280px;border:2px solid var(--accent);border-radius:12px;background:#fff;margin-top:6px;}
+  #qrcodeWrap{display:flex;flex-direction:column;align-items:center;gap:6px;}
+  #qrcodeWrap .qr-caption{font-size:12px;color:var(--sub);}
+  .capture-guide{background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:18px;max-width:520px;text-align:left;font-size:14px;line-height:1.7;color:var(--sub);}
+  .capture-guide b{color:var(--text);}
+</style>
+</head>
+<body>
+<div id="app">
+
+  <!-- ============ 시작 화면 ============ -->
+  <div id="screen-start">
+    <h1>🚀 나만의 학과 소개 페이지 만들기</h1>
+    <p>충주상업고 스마트IT과 웹코딩 실습! HTML → CSS → JavaScript → 미디어 삽입까지,
+      한 줄씩 직접 타이핑하며 완성해봅니다. 복사·붙여넣기는 막혀있어요. 손으로 직접 쳐야 진짜 실력이 됩니다 ✍️</p>
+    <div class="start-card">
+      <input id="studentName" type="text" placeholder="이름 또는 번호를 입력하세요 (예: 2-3 홍길동)">
+      <div class="diff-row" id="diffRow">
+        <button class="diff-btn active" data-v="easy">🟢 쉬움</button>
+        <button class="diff-btn" data-v="normal">🟡 보통</button>
+        <button class="diff-btn" data-v="hard">🔴 도전</button>
+      </div>
+      <button class="big-btn" id="startBtn">실습 시작하기</button>
+      <div class="continue-note" id="continueNote"></div>
+    </div>
+  </div>
+
+  <!-- ============ 메인 학습 화면 ============ -->
+  <div id="screen-main">
+    <div class="topbar">
+      <div class="progress" id="progressDots"></div>
+      <div class="score-badge" id="scoreLabel">SCORE 0</div>
+    </div>
+
+    <div class="stage-panel">
+      <h2 class="stage-title" id="stageTitle"></h2>
+      <p class="stage-mission" id="stageMission"></p>
+
+      <div class="media-picker hidden" id="mediaPicker">
+        <div class="picker-guide">
+          📌 <b>다운로드 가이드</b> — 아래 버튼으로 픽사베이(Pixabay)를 열어 "무료 다운로드" 이미지·음악을 받아주세요.
+          이미지는 <b>1MB 미만</b>, 음악은 <b>3MB 미만</b> 파일만 선택할 수 있어요 (너무 크면 자동으로 거부돼요).
+          다운로드한 파일은 이름을 영어/숫자로 간단하게 바꿔두면(예: img.jpg, bgm.mp3) 타이핑이 훨씬 편해요.
+        </div>
+        <div class="picker-links">
+          <a class="btn ghost" href="https://pixabay.com/images/" target="_blank" rel="noopener">📷 Pixabay 이미지 열기</a>
+          <a class="btn ghost" href="https://pixabay.com/music/" target="_blank" rel="noopener">🎵 Pixabay 음악 열기</a>
+        </div>
+        <div class="picker-row">
+          <button class="btn" id="pickImageBtn">🖼️ 이미지 파일 선택</button>
+          <span class="picker-status" id="imageStatus">아직 선택 안 됨</span>
+          <input type="file" id="imageFileInput" accept="image/*" class="hidden">
+        </div>
+        <div class="picker-row">
+          <button class="btn" id="pickAudioBtn">🎵 음악 파일 선택</button>
+          <span class="picker-status" id="audioStatus">아직 선택 안 됨</span>
+          <input type="file" id="audioFileInput" accept="audio/*" class="hidden">
+        </div>
+      </div>
+
+      <div class="reference-box">
+        <div class="box-head"><span>📋 선생님 예시 코드 (참고만 하세요, 입력창이 아니에요)</span><span id="diffTag"></span></div>
+        <pre id="referenceCode"></pre>
+      </div>
+
+      <div class="work-grid">
+        <div class="editor-box">
+          <div class="box-head"><span id="editorLabel">코드 입력</span><span id="typedCount">0자 입력</span></div>
+          <textarea id="codeInput" spellcheck="false" placeholder="위 예시 코드를 보면서 아래에 처음부터 직접 타이핑하세요..."></textarea>
+        </div>
+        <div class="preview-box">
+          <div class="box-head"><span>실시간 미리보기</span></div>
+          <iframe id="previewFrame"></iframe>
+        </div>
+      </div>
+
+      <div class="review-banner hidden" id="reviewBanner"></div>
+
+      <div class="action-row" id="actionRowNormal">
+        <button class="btn ghost" id="backBtn">◀ 이전 단계 보기</button>
+        <button class="btn primary" id="checkBtn">✅ 확인하고 다음 단계로</button>
+        <button class="btn" id="hintBtn">💡 힌트 보기</button>
+        <button class="btn ghost" id="resetStageBtn">↺ 이 단계 초기화</button>
+      </div>
+      <div class="action-row hidden" id="actionRowReview">
+        <button class="btn ghost" id="reviewBackBtn">◀ 더 이전 단계</button>
+        <button class="btn warn" id="redoStageBtn">🔁 이 단계부터 다시 도전하기</button>
+        <button class="btn primary" id="reviewForwardBtn">현재 진행 단계로 돌아가기 ▶</button>
+      </div>
+
+      <div class="feedback" id="feedbackBox"></div>
+      <div class="hint-box" id="hintBox"></div>
+    </div>
+  </div>
+
+  <!-- ============ 완료 화면 ============ -->
+  <div id="screen-complete">
+    <div class="badge-emoji" id="badgeEmoji">🏆</div>
+    <h1 id="completeTitle">완성했습니다!</h1>
+    <div id="badgeTierText" style="color:var(--gold);font-weight:700;font-size:18px;"></div>
+
+    <div class="final-preview-wrap">
+      <div class="box-head" style="max-width:520px;margin:0 auto;"><span>📸 아래가 캡처할 완성 페이지예요</span></div>
+      <iframe id="finalPreviewFrame" class="final-preview-frame"></iframe>
+    </div>
+
+    <div id="qrcodeWrap">
+      <div id="qrcode"></div>
+    </div>
+    <div class="capture-guide">
+      <p><b>📸 위 완성 페이지 화면을 캡처해서 제출하세요</b></p>
+      <p>· Windows : <b>Win + Shift + S</b> 를 누른 뒤 화면을 드래그해서 캡처</p>
+      <p>· Mac : <b>Cmd + Shift + 4</b> 를 누른 뒤 화면을 드래그해서 캡처</p>
+      <p>캡처한 이미지는 선생님이 안내한 제출 방법(구글 클래스룸 / 패들렛 등)으로 제출해주세요.</p>
+    </div>
+    <button class="btn primary" id="restartBtn">🔄 다시 도전하기</button>
+  </div>
+
+  <!-- ============ 마스코트 ============ -->
+  <div id="mascot-wrap">
+    <div id="mascot-bubble"></div>
+    <div id="mascot-face">🙂</div>
+  </div>
+  <div class="toast" id="toast"></div>
+</div>
+
+<script>
+/* =========================================================================
+   MILAB 포트폴리오 #051 - 충주상고 스마트IT과 웹코딩 실습 앱
+   * 복사/붙여넣기/우클릭/드래그 방지는 "완전 차단"이 기술적으로 불가능하므로
+     학습 몰입을 돕는 최소한의 장치로만 동작합니다.
+   * 이미지/배경음은 저작권 문제 및 학교망 차단 이슈를 피하기 위해
+     교사가 사전에 무료 소스를 다운로드하여 index.html과 같은 폴더의
+     /images, /audio 폴더에 넣어두는 방식(프리셋)을 사용합니다.
+   ========================================================================= */
+
+/* ---------------- 복사/붙여넣기·우클릭·드래그 최소 방지 ---------------- */
+document.addEventListener('contextmenu', e=>e.preventDefault());
+document.addEventListener('dragstart', e=>e.preventDefault());
+document.addEventListener('keydown', e=>{
+  const k = e.key.toLowerCase();
+  if((e.ctrlKey||e.metaKey) && ['c','v','x','a','s','u','p'].includes(k)){
+    e.preventDefault();
+    showToast('✍️ 복사 대신 직접 타이핑으로 연습해보세요!');
+  }
+});
+document.getElementById('codeInput')?.addEventListener('paste', e=>{
+  e.preventDefault();
+  showToast('✍️ 붙여넣기는 막혀있어요. 한 글자씩 직접 입력해보세요!');
+});
+
+function showToast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.classList.add('show');
+  clearTimeout(showToast._tm);
+  showToast._tm=setTimeout(()=>t.classList.remove('show'),2200);
+}
+
+/* ---------------- STAGE4: 학생 개별 다운로드 파일 상태 ----------------
+   교사가 미리 파일을 넣어두는 대신, 학생이 각자 Pixabay 등에서 다운로드한
+   이미지/음악 파일을 "파일 선택"으로 직접 불러옵니다. 브라우저 메모리에서만
+   임시 재생 가능한 Blob URL을 만들어 실시간 미리보기에 사용하고, 학생이
+   타이핑하는 코드에는 실제 파일 이름을 그대로 적게 해서 캡처용 미리보기를
+   완성합니다. (새로고침하면 Blob URL은 사라지므로 다시 선택하면 복구됩니다) */
+const MAX_IMAGE_BYTES = 1*1024*1024;   // 1MB 미만
+const MAX_AUDIO_BYTES = 3*1024*1024;   // 3MB 미만
+let pickedImage = null; // {name, blobUrl, size}
+let pickedAudio = null;
+
+function withMediaBlobs(htmlStr){
+  let out = htmlStr || '';
+  if(pickedImage) out = out.split('images/'+pickedImage.name).join(pickedImage.blobUrl);
+  if(pickedAudio) out = out.split('audio/'+pickedAudio.name).join(pickedAudio.blobUrl);
+  return out;
+}
+
+function formatKB(bytes){ return Math.round(bytes/1024)+'KB'; }
+
+/* ---------------- STAGE3 실제 동작 검증 ----------------
+   실제 화면(document)을 건드리면 학생 코드가 querySelectorAll('button') 처럼
+   광범위한 선택자를 쓸 때 앱의 진짜 버튼(확인/힌트 등)까지 건드릴 위험이 있어서,
+   완전히 격리된 가상 문서(createHTMLDocument)를 만들고 그 안에서만 코드를 실행합니다.
+   학생 코드의 document 는 함수 매개변수로 가려서(shadowing) 이 가상 문서를 가리키게 됩니다. */
+function simulateStage3Run(code){
+  const fakeDoc = document.implementation.createHTMLDocument('test');
+  const testBtn = fakeDoc.createElement('button');
+  testBtn.id = 'welcomeBtn';
+  fakeDoc.body.appendChild(testBtn);
+
+  let alertCalled=false, runtimeError=null;
+  const originalAlert = window.alert;
+  window.alert = ()=>{ alertCalled = true; };
+
+  try{
+    const fn = new Function('document', code); // document 를 매개변수로 가려서 가상문서만 조작하게 함
+    fn(fakeDoc);
+  }catch(e){ runtimeError = e; }
+
+  if(!runtimeError){
+    try{ testBtn.click(); }catch(e){ runtimeError = e; }
+  }
+  window.alert = originalAlert;
+
+  if(runtimeError){
+    return {ok:false, msg:'⚠️ 코드를 실행하다가 오류가 났어요: "'+runtimeError.message+'". 메서드 이름 철자를 다시 확인해보세요 (예: getElementById, addEventListener).'};
+  }
+  if(!alertCalled){
+    return {ok:false, msg:'🤔 버튼을 클릭해도 환영 메시지(alert)가 뜨지 않아요. welcomeBtn을 정확한 이름으로 찾고 있는지, click 이벤트 안에 alert(...)가 들어있는지 확인해보세요.'};
+  }
+  return {ok:true};
+}
+
+/* ---------------- 난이도별 스캐폴드 & 스테이지 정의 ---------------- */
+const STAGES = [
+  {
+    key:'html', slot:'html', append:false, title:'STAGE 1. HTML 뼈대 만들기 🧱',
+    mission:'우리 학과를 소개하는 카드의 기본 구조를 만들어봅시다. div, h1, p, button 태그를 사용합니다.',
+    editorLabel:'index.html (body 안쪽)',
+    scaffold:{
+      easy:`<div class="dept-card">           <!-- 학과 카드 전체를 감싸는 상자 -->\n  <h1>스마트IT과</h1>              <!-- 큰 제목: 학과 이름 -->\n  <p>여기에 학과 소개 문장을 적어보세요</p>   <!-- 문단: 학과 소개 -->\n  <button id="welcomeBtn">환영 인사 보기</button> <!-- 클릭할 버튼 -->\n</div>                              <!-- 상자를 닫아줘요 -->`,
+      normal:`<div class="dept-card">   <!-- 학과 카드 상자 -->\n  <h1></h1>                <!-- 여기에 학과 이름을 적어보세요 -->\n  <p></p>                  <!-- 여기에 소개 문장을 적어보세요 -->\n  <button id="welcomeBtn"></button> <!-- 여기에 버튼 글자를 적어보세요 -->\n</div>`,
+      hard:`<!-- div.dept-card 안에 h1(제목), p(소개 문장), button#welcomeBtn(버튼)을 직접 만들어보세요 -->`
+    },
+    validate(v){
+      const t=v.replace(/\s+/g,' ');
+      const okDiv = /<div[^>]*class=["']?dept-card["']?[^>]*>/i.test(t) && v.includes('dept-card');
+      const okH1  = /<h1[^>]*>[^<]+<\/h1>/i.test(t);
+      const okP   = /<p[^>]*>[^<]+<\/p>/i.test(t);
+      const okBtn = /<button[^>]*id=["']?welcomeBtn["']?[^>]*>[^<]*<\/button>/i.test(t) && v.includes('welcomeBtn');
+      if(okDiv&&okH1&&okP&&okBtn) return {ok:true};
+      let missing=[];
+      if(!okDiv) missing.push('div class="dept-card" (소문자까지 정확히!)');
+      if(!okH1) missing.push('내용이 있는 h1');
+      if(!okP) missing.push('내용이 있는 p');
+      if(!okBtn) missing.push('id="welcomeBtn" 인 button (대소문자까지 정확히!)');
+      return {ok:false, msg:'아직 부족해요! 확인해보세요 → '+missing.join(', ')};
+    },
+    hints:[
+      '태그는 여는 태그 <div class="dept-card"> 와 닫는 태그 </div> 가 항상 짝을 이뤄야 해요.',
+      '이렇게 시작해보세요:\n<div class="dept-card">\n  <h1>학과 이름</h1>',
+      '정답 예시:\n<div class="dept-card">\n  <h1>스마트IT과</h1>\n  <p>미래를 코딩하는 학과입니다</p>\n  <button id="welcomeBtn">환영 인사 보기</button>\n</div>'
+    ]
+  },
+  {
+    key:'css', slot:'css', append:false, title:'STAGE 2. CSS로 스타일 입히기 🎨',
+    mission:'.dept-card 에 배경색과 테두리를 직접 지정해서 실시간으로 색이 바뀌는 걸 확인해보세요.',
+    editorLabel:'style.css',
+    scaffold:{
+      easy:`.dept-card{\n  background-color: #eef6ff;   /* 배경색 */\n  border: 3px solid #4a7dff;   /* 테두리: 두께 스타일 색 */\n  border-radius: 16px;         /* 모서리를 둥글게 */\n  padding: 24px;               /* 안쪽 여백 */\n  text-align: center;          /* 글자를 가운데로 */\n  font-family: sans-serif;     /* 글꼴 */\n}`,
+      normal:`.dept-card{\n  background-color: ;  /* 원하는 배경색 (예: #eef6ff) */\n  border: ;             /* 두께 스타일 색 (예: 3px solid #4a7dff) */\n  border-radius: ;      /* 모서리를 둥글게, 숫자+px */\n  padding: ;            /* 안쪽 여백, 숫자+px */\n}`,
+      hard:`/* .dept-card 클래스에 background-color, border 속성을 직접 작성해보세요 */`
+    },
+    validate(v){
+      const okBlock = /\.dept-card\s*{[^}]*}/is.test(v) && v.includes('.dept-card');
+      const okBg = /background-color\s*:\s*[^;]+;/i.test(v);
+      const okBorder = /\bborder\s*:\s*[^;]+;/i.test(v);
+      if(okBlock&&okBg&&okBorder) return {ok:true};
+      let missing=[];
+      if(!okBlock) missing.push('.dept-card { ... } 블록 (STAGE1의 class명과 대소문자까지 똑같아야 해요)');
+      if(!okBg) missing.push('background-color 속성');
+      if(!okBorder) missing.push('border 속성');
+      return {ok:false, msg:'CSS를 다시 확인해주세요 → '+missing.join(', ')};
+    },
+    hints:[
+      'CSS는 "선택자 { 속성:값; }" 형태예요. 세미콜론(;) 빼먹지 않았나요?',
+      '이렇게 시작해보세요:\n.dept-card{\n  background-color: #eef6ff;',
+      '정답 예시:\n.dept-card{\n  background-color: #eef6ff;\n  border: 3px solid #4a7dff;\n  border-radius: 16px;\n  padding: 24px;\n}'
+    ]
+  },
+  {
+    key:'js', slot:'js', append:false, title:'STAGE 3. JavaScript로 버튼 살아있게 만들기 ⚡',
+    mission:'welcomeBtn 버튼을 클릭하면 환영 메시지가 뜨도록 만들어봅시다.',
+    editorLabel:'script.js',
+    scaffold:{
+      easy:`document.getElementById('welcomeBtn')     // welcomeBtn 버튼을 찾는다\n  .addEventListener('click', function(){  // 버튼을 클릭했을 때 실행\n    alert('우리 학과로 환영합니다!');        // 팝업 메시지를 띄운다\n  });                                      // 함수 끝`,
+      normal:`document.getElementById('welcomeBtn')    // 버튼을 찾는다\n  .addEventListener('click', function(){ // 클릭했을 때\n    alert('');                            // 여기에 보여줄 문구를 적어보세요\n  });`,
+      hard:`// welcomeBtn 을 클릭했을 때 alert()로 환영 메시지를 띄워보세요`
+    },
+    validate(v){
+      // 0) 문법 오류 먼저 검사
+      try{ new Function(v); }
+      catch(e){
+        return {ok:false, msg:'⚠️ 자바스크립트 문법 오류가 있어요! 괄호( ) 짝, 중괄호{ } 짝, function 철자를 다시 확인해보세요. (브라우저가 알려준 오류: '+e.message+')'};
+      }
+      // 1) 실제로 실행 + 클릭까지 시뮬레이션해서 진짜 alert 이 뜨는지 검증
+      //    (gentElementById 같은 오타는 문법 오류가 아니라 "그런 메서드가 없다"는 실행 오류라
+      //     new Function() 문법검사만으로는 못 잡기 때문에, 실제 동작까지 확인합니다)
+      return simulateStage3Run(v);
+    },
+    hints:[
+      'getElementById("welcomeBtn") 으로 버튼을 먼저 찾아야 해요.',
+      '이렇게 시작해보세요:\ndocument.getElementById(\'welcomeBtn\').addEventListener(\'click\', function(){',
+      '정답 예시:\ndocument.getElementById(\'welcomeBtn\').addEventListener(\'click\', function(){\n  alert(\'우리 학과로 환영합니다!\');\n});'
+    ]
+  },
+  {
+    key:'media', slot:'html', append:true, title:'STAGE 4. 이미지와 배경음악 넣기 🖼️🎵',
+    mission:'픽사베이(Pixabay)에서 나만의 이미지(1MB 미만)와 음악(3MB 미만)을 직접 다운로드한 뒤, 아래 "파일 선택" 버튼으로 불러오고, 그 파일 이름을 그대로 코드에 적어 img·audio 태그를 완성해봅시다.',
+    editorLabel:'index.html에 이어서 추가할 코드',
+    scaffold:{
+      easy:`<img src="images/내가고른파일이름.jpg" alt="학과 이미지">   <!-- 파일선택에서 고른 이미지 이름 그대로 적기 -->\n<audio src="audio/내가고른파일이름.mp3" controls></audio>  <!-- 파일선택에서 고른 음악 이름 그대로 적기 -->`,
+      normal:`<img src="images/파일이름" alt="설명">   <!-- src에 내가 고른 이미지 파일 경로 -->\n<audio src="audio/파일이름" ></audio>    <!-- controls 를 추가해야 재생 버튼이 보여요 -->`,
+      hard:`<!-- 내가 선택한 이미지/음악 파일 이름으로 img, audio 태그(controls 포함)를 직접 작성해보세요 -->`
+    },
+    validate(v){
+      if(!pickedImage) return {ok:false, msg:'🖼️ 먼저 위에서 "이미지 파일 선택"으로 다운받은 이미지를 골라주세요!'};
+      if(!pickedAudio) return {ok:false, msg:'🎵 먼저 위에서 "음악 파일 선택"으로 다운받은 음악을 골라주세요!'};
+      const imgPath = 'images/'+pickedImage.name;
+      const audioPath = 'audio/'+pickedAudio.name;
+      const okImg = /<img[^>]*src\s*=\s*["'][^"']+["'][^>]*>/i.test(v) && v.includes(imgPath);
+      const okAudio = /<audio[^>]*src\s*=\s*["'][^"']+["'][^>]*>/i.test(v) && v.includes(audioPath) && /controls/i.test(v);
+      if(okImg&&okAudio) return {ok:true};
+      let missing=[];
+      if(!okImg) missing.push('src="'+imgPath+'" 를 정확히 쓴 img 태그 (내가 고른 파일명과 대소문자까지 똑같아야 해요)');
+      if(!okAudio) missing.push('src="'+audioPath+'" + controls 속성이 있는 audio 태그');
+      return {ok:false, msg:'다시 확인해주세요 → '+missing.join(', ')};
+    },
+    hints:[
+      '먼저 위쪽 "🖼️ 이미지 파일 선택" / "🎵 음악 파일 선택" 버튼으로 다운받은 파일을 골랐는지 확인해보세요. 고르고 나면 파일 이름이 화면에 표시돼요.',
+      '선택한 파일 이름을 그대로 src="images/파일이름" 처럼 적어야 해요. 대소문자도 정확히!',
+      '정답 형태 예시:\n<img src="images/(내가 고른 이미지 파일명)" alt="학과 이미지">\n<audio src="audio/(내가 고른 음악 파일명)" controls></audio>'
+    ]
+  }
+];
+
+/* ---------------- 상태 관리 ---------------- */
+let state = {
+  name:'', difficulty:'easy', stageIndex:0,
+  code:{html:'', css:'', js:''},
+  draft:{}, submitted:{}, score:0, hintPenalty:{}, startedAt:null
+};
+
+function storageKey(name){ return 'milab_webcoding_'+name.trim(); }
+
+function saveState(){
+  localStorage.setItem(storageKey(state.name), JSON.stringify(state));
+}
+function loadState(name){
+  const raw = localStorage.getItem(storageKey(name));
+  return raw ? JSON.parse(raw) : null;
+}
+
+/* ---------------- 마스코트 ---------------- */
+const mascotFaces = {idle:'🙂',happy:'😄',cheer:'🥳',encourage:'😊',sleepy:'😪'};
+function setMascot(mood, msg, anim){
+  const face=document.getElementById('mascot-face');
+  const bubble=document.getElementById('mascot-bubble');
+  face.textContent = mascotFaces[mood]||'🙂';
+  if(msg){ bubble.textContent=msg; bubble.style.display='block';
+    clearTimeout(setMascot._tm);
+    setMascot._tm=setTimeout(()=>bubble.style.display='none',4000);
+  }
+  if(anim){ face.classList.remove('bounce','wiggle'); void face.offsetWidth; face.classList.add(anim); }
+}
+document.getElementById('mascot-face').addEventListener('click', ()=>{
+  const lines=['힘내세요! 거의 다 왔어요 💪','오타 하나하나가 다 실력이 되는 중이에요 ✨','막히면 힌트 버튼을 눌러보세요 💡'];
+  setMascot('happy', lines[Math.floor(Math.random()*lines.length)], 'wiggle');
+});
+
+/* 자리 비움/딴짓 감지 → 마스코트가 먼저 말 걸기 */
+let lastActivity = Date.now();
+['keydown','mousemove','click'].forEach(ev=>document.addEventListener(ev, ()=>lastActivity=Date.now()));
+setInterval(()=>{
+  if(document.getElementById('screen-main').style.display!=='none' && Date.now()-lastActivity>70000){
+    setMascot('sleepy','저기요~ 잠깐 딴 길로 샜나요? 👀 다시 같이 해봐요!','bounce');
+    playTone(440,0.12); playTone(330,0.15);
+    lastActivity=Date.now();
+  }
+},15000);
+
+/* ---------------- Web Audio 효과음 (CDN 없이 내장) ---------------- */
+let audioCtx;
+function playTone(freq, dur){
+  try{
+    audioCtx = audioCtx || new (window.AudioContext||window.webkitAudioContext)();
+    const osc=audioCtx.createOscillator(); const gain=audioCtx.createGain();
+    osc.type='sine'; osc.frequency.value=freq;
+    gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime+dur);
+    osc.connect(gain); gain.connect(audioCtx.destination);
+    osc.start(); osc.stop(audioCtx.currentTime+dur);
+  }catch(e){}
+}
+function playSuccess(){ [523,659,784].forEach((f,i)=>setTimeout(()=>playTone(f,0.18),i*110)); }
+function playRetry(){ playTone(220,0.2); }
+
+/* ---------------- 화면 전환 ---------------- */
+function showScreen(id){
+  ['screen-start','screen-main','screen-complete'].forEach(s=>{
+    document.getElementById(s).style.display = (s===id) ? (s==='screen-complete'?'flex':'block') : 'none';
+  });
+}
+
+/* ---------------- 진행바 렌더 ---------------- */
+function renderProgress(){
+  const wrap=document.getElementById('progressDots'); wrap.innerHTML='';
+  for(let i=0;i<STAGES.length;i++){
+    const d=document.createElement('div');
+    const isDone = i<state.stageIndex;
+    const isCurrent = (i===state.stageIndex);
+    d.className='dot'+(isDone?' done':(isCurrent?' now':''))+((isDone||isCurrent)?' clickable':'');
+    d.textContent = isDone?'✓':(i+1);
+    if(isDone){ d.addEventListener('click', ()=>{ reviewIndex=i; renderStageView(); }); }
+    else if(isCurrent){ d.addEventListener('click', ()=>{ reviewIndex=null; renderStageView(); }); }
+    wrap.appendChild(d);
+  }
+  const finalDot=document.createElement('div');
+  finalDot.className='dot'+(state.stageIndex>=STAGES.length?' now':'');
+  finalDot.textContent='🏁';
+  wrap.appendChild(finalDot);
+  document.getElementById('scoreLabel').textContent = 'SCORE '+state.score;
+}
+
+/* ---------------- 미리보기 렌더 ---------------- */
+function renderPreview(tempCode){
+  const c = tempCode || state.code;
+  const htmlForPreview = withMediaBlobs(c.html);
+  const doc = '<!DOCTYPE html><html><head><meta charset="UTF-8"><style>'+c.css+'</style></head><body>'+htmlForPreview+'<script>'+c.js+'<'+'/script></body></html>';
+  document.getElementById('previewFrame').srcdoc = doc;
+}
+
+/* ---------------- 스테이지 로드 / 리뷰 모드 ----------------
+   설계: 위쪽 reference-box는 "참고용 예시"만 읽기 전용으로 보여주고,
+   아래 codeInput 은 항상 학생이 처음부터 직접 타이핑하는 빈 입력창입니다.
+   (이어하기 시에는 이전에 타이핑하던 초안을 state.draft 에서 복원합니다)
+   reviewIndex 가 null 이 아니면 "이전 단계 다시보기" 모드로, 완료했던
+   단계의 제출 코드를 읽기 전용으로 보여줍니다. */
+let hintLevel = {};
+let reviewIndex = null;
+
+function loadStage(){ reviewIndex = null; renderStageView(); }
+
+function renderStageView(){
+  const idx = (reviewIndex!==null) ? reviewIndex : state.stageIndex;
+  if(idx>=STAGES.length){ finishAll(); return; }
+  const st = STAGES[idx];
+  const isReview = (reviewIndex!==null);
+
+  document.getElementById('stageTitle').textContent = st.title;
+  document.getElementById('stageMission').textContent = st.mission;
+  document.getElementById('editorLabel').textContent = st.editorLabel;
+  document.getElementById('diffTag').textContent = ({easy:'🟢쉬움',normal:'🟡보통',hard:'🔴도전'})[state.difficulty];
+  document.getElementById('referenceCode').textContent = st.scaffold[state.difficulty];
+  document.getElementById('feedbackBox').className='feedback';
+  document.getElementById('feedbackBox').textContent='';
+  document.getElementById('hintBox').style.display='none';
+  hintLevel[st.key] = hintLevel[st.key]||0;
+
+  const input = document.getElementById('codeInput');
+  const banner = document.getElementById('reviewBanner');
+  document.getElementById('actionRowNormal').classList.toggle('hidden', isReview);
+  document.getElementById('actionRowReview').classList.toggle('hidden', !isReview);
+  banner.classList.toggle('hidden', !isReview);
+  document.getElementById('backBtn').disabled = state.stageIndex<=0;
+  document.getElementById('mediaPicker').classList.toggle('hidden', st.key!=='media');
+  if(st.key==='media') updateMediaPickerStatus();
+
+  if(isReview){
+    banner.textContent = '🔎 STAGE '+(idx+1)+' 에서 제출했던 코드예요 (읽기 전용). 오른쪽은 현재까지 완성된 최신 결과입니다.';
+    input.value = state.submitted[st.key] || '';
+    input.readOnly = true;
+    document.getElementById('typedCount').textContent = '완료됨 ✅ (읽기 전용)';
+    document.getElementById('reviewBackBtn').disabled = idx<=0;
+    document.getElementById('reviewForwardBtn').textContent = (idx < state.stageIndex-1) ? '다음 단계 보기 ▶' : '현재 진행 단계로 돌아가기 ▶';
+    renderPreview(state.code);
+  }else{
+    input.readOnly = false;
+    input.value = state.draft[st.key] || '';
+    updateTypedCount(input.value);
+    renderPreview(buildTempCode(st, input.value));
+    setMascot('idle','위쪽 예시를 보면서 아래 빈 칸에 처음부터 직접 타이핑해봐요 ⌨️');
+    input.focus();
+  }
+  renderProgress();
+}
+
+function updateTypedCount(v){
+  document.getElementById('typedCount').textContent = v.length+'자 입력';
+}
+
+/* append 단계(STAGE4)는 기존 커밋된 코드 뒤에 이어붙여서 미리보기를 구성하고,
+   그 외 단계는 해당 슬롯을 통째로 대체해서 미리보기를 구성합니다. */
+function buildTempCode(st, value){
+  const c = {...state.code};
+  if(st.append){ c[st.slot] = (state.code[st.slot]||'') + '\n' + value; }
+  else { c[st.slot] = value; }
+  return c;
+}
+
+let draftSaveTimer=null;
+document.getElementById('codeInput').addEventListener('input', ()=>{
+  if(reviewIndex!==null) return; // 읽기 전용 리뷰 모드에서는 무시
+  const st = STAGES[state.stageIndex];
+  const v = document.getElementById('codeInput').value;
+  updateTypedCount(v);
+  renderPreview(buildTempCode(st, v));
+  state.draft[st.key] = v;
+  clearTimeout(draftSaveTimer);
+  draftSaveTimer = setTimeout(saveState, 800); // 잦은 저장 방지용 디바운스
+});
+
+document.getElementById('checkBtn').addEventListener('click', ()=>{
+  const st = STAGES[state.stageIndex];
+  const v = document.getElementById('codeInput').value;
+  const result = st.validate(v);
+  const fb = document.getElementById('feedbackBox');
+  if(result.ok){
+    fb.className='feedback ok'; fb.textContent='🎉 완벽해요! 다음 단계로 이동합니다.';
+    playSuccess(); setMascot('cheer','우와, 성공! 다음 단계로 가볼까요? 🚀','bounce');
+    if(st.append){ state.code[st.slot] = (state.code[st.slot]||'') + '\n' + v; }
+    else { state.code[st.slot] = v; }
+    state.submitted[st.key] = v;
+    delete state.draft[st.key];
+    const penalty = (hintLevel[st.key]||0)*3;
+    state.score += Math.max(20-penalty,4);
+    state.stageIndex++;
+    saveState();
+    setTimeout(loadStage, 900);
+  }else{
+    fb.className='feedback bad'; fb.textContent='🤔 '+result.msg;
+    playRetry(); setMascot('encourage','괜찮아요, 다시 한 번 천천히! 위 예시와 비교해보세요 💡','wiggle');
+  }
+});
+
+document.getElementById('backBtn').addEventListener('click', ()=>{
+  if(state.stageIndex<=0) return;
+  reviewIndex = state.stageIndex-1;
+  renderStageView();
+});
+document.getElementById('reviewBackBtn').addEventListener('click', ()=>{
+  if(reviewIndex>0) reviewIndex--;
+  renderStageView();
+});
+document.getElementById('reviewForwardBtn').addEventListener('click', ()=>{
+  if(reviewIndex < state.stageIndex-1){ reviewIndex++; }
+  else { reviewIndex = null; }
+  renderStageView();
+});
+
+/* 완료된 특정 단계부터 그 뒤 모든 진행 상황을 되돌려서 다시 도전할 수 있게 함
+   (STAGE1처럼 뒤 단계가 의존하는 내용을 고치면, 뒤 단계들도 앞뒤가 안 맞을 수 있어
+   해당 단계부터 이후 전부를 함께 초기화합니다) */
+document.getElementById('redoStageBtn').addEventListener('click', ()=>{
+  const i = reviewIndex;
+  if(i===null) return;
+  const stName = STAGES[i].title;
+  const laterCount = state.stageIndex - i;
+  const warnMsg = laterCount>1
+    ? (stName+'부터 다시 도전하면, 그 이후 완료했던 '+(laterCount-1)+'개 단계도 함께 초기화돼요. 계속할까요?')
+    : (stName+'을 다시 도전할까요? (완료 기록이 초기화됩니다)');
+  if(!confirm(warnMsg)) return;
+
+  for(let k=i;k<STAGES.length;k++){
+    const st = STAGES[k];
+    delete state.submitted[st.key];
+    delete state.draft[st.key];
+    delete hintLevel[st.key];
+  }
+  // 남은(i번째 이전) 커밋 코드만 가지고 code 슬롯을 다시 조립
+  const rebuilt = {html:'', css:'', js:''};
+  for(let k=0;k<i;k++){
+    const st = STAGES[k];
+    const val = state.submitted[st.key] || '';
+    if(st.append){ rebuilt[st.slot] = (rebuilt[st.slot]||'') + '\n' + val; }
+    else { rebuilt[st.slot] = val; }
+  }
+  state.code = rebuilt;
+  state.score = STAGES.slice(0,i).reduce((sum,st)=> sum + Math.max(20-((hintLevel[st.key]||0)*3),4), 0);
+  state.stageIndex = i;
+  reviewIndex = null;
+  saveState();
+  setMascot('encourage','좋아요, 이 단계부터 다시 도전해봐요! 💪','wiggle');
+  loadStage();
+});
+
+document.getElementById('hintBtn').addEventListener('click', ()=>{
+  const st = STAGES[state.stageIndex];
+  hintLevel[st.key] = Math.min((hintLevel[st.key]||0)+1, st.hints.length);
+  const box = document.getElementById('hintBox');
+  box.style.display='block';
+  box.textContent = '힌트 '+hintLevel[st.key]+'/'+st.hints.length+' → '+st.hints[hintLevel[st.key]-1];
+  setMascot('idle','힌트를 참고해서 한 줄씩 완성해봐요!');
+});
+
+document.getElementById('resetStageBtn').addEventListener('click', ()=>{
+  const st = STAGES[state.stageIndex];
+  const input = document.getElementById('codeInput');
+  input.value = '';
+  state.draft[st.key] = '';
+  updateTypedCount('');
+  renderPreview(buildTempCode(st, ''));
+  saveState();
+  input.focus();
+});
+
+/* ---------------- STAGE4: 파일 선택 처리 ---------------- */
+function updateMediaPickerStatus(){
+  document.getElementById('imageStatus').textContent = pickedImage
+    ? ('선택됨 ✅ '+pickedImage.name+' ('+formatKB(pickedImage.size)+')')
+    : '아직 선택 안 됨';
+  document.getElementById('audioStatus').textContent = pickedAudio
+    ? ('선택됨 ✅ '+pickedAudio.name+' ('+formatKB(pickedAudio.size)+')')
+    : '아직 선택 안 됨';
+}
+
+document.getElementById('pickImageBtn').addEventListener('click', ()=>{
+  document.getElementById('imageFileInput').click();
+});
+document.getElementById('pickAudioBtn').addEventListener('click', ()=>{
+  document.getElementById('audioFileInput').click();
+});
+
+document.getElementById('imageFileInput').addEventListener('change', (e)=>{
+  const file = e.target.files[0];
+  e.target.value = ''; // 같은 파일 재선택도 change 이벤트가 뜨도록 초기화
+  if(!file) return;
+  if(file.size >= MAX_IMAGE_BYTES){
+    showToast('⚠️ 이미지가 1MB를 넘어요('+formatKB(file.size)+'). 더 작은 파일로 다시 받아주세요!');
+    return;
+  }
+  if(pickedImage) URL.revokeObjectURL(pickedImage.blobUrl);
+  pickedImage = {name:file.name, blobUrl:URL.createObjectURL(file), size:file.size};
+  updateMediaPickerStatus();
+  showToast('🖼️ 이미지 선택 완료: '+file.name);
+  const st = STAGES[state.stageIndex];
+  if(st && st.key==='media' && reviewIndex===null){
+    renderPreview(buildTempCode(st, document.getElementById('codeInput').value));
+  }else{
+    renderPreview(state.code);
+  }
+});
+
+document.getElementById('audioFileInput').addEventListener('change', (e)=>{
+  const file = e.target.files[0];
+  e.target.value = '';
+  if(!file) return;
+  if(file.size >= MAX_AUDIO_BYTES){
+    showToast('⚠️ 음악 파일이 3MB를 넘어요('+formatKB(file.size)+'). 더 작은 파일로 다시 받아주세요!');
+    return;
+  }
+  if(pickedAudio) URL.revokeObjectURL(pickedAudio.blobUrl);
+  pickedAudio = {name:file.name, blobUrl:URL.createObjectURL(file), size:file.size};
+  updateMediaPickerStatus();
+  showToast('🎵 음악 선택 완료: '+file.name);
+  const st = STAGES[state.stageIndex];
+  if(st && st.key==='media' && reviewIndex===null){
+    renderPreview(buildTempCode(st, document.getElementById('codeInput').value));
+  }else{
+    renderPreview(state.code);
+  }
+});
+
+/* ---------------- 완료 처리 ---------------- */
+function finishAll(){
+  showScreen('screen-complete');
+  const totalPenaltyHints = Object.values(hintLevel).reduce((a,b)=>a+b,0);
+  let tier='🥉 브론즈', emoji='🥉';
+  if(state.score>=90 && totalPenaltyHints<=1){ tier='🥇 골드 마스터'; emoji='🏆'; }
+  else if(state.score>=70){ tier='🥈 실버'; emoji='🥈'; }
+  document.getElementById('badgeEmoji').textContent = emoji;
+  document.getElementById('completeTitle').textContent = state.name+'님, 학과 소개 페이지 완성!';
+  document.getElementById('badgeTierText').textContent = tier+' · 최종 점수 '+state.score+'점';
+
+  // 캡처 대상: 학생이 완성한 최종 결과 페이지를 실제로 보여줌 (이게 없으면 캡처해도 결과물이 안 보임)
+  const c = state.code;
+  const finalHtml = withMediaBlobs(c.html);
+  const finalDoc = '<!DOCTYPE html><html><head><meta charset="UTF-8"><style>'+c.css+'</style></head><body>'+finalHtml+'<script>'+c.js+'<'+'/script></body></html>';
+  document.getElementById('finalPreviewFrame').srcdoc = finalDoc;
+
+  // QR 라이브러리가 학교망 등에서 차단돼 못 불러와졌을 수도 있으니, 실패해도 나머지(완료 처리)는 계속 진행되게 방어
+  try{
+    if(typeof QRCode === 'undefined') throw new Error('QRCode 라이브러리 로드 실패');
+    document.getElementById('qrcode').innerHTML='';
+    new QRCode(document.getElementById('qrcode'), {
+      text: 'MILAB 웹코딩 특강 완주 - '+state.name+' - '+tier+' - '+new Date().toLocaleDateString('ko-KR'),
+      width:160, height:160
+    });
+  }catch(e){
+    document.getElementById('qrcodeWrap').innerHTML = '<div class="picker-status">QR코드를 못 불러왔어요 (네트워크 문제일 수 있어요). 완주 기록은 정상 저장됐어요!</div>';
+    console.warn('QR 생성 실패:', e);
+  }
+
+  playSuccess();
+  saveState();
+}
+
+document.getElementById('restartBtn').addEventListener('click', ()=>{
+  localStorage.removeItem(storageKey(state.name));
+  location.reload();
+});
+
+/* ---------------- 시작 화면 로직 ---------------- */
+document.querySelectorAll('.diff-btn').forEach(b=>{
+  b.addEventListener('click', ()=>{
+    document.querySelectorAll('.diff-btn').forEach(x=>x.classList.remove('active'));
+    b.classList.add('active');
+    state.difficulty = b.dataset.v;
+  });
+});
+
+document.getElementById('studentName').addEventListener('input', (e)=>{
+  const existing = loadState(e.target.value);
+  document.getElementById('continueNote').textContent = existing ? '💾 이전 진행 기록이 있어요! 이어서 진행할 수 있습니다.' : '';
+});
+
+document.getElementById('startBtn').addEventListener('click', ()=>{
+  const name = document.getElementById('studentName').value.trim();
+  if(!name){ showToast('이름(또는 번호)을 입력해주세요!'); return; }
+  const existing = loadState(name);
+  if(existing){
+    state = existing;
+    state.draft = state.draft || {};
+    state.submitted = state.submitted || {};
+  }else{
+    state.name = name;
+    state.startedAt = Date.now();
+  }
+  showScreen('screen-main');
+  loadStage();
+});
+
+/* ---------------- 포트폴리오 메타데이터 (개발용 콘솔 출력) ---------------- */
+window.addEventListener('load', ()=>{
+  const portfolioEntry = {
+    id: "milab_html_051",
+    number: 51,
+    title: "나만의 학과 소개 페이지 만들기 - 웹코딩 실습 앱",
+    category: "웹개발/코딩교육",
+    gradeLevel: "고등학교",
+    targetAudience: "충주상업고 스마트IT과 2학년 (코딩실습 특강용)",
+    description: "HTML→CSS→JavaScript→미디어 삽입까지 5단계로 직접 타이핑하며 완성하는 웹코딩 실습 앱. 복사/붙여넣기 방지, AI 마스코트, 3단계 힌트, 뱃지 시스템 탑재.",
+    techStack: ["HTML5","CSS3","JavaScript","Web Audio API","LocalStorage","QRCode.js v1.0.0"],
+    features: ["5단계 스테이지 클리어","실시간 미리보기(iframe)","3단계 힌트 시스템","AI 마스코트 감정 반응","복사방지 최소장치","완료 QR코드 발급"],
+    difficultyLevels: 3,
+    dateAdded: new Date().toISOString().slice(0,10),
+    isNew: true
+    // ⚠ 실제 milab_portfolio.html 카드 스키마와 다를 수 있으니 파일 첨부 후 형식 맞춰드릴게요.
+  };
+  console.log('%c[MILAB portfolioEntry]', 'color:#7c5cff;font-weight:bold;', portfolioEntry);
+});
+</script>
+</body>
+</html>
