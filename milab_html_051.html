@@ -219,6 +219,17 @@
       <p>· Mac : <b>Cmd + Shift + 4</b> 를 누른 뒤 화면을 드래그해서 캡처</p>
       <p>캡처한 이미지는 선생님이 안내한 제출 방법(구글 클래스룸 / 패들렛 등)으로 제출해주세요.</p>
     </div>
+
+    <div class="capture-guide" id="downloadGuide">
+      <p><b>💾 내가 만든 코드를 진짜 웹페이지 파일로 만들어보기</b></p>
+      <p>아래 버튼을 누르면 지금까지 작성한 코드가 <b>메모장 파일(.txt)</b>로 다운로드돼요. 순서대로 따라해보세요.</p>
+      <p>① 다운로드된 <b>index.txt</b> 파일을 메모장(또는 텍스트 편집기)으로 엽니다.</p>
+      <p>② 내용을 살펴보고, 원하면 글자·색을 자유롭게 직접 고쳐봅니다.</p>
+      <p>③ 파일 이름을 <b>index.txt</b> → <b>index.html</b> 로 바꿉니다. (파일 이름 변경 시 확장자가 안 보이면 "파일 이름 바꾸기" 후 .txt를 .html로 직접 수정)</p>
+      <p>④ index.html 파일과 같은 위치에 <b>images</b> 폴더, <b>audio</b> 폴더를 새로 만들고, 그 안에 내 컴퓨터에 있는 사진·음악 파일을 각각 넣어줍니다. (파일 이름은 코드에 적은 이름과 똑같아야 해요!)</p>
+      <p>⑤ index.html 파일을 더블클릭하면 내가 만든 진짜 웹페이지가 브라우저에서 열립니다 🎉</p>
+      <button class="btn primary" id="downloadCodeBtn" style="margin-top:8px;">💾 index.txt 다운로드</button>
+    </div>
     <button class="btn primary" id="restartBtn">🔄 다시 도전하기</button>
   </div>
 
@@ -790,6 +801,30 @@ function finishAll(){
   saveState();
 }
 
+/* ---------------- 최종 결과물 다운로드 (메모장 .txt) ----------------
+   중요: 다운로드 파일에는 blob URL(임시 미리보기용)이 아니라, 학생이 실제로
+   타이핑한 상대경로(images/파일명, audio/파일명)를 그대로 담습니다.
+   이렇게 해야 학생이 나중에 index.html 옆에 images/audio 폴더를 직접 만들고
+   그 안에 자기 컴퓨터의 사진·음악 파일을 넣었을 때 정상적으로 보이고 재생됩니다. */
+function buildFinalDocText(){
+  const c = state.code;
+  return '<!DOCTYPE html>\n<html lang="ko">\n<head>\n<meta charset="UTF-8">\n<title>'+state.name+'의 학과 소개 페이지</title>\n<style>\n'+c.css+'\n</style>\n</head>\n<body>\n'+c.html+'\n<script>\n'+c.js+'\n<'+'/script>\n</body>\n</html>\n';
+}
+
+document.getElementById('downloadCodeBtn').addEventListener('click', ()=>{
+  const finalText = buildFinalDocText();
+  const blob = new Blob([finalText], {type:'text/plain;charset=utf-8'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'index.txt';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  setTimeout(()=>URL.revokeObjectURL(url), 2000);
+  showToast('💾 index.txt 다운로드 완료! 메모장으로 열어서 .html로 바꿔보세요.');
+});
+
 document.getElementById('restartBtn').addEventListener('click', ()=>{
   localStorage.removeItem(storageKey(state.name));
   location.reload();
@@ -836,7 +871,7 @@ window.addEventListener('load', ()=>{
     targetAudience: "충주상업고 스마트IT과 2학년 (코딩실습 특강용)",
     description: "HTML→CSS→JavaScript→미디어 삽입까지 5단계로 직접 타이핑하며 완성하는 웹코딩 실습 앱. 복사/붙여넣기 방지, AI 마스코트, 3단계 힌트, 뱃지 시스템 탑재.",
     techStack: ["HTML5","CSS3","JavaScript","Web Audio API","LocalStorage","QRCode.js v1.0.0"],
-    features: ["5단계 스테이지 클리어","실시간 미리보기(iframe)","3단계 힌트 시스템","AI 마스코트 감정 반응","복사방지 최소장치","완료 QR코드 발급"],
+    features: ["5단계 스테이지 클리어","실시간 미리보기(iframe)","3단계 힌트 시스템","AI 마스코트 감정 반응","복사방지 최소장치","완료 QR코드 발급","최종 결과물 메모장(.txt) 다운로드 → 직접 .html 변환 실습"],
     difficultyLevels: 3,
     dateAdded: new Date().toISOString().slice(0,10),
     isNew: true
