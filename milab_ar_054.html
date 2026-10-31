@@ -212,6 +212,11 @@ body.portrait .stick{width:132px;height:132px}
 body.portrait .stick .knob{width:52px;height:52px}
 #armBtn{position:fixed;z-index:11;left:50%;bottom:calc(var(--sab) + 18px);transform:translateX(-50%);display:none;max-width:200px;min-height:46px;font-size:15px}
 body.ingame #armBtn.show{display:inline-flex}
+#dropBtn{position:fixed;z-index:11;left:50%;bottom:calc(var(--sab) + 18px);transform:translateX(-50%);display:none;max-width:220px;min-height:50px;font-size:15px;opacity:.6}
+#dropBtn b{margin-left:2px}
+body.ingame #dropBtn.show{display:inline-flex}
+#dropBtn.ready{opacity:1;animation:sthint 1s ease-in-out infinite}
+body.portrait #dropBtn{bottom:calc(var(--sab) + 156px)}
 
 /* mascot */
 #mascot{position:fixed;left:calc(var(--sal) + 8px);top:calc(var(--sat) + 86px);z-index:11;display:flex;align-items:flex-start;gap:6px;opacity:0;transform:translateX(-20px);transition:opacity .4s,transform .5s var(--ease2);pointer-events:none}
@@ -332,6 +337,7 @@ body.portrait #obj{top:auto;bottom:calc(var(--sab) + 160px)}
 <div class="stick" id="stL"><span class="cap">MODE 2 · 왼쪽</span><span class="sl t">상승</span><span class="sl b">하강</span><span class="sl l">좌회전</span><span class="sl r">우회전</span><div class="knob" id="knL"></div></div>
 <div class="stick" id="stR"><span class="cap">MODE 2 · 오른쪽</span><span class="sl t">전진</span><span class="sl b">후진</span><span class="sl l">좌이동</span><span class="sl r">우이동</span><div class="knob" id="knR"></div></div>
 <button class="btn coral sm" id="armBtn">시동 버튼 (도움)</button>
+<button class="btn coral sm" id="dropBtn"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round"><path d="M12 3v12M7 10l5 5 5-5"/><rect x="7" y="17" width="10" height="5" rx="1.5"/></svg>구호키트 투하 · <b>3</b></button>
 
 <!-- Mascot -->
 <div id="mascot">
@@ -382,13 +388,13 @@ body.portrait #obj{top:auto;bottom:calc(var(--sab) + 160px)}
   <div class="stg wide">
     <div class="chips"><span class="chip" id="chipGyro">기울기 센서 확인 중</span><span class="chip" id="chipCam">카메라 확인 중</span><span class="chip" id="chipXR">진짜 AR(WebXR) 확인 중</span></div>
     <div class="lbl">1차시 · 기초 비행 — MISSION</div>
-    <div class="mcard"><span class="num">M1</span><span><b>앵커 고정 &amp; 이륙</b><small>평면 인식으로 도시를 책상에 고정하고, 시동 · 호버링 · 정밀 착륙을 익혀요</small></span></div>
-    <div class="roadmap"><b>업데이트 예정(2단계)</b> · M2 장애물 비행 · M3 바람과 배터리 · M4 SLAM 정찰 · M5 오클루전 수색 · M6 구호물자 수송 · M7 AI 관제 대결 · M8 복합 재난 작전</div>
+    <div class="mcard"><span class="num">M1</span><span><b>앵커 고정 &amp; 구조 비행 심사</b><small>난이도가 오를수록 임무가 늘어나요 — 장애물 링 · 해충 방제 · 옥상 인명구조</small></span></div>
+    <div class="roadmap"><b>업데이트 예정(2단계)</b> · SLAM 지도 정찰 · 오클루전 수색 · 군집 드론 화재 진압 · AI 관제 대결 · 복합 재난 작전</div>
     <div class="lbl">LEVEL — 비행 모드가 달라져요</div>
     <div class="dgrid">
-      <button class="dcard" data-d="trainee"><span class="ic" style="background:rgba(78,227,154,.16)"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#4ee39a" stroke-width="2" stroke-linecap="round"><path d="M12 21v-8M12 13c0-4-3-6-7-6 0 4 3 6 7 6zM12 11c0-4 3-7 7-7 0 4-3 7-7 7z"/></svg></span><span><b>훈련생 <i>P-GPS</i></b><small>손을 떼면 제자리 정지 · 화면 기준 조종 · 약한 바람</small><em id="recT"></em></span><svg class="arr" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5"><path d="M9 6l6 6-6 6"/></svg></button>
-      <button class="dcard" data-d="pilot"><span class="ic" style="background:rgba(255,200,87,.16)"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#FFC857" stroke-width="2" stroke-linecap="round"><path d="M2 12h20M12 2l3 7h-6zM6 16l6-4 6 4"/></svg></span><span><b>조종사 <i>ATTI</i></b><small>손을 떼도 관성으로 미끄러짐 · 기체 기준 조종 · 바람에 밀림</small><em id="recP"></em></span><svg class="arr" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5"><path d="M9 6l6 6-6 6"/></svg></button>
-      <button class="dcard" data-d="ace"><span class="ic" style="background:rgba(255,90,110,.16)"><svg width="26" height="26" viewBox="0 0 24 24" fill="#FF5A6E"><path d="M13 2L4 14h7l-1 8 9-12h-7z"/></svg></span><span><b>에이스 <i>MANUAL</i></b><small>ATTI + 수동 스로틀(고도 유지 없음) · 강풍 · 배터리 전압 강하</small><em id="recA"></em></span><svg class="arr" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5"><path d="M9 6l6 6-6 6"/></svg></button>
+      <button class="dcard" data-d="trainee"><span class="ic" style="background:rgba(78,227,154,.16)"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#4ee39a" stroke-width="2" stroke-linecap="round"><path d="M12 21v-8M12 13c0-4-3-6-7-6 0 4 3 6 7 6zM12 11c0-4 3-7 7-7 0 4-3 7-7 7z"/></svg></span><span><b>훈련생 <i>P-GPS</i></b><small>P-GPS · 손을 떼면 제자리 정지 · 호버링 → 이동 → 정밀 착륙</small><em id="recT"></em></span><svg class="arr" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5"><path d="M9 6l6 6-6 6"/></svg></button>
+      <button class="dcard" data-d="pilot"><span class="ic" style="background:rgba(255,200,87,.16)"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#FFC857" stroke-width="2" stroke-linecap="round"><path d="M2 12h20M12 2l3 7h-6zM6 16l6-4 6 4"/></svg></span><span><b>조종사 <i>ATTI</i></b><small>ATTI · 관성·바람 · 호버링 → <span style="color:#FFC857;font-weight:800">장애물 링 5개 → 해충 방제</span> → 착륙</small><em id="recP"></em></span><svg class="arr" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5"><path d="M9 6l6 6-6 6"/></svg></button>
+      <button class="dcard" data-d="ace"><span class="ic" style="background:rgba(255,90,110,.16)"><svg width="26" height="26" viewBox="0 0 24 24" fill="#FF5A6E"><path d="M13 2L4 14h7l-1 8 9-12h-7z"/></svg></span><span><b>에이스 <i>MANUAL</i></b><small>수동 스로틀 · 강풍 · <span style="color:#FF8A98;font-weight:800">좁은 링 6개 → 방제 → 옥상 인명구조 투하</span> → 착륙</small><em id="recA"></em></span><svg class="arr" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5"><path d="M9 6l6 6-6 6"/></svg></button>
     </div>
     <div class="safe"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#F09070" stroke-width="2.2" stroke-linecap="round"><path d="M12 9v4M12 17h.01M10.3 3.9L1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/></svg><span>자리에 앉아서 플레이해요. 걸으면서 하지 않기! 기기는 <b style="color:#fff">두 손으로 가로로</b> 잡으면 실제 조종기와 같아요.</span></div>
     <button class="btn ghost sm" id="btnDiffBack">처음으로</button>
@@ -408,9 +414,9 @@ body.portrait #obj{top:auto;bottom:calc(var(--sab) + 160px)}
           <circle cx="92" cy="80" r="46" fill="rgba(32,160,224,.15)" stroke="#7FD0F5" stroke-width="2"/><circle cx="92" cy="80" r="15" fill="#20A0E0"/>
           <circle cx="308" cy="80" r="46" fill="rgba(240,144,112,.15)" stroke="#F7A88C" stroke-width="2"/><circle cx="308" cy="80" r="15" fill="#F09070"/>
           <g fill="#fff" font-size="12" font-weight="800" text-anchor="middle" font-family="system-ui,sans-serif">
-            <text x="92" y="28">상승</text><text x="92" y="141">하강</text><text x="30" y="84">좌회전</text><text x="152" y="84" text-anchor="start" dx="-6">우회전</text>
+            <text x="92" y="28">상승</text><text x="92" y="141">하강</text><text x="30" y="84">좌회전</text><text x="152" y="84">우회전</text>
             <text x="308" y="28">전진</text><text x="308" y="141">후진</text><text x="250" y="84">좌</text><text x="366" y="84">우</text>
-            <text x="200" y="84" fill="#FFC857" font-size="14">MODE 2</text><text x="200" y="138" fill="#9FB3CF" font-size="10.5">PC · WASD + 방향키</text>
+            <text x="200" y="26" fill="#FFC857" font-size="13">MODE 2</text><text x="200" y="138" fill="#9FB3CF" font-size="10.5">PC · WASD + 방향키</text>
           </g>
           <path d="M92 52V40M92 108v12M64 80H52M120 80h12M308 52V40M308 108v12M280 80h-12M336 80h12" stroke="#FFC857" stroke-width="2.5" stroke-linecap="round"/>
         </svg>
@@ -442,7 +448,7 @@ body.portrait #obj{top:auto;bottom:calc(var(--sab) + 160px)}
     <div class="stats" id="stats"></div>
     <div class="debrief" id="debrief"></div>
     <div class="badges" id="badges"></div>
-    <div class="roadmap" id="nextNote">M2 「장애물 비행」부터는 <b>2단계 업데이트</b>에서 이어집니다. 지금은 다른 난이도로 M1에 도전해 보세요!</div>
+    <div class="roadmap" id="nextNote">더 높은 난이도에서는 <b>장애물 링 · 해충 방제 · 옥상 인명구조</b> 임무가 추가돼요. SLAM 정찰·AI 관제 대결 등은 <b>2단계 업데이트</b>에서 이어집니다.</div>
     <div class="row"><button class="btn sm" id="btnAgain">다시 도전</button><button class="btn ghost sm" id="btnLevel">난이도 바꾸기</button></div>
     <button class="btn ghost sm" id="btnHome2">처음으로</button>
     <img class="brand" data-logo="h" alt="MILAB">
@@ -542,8 +548,8 @@ const CONFIG={
   rampMax:3,
   level:{
     trainee:{name:'훈련생',mode:'P',   maxTilt:20,maxV:5, maxVz:2.4,yawRate:90, drag:.42,wind:.35,gust:.4, batt:260,landTol:1.3,hoverR:2.0,hoverT:3,headless:true, ramp:false,medal:[70,110]},
-    pilot:  {name:'조종사',mode:'ATTI',maxTilt:24,maxV:9, maxVz:2.8,yawRate:100,drag:.32,wind:1.3,gust:1.1,batt:220,landTol:.9, hoverR:1.5,hoverT:4,headless:false,ramp:true, medal:[80,125]},
-    ace:    {name:'에이스',mode:'MAN', maxTilt:30,maxV:11,maxVz:3.2,yawRate:120,drag:.28,wind:2.1,gust:1.8,batt:180,landTol:.6, hoverR:1.1,hoverT:5,headless:false,ramp:true, medal:[90,140]}
+    pilot:  {name:'조종사',mode:'ATTI',maxTilt:24,maxV:9, maxVz:2.8,yawRate:100,drag:.32,wind:1.3,gust:1.1,batt:340,landTol:.9, hoverR:1.5,hoverT:4,headless:false,ramp:true, medal:[140,210]},
+    ace:    {name:'에이스',mode:'MAN', maxTilt:30,maxV:11,maxVz:3.2,yawRate:120,drag:.28,wind:1.8,gust:1.4,batt:400,landTol:.6, hoverR:1.1,hoverT:5,headless:false,ramp:true, medal:[240,330]}
   }
 };
 const MODE_LABEL={P:['P-GPS',''],ATTI:['ATTI','atti'],MAN:['MANUAL','man']};
@@ -554,6 +560,9 @@ const GI={
   hover:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#7FD0F5" stroke-width="2" stroke-linecap="round"><ellipse cx="12" cy="6" rx="7" ry="2.5"/><ellipse cx="12" cy="18" rx="7" ry="2.5"/><path d="M5 6v12M19 6v12"/></svg>',
   yaw:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#F09070" stroke-width="2" stroke-linecap="round"><path d="M20 12a8 8 0 1 1-2.3-5.7M20 4v5h-5"/></svg>',
   pad:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#4EE39A" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M9 8v8M15 8v8M9 12h6"/></svg>',
+  ring:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#FFC857" stroke-width="2.2"><ellipse cx="12" cy="12" rx="5" ry="9"/><path d="M2 12h6M16 12h6" stroke-linecap="round"/></svg>',
+  spray:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#4EE39A" stroke-width="2" stroke-linecap="round"><path d="M5 5h14M12 5v4"/><path d="M8 13l-1 3M12 13v4M16 13l1 3M6 20l-.5 1.5M12 20v1.5M18 20l.5 1.5"/></svg>',
+  kit:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#F09070" stroke-width="2.2" stroke-linecap="round"><rect x="4" y="7" width="16" height="13" rx="2"/><path d="M9 7V5h6v2M12 10v7M8.5 13.5h7"/></svg>',
   stop:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#FF8A98" stroke-width="2" stroke-linecap="round"><rect x="6" y="6" width="12" height="12" rx="2"/></svg>'
 };
 
@@ -880,6 +889,13 @@ const World={HALF:32,ROADS:[-24,-8,8,24],RW:2,I:M4.id(),L:(()=>{const v=[-.42,.8
         A.box(-1.6,8,-11.36,1.6,8.9,-11.3,C.red,{mside:MAT.emit,mtop:MAT.emit});A.box(-.45,6.85,-11.36,.45,10.05,-11.3,C.red,{mside:MAT.emit,mtop:MAT.emit});
         building(-5.6,-9.8,-2.2,-8.2,3,{plain:true,col:C.b2});
         continue}
+      if(key==='1,1'){ /* 스마트팜: 해충 방제 구역 (경작지 + 작물 이랑) */
+        A.box(x0,0,z0,x1,.12,z1,hex('#8A6A48'),{mtop:MAT.grass,nobottom:true});
+        for(let z=z0+1.1;z<z1-.5;z+=1.1)A.box(x0+.7,.12,z-.22,x1-.7,.42,z+.22,hex('#5E9E3E'),{top:hex('#76B84E'),nobottom:true});
+        for(const[px,pz]of[[x0+.3,z0+.3],[x1-.3,z0+.3],[x0+.3,z1-.3],[x1-.3,z1-.3]])A.box(px-.12,.12,pz-.12,px+.12,1.1,pz+.12,hex('#C9B48A'),{nobottom:true});
+        A.box(x1-2.6,.12,z1-2.4,x1-.6,1.6,z1-.6,hex('#E8EEF4'),{top:C.coral,nobottom:true});solid(x1-2.6,0,z1-2.4,x1-.6,1.6,z1-.6);
+        this.field={x0:x0+.5,z0:z0+.5,x1:x1-.5,z1:z1-.5};
+        continue}
       if(key==='-1,0'){ /* 소방서 */
         sidewalk(x0,z0,x1,z1);
         building(-21.4,-5.4,-14.6,-.6,6,{col:C.fire,plain:true});for(let k=0;k<3;k++)A.box(-20.8+k*2.1,.12,-.58,-19.2+k*2.1,2.6,-.5,hex('#E8EDF2'),{nobottom:true});
@@ -894,7 +910,10 @@ const World={HALF:32,ROADS:[-24,-8,8,24],RW:2,I:M4.id(),L:(()=>{const v=[-.42,.8
         const mx=(lx0+lx1)/2,mz=(lz0+lz1)/2,tall=clamp(1-Math.hypot(mx+19,mz+19)/30,0,1),south=mz>8&&mx>-12;
         if(outer&&R()<.35||south&&R()<.3){tree(mx,mz,.8+R()*.3);continue}
         let h=south?2.5+R()*3:outer?3+R()*4+tall*8:4+R()*4+tall*(12+R()*8);h=Math.round(h*2)/2;
-        const fire=key==='1,-1'&&a===0&&b===1;
+        const fire=key==='1,-1'&&a===0&&b===1,resc=key==='1,-1'&&a===1&&b===1;
+        if(resc){const top=building(lx0,lz0,lx1,lz1,8,{plain:true,col:C.b2});const rx=(lx0+lx1)/2,rz=(lz0+lz1)/2;
+          A.cyl(rx,top+.01,rz,1.6,.03,28,C.coral,MAT.emit,{top:C.coral,mtop:MAT.emit});A.cyl(rx,top+.02,rz,1.35,.03,28,C.roof,MAT.plain,{top:C.roof});
+          this.rescue={x:rx,z:rz,y:top};lots.push([lx0,lz0,lx1,lz1]);continue}
         const top=building(lx0,lz0,lx1,lz1,h,{tier:!outer&&!south&&R()<.35?2+R()*4+tall*5:0,fire});
         if(fire)this.smokes.push({x:(lx0+lx1)/2,y:top+.3,z:(lz0+lz1)/2});
         lots.push([lx0,lz0,lx1,lz1])}}
@@ -926,6 +945,13 @@ const World={HALF:32,ROADS:[-24,-8,8,24],RW:2,I:M4.id(),L:(()=>{const v=[-.42,.8
     Ar.T=M4.chain(M4.Ry(Math.PI/2),M4.Rx(-Math.PI/2));Ar.poly([[0,-.9],[.6,0],[.22,0],[.22,.7],[-.22,.7],[-.22,0],[-.6,0]],0,[1,1,1],MAT.emit);Ar.T=null;D.arrow=Ar;
     const Fa=new MB();Fa.poly([[0,-1.6],[.9,-.3],[.32,-.3],[.32,1],[-.32,1],[-.32,-.3],[-.9,-.3]],0,[1,1,1],MAT.emit);D.flat=Fa;
     const Gr=new MB();for(let k=-10;k<=10;k++){Gr.quad([k*1.6-.025,0,-16],[k*1.6+.025,0,-16],[k*1.6+.025,0,16],[k*1.6-.025,0,16],[0,1,0],C.sky,[[0,0],[0,0],[0,0],[0,0]],MAT.emit);Gr.quad([-16,0,k*1.6-.025],[16,0,k*1.6-.025],[16,0,k*1.6+.025],[-16,0,k*1.6+.025],[0,1,0],C.sky,[[0,0],[0,0],[0,0],[0,0]],MAT.emit)}D.grid=Gr;
+    const Ho=new MB();Ho.ring(.84,1,40,[1,1,1],MAT.emit);Ho.T=M4.T(0,.07,0);Ho.ring(.84,1,40,[1,1,1],MAT.emit);Ho.T=null;D.hoop=Ho;
+    const Pe=new MB(),VEST=hex('#FF8A3D'),SKIN=hex('#F2C9A0'),JEAN=hex('#3D5A80');
+    Pe.box(-.17,0,-.1,-.03,.62,.1,JEAN);Pe.box(.03,0,-.1,.17,.62,.1,JEAN);Pe.box(-.22,.62,-.14,.22,1.18,.14,VEST,{mside:MAT.plain});Pe.box(-.23,.8,-.15,.23,.86,.15,[1,1,.85],{mside:MAT.emit,mtop:MAT.emit});
+    Pe.cyl(0,1.18,0,.14,.26,10,SKIN,MAT.plain,{top:hex('#3A2A20')});Pe.box(-.34,.7,-.06,-.22,1.14,.06,VEST);D.person=Pe;
+    const Am=new MB();Am.box(-.06,0,-.06,.06,.48,.06,VEST);Am.box(-.07,.46,-.07,.07,.58,.07,SKIN);D.arm=Am;
+    const Ki=new MB();Ki.box(-.2,-.16,-.2,.2,.16,.2,hex('#FF6B3D'));Ki.box(-.21,-.04,-.07,.21,.04,.07,[1,1,1]);Ki.box(-.07,-.04,-.21,.07,.04,.21,[1,1,1]);Ki.box(-.02,.16,-.02,.02,.3,.02,hex('#333'));D.kit=Ki;
+    const Pa=new MB();Pa.disc(0,0,0,1,32,[1,1,1],MAT.emit);D.patch=Pa;
     this.dynArr=D},
   upload(){this.base=GL.mesh(this.baseArr);this.ground=GL.mesh(this.groundArr);this.frame=GL.mesh(this.frameArr);this.city=GL.mesh(this.cityArr);this.shadows=GL.mesh(this.shadowArr);const m={};for(const k in this.dynArr)m[k]=GL.mesh(this.dynArr[k].a);this.meshes=m},
   /* 바닥·옥상 높이 (그림자·착륙 판정용) */
@@ -978,7 +1004,7 @@ const isHeadless=()=>S.headless!=null?S.headless:LV().headless;
 const Wind={dir:0,speed:0,mul:1,ph:[0,0,0,0],vx:0,vz:0,gx:0,gz:0,
   reset(seed){const R=rng(seed);this.dir=R()*Math.PI*2;this.ph=[R()*9,R()*9,R()*9,R()*9];this.mul=1;this.update(0,0)},
   update(t,y){const lv=LV();let base=lv.wind*this.mul,gust=lv.gust*(.7+.3*this.mul);if(S.help){base*=.5;gust*=.5}if(S.noWind){base=0;gust=0}
-    const hk=clamp(.6+y/16,.6,1.35),p=this.ph,g1=Math.sin(t*.37+p[0])*.6+Math.sin(t*1.13+p[1])*.4,g2=Math.sin(t*.29+p[2])*.6+Math.sin(t*.91+p[3])*.4;
+    const hk=clamp(.6+y/16,.6,1.2),p=this.ph,g1=Math.sin(t*.37+p[0])*.6+Math.sin(t*1.13+p[1])*.4,g2=Math.sin(t*.29+p[2])*.6+Math.sin(t*.91+p[3])*.4;
     const sw=this.dir+Math.sin(t*.11+p[1])*.35;this.gx=g1*gust;this.gz=g2*gust;
     this.vx=(Math.sin(sw)*base+this.gx)*hk;this.vz=(-Math.cos(sw)*base+this.gz)*hk;this.speed=Math.hypot(this.vx,this.vz)}};
 function resetDrone(){const p=World.pads.A;Object.assign(D,{x:p.x,y:p.y+R_SKID,z:p.z,vx:0,vy:0,vz:0,yaw:0,yr:0,tx:0,tz:0,armed:false,landed:true,spin:0,T:0,batt:100,ix:0,iz:0,
@@ -1121,33 +1147,62 @@ function toast(t){const e=$('#toast');e.textContent=t;e.classList.add('on');clea
 function banner(t,s,gold){const b=$('#warnBanner');b.innerHTML=t+(s?`<small>${s}</small>`:'');b.classList.toggle('gold',!!gold);b.classList.add('on');clearTimeout(b._t);b._t=setTimeout(()=>b.classList.remove('on'),2600)}
 const fmt=t=>{const m=Math.floor(t/60),s=t-m*60;return m+':'+(s<10?'0':'')+s.toFixed(1)};
 
-/* =========================== MISSION 01 =========================== */
-const M1_STEPS=[
-  {id:'arm',ic:'power',t:'시동 걸기 (CSC)',s:'두 스틱을 동시에 아래-안쪽 모서리로 1초'},
-  {id:'takeoff',ic:'hover',t:'이륙 — 고도 3m',s:'왼쪽 스틱을 천천히 위로'},
-  {id:'hover',ic:'hover',t:'호버링 유지',s:'빛나는 원기둥 안에서 버티기'},
-  {id:'yaw',ic:'yaw',t:'기수 돌리기',s:'왼쪽 스틱 좌우 · 기수를 착륙장 B로'},
-  {id:'transit',ic:'pad',t:'착륙장 B로 이동',s:'공원 쪽 빛기둥을 향해'},
-  {id:'land',ic:'pad',t:'정밀 착륙',s:'패드 중앙에 천천히 내려앉기'},
-  {id:'disarm',ic:'stop',t:'시동 끄기',s:'착륙 후 왼쪽 스틱을 끝까지 아래로 2초'}];
+/* =========================== MISSION 01 — 난이도별 임무 구성 ===========================
+   훈련생: 호버링 → 기수 → 이동 → 착륙
+   조종사: 호버링 → 장애물 링 5개 → 해충 방제 → 이동 → 착륙
+   에이스: 호버링 → 좁은 링 6개 → 해충 방제(비산 강함) → 옥상 인명구조 투하 → 이동 → 착륙 */
+const STEP={
+  arm:{ic:'power',t:'시동 걸기 (CSC)',s:'두 스틱을 동시에 아래-안쪽 모서리로 1초'},
+  takeoff:{ic:'hover',t:'이륙 — 고도 3m',s:'왼쪽 스틱을 천천히 위로'},
+  hover:{ic:'hover',t:'호버링 유지',s:'빛나는 원기둥 안에서 버티기'},
+  yaw:{ic:'yaw',t:'기수 돌리기',s:'왼쪽 스틱 좌우 · 기수를 착륙장 B로'},
+  rings:{ic:'ring',t:'장애물 링 통과',s:'빌딩 사이 링을 순서대로'},
+  spray:{ic:'spray',t:'해충 방제',s:'스마트팜 붉은 구역 위 2~4m로 비행'},
+  rescue:{ic:'kit',t:'옥상 인명구조',s:'요구조자에게 구호키트 투하'},
+  transit:{ic:'pad',t:'착륙장 B로 이동',s:'공원 쪽 빛기둥을 향해'},
+  land:{ic:'pad',t:'정밀 착륙',s:'패드 중앙에 천천히 내려앉기'},
+  disarm:{ic:'stop',t:'시동 끄기',s:'착륙 후 왼쪽 스틱을 끝까지 아래로 2초'}};
+const PLAN={trainee:['arm','takeoff','hover','yaw','transit','land','disarm'],
+  pilot:['arm','takeoff','hover','rings','spray','transit','land','disarm'],
+  ace:['arm','takeoff','hover','rings','spray','rescue','transit','land','disarm']};
+/* 링 코스: [x,y,z, 법선] — 도로 위 빌딩 사이 */
+const RING_PATH={pilot:[[0,3.6,-8,'z'],[-8,6,-8,'x'],[-8,4,0,'z'],[-8,3.2,5,'z'],[0,4.6,8,'x']],
+  ace:[[0,3.6,-8,'z'],[-8,6.5,-8,'x'],[-8,3.2,0,'z'],[-8,5.5,5,'z'],[0,3.4,8,'x'],[8,6,12,'z']]};
+const RING_R={pilot:1.9,ace:1.35};
+const PEST={pilot:[[13.2,13.4],[19,14.2],[15.6,19.4]],ace:[[13.2,13.2],[19.2,13.8],[13.8,19.2],[19.4,19.4]]};
+const SPRAY={pilot:{need:.7,tank:60,swath:1.55,drift:.07},ace:{need:.75,tank:52,swath:1.35,drift:.12}};
+const KITS=3,PEST_R=2;
 const MS={i:0,lastSay:0,hoverT:0,yawT:0,ramp:0,flightT:0,started:false,res:null,retouch:0,driftSum:0,driftN:0,armHelpT:0,
-  get step(){return M1_STEPS[this.i]},
+  get plan(){return PLAN[S.lvl]||PLAN.trainee},
+  get step(){return{id:this.plan[this.i],...STEP[this.plan[this.i]]}},
   reset(){this.i=0;this.hoverT=0;this.yawT=0;this.ramp=0;this.flightT=0;this.started=false;this.res=null;this.retouch=0;this.driftSum=0;this.driftN=0;this.armHelpT=0;this.done=false;this.failed=false;
-    $('#armBtn').classList.remove('show');this.show()},
+    this.ring=0;this.ringMiss=0;this.ringPrev=null;this.ringT=0;
+    const pe=PEST[S.lvl]||[];this.patches=pe.map(([x,z])=>{const cells=[];for(let gx=-PEST_R;gx<=PEST_R;gx+=.5)for(let gz=-PEST_R;gz<=PEST_R;gz+=.5)if(gx*gx+gz*gz<=PEST_R*PEST_R)cells.push({x:x+gx,z:z+gz,c:0});return{x,z,cells,cov:0,done:false}});
+    this.tank=100;this.spraying=false;this.sprayT=0;this.waste=0;this.cellsDirty=true;this.covMesh=null;
+    this.kits=KITS;this.carry=S.lvl==='ace';this.pend=null;this.tankWarn=0;this.unsafe=0;this.drops=[];this.rescued=false;this.dropMiss=[];
+    $('#armBtn').classList.remove('show');$('#dropBtn').classList.remove('show');this.show()},
   allowArm(){return this.step.id==='arm'||this.i>0&&!this.done},
   hoverZone(){const lv=LV(),p=World.pads.A;return{x:p.x,z:p.z,r:lv.hoverR*(S.help?1.25:1),y0:p.y+2.2,y1:p.y+4.4}},
+  rings(){return RING_PATH[S.lvl]||[]},
+  ringR(){return(RING_R[S.lvl]||1.9)*(S.help?1.2:1)},
+  sp(){return SPRAY[S.lvl]||SPRAY.pilot},
   show(){const s=this.step,n=$('#objN');n.textContent=this.i+1;$('#objT').textContent=s.t;$('#objS').textContent=s.id==='hover'?`${s.s} ${LV().hoverT}초`:s.s;
-    const o=$('#obj');o.classList.remove('flash');void o.offsetWidth;o.classList.add('flash');$('#objBar').style.display=(s.id==='hover'||s.id==='yaw'||s.id==='disarm')?'block':'none';$('#objFill').style.width='0%';
-    $('#stL').classList.toggle('hint',s.id==='arm'||s.id==='takeoff'||s.id==='yaw'||s.id==='disarm');$('#stR').classList.toggle('hint',s.id==='arm'||s.id==='transit')},
+    const o=$('#obj');o.classList.remove('flash');void o.offsetWidth;o.classList.add('flash');$('#objBar').style.display=['hover','yaw','disarm','rings','spray'].includes(s.id)?'block':'none';$('#objFill').style.width='0%';
+    $('#stL').classList.toggle('hint',['arm','takeoff','yaw','disarm'].includes(s.id));$('#stR').classList.toggle('hint',s.id==='arm'||s.id==='transit');
+    $('#dropBtn').classList.toggle('show',s.id==='rescue');$('#obj').querySelector('.oi').textContent=this.i+1;
+    $('#objN').parentElement.dataset.total=this.plan.length},
   next(){AU.step();this.i++;if(navigator.vibrate)navigator.vibrate(15);
     const s=this.step;this.show();
     const msg={takeoff:['시동 성공! 이제 왼쪽 스틱을 살짝 위로. 3m까지 천천히!','cheer'],
       hover:[LV().mode==='P'?'좋아! 손을 떼면 GPS가 제자리를 잡아줘. 원기둥 안에서 버텨 봐':LV().mode==='ATTI'?'ATTI 모드는 손을 떼도 바람에 밀려! 반대로 살짝씩 당겨서 버텨':'수동 스로틀! 왼쪽 스틱으로 고도를 직접 잡아야 해','think'],
       yaw:['호버링 성공! 이제 왼쪽 스틱 좌우로 기수를 착륙장 B 쪽으로 돌려','cheer'],
-      transit:[isHeadless()?'화면 기준 조종이라 화면 오른쪽 = 오른쪽이야. 착륙장 B로!':'기수가 B를 보고 있으니 오른쪽 스틱 위 = 전진! 출발!','cheer'],
+      rings:['호버링 통과! 이제 빌딩 사이 링을 순서대로 지나가. 링마다 높이가 달라!','cheer'],
+      spray:['링 코스 완주! 스마트팜에 해충이 생겼어. 붉은 구역 위를 2~4m 높이로 낮게 훑어!','think'],
+      rescue:['방제 완료! 불난 건물 옆 옥상에 사람이 고립됐어. 머리 위 2m 이상에서 구호키트를 떨어뜨려!','surprise'],
+      transit:[this.plan.includes('rescue')?'구조 성공! 이제 착륙장 B로 귀환하자':this.plan.includes('spray')?'방제 완료! 착륙장 B로 귀환해':isHeadless()?'화면 기준 조종이라 화면 오른쪽 = 오른쪽이야. 착륙장 B로!':'기수가 B를 보고 있으니 오른쪽 스틱 위 = 전진! 출발!','cheer'],
       land:['도착! 패드 위에서 멈춘 뒤 천천히 하강해. 접지 직전엔 더 천천히!','think'],
       disarm:['착륙 완료! 왼쪽 스틱을 끝까지 내려 모터를 꺼 줘','cheer']}[s.id];
-    if(msg)say(msg[0],msg[1],'jump',3600)},
+    if(msg)say(msg[0],msg[1],'jump',3800)},
   ev(type,d){if(this.done||this.failed)return;const s=this.step.id;
     if(type==='armed'&&s==='arm'){this.started=true;this.next()}
     if(type==='liftoff'&&this.retouch>0&&s==='land')say('다시 이륙! 패드 중앙 위에서 멈춘 뒤 내려와','think','bounce',2400);
@@ -1160,7 +1215,9 @@ const MS={i:0,lastSay:0,hoverT:0,yawT:0,ramp:0,flightT:0,started:false,res:null,
   update(dt){if(this.done||this.failed||D.crashed)return;const s=this.step.id,lv=LV();
     if(this.started)this.flightT+=dt;
     if(s==='arm'){this.armHelpT+=dt;if(this.armHelpT>9&&!$('#armBtn').classList.contains('show')){$('#armBtn').classList.add('show');say('어렵다면 가운데 시동 버튼을 써도 돼. 실제 조종기는 CSC로 켜!','think','bounce',3400)}}
-    if(this.started&&lv.ramp&&!S.noWind&&this.ramp<CONFIG.rampMax&&this.flightT>CONFIG.rampEvery*(this.ramp+1)){this.ramp++;Wind.mul=1+this.ramp*.35;toast(`돌풍 강해짐 (${this.ramp}/${CONFIG.rampMax})`);say('바람이 강해졌어! 기체가 밀리는 쪽 반대로 보정해','surprise','shake',2400)}
+    if(this.started&&lv.ramp&&!S.noWind&&this.ramp<CONFIG.rampMax&&this.flightT>CONFIG.rampEvery*(this.ramp+1)){this.ramp++;Wind.mul=1+this.ramp*(S.lvl==='ace'?.22:.3);toast(`돌풍 강해짐 (${this.ramp}/${CONFIG.rampMax})`);if(s!=='rescue')say('바람이 강해졌어! 기체가 밀리는 쪽 반대로 보정해','surprise','shake',2400)}
+    this.updDrops(dt);
+    if(this.pend){this.pend.t-=dt;if(this.pend.t<=0){const f=this.pend.f;this.pend=null;if(f==='next'&&this.step.id==='rescue')this.next();else if(f==='kits')this.fail('kits');return}}
     const hz=this.hoverZone(),inH=Math.hypot(D.x-hz.x,D.z-hz.z)<hz.r&&D.y>hz.y0&&D.y<hz.y1;
     if(s==='takeoff'&&!D.landed&&D.y>hz.y0)this.next();
     else if(s==='hover'){if(inH&&!D.landed){this.hoverT+=dt;this.driftSum+=Math.hypot(D.x-hz.x,D.z-hz.z);this.driftN++}else this.hoverT=Math.max(0,this.hoverT-dt*1.5);
@@ -1169,25 +1226,88 @@ const MS={i:0,lastSay:0,hoverT:0,yawT:0,ramp:0,flightT:0,started:false,res:null,
     else if(s==='yaw'){const B=World.pads.B,want=Math.atan2(B.x-D.x,-(B.z-D.z)),err=Math.abs(wrapRad(D.yaw-want))/DEG;
       $('#objS').textContent=`기수 오차 ${err.toFixed(0)}° · 15° 이내로 1초`;
       if(err<15&&!D.landed)this.yawT+=dt;else this.yawT=0;$('#objFill').style.width=(this.yawT*100)+'%';if(this.yawT>=1)this.next()}
+    else if(s==='rings')this.updRings(dt);
+    else if(s==='spray')this.updSpray(dt);
+    else if(s==='rescue')this.updRescue(dt);
     else if(s==='transit'){const B=World.pads.B,dd=Math.hypot(D.x-B.x,D.z-B.z);$('#objS').textContent=`남은 거리 ${dd.toFixed(1)}m`;if(dd<2.6&&D.y<9)this.next()}
     else if(s==='land'){const B=World.pads.B,dd=Math.hypot(D.x-B.x,D.z-B.z);$('#objS').textContent=`중앙 오차 ${dd.toFixed(2)}m · 하강 ${Math.max(0,-D.vy).toFixed(1)}m/s`}
-    else if(s==='disarm'){$('#objFill').style.width=clamp(D.disHold/1.6,0,1)*100+'%'}},
+    else if(s==='disarm'){$('#objFill').style.width=clamp(D.disHold/1.6,0,1)*100+'%'}
+    if(s!=='spray'&&this.spraying){this.spraying=false}},
+  /* ---- 링 ---- */
+  ringN(k){const r=this.rings()[k];return r[3]==='x'?[1,0,0]:[0,0,1]},
+  updRings(dt){const R=this.rings(),k=this.ring,r=R[k],n=this.ringN(k),rr=this.ringR();
+    const dx=D.x-r[0],dy=D.y-r[1],dz=D.z-r[2],sd=dx*n[0]+dz*n[2],lat=Math.hypot(dx-sd*n[0],dy,dz-sd*n[2]);
+    $('#objS').textContent=`링 ${k+1}/${R.length} · 높이 ${r[1].toFixed(1)}m · 거리 ${Math.hypot(dx,dy,dz).toFixed(1)}m`;$('#objFill').style.width=(k/R.length*100)+'%';
+    if(this.ringPrev!=null&&Math.sign(sd)!==Math.sign(this.ringPrev)&&Math.abs(sd)<1.5){
+      if(lat<=rr){this.ring++;AU.tone(880+k*90,.18,'triangle',.16);AU.tone(1320+k*90,.22,'triangle',.1,0,.07);
+        for(let i=0;i<24;i++){const a=i/24*6.28;PT.add(r[0]+(n[0]?0:Math.cos(a)*rr),r[1]+Math.sin(a)*rr,r[2]+(n[2]?0:Math.cos(a)*rr),(n[0]?0:Math.cos(a))*2,Math.sin(a)*2,(n[2]?0:Math.cos(a))*2,.6,.25,[1,.85,.35],1)}
+        if(this.ring>=R.length){this.ringPrev=null;this.next();return}
+        if(this.ring===R.length-1)toast('마지막 링!');this.ringPrev=null;return}
+      else if(lat<rr+3){this.ringMiss++;AU.sad();toast(`링을 빗나갔어요 (${(lat-rr).toFixed(1)}m) · 다시 통과하세요`);if(S.t-this.lastSay>3)say('링 중심을 보고 높이부터 맞춘 뒤 천천히 통과해','think','shake',2400)}}
+    this.ringPrev=Math.hypot(dx,dy,dz)<6?sd:null},
+  /* ---- 해충 방제 ---- */
+  updSpray(dt){const F=World.field,sp=this.sp(),inF=D.x>F.x0&&D.x<F.x1&&D.z>F.z0&&D.z<F.z1,hs=Math.hypot(D.vx,D.vz);
+    const ok=inF&&!D.landed&&D.agl>=1.5&&D.agl<=4.5&&hs<7&&this.tank>0;
+    this.spraying=ok;this.sprayHint=inF?(D.agl<1.5?'low':D.agl>4.5?'high':hs>=7?'fast':''):'';
+    if(ok){this.tank=Math.max(0,this.tank-100/sp.tank*clamp(.35+hs/3,.35,1.25)*dt);this.sprayT+=dt;
+      const k=sp.drift*D.agl,cx=D.x+Wind.vx*k,cz=D.z+Wind.vz*k,r2=sp.swath*sp.swath;let hit=false;
+      for(const p of this.patches){if(Math.hypot(cx-p.x,cz-p.z)>PEST_R+sp.swath)continue;for(const c of p.cells)if(!c.c&&(c.x-cx)**2+(c.z-cz)**2<=r2){c.c=1;hit=true;this.cellsDirty=true}}
+      if(!this.patches.some(p=>Math.hypot(cx-p.x,cz-p.z)<PEST_R+.3))this.waste+=dt;
+      for(let i=0;i<(S.lowSpec?2:4);i++){const a=Math.random()*6.28,rr=Math.random()*sp.swath*.7;PT.add(D.x+Math.cos(a)*.5,D.y-.35,D.z+Math.sin(a)*.5,Math.cos(a)*rr+Wind.vx*.5,-2.2-Math.random(),Math.sin(a)*rr+Wind.vz*.5,.75,.16,[.75,.95,1],.55,{g:-1.5,drag:.9})}
+      if(hit&&Math.random()<.15)AU.tick(.3)}
+    let tot=0;for(const p of this.patches){p.cov=p.cells.filter(c=>c.c).length/p.cells.length;if(!p.done&&p.cov>=sp.need){p.done=true;AU.step();toast('해충 구역 방제 완료!')}tot+=Math.min(p.cov/sp.need,1)}
+    const prog=tot/this.patches.length,left=this.patches.filter(p=>!p.done).length;
+    $('#objFill').style.width=prog*100+'%';
+    const hint={low:' · 너무 낮아요',high:' · 너무 높아요(2~4m)',fast:' · 너무 빨라요'}[this.sprayHint]||(this.spraying?' · 살포 중':'');
+    $('#objS').textContent=`남은 구역 ${left}곳 · 약제 ${Math.round(this.tank)}%${hint}`;
+    if(left===0){this.spraying=false;this.next();return}
+    if(this.tank<=0){this.fail('tank')}
+    if(this.tank<30&&!this.tankWarn){this.tankWarn=1;AU.warn();say('약제가 30%뿐이야! 붉은 구역 위에서만 살포되게 경로를 아껴','surprise','shake',2800)}},
+  /* ---- 옥상 인명구조 (구호키트 투하) ---- */
+  drop(){if(this.step.id!=='rescue'||!this.carry||this.kits<=0||D.landed||this.rescued)return;const R=World.rescue;
+    this.kits--;this.carry=this.kits>0;AU.tone(520,.12,'square',.08,260);if(navigator.vibrate)navigator.vibrate(20);
+    const h=D.y-.4-R.y,near=Math.hypot(D.x-R.x,D.z-R.z)<2.2;
+    if(near&&h<1.8){this.unsafe=(this.unsafe||0)+1;say('너무 낮아! 하강풍이 요구조자를 덮쳐. 머리 위 2m 이상에서 투하해','surprise','shake',2800)}
+    this.drops.push({x:D.x,y:D.y-.42,z:D.z,vx:D.vx,vy:D.vy,vz:D.vz,rot:0,live:true});
+    $('#dropBtn').querySelector('b').textContent=this.kits},
+  updDrops(dt){const R=World.rescue;for(const k of this.drops){if(!k.live)continue;const kd=.9;
+      k.vx+=(-(k.vx-Wind.vx)*kd)*dt;k.vz+=(-(k.vz-Wind.vz)*kd)*dt;k.vy-=CONFIG.g*dt;k.vy*=1-.08*dt;k.x+=k.vx*dt;k.y+=k.vy*dt;k.z+=k.vz*dt;k.rot+=dt*4;
+      const h=World.surfaceAt(k.x,k.z);if(k.y-.16<=h){k.y=h+.16;k.live=false;AU.noiseHit(.15,.18,700);
+        const off=Math.hypot(k.x-R.x,k.z-R.z),onRoof=Math.abs(h-R.y)<.5;
+        if(onRoof&&off<=1.6){this.rescued=true;this.res2={off,tries:KITS-this.kits};AU.clear();confetti();for(let i=0;i<30;i++)PT.add(R.x,R.y+1,R.z,(Math.random()-.5)*4,2+Math.random()*3,(Math.random()-.5)*4,1,.2,[.3,1,.6],1,{g:-5});
+          this.pend={t:1.2,f:'next'}}
+        else{this.dropMiss.push(off);say(onRoof?`옥상엔 떨어졌지만 ${off.toFixed(1)}m 빗나갔어. 바람 방향을 보고 조금 바람 위쪽에서 떨어뜨려!`:'옥상 밖으로 떨어졌어! 바람에 밀리는 거리를 생각해','think','shake',3200);
+          if(this.kits<=0&&!this.rescued)this.pend={t:.9,f:'kits'}}}}},
+  updRescue(dt){const R=World.rescue,hd=Math.hypot(D.x-R.x,D.z-R.z),h=D.y-.4-R.y;
+    $('#objS').textContent=`구호키트 ${this.kits}개 · 수평 ${hd.toFixed(1)}m · 머리 위 ${Math.max(0,h-1.3).toFixed(1)}m`;
+    const db=$('#dropBtn');db.classList.toggle('ready',hd<2.5&&h>=1.8)},
   /* 목표 지점 (화면 밖 화살표용) */
-  target(){const s=this.step.id,A=World.pads.A,B=World.pads.B;
+  target(){const s=this.step.id,B=World.pads.B;
     if(s==='arm'||s==='takeoff'||s==='hover'){const h=this.hoverZone();return{x:h.x,y:(h.y0+h.y1)/2,z:h.z,label:'호버링 구역'}}
+    if(s==='rings'){const r=this.rings()[Math.min(this.ring,this.rings().length-1)];return{x:r[0],y:r[1],z:r[2],label:'링 '+(this.ring+1)}}
+    if(s==='spray'){let b=null,bd=1e9;for(const p of this.patches)if(!p.done){const d=Math.hypot(D.x-p.x,D.z-p.z);if(d<bd){bd=d;b=p}}if(b)return{x:b.x,y:3,z:b.z,label:'해충 구역'}}
+    if(s==='rescue'){const R=World.rescue;return{x:R.x,y:R.y+2.6,z:R.z,label:'요구조자'}}
     return{x:B.x,y:B.y+1.2,z:B.z,label:'착륙장 B'}},
   clear(){this.done=true;S.playing=false;AU.clear();confetti();
     const lv=LV(),t=this.flightT,r=this.res||{off:9,vs:9};
     let pts=0;pts+=t<=lv.medal[0]?2:t<=lv.medal[1]?1:0;pts+=r.off<=.35?2:r.off<=lv.landTol?1:0;pts+=r.vs<=CONFIG.softLanding?1:0;pts+=D.bumps===0?1:0;
-    const medal=pts>=5?3:pts>=3?2:1;
+    if(this.plan.includes('rings'))pts+=this.ringMiss===0?1:0;if(this.plan.includes('spray'))pts+=this.tank>=25?1:0;if(this.plan.includes('rescue'))pts+=(this.res2&&this.res2.tries===1)?1:0;
+    const maxp=6+(this.plan.includes('rings')?1:0)+(this.plan.includes('spray')?1:0)+(this.plan.includes('rescue')?1:0);
+    const medal=pts>=maxp-1?3:pts>=maxp-3?2:1;
     const key='best_m1_'+S.lvl,prev=LS.get(key,null),isNew=!prev||t<prev.t;if(isNew)LS.set(key,{t,medal,off:r.off});
     const B=LS.get('badges',{}),earned=[],give=id=>{earned.push({id,isNew:!B[id]});B[id]=1};
-    give('first');if(r.off<=.3)give('pinpoint');if(r.vs<=.4)give('feather');if(S.lvl==='ace')give('ace');if(D.bumps===0&&!this.retouch)give('clean');LS.set('badges',B);
-    S.run.m1={level:lv.name,mode:lv.mode,time:+t.toFixed(1),landingOffset:+r.off.toFixed(2),touchdown:+r.vs.toFixed(2),battery:Math.round(D.batt),bumps:D.bumps,medal:['','bronze','silver','gold'][medal],help:S.help};LS.set('run',S.run);
+    give('first');if(r.off<=.3)give('pinpoint');if(r.vs<=.4)give('feather');if(S.lvl==='ace')give('ace');if(D.bumps===0&&!this.retouch)give('clean');
+    if(this.plan.includes('rings')&&this.ringMiss===0)give('ring');if(this.plan.includes('spray')&&this.tank>=25)give('spray');if(this.rescued)give('cargo');LS.set('badges',B);
+    S.run.m1={level:lv.name,mode:lv.mode,tasks:this.plan.filter(x=>['rings','spray','rescue'].includes(x)),time:+t.toFixed(1),landingOffset:+r.off.toFixed(2),touchdown:+r.vs.toFixed(2),battery:Math.round(D.batt),bumps:D.bumps,
+      ringMiss:this.ringMiss,sprayTankLeft:this.plan.includes('spray')?Math.round(this.tank):null,rescueTries:this.res2?this.res2.tries:null,medal:['','bronze','silver','gold'][medal],help:S.help};LS.set('run',S.run);
     S.fails=0;
     setTimeout(()=>showClear(medal,t,r,isNew&&!!prev,earned),900)},
-  fail(why){if(this.done||this.failed)return;this.failed=true;S.playing=false;S.fails++;setTimeout(()=>showFail(why),300)}
+  fail(why){if(this.done||this.failed)return;this.failed=true;S.playing=false;S.fails++;$('#dropBtn').classList.remove('show');setTimeout(()=>showFail(why),300)}
 };
+/* 방제 커버리지 셀 메시 (변경 시에만 재생성) */
+function coverageMesh(){if(!MS.cellsDirty)return MS.covMesh;MS.cellsDirty=false;const B=new MB();
+  for(const p of MS.patches)for(const c of p.cells)if(c.c)B.quad([c.x-.24,.17,c.z+.24],[c.x+.24,.17,c.z+.24],[c.x+.24,.17,c.z-.24],[c.x-.24,.17,c.z-.24],[0,1,0],[.35,1,.55],[[0,0],[0,0],[0,0],[0,0]],MAT.emit);
+  if(MS.covMesh&&MS.covMesh.b)GL.g.deleteBuffer(MS.covMesh.b);MS.covMesh=B.a.length?GL.mesh(B.a):null;return MS.covMesh}
 
 /* =========================== HUD =========================== */
 function updHud(){const lv=LV();$('#timer').textContent=fmt(MS.flightT);
@@ -1222,6 +1342,10 @@ function buildMini(){const c=document.createElement('canvas');c.width=c.height=2
   for(const k in World.pads){const p=World.pads[k];g.strokeStyle=k==='B'?'#FFC857':'#7FD0F5';g.lineWidth=2;g.beginPath();g.arc(o+p.x*s,o+p.z*s,p.r*s,0,7);g.stroke()}
   miniBase=c}
 function drawMini(){if(!miniBase)return;const g=mctx,s=208/(World.HALF*2+2),o=104;g.clearRect(0,0,208,208);g.save();g.beginPath();g.roundRect?g.roundRect(0,0,208,208,30):g.rect(0,0,208,208);g.clip();g.drawImage(miniBase,0,0);
+  const sid=MS.step.id;
+  if(sid==='rings'){MS.rings().forEach((r,k)=>{if(k<MS.ring)return;g.strokeStyle=k===MS.ring?'#FFC857':'rgba(127,208,245,.7)';g.lineWidth=3;g.beginPath();if(r[3]==='x'){g.moveTo(o+r[0]*s,o+(r[2]-1.8)*s);g.lineTo(o+r[0]*s,o+(r[2]+1.8)*s)}else{g.moveTo(o+(r[0]-1.8)*s,o+r[2]*s);g.lineTo(o+(r[0]+1.8)*s,o+r[2]*s)}g.stroke()})}
+  if(MS.patches&&MS.plan.includes('spray'))for(const p of MS.patches){g.fillStyle=p.done?'rgba(78,227,154,.8)':'rgba(255,90,80,.75)';g.beginPath();g.arc(o+p.x*s,o+p.z*s,PEST_R*s,0,7);g.fill()}
+  if(MS.plan.includes('rescue')&&World.rescue){const R=World.rescue;g.fillStyle=MS.rescued?'#4EE39A':'#F09070';g.beginPath();g.arc(o+R.x*s,o+R.z*s,5,0,7);g.fill()}
   const t=MS.target();g.fillStyle=`rgba(255,200,87,${.5+.5*Math.sin(S.t*5)})`;g.beginPath();g.arc(o+t.x*s,o+t.z*s,7,0,7);g.fill();
   const ca=Math.atan2(CAM.fwd[0],-CAM.fwd[1]);g.save();g.translate(o+CAM.eye[0]*s,o+CAM.eye[2]*s);g.fillStyle='rgba(127,208,245,.18)';g.rotate(ca);g.beginPath();g.moveTo(0,0);g.lineTo(-40,-90);g.lineTo(40,-90);g.closePath();g.fill();g.restore();
   g.save();g.translate(o+D.x*s,o+D.z*s);g.rotate(D.yaw);g.fillStyle='#F09070';g.strokeStyle='#fff';g.lineWidth=2;g.beginPath();g.moveTo(0,-11);g.lineTo(8,8);g.lineTo(0,4);g.lineTo(-8,8);g.closePath();g.fill();g.stroke();g.restore();g.restore()}
@@ -1240,6 +1364,10 @@ function render(){if(!GL.ok)return;const g=GL.g,Mm=World.meshes;GL.begin();
   GL.draw(World.city,null,1,grow<1?{grow}:{});
   if(grow>=1){GL.blend(true);GL.draw(World.shadows,null,1);GL.blend(false)}
   const showDrone=S.phase==='fly'||S.phase==='intro';
+  if(showDrone&&grow>=1&&MS.plan&&MS.plan.includes('rescue')){const R=World.rescue,wave=MS.rescued?0:Math.sin(S.t*7)*.6;
+    GL.draw(Mm.person,M4.chain(M4.T(R.x,R.y,R.z),M4.Ry(.6),M4.S(1.15)));GL.draw(Mm.arm,M4.chain(M4.T(R.x,R.y,R.z),M4.Ry(.6),M4.S(1.15),M4.T(.28,1.12,0),M4.Rz(MS.rescued?2.8:2.4+wave)));
+    for(const k of MS.drops)GL.draw(Mm.kit,M4.chain(M4.T(k.x,k.y,k.z),M4.Ry(k.rot),M4.Rx(k.live?Math.sin(k.rot)*.3:0)))}
+  if(showDrone&&grow>=1&&MS.carry&&MS.plan.includes('rescue')&&!D.crashed){GL.draw(Mm.kit,M4.chain(M4.T(D.x,D.y-.48,D.z),M4.Ry(-D.yaw),M4.S(.9)))}
   if(showDrone&&grow>=1){const M=droneMatrix();GL.draw(Mm.drone,M);
     for(const[i,sx,sz]of[[0,1,1],[1,-1,1],[2,1,-1],[3,-1,-1]]){const dir=(sx*sz>0?1:-1);GL.draw(Mm.prop,M4.chain(M,M4.T(sx*.47,.11,sz*.47),M4.Ry(D.prop*dir+i)))}}
   GL.blend(true);g.depthMask(false);
@@ -1255,7 +1383,15 @@ function drawMarkers(){const Mm=World.meshes,s=MS.step.id,A=World.pads.A,B=World
     GL.draw(Mm.ring,M4.chain(M4.T(h.x,h.y0,h.z),M4.S(h.r)),.9,{tint:col});GL.draw(Mm.ring,M4.chain(M4.T(h.x,h.y1,h.z),M4.S(h.r)),.9,{tint:col});
     GL.draw(Mm.beam,M4.chain(M4.T(h.x,h.y0,h.z),M4.S(h.r,h.y1-h.y0,h.r)),.35,{tint:col})}
   if(s==='yaw'){const want=Math.atan2(B.x-D.x,-(B.z-D.z));GL.draw(Mm.flat,M4.chain(M4.T(D.x,World.surfaceAt(D.x,D.z)+.05,D.z),M4.Ry(-want),M4.T(0,0,-1.8-pulse*.4),M4.S(1.1)),.85,{tint:[.3,1,.6]})}
-  if(s!=='arm'&&s!=='takeoff'&&s!=='hover'){GL.draw(Mm.beam,M4.chain(M4.T(B.x,B.y,B.z),M4.S(1.2,14,1.2)),.55,{tint:[1,.78,.3]});
+  if(s==='rings'){const R=MS.rings(),rr=MS.ringR();for(let k=MS.ring;k<Math.min(R.length,MS.ring+3);k++){const r=R[k],cur=k===MS.ring,rot=r[3]==='x'?M4.chain(M4.Ry(Math.PI/2),M4.Rx(Math.PI/2)):M4.Rx(Math.PI/2);
+      const M=M4.chain(M4.T(r[0],r[1],r[2]),rot,M4.S(cur?rr*(1+.04*pulse):rr));GL.draw(Mm.hoop,M,cur?1:.35,{tint:cur?[1,.82,.3]:[.5,.85,1]});
+      if(cur){GL.draw(Mm.hoop,M4.chain(M4.T(r[0],r[1],r[2]),rot,M4.S(rr*(1.25+.25*pulse))),.35*(1-pulse),{tint:[1,.82,.3]});GL.draw(Mm.beam,M4.chain(M4.T(r[0],.1,r[2]),M4.S(.12,r[1]-rr,.12)),.5,{tint:[1,.82,.3]})}}}
+  if(MS.patches&&MS.patches.length&&MS.plan.includes('spray')&&MS.i<=MS.plan.indexOf('spray')+3){for(const p of MS.patches){const c=p.done?[.3,1,.55]:[1,.32+.25*p.cov,.25];
+      GL.draw(Mm.patch,M4.chain(M4.T(p.x,.15,p.z),M4.S(PEST_R)),p.done?.18:.22+.12*pulse,{tint:c});GL.draw(Mm.ring,M4.chain(M4.T(p.x,.16,p.z),M4.S(PEST_R)),.9,{tint:c})}
+    const cm=coverageMesh();if(cm)GL.draw(cm,null,.55);
+    if(s==='spray'){const F=World.field;if(D.x>F.x0-2&&D.x<F.x1+2&&D.z>F.z0-2&&D.z<F.z1+2){const hS=World.surfaceAt(D.x,D.z);GL.draw(Mm.ring,M4.chain(M4.T(D.x,hS+1.5,D.z),M4.S(.7)),.5,{tint:[.5,.85,1]});GL.draw(Mm.ring,M4.chain(M4.T(D.x,hS+4.5,D.z),M4.S(.7)),.5,{tint:[.5,.85,1]})}}}
+  if(s==='rescue'){const R=World.rescue;GL.draw(Mm.beam,M4.chain(M4.T(R.x,R.y,R.z),M4.S(1.6,6,1.6)),.4,{tint:[1,.5,.3]});GL.draw(Mm.ring,M4.chain(M4.T(R.x,R.y+.05,R.z),M4.S(1.6+.2*pulse)),.9,{tint:[1,.6,.3]})}
+  if(['yaw','transit','land','disarm'].includes(s)){GL.draw(Mm.beam,M4.chain(M4.T(B.x,B.y,B.z),M4.S(1.2,14,1.2)),.55,{tint:[1,.78,.3]});
     const tol=LV().landTol;GL.draw(Mm.ring,M4.chain(M4.T(B.x,B.y+.02,B.z),M4.S(tol*1.5)),.8,{tint:[1,.78,.3]});GL.draw(Mm.ring,M4.chain(M4.T(B.x,B.y+.02,B.z),M4.S(Math.max(.35,tol*.5))),.9,{tint:[.3,1,.6]});
     GL.draw(Mm.arrow,M4.chain(M4.T(B.x,B.y+4.6+pulse*.6,B.z),M4.Ry(S.t*1.5),M4.S(1.3)),.95,{tint:[1,.78,.3]})}
   GL.blend(true)}
@@ -1307,11 +1443,21 @@ function refreshRecords(){const md=['','동','은','금'];[['trainee','#recT'],[
   const bd=Object.keys(LS.get('badges',{})).length;$('#titleRec').textContent=bd?`획득 뱃지 ${bd}/10`:''}
 function syncMode(){const lv=LV(),ml=MODE_LABEL[lv.mode],f=$('#fmode');f.textContent=ml[0];f.className='fmode '+ml[1];$('#hudDiff').textContent=lv.name}
 function showIntro(){const lv=LV();
-  $('#inNum').textContent='MISSION 01 · '+lv.name+' ('+MODE_LABEL[lv.mode][0]+')';$('#inTitle').textContent='앵커 고정 & 이륙';
-  $('#inDesc').innerHTML='구조 본부 광장에서 첫 비행! 도시를 책상에 <b class="hl">고정</b>하고,<br>시동 → 호버링 → 이동 → <b class="hl">정밀 착륙</b>까지 완수해.';
-  const goals=[['anchor','AR 평면 인식으로 도시를 책상에 고정'],['power','시동(CSC): 두 스틱을 아래-안쪽으로 1초'],['hover',`원기둥 안 호버링 ${lv.hoverT}초 (${lv.mode==='P'?'GPS가 위치를 잡아줘요':lv.mode==='ATTI'?'바람에 밀리니 직접 보정':'고도까지 직접 유지'})`],['yaw','기수를 착륙장 B로 돌리고 이동'],['pad',`착륙장 중앙 ${(lv.landTol*1.5).toFixed(1)}m 이내 정밀 착륙 → 시동 끄기`]];
-  $('#inGoals').innerHTML=goals.map(([ic,t])=>`<div class="goal"><span class="gi">${GI[ic]}</span>${t}</div>`).join('');
-  $('#inFact').innerHTML='<b>AR 한 조각 ·</b> 진짜 AR(ARCore·ARKit)은 카메라 영상의 <b>특징점</b>으로 바닥 <b>평면</b>을 찾고, 그 위에 <b>앵커</b>를 박아 가상 물체를 고정해. 이 게임은 센서로 <b>회전(3DoF)</b>을 추적하는 시뮬레이션 AR이야.';
+  $('#inNum').textContent='MISSION 01 · '+lv.name+' ('+MODE_LABEL[lv.mode][0]+')';$('#inTitle').textContent={trainee:'앵커 고정 & 첫 비행',pilot:'장애물 · 방제 비행 심사',ace:'복합 재난 구조 작전'}[S.lvl];
+  const P=MS.plan,has=x=>P.includes(x);
+  $('#inDesc').innerHTML={trainee:'구조 본부 광장에서 첫 비행! 도시를 책상에 <b class="hl">고정</b>하고,<br>시동 → 호버링 → 이동 → <b class="hl">정밀 착륙</b>까지 완수해.',
+    pilot:'구조대 정식 조종사 심사! 빌딩 사이 <b class="hl">장애물 링</b>을 통과하고,<br>스마트팜 <b class="hl">해충 방제</b>까지 마친 뒤 착륙장 B로 귀환해.',
+    ace:'에이스 최종 심사! 좁은 링 코스와 강풍 속 방제를 끝내고,<br>불난 건물 옆 옥상의 요구조자에게 <b class="hl">구호키트를 투하</b>해.'}[S.lvl];
+  const goals=[['anchor','AR 평면 인식으로 도시를 책상에 고정'],['power','시동(CSC): 두 스틱을 아래-안쪽으로 1초'],['hover',`원기둥 안 호버링 ${lv.hoverT}초 (${lv.mode==='P'?'GPS가 위치를 잡아줘요':lv.mode==='ATTI'?'바람에 밀리니 직접 보정':'고도까지 직접 유지'})`]];
+  if(has('yaw'))goals.push(['yaw','기수를 착륙장 B로 돌리고 이동']);
+  if(has('rings'))goals.push(['ring',`빌딩 사이 장애물 링 ${MS.rings().length}개 순서대로 통과 (링 지름 ${(MS.ringR()*2).toFixed(1)}m)`]);
+  if(has('spray'))goals.push(['spray',`해충 구역 ${MS.patches.length}곳 방제 — 작물 위 <b>2~4m</b> 유지, 각 구역 ${Math.round(MS.sp().need*100)}% 이상 (약제 한정)`]);
+  if(has('rescue'))goals.push(['kit',`옥상 요구조자에게 구호키트 투하 — 키트 ${KITS}개, 머리 위 2m 이상, 바람 고려`]);
+  goals.push(['pad',`착륙장 중앙 ${(lv.landTol*1.5).toFixed(1)}m 이내 정밀 착륙 → 시동 끄기`]);
+  $('#inGoals').innerHTML=goals.map(([ic,t])=>`<div class="goal"><span class="gi">${GI[ic]}</span><span>${t}</span></div>`).join('');
+  $('#inFact').innerHTML={trainee:'<b>AR 한 조각 ·</b> 진짜 AR(ARCore·ARKit)은 카메라 영상의 <b>특징점</b>으로 바닥 <b>평면</b>을 찾고, 그 위에 <b>앵커</b>를 박아 가상 물체를 고정해. 이 게임은 센서로 <b>회전(3DoF)</b>을 추적하는 시뮬레이션 AR이야.',
+    pilot:'<b>현장 한 조각 ·</b> 농업용 방제 드론은 작물 위 <b>약 3m</b> 높이(농촌진흥청 기준)로 일정하게 날며 약제를 뿌려. 너무 높으면 약제가 <b>바람에 날려(비산)</b> 엉뚱한 곳에 떨어져.',
+    ace:'<b>현장 한 조각 ·</b> 소방 드론은 사다리차가 닿지 않는 <b>고층 옥상</b>의 요구조자에게 공기호흡기·산소마스크 같은 구조 장비를 전달해. 투하할 땐 <b>하강풍</b>과 <b>바람에 밀리는 거리</b>를 계산해야 해.'}[S.lvl];
   syncMode();show('scrIntro')}
 function newGame(){resetDrone();Wind.reset(Math.random()*1e9|0);PT.clear();MS.reset();S.time=0;S.shake=0;
   syncMode();CAM.resetView();CAM.follow=false;$('#btnFollow').classList.remove('on')}
@@ -1324,8 +1470,8 @@ function resumeGame(){show(null);S.paused=false;AU.bgmStart();lastT=performance.
 function restart(){newGame();S.grow=1;S.phase='fly';S.anchored=true;startFlight()}
 function goHome(){S.overviewDone=false;clearTimeout(S.ovT);S.playing=false;S.paused=false;S.phase='title';AU.bgmStop();AU.motorUpdate(0,0,0);AU.windUpdate(0);document.body.classList.remove('ingame','placing');$('#mascot').classList.remove('force');$('#bubble').classList.remove('on');
   octx.clearRect(0,0,GL.W,GL.H);CAM.setFocus(0,0,0,26,false);CAM.el=40*DEG;CAM.resetView();refreshRecords();show('scrTitle')}
-const BADGES={first:['첫 구조 비행','1'],pinpoint:['핀포인트 착륙','P'],feather:['깃털 착지','F'],clean:['무접촉 비행','C'],ace:['에이스 파일럿','A'],
-  map:['SLAM 지도 제작자','S'],seek:['가려짐 탐지왕','O'],cargo:['구호물자 수송','R'],aiwin:['AI를 이긴 관제사','AI'],hero:['스마트시티 영웅','H']};
+const BADGES={ring:['링 마스터','R'],spray:['정밀 방제사','S'],first:['첫 구조 비행','1'],pinpoint:['핀포인트 착륙','P'],feather:['깃털 착지','F'],clean:['무접촉 비행','C'],ace:['에이스 파일럿','A'],
+  map:['SLAM 지도 제작자','S'],seek:['가려짐 탐지왕','O'],cargo:['옥상 인명구조','K'],aiwin:['AI를 이긴 관제사','AI'],hero:['스마트시티 영웅','H']};
 function showClear(medal,t,r,isNew,earned){AU.bgmStop();AU.motorUpdate(0,0,0);document.body.classList.remove('ingame');
   $('#medal').setAttribute('class','medal m'+medal);$('#clearT').textContent='MISSION 01 CLEAR · '+LV().name;$('#clearH').textContent=['','브론즈 파일럿','실버 파일럿','골드 파일럿'][medal]+'!';
   $('#stats').innerHTML=[[fmt(t),'비행 시간'],[r.off.toFixed(2)+'m','착륙 오차'],[r.vs.toFixed(2),'접지 m/s'],[Math.round(D.batt)+'%','배터리 잔량']].map(([v,l])=>`<div class="stat"><b>${v}</b><small>${l}</small></div>`).join('');
@@ -1334,6 +1480,9 @@ function showClear(medal,t,r,isNew,earned){AU.bgmStop();AU.motorUpdate(0,0,0);do
   dl.push(r.vs<=CONFIG.softLanding?['g','착지 우수',`접지 속도 ${r.vs.toFixed(2)}m/s — 기준(0.7) 이하의 <b>부드러운 착륙</b>`]:['y','착지 주의',`접지 속도 ${r.vs.toFixed(2)}m/s — 지면 1m 앞에서 하강을 더 늦춰요(지면효과로 기체가 뜰 수 있어요)`]);
   dl.push(r.off<=.35?['g','정밀 착륙',`중앙 오차 ${r.off.toFixed(2)}m — 자격시험 수준의 정밀도!`]:['y','위치 보정',`중앙 오차 ${r.off.toFixed(2)}m — 패드 위에서 <b>완전히 멈춘 뒤</b> 수직으로 내려오세요`]);
   const drift=MS.driftN?MS.driftSum/MS.driftN:0;dl.push(lv.mode==='P'?['g','호버링',`평균 흔들림 ${drift.toFixed(2)}m — GPS가 위치를 잡아줬어요. 조종사(ATTI)에서는 직접 보정해야 해요`]:[drift<.6?'g':'y','호버링',`평균 흔들림 ${drift.toFixed(2)}m — 바람에 밀리는 방향의 <b>반대</b>로 짧게 보정하는 게 핵심`]);
+  if(MS.plan.includes('rings'))dl.push(MS.ringMiss?['y','링 코스',`링 ${MS.rings().length}개 완주 · 빗나감 ${MS.ringMiss}회 — 링 앞에서 <b>높이를 먼저</b> 맞추고 천천히 통과`]:['g','링 코스',`링 ${MS.rings().length}개 한 번에 완주 — 원주비행처럼 방향이 바뀌어도 감각 유지!`]);
+  if(MS.plan.includes('spray')){const tl=Math.round(MS.tank);dl.push(tl>=25?['g','방제 효율',`약제 ${tl}% 남김 · 살포 ${MS.sprayT.toFixed(0)}초 — 구역 위만 지나가는 <b>효율적 경로</b>`]:['y','방제 효율',`약제 ${tl}% 남김 — 구역 사이를 <b>4.5m 이상</b>으로 넘어가면 살포가 멈춰 약제를 아낄 수 있어요`])}
+  if(MS.plan.includes('rescue')&&MS.res2)dl.push(MS.res2.tries===1?['g','인명구조',`첫 투하에 성공 · 오차 ${MS.res2.off.toFixed(2)}m — 바람 보정 완벽!`]:['y','인명구조',`${MS.res2.tries}번째 투하에 성공 — 바람이 불어가는 반대쪽(바람 위쪽)에서 떨어뜨리면 정확해요`]);
   dl.push(D.bumps?['r','충돌',`장애물 접촉 ${D.bumps}회 — 관성 때문에 멈추는 데 거리가 필요해요`]:['g','안전 비행','장애물 접촉 0회 — 안전 거리 유지 완벽!']);
   $('#debrief').innerHTML=dl.map(([k,t,d])=>`<div class="dline"><span class="dk ${k}">${t}</span><span>${d}</span></div>`).join('');
   $('#badges').innerHTML=earned.map(e=>`<span class="bdg"><i>${BADGES[e.id][1]}</i>${BADGES[e.id][0]}${e.isNew?'<sup>NEW</sup>':''}</span>`).join('');
@@ -1345,7 +1494,9 @@ function showClear(medal,t,r,isNew,earned){AU.bgmStop();AU.motorUpdate(0,0,0);do
     koreaWorldData:'3단계에서 공신력 있는 출처(기관·기준연도) 확인 후 반영 예정',deploy:'GitHub Pages(HTTPS)',completedAt:new Date().toISOString()};
   console.log('%c[MILAB portfolioEntry]','color:#20A0E0;font-weight:bold',JSON.stringify(portfolioEntry,null,2));
   try{gtag('event','mission_clear',{mission:1,level:S.lvl,time:+t.toFixed(1),medal})}catch(e){}}
-const FAIL={hard:['하드 랜딩!','하강 속도가 너무 빨라서 착륙 장치가 충격을 견디지 못했어요.','<b>비행 원리 ·</b> 지면 가까이에서는 하강 속도를 <b>0.5m/s 이하</b>로. 실제 드론도 착륙 직전 자동으로 감속해요.'],
+const FAIL={tank:['약제 소진','해충 구역을 다 방제하기 전에 약제가 떨어졌어요.','<b>현장 원리 ·</b> 방제 드론은 탱크 용량이 정해져 있어 <b>살포 경로</b>가 중요해요. 구역 위만 2~4m로 지나가고, 이동할 땐 고도를 올려 살포를 멈추세요.'],
+  kits:['구호키트 소진','구호키트 3개가 모두 요구조자를 빗나갔어요.','<b>현장 원리 ·</b> 떨어지는 물체는 <b>바람</b>에 밀려요. 바람 화살표의 <b>반대쪽(바람 위쪽)</b>에서 조금 일찍 떨어뜨리고, 투하 전엔 기체를 완전히 멈추세요.'],
+  hard:['하드 랜딩!','하강 속도가 너무 빨라서 착륙 장치가 충격을 견디지 못했어요.','<b>비행 원리 ·</b> 지면 가까이에서는 하강 속도를 <b>0.5m/s 이하</b>로. 실제 드론도 착륙 직전 자동으로 감속해요.'],
   wall:['기체 충돌!','건물에 너무 빠르게 부딪혔어요.','<b>비행 원리 ·</b> 드론은 <b>관성</b> 때문에 스틱을 놓아도 바로 서지 않아요. 장애물 앞에서는 미리 감속하세요.'],
   skid:['착지 미끄러짐!','수평 속도가 남은 채로 땅에 닿았어요.','<b>비행 원리 ·</b> 착륙은 <b>수평 정지 → 수직 하강</b> 순서! 움직이면서 내려앉으면 기체가 넘어져요.'],
   battery:['배터리 방전','임무를 끝내기 전에 배터리가 바닥났어요.','<b>비행 원리 ·</b> 실제 비행은 <b>30%</b>에서 귀환을 시작해요. 배터리가 줄면 전압이 떨어져 힘도 약해져요.']};
@@ -1367,6 +1518,8 @@ $('#btnFollow').addEventListener('click',()=>{CAM.follow=!CAM.follow;$('#btnFoll
 $('#btnAR').addEventListener('click',()=>{AU.click();setArView((arView()+1)%3)});
 $('#btnArPause').addEventListener('click',()=>{AU.click();setArView((arView()+1)%3)});
 $('#btnView').addEventListener('click',()=>{CAM.resetView();SEN.anchor();toast('시점 초기화')});
+$('#dropBtn').addEventListener('click',()=>MS.drop());
+addEventListener('keydown',e=>{const k=e.key.toLowerCase();if((k===' '||k==='f')&&S.playing&&!S.paused)MS.drop()});
 $('#armBtn').addEventListener('click',()=>{if(!D.armed&&MS.allowArm())armDrone(true);$('#armBtn').classList.remove('show')});
 $('#btnResume').addEventListener('click',()=>{AU.click();resumeGame()});
 $('#btnRecal').addEventListener('click',()=>{SEN.anchor();CAM.resetView();toast('지금 자세를 AR 기준으로 맞췄어요');resumeGame()});
