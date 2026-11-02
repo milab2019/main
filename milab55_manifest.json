@@ -1,0 +1,20 @@
+{
+  "name": "에어로크레스트 VTOL 레이서 · AeroKrest by MILAB",
+  "short_name": "AeroKrest",
+  "description": "무인 수직이착륙기(VTOL)로 날아 보는 VR·AR 진로체험 레이싱 — 미랩(MILAB) 포트폴리오 #055",
+  "id": "./milab_vr_055.html",
+  "start_url": "./milab_vr_055.html?pwa=1",
+  "scope": "./milab_vr_055",
+  "display": "fullscreen",
+  "display_override": ["fullscreen", "standalone"],
+  "orientation": "any",
+  "background_color": "#1A2744",
+  "theme_color": "#1A2744",
+  "lang": "ko",
+  "categories": ["education", "games"],
+  "icons": [
+    { "src": "milab55_icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "milab55_icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "milab55_icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
