@@ -18,7 +18,7 @@
   font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Malgun Gothic","Noto Sans KR",system-ui,sans-serif;
 }
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
-html,body{height:100%;background:var(--navy-d);color:var(--ink);overflow:hidden;overscroll-behavior:none;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;touch-action:none}
+html,body{word-break:keep-all;overflow-wrap:anywhere;height:100%;background:var(--navy-d);color:var(--ink);overflow:hidden;overscroll-behavior:none;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;touch-action:none}
 button{font:inherit;cursor:pointer}
 svg,img{display:block}
 img{-webkit-user-drag:none;pointer-events:none}
@@ -30,9 +30,12 @@ img{-webkit-user-drag:none;pointer-events:none}
 #bg::after{content:"";position:absolute;inset:0;background:radial-gradient(2px 2px at 12% 18%,#fff8,transparent),radial-gradient(1.5px 1.5px at 72% 12%,#fff6,transparent),radial-gradient(2px 2px at 86% 34%,#7FD0F588,transparent),radial-gradient(1.5px 1.5px at 30% 40%,#F0907088,transparent),radial-gradient(1.5px 1.5px at 55% 26%,#fff5,transparent);animation:twinkle 5s ease-in-out infinite alternate}
 @keyframes gridmove{to{background-position:0 46px}}
 @keyframes twinkle{from{opacity:.4}to{opacity:1}}
-#cam{position:fixed;inset:0;width:100%;height:100%;object-fit:cover;z-index:1;opacity:0;transition:opacity .9s ease}
+#cam{position:fixed;inset:0;width:100%;height:100%;object-fit:cover;z-index:1;opacity:0;transition:opacity .9s ease,filter .5s ease;--camBlur:4px;--camDim:.55}
+body.camon #cam{filter:blur(var(--camBlur)) brightness(var(--camDim)) saturate(.8);transform:scale(1.06)}
+body.camon.scanning #cam{filter:blur(1px) brightness(.85) saturate(.95)}
 #cam.on{opacity:1}
-#camTint{position:fixed;inset:0;z-index:1;pointer-events:none;opacity:0;transition:opacity .9s;background:linear-gradient(to bottom,rgba(10,18,40,.62),rgba(10,18,40,.12) 26%,rgba(10,18,40,.08) 70%,rgba(10,18,40,.6))}
+#camTint{position:fixed;inset:0;z-index:1;pointer-events:none;opacity:0;transition:opacity .9s;background:linear-gradient(to bottom,rgba(10,18,40,.62),rgba(10,18,40,.12) 26%,rgba(10,18,40,.08) 70%,rgba(10,18,40,.6)),rgba(14,23,48,.22)}
+body.camon.scanning #camTint{opacity:.35}
 body.camon #camTint{opacity:1}
 #game{position:fixed;inset:0;z-index:2;width:100%;height:100%}
 #fx{position:fixed;inset:0;z-index:40;width:100%;height:100%;pointer-events:none}
@@ -143,7 +146,14 @@ body.ingame #hud{opacity:1;transform:none;pointer-events:auto}
 .ibtn .cnt{position:absolute;top:-5px;right:-5px;min-width:18px;height:18px;border-radius:9px;background:var(--coral);color:#fff;font-size:11px;font-weight:900;display:grid;place-items:center;padding:0 4px}
 .ibtn.hide{display:none}
 .sp{flex:1}
-#arTag{position:fixed;top:calc(env(safe-area-inset-top) + 64px);left:12px;z-index:10;font-size:10px;font-weight:900;letter-spacing:1.5px;padding:4px 9px;border-radius:999px;background:rgba(10,18,40,.6);border:1px solid var(--stroke);display:flex;align-items:center;gap:6px;opacity:0;transition:opacity .4s}
+#arTag{position:fixed;top:calc(env(safe-area-inset-top) + 62px);left:10px;z-index:10;font:inherit;color:var(--ink);font-size:11px;font-weight:900;letter-spacing:1px;min-height:36px;padding:0 8px 0 11px;border-radius:999px;background:rgba(10,18,40,.72);border:1px solid var(--stroke);display:flex;align-items:center;gap:7px;opacity:0;pointer-events:none;transition:opacity .4s,border-color .3s;-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}
+body.ingame #arTag,body.scanning #arTag{pointer-events:auto}
+body.camon #arTag{border-color:rgba(255,90,90,.55)}
+#arTag .sw{width:30px;height:18px;border-radius:9px;background:rgba(255,255,255,.18);position:relative;transition:background .25s}
+#arTag .sw::after{content:"";position:absolute;left:2px;top:2px;width:14px;height:14px;border-radius:50%;background:#fff;transition:transform .25s var(--ease)}
+body.camon #arTag .sw{background:#ff5a5a}body.camon #arTag .sw::after{transform:translateX(12px)}
+#arTag:active{transform:scale(.96)}
+#chipCam{cursor:pointer}
 body.ingame #arTag,body.scanning #arTag{opacity:1}
 #arTag i{width:7px;height:7px;border-radius:50%;background:var(--muted)}
 body.camon #arTag i{background:#ff5a5a;box-shadow:0 0 8px #ff5a5a;animation:blink 1.4s infinite}
@@ -220,7 +230,7 @@ body.ingame.nogyro #joy{display:block}
 .tog{width:52px;height:30px;border-radius:15px;background:rgba(255,255,255,.15);border:0;position:relative;transition:background .2s;flex:none}
 .tog::after{content:"";position:absolute;left:3px;top:3px;width:24px;height:24px;border-radius:50%;background:#fff;transition:transform .25s var(--ease)}
 .tog.on{background:var(--sky)}.tog.on::after{transform:translateX(22px)}
-#toast{position:fixed;left:50%;top:calc(env(safe-area-inset-top) + 72px);z-index:50;transform:translate(-50%,-20px);opacity:0;background:#fff;color:var(--navy);font-weight:800;font-size:14px;padding:10px 18px;border-radius:999px;box-shadow:0 10px 26px rgba(0,0,0,.35);transition:opacity .3s,transform .4s var(--ease);pointer-events:none;white-space:nowrap;max-width:92vw;overflow:hidden;text-overflow:ellipsis}
+#toast{position:fixed;left:50%;top:calc(env(safe-area-inset-top) + 108px);z-index:50;transform:translate(-50%,-20px);opacity:0;background:#fff;color:var(--navy);font-weight:800;font-size:14px;padding:10px 18px;border-radius:999px;box-shadow:0 10px 26px rgba(0,0,0,.35);transition:opacity .3s,transform .4s var(--ease);pointer-events:none;white-space:nowrap;max-width:92vw;overflow:hidden;text-overflow:ellipsis}
 #toast.on{opacity:1;transform:translate(-50%,0)}
 .foot{font-size:11px;color:var(--muted);opacity:.7;text-align:center}
 .mchips{grid-template-columns:repeat(3,1fr)}
@@ -265,7 +275,7 @@ body.ingame.nogyro #joy{display:block}
   <button class="hbox ibtn" id="btnHint" aria-label="AI 힌트"><span id="hintIc"></span><span class="cnt" id="hintCnt">2</span></button>
   <button class="hbox ibtn" id="btnPause" aria-label="일시정지"><svg width="20" height="20" viewBox="0 0 24 24" fill="#F2F8FF"><rect x="6" y="5" width="4" height="14" rx="1.5"/><rect x="14" y="5" width="4" height="14" rx="1.5"/></svg></button>
 </div>
-<div id="arTag"><i></i><span id="arTagT">AR SIM</span></div>
+<button id="arTag" aria-label="AR 모드 켜기 끄기"><i></i><span id="arTagT">AR OFF</span><b class="sw"></b></button>
 
 <div id="scanUI">
   <div class="scanTop"><small>AR SPACE SCAN</small>포털이 <b class="hl">현실 공간 어딘가</b>에 숨었어!<br>폰을 들고 몸을 천천히 돌려 찾아봐</div>
@@ -311,9 +321,9 @@ body.ingame.nogyro #joy{display:block}
     <div class="lbl">MISSION</div>
     <div class="mchips" id="mchips"></div>
     <div class="lbl">LEVEL</div>
-    <button class="dcard" data-d="easy"><span class="ic" style="background:rgba(78,227,154,.16)"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#4ee39a" stroke-width="2" stroke-linecap="round"><path d="M12 21v-8M12 13c0-4-3-6-7-6 0 4 3 6 7 6zM12 11c0-4 3-7 7-7 0 4-3 7-7 7z"/></svg></span><span><b>새싹</b><small>넓은 길 · 부드러운 조작 · 힌트 3회</small><em id="recEasy"></em></span><svg class="arr" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5"><path d="M9 6l6 6-6 6"/></svg></button>
-    <button class="dcard" data-d="normal"><span class="ic" style="background:rgba(240,144,112,.16)"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#F09070" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22c4 0 7-3 7-7 0-5-5-7-5-12-3 2-4 5-4 7-1-1-2-2-2-4-2 2-3 5-3 9 0 4 3 7 7 7z"/></svg></span><span><b>도전</b><small>복잡한 미로 · 표준 조작 · 힌트 2회</small><em id="recNormal"></em></span><svg class="arr" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5"><path d="M9 6l6 6-6 6"/></svg></button>
-    <button class="dcard" data-d="master"><span class="ic" style="background:rgba(255,200,87,.16)"><svg width="28" height="28" viewBox="0 0 24 24" fill="#FFC857"><path d="M13 2L4 14h7l-1 8 9-12h-7z"/></svg></span><span><b>마스터</b><small>거대한 미로 · 민감한 조작 · 힌트 1회</small><em id="recMaster"></em></span><svg class="arr" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5"><path d="M9 6l6 6-6 6"/></svg></button>
+    <button class="dcard" data-d="easy"><span class="ic" style="background:rgba(78,227,154,.16)"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#4ee39a" stroke-width="2" stroke-linecap="round"><path d="M12 21v-8M12 13c0-4-3-6-7-6 0 4 3 6 7 6zM12 11c0-4 3-7 7-7 0 4-3 7-7 7z"/></svg></span><span><b>새싹</b><small>작은 미로 · 별 3개 · 힌트 3회 · 퀴즈 4문항</small><em id="recEasy"></em></span><svg class="arr" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5"><path d="M9 6l6 6-6 6"/></svg></button>
+    <button class="dcard" data-d="normal"><span class="ic" style="background:rgba(240,144,112,.16)"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#F09070" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22c4 0 7-3 7-7 0-5-5-7-5-12-3 2-4 5-4 7-1-1-2-2-2-4-2 2-3 5-3 9 0 4 3 7 7 7z"/></svg></span><span><b>도전</b><small>중간 미로 · 별 4개 · 힌트 2회 · 퀴즈 6문항</small><em id="recNormal"></em></span><svg class="arr" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5"><path d="M9 6l6 6-6 6"/></svg></button>
+    <button class="dcard" data-d="master"><span class="ic" style="background:rgba(255,200,87,.16)"><svg width="28" height="28" viewBox="0 0 24 24" fill="#FFC857"><path d="M13 2L4 14h7l-1 8 9-12h-7z"/></svg></span><span><b>마스터</b><small>큰 미로 · 별 5개 · 함정 추가 · 힌트 1회 · 퀴즈 8문항</small><em id="recMaster"></em></span><svg class="arr" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5"><path d="M9 6l6 6-6 6"/></svg></button>
     <div class="safe"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#F09070" stroke-width="2.2" stroke-linecap="round" style="flex:none;margin-top:1px"><path d="M12 9v4M12 17h.01M10.3 3.9L1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/></svg><span>자리에 앉거나 제자리에 서서 플레이해요. 걸으면서 하지 않기! 기기는 두 손으로 꼭 잡아요.</span></div>
     <button class="btn ghost sm" id="btnDiffBack">처음으로</button>
   </div>
@@ -400,6 +410,7 @@ body.ingame.nogyro #joy{display:block}
       <div class="trow"><span>모든 미션 열기</span><button class="tog" id="togAll"></button></div>
       <div class="trow"><span>AI 힌트 무제한</span><button class="tog" id="togHint"></button></div>
       <div class="trow"><span>소리 끄기</span><button class="tog" id="togMute"></button></div>
+      <div class="trow"><span>AR 카메라 흐림 <b id="blurVal" style="color:#7FD0F5">보통</b></span><input type="range" id="blur" min="0" max="3" step="1"></div>
       <div class="trow"><span>기록·뱃지 초기화</span><button class="btn ghost sm" id="btnReset" style="width:auto;padding:0 16px;min-height:38px">초기화</button></div>
     </div>
     <button class="btn sm" id="btnTClose">닫기</button>
@@ -477,15 +488,15 @@ const LS={get(k,d){try{const v=localStorage.getItem('milab52_'+k);return v==null
 const CONFIG={
   maxTilt:26, deadzone:1.6, G:17, maxSpeed:9.5, boostSpeed:13, restitution:.42, wallH:.55, ballR:.3,
   diff:{
-    easy:  {name:'새싹',  cw:4,ch:6,sens:.85,friction:1.7, loops:4,hints:3,medal:[45,80],
+    easy:  {name:'새싹',  cw:4,ch:6,sens:.85,friction:1.7, loops:4,hints:3,medal:[45,80],stars:3,m1holes:0,scanWin:12,scanHold:.8,quiz:[4,0,0],
             holes:3,lasers:2,laserOn:1.0,laserOff:2.1, rival:1.35,extraHoles:0,
             track:{W:11,H:15,tw:3,chic:0,laps:2,lap:[16,26]},
             drones:2,droneSp:1.3,slamR:2.7,chips:5,chipTime:100,rival6:1.45},
-    normal:{name:'도전',  cw:5,ch:7,sens:1.0,friction:1.25,loops:3,hints:2,medal:[65,115],
+    normal:{name:'도전',  cw:5,ch:7,sens:1.0,friction:1.25,loops:3,hints:2,medal:[75,125],stars:4,m1holes:0,scanWin:9,scanHold:1.1,quiz:[3,3,0],
             holes:5,lasers:3,laserOn:1.2,laserOff:1.6, rival:1.8,extraHoles:1,
             track:{W:11,H:17,tw:2,chic:2,laps:2,lap:[15,24]},
             drones:3,droneSp:1.7,slamR:2.3,chips:7,chipTime:90,rival6:1.85},
-    master:{name:'마스터',cw:6,ch:9,sens:1.18,friction:.95,loops:2,hints:1,medal:[95,155],
+    master:{name:'마스터',cw:6,ch:9,sens:1.18,friction:.95,loops:2,hints:1,medal:[115,180],stars:5,m1holes:2,scanWin:6,scanHold:1.5,quiz:[2,3,3],
             holes:7,lasers:4,laserOn:1.4,laserOff:1.3, rival:2.25,extraHoles:2,
             track:{W:11,H:19,tw:2,chic:4,laps:3,lap:[15,23]},
             drones:4,droneSp:2.1,slamR:2.0,chips:9,chipTime:90,rival6:2.2}
@@ -609,7 +620,14 @@ async function startCam(){
     const v=$('#cam');v.srcObject=st;S.stream=st;await v.play().catch(()=>{});v.classList.add('on');document.body.classList.add('camon');S.camOn=true;syncCamUI();return true}
   catch(e){return false}}
 function stopCam(){if(S.stream){S.stream.getTracks().forEach(t=>t.stop());S.stream=null}$('#cam').classList.remove('on');document.body.classList.remove('camon');S.camOn=false;syncCamUI()}
-function syncCamUI(){$('#arTagT').textContent=S.camOn?'AR LIVE · CAMERA':'AR SIM · HOLOGRAM';$('#btnCamToggle').textContent=S.camOn?'AR 카메라 끄기':'AR 카메라 켜기'}
+function syncCamUI(){$('#arTagT').textContent=S.camOn?'AR ON · 실제 공간':'AR OFF · 홀로그램';$('#btnCamToggle').textContent=S.camOn?'AR 모드 끄기 (홀로그램 배경)':'AR 모드 켜기 (실제 공간 보기)';
+  const c=$('#chipCam');if(c&&S.camChecked){c.className='chip '+(S.camOn?'ok':'no');c.textContent=S.camOn?'AR 모드 ON · 탭하면 끄기':'AR 모드 OFF · 탭하면 켜기'}}
+let arBusy=false;
+async function toggleAR(){if(arBusy)return;arBusy=true;AU.click();
+  try{if(S.camOn){stopCam();LS.set('arMode',false);toast('AR 모드 OFF · 홀로그램 배경')}
+  else{const ok=await startCam();if(ok){LS.set('arMode',true);toast('AR 모드 ON · 실제 공간이 흐릿하게 보여요')}else toast('카메라를 켤 수 없어요 · 권한을 확인해 주세요')}}finally{arBusy=false;S.camChecked=true;syncCamUI()}}
+const BLUR=[[0,.8,'선명'],[2,.66,'약하게'],[4,.55,'보통'],[8,.45,'강하게']];
+function applyBlur(v){v=clamp(Math.round(v),0,3);const[b,d,n]=BLUR[v],el=$('#cam');el.style.setProperty('--camBlur',b+'px');el.style.setProperty('--camDim',d);const t=$('#blurVal');if(t)t.textContent=n;return v}
 function syncSoundUI(){$('#btnSound').textContent=AU.muted?'소리 켜기':'소리 끄기';$('#togMute').classList.toggle('on',AU.muted)}
 
 /* =========================== LEVELS =========================== */
@@ -625,7 +643,7 @@ function buildWalls(g){const H=g.length,W=g[0].length,walls=[];
   for(let z=0;z<H;z++)for(let x=0;x<W;x++)if(g[z][x]===1){const w=(xx,zz)=>xx<0||zz<0||xx>=W||zz>=H||g[zz][xx]===1;
     walls.push({tx:x,tz:z,nb:{b:w(x,z-1),f:w(x,z+1),l:w(x-1,z),r:w(x+1,z)}})}return walls}
 function genMaze(cfg,R){
-  const cw=cfg.cw,ch=cfg.ch,W=cw*2+1,H=ch*2+1,g=[];
+  const cw=cfg.cw,ch=cfg.ch,W=cw*2+1,H=ch*2+1,g=[],NS=cfg.stars||3;
   for(let z=0;z<H;z++)g.push(new Array(W).fill(1));
   const vis=new Set(['0,'+(ch-1)]),st=[[0,ch-1]];g[(ch-1)*2+1][1]=0;
   while(st.length){const[cx,cz]=st[st.length-1];
@@ -642,9 +660,9 @@ function genMaze(cfg,R){
   const far=(a,b)=>Math.abs(a.x-b.x)+Math.abs(a.z-b.z);
   const cand=cells.filter(c=>c!==portal&&!(c.x===start.x&&c.z===start.z)).sort((a,b)=>(b.dead-a.dead)||(b.d-a.d));
   const stars=[];
-  for(const minSep of[6,4,2,0]){for(const c of cand){if(stars.length>=3)break;if(stars.includes(c))continue;
-      if(far(c,start)<3&&minSep>0)continue;if(far(c,portal)<minSep||stars.some(s=>far(s,c)<minSep))continue;stars.push(c)}if(stars.length>=3)break}
-  return{g,W,H,start,portal:{x:portal.x,z:portal.z},stars:stars.slice(0,3).map(s=>({x:s.x,z:s.z,got:false,spin:R()*6})),walls:buildWalls(g),holes:[],lasers:[],pads:[]}}
+  for(const minSep of[6,4,2,0]){for(const c of cand){if(stars.length>=NS)break;if(stars.includes(c))continue;
+      if(far(c,start)<3&&minSep>0)continue;if(far(c,portal)<minSep||stars.some(s=>far(s,c)<minSep))continue;stars.push(c)}if(stars.length>=NS)break}
+  return{g,W,H,start,portal:{x:portal.x,z:portal.z},stars:stars.slice(0,NS).map(s=>({x:s.x,z:s.z,got:false,spin:R()*6})),walls:buildWalls(g),holes:[],lasers:[],pads:[]}}
 function connectors(g){const out=[];for(let z=1;z<g.length-1;z++)for(let x=1;x<g[0].length-1;x++){if(g[z][x]!==0)continue;
     if(x%2===0&&z%2===1)out.push({x,z,axis:'x'});else if(x%2===1&&z%2===0)out.push({x,z,axis:'z'})}return out}
 function mkHole(t,R){const sg=R()<.5?-1:1;return{x:t.x,z:t.z,axis:t.axis,hx:t.x+.5+(t.axis==='z'?sg*.22:0),hz:t.z+.5+(t.axis==='x'?sg*.22:0)}}
@@ -664,6 +682,7 @@ function genLevel(m,cfg,seed){const R=rng(seed);
   const near=(a,b,d)=>Math.abs(a.x-b.x)+Math.abs(a.z-b.z)<=d;
   const blocked=t=>near(t,L.start,2)||near(t,L.portal,1)||L.stars.some(s=>near(t,s,1));
   const cons=shuffle(connectors(L.g).filter(t=>!blocked(t)),R);
+  if(m===1&&cfg.m1holes)L.holes=cons.splice(0,cfg.m1holes).map(t=>mkHole(t,R));
   if(m===2){L.holes=cons.splice(0,cfg.holes).map(t=>mkHole(t,R));L.lasers=cons.splice(0,cfg.lasers).map(t=>({x:t.x,z:t.z,axis:t.axis,ph:R()*3}))}
   if(m===4){const{dist,par}=bfs(L.g,L.start.x,L.start.z);L.dist=dist;L.maxD=0;dist.forEach(r=>r.forEach(v=>{if(v<Infinity&&v>L.maxD)L.maxD=v}));
     const path=pathTo(par,L.portal.x,L.portal.z);let hi=-1;
@@ -756,7 +775,7 @@ function drawStar(s,hw,hh,i){
   starPath(ctx,c.x,c.y,R,Math.max(.15,Math.abs(sx)));ctx.fillStyle=g;ctx.fill();ctx.restore();
   ctx.strokeStyle='rgba(255,255,255,.8)';ctx.lineWidth=1.2;ctx.stroke()}
 
-function portalOpen(){const M=S.maze;return M.type==='rival'?S.phase!=='scan':S.collected>=3}
+function portalOpen(){const M=S.maze;return M.type==='rival'?S.phase!=='scan':S.collected>=S.need}
 function drawPortal(hw,hh){
   const P0=S.portal;if(!P0)return;const cx=P0.x+.5-hw,cz=P0.z+.5-hh;
   if(portalOpen()){
@@ -768,7 +787,7 @@ function drawPortal(hw,hh){
   }else{
     const pts=ringPts(cx,cz,.4,.012,32);poly(ctx,pts);ctx.fillStyle='rgba(26,39,68,.55)';ctx.fill();
     ctx.save();ctx.setLineDash([4,6]);ctx.lineDashOffset=S.t*10;ctx.strokeStyle='rgba(159,179,207,.8)';ctx.lineWidth=2;ctx.stroke();ctx.restore();
-    const c=P(cx,.02,cz);ctx.fillStyle='rgba(255,255,255,.75)';ctx.font=`900 ${Math.max(10,.24*c.k)}px system-ui,sans-serif`;ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(S.collected+'/3',c.x,c.y)}}
+    const c=P(cx,.02,cz);ctx.fillStyle='rgba(255,255,255,.75)';ctx.font=`900 ${Math.max(10,.24*c.k)}px system-ui,sans-serif`;ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(S.collected+'/'+S.need,c.x,c.y)}}
 function drawHole(h,hw,hh){const R=S.help?.17:.21;
   const o=ringPts(h.hx-hw,h.hz-hh,R+.05,.004,24);poly(ctx,o);const c=P(h.hx-hw,.004,h.hz-hh);
   const g=ctx.createRadialGradient(c.x,c.y+2,0,c.x,c.y,(R+.05)*c.k);g.addColorStop(0,'#000');g.addColorStop(.7,'#060b18');g.addColorStop(1,'rgba(240,144,112,.35)');ctx.fillStyle=g;ctx.fill();
@@ -824,10 +843,10 @@ function drawScan(){
     const g=ctx.createRadialGradient(x,y,0,x,y,70);g.addColorStop(0,'rgba(255,255,255,.95)');g.addColorStop(.4,'rgba(127,208,245,.75)');g.addColorStop(1,'rgba(240,144,112,0)');
     ctx.beginPath();ctx.ellipse(x,y,70,70,0,0,7);ctx.fillStyle=g;ctx.fill();ctx.restore();
     for(let r=0;r<3;r++){ctx.save();ctx.translate(x,y);ctx.rotate(S.t*(r%2?-1.5:1.2));ctx.setLineDash([10,9]);ctx.strokeStyle=r%2?'#F09070':'#fff';ctx.lineWidth=3-r*.6;ctx.beginPath();ctx.arc(0,0,58-r*14,0,7);ctx.stroke();ctx.restore()}}
-  const cx=CW/2,cy=CH*.47,on=Math.abs(diff)<9;
+  const cx=CW/2,cy=CH*.47,on=Math.abs(diff)<CONFIG.diff[S.diff].scanWin;
   ctx.strokeStyle=on?'#FFC857':'rgba(255,255,255,.9)';ctx.lineWidth=2.5;ctx.beginPath();ctx.arc(cx,cy,48,0,7);ctx.stroke();
   for(const[sx,sy]of[[-1,-1],[1,-1],[1,1],[-1,1]]){ctx.beginPath();ctx.moveTo(cx+sx*70,cy+sy*48);ctx.lineTo(cx+sx*70,cy+sy*70);ctx.lineTo(cx+sx*48,cy+sy*70);ctx.stroke()}
-  if(sc.hold>0){ctx.strokeStyle='#FFC857';ctx.lineWidth=6;ctx.lineCap='round';ctx.beginPath();ctx.arc(cx,cy,48,-Math.PI/2,-Math.PI/2+Math.PI*2*Math.min(1,sc.hold));ctx.stroke();ctx.lineCap='butt'}
+  if(sc.hold>0){ctx.strokeStyle='#FFC857';ctx.lineWidth=6;ctx.lineCap='round';ctx.beginPath();ctx.arc(cx,cy,48,-Math.PI/2,-Math.PI/2+Math.PI*2*Math.min(1,sc.hold/CONFIG.diff[S.diff].scanHold));ctx.stroke();ctx.lineCap='butt'}
   if(Math.abs(diff)>24){const left=diff>0,ax=left?28:CW-28;ctx.fillStyle='#F09070';for(let i=0;i<3;i++){const o=((S.t*2+i/3)%1)*20*(left?-1:1);ctx.globalAlpha=.4+i*.2;ctx.beginPath();ctx.moveTo(ax+o+(left?10:-10),cy-14);ctx.lineTo(ax+o+(left?-6:6),cy);ctx.lineTo(ax+o+(left?10:-10),cy+14);ctx.closePath();ctx.fill()}ctx.globalAlpha=1}
   ctx.restore()}
 
@@ -1015,8 +1034,8 @@ function step(dt){
   S.stars.forEach(s=>{if(s.got)return;if(Math.hypot(b.x-(s.x+.5),b.z-(s.z+.5))<CONFIG.ballR+.27){s.got=true;S.collected++;S.cp={x:s.x+.5,z:s.z+.5};AU.star();if(navigator.vibrate)navigator.vibrate([12,30,12]);
       burstAt(s.x+.5,s.z+.5,.48,26,['#FFC857','#fff','#F09070'],260,{sh:'s',s:2.2});
       const ic=$$('#hudW svg')[S.collected-1];if(ic)ic.classList.add('on');
-      if(S.collected>=3){AU.portal();burstAt(S.portal.x+.5,S.portal.z+.5,.1,40,['#7FD0F5','#fff','#F09070'],300);say('포털이 열렸어! 빛나는 곳으로 가자!','party','jump',3200);S.hintPath=null}
-      else say(`별 ${S.collected}/3 획득!${M.type==='trap'?' 여기가 새 체크포인트야':' 좋아!'}`,'cheer','bounce',2000)}});
+      if(S.collected>=S.need){AU.portal();burstAt(S.portal.x+.5,S.portal.z+.5,.1,40,['#7FD0F5','#fff','#F09070'],300);say('포털이 열렸어! 빛나는 곳으로 가자!','party','jump',3200);S.hintPath=null}
+      else say(`별 ${S.collected}/${S.need} 획득!${M.type==='trap'?' 여기가 새 체크포인트야':' 좋아!'}`,'cheer','bounce',2000)}});
   if(M.seen){const R=CONFIG.diff[S.diff].slamR,x0=Math.max(0,Math.floor(b.x-R)),x1=Math.min(M.W-1,Math.floor(b.x+R)),z0=Math.max(0,Math.floor(b.z-R)),z1=Math.min(M.H-1,Math.floor(b.z+R));
     for(let z=z0;z<=z1;z++)for(let x=x0;x<=x1;x++)if(!M.seen[z][x]&&Math.hypot(x+.5-b.x,z+.5-b.z)<R){M.seen[z][x]=1;if(!M.g[z][x])M.seenOpen++}
     S.mapPct=Math.round(M.seenOpen/M.openCnt*100);
@@ -1039,7 +1058,7 @@ function useHint(){if(!S.playing||S.finishing||S.paused)return;const M=S.maze;
   if(M.type==='rival'||M.type==='chips'){S.eyeT=5;S.eyeUses++;AU.hint();say(M.type==='chips'?'AI는 지금 가장 가까운 칩만 노려(탐욕 전략). 노란 원이 AI의 다음 목표야. 다른 칩을 먼저 챙겨 봐!':'AI는 BFS로 출발점에서 가까운 칸부터 물결처럼 넓혀 가며 길을 찾아. 숫자는 출발점에서의 거리야!','think','bounce',4200);return}
   if(S.hintsLeft<=0&&!S.hintInf){AU.sad();say('힌트를 다 썼어! 이번엔 스스로 찾아보자','sad','shake',2400);return}
   const b=S.ball,{dist,par}=bfs(M.g,Math.floor(b.x),Math.floor(b.z));
-  let tgt=null;if(S.collected>=3)tgt=S.portal;else S.stars.forEach(s=>{if(!s.got&&(!tgt||dist[s.z][s.x]<dist[tgt.z][tgt.x]))tgt=s});
+  let tgt=null;if(S.collected>=S.need)tgt=S.portal;else S.stars.forEach(s=>{if(!s.got&&(!tgt||dist[s.z][s.x]<dist[tgt.z][tgt.x]))tgt=s});
   if(!tgt||dist[tgt.z][tgt.x]===Infinity)return;
   S.hintPath=pathTo(par,tgt.x,tgt.z);S.hintT=4.5;if(!S.hintInf)S.hintsLeft--;S.hintsUsed++;updHintUI();AU.hint();
   say(`AI가 BFS 탐색으로 ${S.hintPath.length-1}칸 최단 경로를 찾았어!`,'think','bounce',3000)}
@@ -1054,13 +1073,13 @@ function updScan(dt){const sc=S.scan;
   if(SEN.hasAlpha&&!sc.manual){if(sc.a0==null)sc.a0=SEN.alpha;sc.h=lerp(sc.h,sc.h+wrapDeg((SEN.alpha-sc.a0)-sc.h),.3)}
   const kx=(KEYS.arrowleft||KEYS.a?1:0)-(KEYS.arrowright||KEYS.d?1:0);if(kx){sc.h+=kx*70*dt;sc.manual=true}
   const diff=wrapDeg(sc.target-sc.h),ad=Math.abs(diff);
-  if(ad<9)sc.hold+=dt;else sc.hold=Math.max(0,sc.hold-dt*2);
+  const SW=CONFIG.diff[S.diff].scanWin,SH=CONFIG.diff[S.diff].scanHold;if(ad<SW)sc.hold+=dt;else sc.hold=Math.max(0,sc.hold-dt*2);
   sc.lastPing-=dt;if(ad<60&&sc.lastPing<=0){AU.ping(1-ad/60);sc.lastPing=.15+ad/60*.8}
-  $('#scanMsg').textContent=ad<9?'조준 완료! 그대로 유지…':ad<30?'신호가 아주 강해요!':diff>0?'← 왼쪽으로 천천히 돌아보세요':'오른쪽으로 천천히 돌아보세요 →';
-  if(sc.hold>=1)scanSuccess()}
+  $('#scanMsg').textContent=ad<SW?'조준 완료! 그대로 유지…':ad<30?'신호가 아주 강해요!':diff>0?'← 왼쪽으로 천천히 돌아보세요':'오른쪽으로 천천히 돌아보세요 →';
+  if(sc.hold>=SH)scanSuccess()}
 function scanSuccess(){S.phase='play';S.scanned=true;document.body.classList.remove('scanning');$('#mascot').classList.remove('force');AU.portal();if(navigator.vibrate)navigator.vibrate([20,40,60]);
   burst(CW/2,CH*.47,50,['#7FD0F5','#fff','#F09070','#FFC857'],320);toast('포털 좌표 고정! 공간 앵커 완료');setTimeout(countdown,1000)}
-$('#scanSkip').addEventListener('click',()=>{if(S.phase==='scan'){S.scanned=false;S.scan.hold=1;scanSuccess()}});
+$('#scanSkip').addEventListener('click',()=>{if(S.phase==='scan'){S.scanned=false;scanSuccess()}});
 
 /* =========================== FLOW =========================== */
 function show(id){$$('.scr').forEach(s=>s.classList.toggle('show',s.id===id));S.screen=id||'game'}
@@ -1069,25 +1088,30 @@ const fmt=t=>{const m=Math.floor(t/60),s=t-m*60;return m+':'+(s<10?'0':'')+s.toF
 const unlocked=()=>S.allOpen?6:clamp(LS.get('unlocked',1),1,6);
 function newGame(){
   const cfg=CONFIG.diff[S.diff],m=S.mission;S.maze=genLevel(m,cfg,(Date.now()^Math.floor(Math.random()*1e9))>>>0);const M=S.maze;
-  S.ball={x:M.start.x+.5,z:M.start.z+.5,vx:0,vz:0};S.cp={x:S.ball.x,z:S.ball.z};S.stars=M.stars;S.portal=M.portal;S.collected=0;
+  S.ball={x:M.start.x+.5,z:M.start.z+.5,vx:0,vz:0};S.cp={x:S.ball.x,z:S.ball.z};S.stars=M.stars;S.portal=M.portal;S.collected=0;S.need=M.stars.length;
   Object.assign(S,{time:0,finishing:0,hintsLeft:cfg.hints,hintsUsed:0,hintPath:null,hintT:0,trail:[],idle:0,ix:0,iy:0,fallT:0,inv:0,falls:0,fails:0,help:false,laserMul:1,ramp:0,boostT:0,padCD:0,eyeT:0,eyeUses:0,phase:'play',mapPct:0,chipsMe:0,chipsAi:0,droneMul:1,chipEnd:false});
   resetDecals();
   $('#hudM').firstChild.textContent='M'+m;$('#hudDiff').textContent=cfg.name;$('#timer').textContent='0:00.0';
   const w=$('#hudW');
   if(M.type==='race')w.innerHTML=`<span class="lap">LAP 1/${M.laps}</span>`;
   else if(M.type==='rival')w.innerHTML='<span class="lap" style="color:#F7A88C">AI</span><div class="aibar"><i id="aiFill"></i></div>';
-  else w.innerHTML='<div class="stars">'+[0,1,2].map(()=>'<svg viewBox="0 0 24 24"><path d="M12 2l3 6.5 7 .8-5.2 4.8 1.4 7L12 17.6 5.8 21l1.4-7L2 9.3l7-.8z"/></svg>').join('')+'</div>';
+  else if(S.need>3)w.innerHTML='<span class="lap starTxt"><svg width="16" height="16" viewBox="0 0 24 24" fill="#FFC857" style="display:inline;vertical-align:-2px"><path d="M12 2l3 6.5 7 .8-5.2 4.8 1.4 7L12 17.6 5.8 21l1.4-7L2 9.3l7-.8z"/></svg> <span id="starN">0/'+S.need+'</span></span>';
+  else w.innerHTML='<div class="stars">'+S.stars.map(()=>'<svg viewBox="0 0 24 24"><path d="M12 2l3 6.5 7 .8-5.2 4.8 1.4 7L12 17.6 5.8 21l1.4-7L2 9.3l7-.8z"/></svg>').join('')+'</div>';
   if(M.type==='slam')w.insertAdjacentHTML('beforeend','<span class="mini" id="mapPct">MAP 0%</span>');
   if(M.type==='chips')w.innerHTML='<div class="vs"><span class="me" id="vsMe">나 0</span><span style="opacity:.5">:</span><span class="ai" id="vsAi">0 AI</span></div>';
   updHintUI();fitView()}
-function updHud(){const M=S.maze;if(!M)return;$('#timer').textContent=M.type==='chips'?fmt(Math.max(0,CONFIG.diff[S.diff].chipTime-S.time)):fmt(S.time);
+function updHud(){const M=S.maze;if(!M)return;{const e=$('#starN');if(e)e.textContent=S.collected+'/'+S.need}$('#timer').textContent=M.type==='chips'?fmt(Math.max(0,CONFIG.diff[S.diff].chipTime-S.time)):fmt(S.time);
   if(M.type==='slam'){const e=$('#mapPct');if(e)e.textContent='MAP '+S.mapPct+'%'}
   if(M.type==='chips'){$('#vsMe').textContent='나 '+S.chipsMe;$('#vsAi').textContent=S.chipsAi+' AI'}
   if(M.type==='race'){const e=$('.lap');if(e)e.textContent=`LAP ${Math.min(M.lap+1,M.laps)}/${M.laps}`}
   else if(M.type==='rival'){const f=$('#aiFill');if(f)f.style.width=(M.rival.s/(M.rival.path.length-1)*100).toFixed(0)+'%'}}
-function showIntro(){const m=S.mission,d=MISSIONS[m];LS.set('lastM',m);
-  $('#inNum').textContent='MISSION 0'+m;$('#inTitle').textContent=d.title;$('#inDesc').innerHTML=d.desc;
-  $('#inGoals').innerHTML=d.goals.map(([ic,t])=>`<div class="goal"><span class="gi">${GI[ic]}</span>${t}</div>`).join('');$('#inFact').innerHTML=d.fact;
+const LV_EXTRA={1:{master:['hole','마스터 전용 · 블랙홀 함정 2개 등장']},2:{normal:['laser','도전 · 함정 5개 + 레이저 3개'],master:['laser','마스터 · 함정 7개 + 레이저 4개']},
+  3:{normal:['flag','도전 · 좁은 2차선 + 장애물 2곳'],master:['lap','마스터 · 3바퀴 + 장애물 4곳']},4:{normal:['scan','도전 · 조준 범위가 좁아져요'],master:['scan','마스터 · 가장 좁은 조준 + 1.5초 유지']},
+  5:{normal:['drone','도전 · 드론 3대 · 스캐너 범위 축소'],master:['drone','마스터 · 드론 4대 · 가장 좁은 스캐너']},6:{normal:['chip','도전 · 칩 7개 · 90초'],master:['chip','마스터 · 칩 9개 · 더 빠른 AI']}};
+function showIntro(){const m=S.mission,d=MISSIONS[m],cf=CONFIG.diff[S.diff];LS.set('lastM',m);
+  $('#inNum').textContent='MISSION 0'+m+' · '+cf.name;$('#inTitle').textContent=d.title;$('#inDesc').innerHTML=d.desc;
+  const gl=d.goals.map(([ic,t])=>[ic,t.replace('별 3개','별 '+cf.stars+'개')]);const ex=(LV_EXTRA[m]||{})[S.diff];if(ex)gl.push(ex);
+  $('#inGoals').innerHTML=gl.map(([ic,t],i)=>`<div class="goal"${ex&&i===gl.length-1?' style="background:rgba(240,144,112,.14);border:1px solid rgba(240,144,112,.4)"':''}><span class="gi">${GI[ic]}</span>${t}</div>`).join('');$('#inFact').innerHTML=d.fact;
   $('#btnGo').textContent=m===4?'AR 스캔 시작!':'출발!';show('scrIntro')}
 function launch(){if(S.mission===4&&!S.scanned)startScan();else countdown()}
 function countdown(){show(null);document.body.classList.add('ingame');document.body.classList.toggle('nogyro',!SEN.has);
@@ -1134,7 +1158,7 @@ function finishMission(win){
   if(win)say(m===4?'AI를 이겼어! 진짜 AR 탐험가!':['','미션 클리어! 진짜 AR 탐험가다!','함정도 문제없지!','엄청난 질주였어!','','SLAM 탐험 성공! 어둠도 문제없지!','최종 보스 격파! 최고의 전략가!'][m],'party','jump',3500);
   setTimeout(()=>$('#mascot').classList.remove('force'),3600);
   const portfolioEntry={no:53,id:'milab_ar_053',file:'milab_ar_053.html',url:'https://milab2019.github.io/main/milab_ar_053.html',title:'AR 큐브 러너',subtitle:'자이로센서 마커리스 AR 체험 게임',category:'AR·XR',grade:'초5~중3',
-    missions:6,build:'3단계 — 6미션 + 멀티엔딩·AR 비밀 노트·퀴즈·수료증',lastMission:m,run:S.run,
+    missions:6,build:'v2 — 난이도별 별·함정·퀴즈(4/6/8문항) 차등 + AR 모드 ON/OFF(흐린 실제 공간)',lastMission:m,run:S.run,
     techStack:['DeviceOrientation API(기울기·방향)','getUserMedia(후면 카메라)','Canvas2D 원근 투영 3D','Web Audio API','LocalStorage'],
     aiFeature:'BFS 최단경로 AI 힌트 · BFS AI 라이벌 · AI 눈(탐색 과정 시각화) · 데이터 밖 함정으로 AI 한계 체험 · 탐욕(그리디) 전략 AI와 칩 쟁탈전 · AI 리터러시 퀴즈',
     deploy:'GitHub Pages(HTTPS)',completedAt:new Date().toISOString()};
@@ -1152,7 +1176,7 @@ $('#btnStart').addEventListener('click',async()=>{
   AU.init();AU.click();
   try{const de=document.documentElement;if(de.requestFullscreen&&/Android/i.test(navigator.userAgent)){de.requestFullscreen({navigationUI:'hide'}).then(()=>screen.orientation&&screen.orientation.lock&&screen.orientation.lock('portrait').catch(()=>{})).catch(()=>{})}}catch(e){}
   await SEN.request();
-  startCam().then(ok=>{const c=$('#chipCam');c.className='chip '+(ok?'ok':'no');c.textContent=ok?'AR 카메라 켜짐':'카메라 없음 · 홀로그램 모드'});
+  (LS.get('arMode',true)?startCam():Promise.resolve(false)).then(()=>{S.camChecked=true;syncCamUI()});
   refreshRecords();show('scrDiff');setTimeout(()=>{const c=$('#chipGyro');c.className='chip '+(SEN.has?'ok':'no');c.textContent=SEN.has?'기울기 센서 연결됨':'센서 없음 · 조이스틱 모드'},1200)});
 $$('.dcard').forEach(b=>b.addEventListener('click',()=>{AU.click();S.diff=b.dataset.d;S.scanned=false;newGame();
   if(SEN.has&&!S.calibrated){$('#gnum').textContent='';$('#btnCal').disabled=false;show('scrCalib')}
@@ -1167,7 +1191,9 @@ $('#btnPause').addEventListener('click',()=>{AU.click();pauseGame()});
 $('#btnHint').addEventListener('click',useHint);
 $('#btnResume').addEventListener('click',()=>{AU.click();resumeGame()});
 $('#btnRecal').addEventListener('click',()=>{SEN.calibrate();toast('지금 자세로 수평을 맞췄어요');resumeGame()});
-$('#btnCamToggle').addEventListener('click',async()=>{if(S.camOn)stopCam();else{const ok=await startCam();if(!ok)toast('카메라를 켤 수 없어요')}});
+$('#btnCamToggle').addEventListener('click',toggleAR);
+$('#arTag').addEventListener('click',toggleAR);
+$('#chipCam').addEventListener('click',toggleAR);
 $('#btnSound').addEventListener('click',()=>AU.setMute(!AU.muted));
 $('#btnRestart').addEventListener('click',()=>{AU.click();newGame();launch()});
 $('#btnHome').addEventListener('click',()=>{AU.click();goHome()});
@@ -1219,13 +1245,31 @@ $('#nPrev').addEventListener('click',()=>{if(noteI>0){noteI--;AU.click();renderN
 $('#nNext').addEventListener('click',()=>{AU.click();if(noteI<3){noteI++;renderNote()}else startQuiz()});
 let swX=null;$('#scrNotes').addEventListener('pointerdown',e=>{swX=e.clientX});
 $('#scrNotes').addEventListener('pointerup',e=>{if(swX==null)return;const dx=e.clientX-swX;swX=null;if(Math.abs(dx)>60){if(dx<0&&noteI<3){noteI++;AU.click();renderNote()}else if(dx>0&&noteI>0){noteI--;AU.click();renderNote()}}});
-const QUIZ=[
-  {q:'AR책카드처럼 약속된 그림 카드를 비춰야 3D가 나타나는 AR 방식은?',o:['마커 기반 AR','위치 기반 AR','가상현실(VR)'],e:'그림 카드가 바로 <b>마커</b>야. 카메라가 마커를 알아보면 그 위에 3D 물체를 띄워.'},
+const QBANK={
+ 1:[{q:'AR책카드처럼 약속된 그림 카드를 비춰야 3D가 나타나는 AR 방식은?',o:['마커 기반 AR','위치 기반 AR','가상현실(VR)'],e:'그림 카드가 바로 <b>마커</b>야. 카메라가 마커를 알아보면 그 위에 3D 물체를 띄워.'},
   {q:'오늘 게임에서 폰을 기울이면 코어가 굴러간 건 어떤 센서 덕분일까?',o:['자이로(기울기) 센서','마이크','조도(밝기) 센서'],e:'<b>자이로센서</b>가 폰의 기울기를 1초에 수십 번 재서 미로를 기울였어.'},
   {q:'미션 4에서 길찾기 AI가 함정에 빠진 이유는?',o:['AI의 지도(데이터)에 함정 정보가 없어서','AI가 일부러 져 주려고','화면이 너무 어두워서'],e:'AI는 <b>주어진 데이터 안에서만</b> 판단해. 데이터에 없는 상황에선 실수할 수 있어.'},
-  {q:'AI에 대한 설명으로 가장 알맞은 것은?',o:['AI는 데이터를 바탕으로 계산해서 판단한다','AI는 세상 모든 것을 스스로 알고 있다','AI의 판단은 언제나 100% 정확하다'],e:'AI는 똑똑한 도구지만 <b>데이터와 규칙</b>에 따라 움직여. 그래서 사람이 결과를 확인하는 습관이 중요해!'}];
-function startQuiz(){qI=0;qScore=0;show('scrQuiz');renderQ()}
-function renderQ(){const Q=QUIZ[qI];$('#qNum').textContent=`QUIZ ${qI+1} / ${QUIZ.length}`;$('#qBar').style.width=(qI/QUIZ.length*100)+'%';$('#qText').textContent=Q.q;$('#qExp').style.display='none';$('#qNext').style.display='none';
+  {q:'AI에 대한 설명으로 가장 알맞은 것은?',o:['AI는 데이터를 바탕으로 계산해서 판단한다','AI는 세상 모든 것을 스스로 알고 있다','AI의 판단은 언제나 100% 정확하다'],e:'AI는 똑똑한 도구지만 <b>데이터와 규칙</b>에 따라 움직여. 그래서 사람이 결과를 확인하는 습관이 중요해!'},
+  {q:'현실을 보면서 그 위에 가상 물체를 더해 보여주는 기술은?',o:['증강현실(AR)','가상현실(VR)','3D 프린팅'],e:'<b>증강현실(AR)</b>은 현실 위에 가상을 “더하는” 기술이야. VR은 눈을 가리고 가상 세계로 들어가.'},
+  {q:'포켓몬 GO처럼 GPS 위치에 맞춰 캐릭터가 나타나는 AR 방식은?',o:['위치 기반 AR','마커 기반 AR','혼합현실(MR)'],e:'<b>GPS로 내 위치</b>를 알아내 그 장소에 맞는 가상 정보를 보여주는 방식이야.'},
+  {q:'AR 게임을 할 때 가장 안전한 행동은?',o:['제자리에서 주변을 확인하며 플레이한다','걸으면서 화면만 보고 플레이한다','계단 위에서 몸을 돌리며 플레이한다'],e:'AR은 화면에 집중하게 돼. <b>제자리에서, 주변을 확인하며</b> 즐기는 게 안전 수칙이야.'}],
+ 2:[{q:'미션 4에서 몸을 돌려도 포털이 같은 자리에 있는 것처럼 보이게 한 센서는?',o:['방향(나침반) 센서','조도(밝기) 센서','지문 센서'],e:'<b>방향 센서</b>가 내가 얼마나 몸을 돌렸는지 재서, 가상 포털을 현실 공간의 한 방향에 고정했어.'},
+  {q:'가상 물체를 현실 공간의 한 지점에 “고정”해 두는 것을 무엇이라고 할까?',o:['공간 앵커','얼굴 필터','화면 캡처'],e:'배가 닻(앵커)을 내리듯, 가상 물체를 현실의 한 자리에 묶어 두는 것을 <b>공간 앵커</b>라고 해.'},
+  {q:'SLAM 기술에 대한 설명으로 알맞은 것은?',o:['움직이며 내 위치를 찾고 동시에 주변 지도를 만든다','사진을 예쁘게 꾸며 준다','인터넷 속도를 빠르게 해 준다'],e:'<b>SLAM</b>은 위치 찾기와 지도 만들기를 동시에 해. 미션 5에서 지나간 길이 지도로 쌓인 것처럼!'},
+  {q:'혼합현실(MR)을 가장 잘 설명한 것은?',o:['가상 물체가 현실 물체와 서로 반응한다','눈을 완전히 가리고 가상 세계로만 들어간다','종이에 인쇄된 그림만 본다'],e:'MR에서는 가상 공이 진짜 책상에 튕기는 것처럼 <b>가상과 현실이 서로 반응</b>해.'},
+  {q:'“AI 눈” 버튼을 눌렀을 때 칸에 나타난 숫자의 뜻은?',o:['출발점에서 그 칸까지의 거리(칸 수)','AI가 받은 점수','남은 제한 시간'],e:'AI는 <b>너비 우선 탐색(BFS)</b>으로 가까운 칸부터 거리를 매기며 길을 찾았어.'},
+  {q:'AR 속 캐릭터와 물체를 입체로 만들고 꾸미는 직업은?',o:['3D 모델러','회계사','항공 관제사'],e:'<b>3D 모델러·디자이너</b>가 만든 입체 모델이 있어야 AR 화면에 캐릭터가 나타날 수 있어.'}],
+ 3:[{q:'미션 6의 AI는 늘 가장 가까운 칩만 노렸어. 이 “탐욕(그리디) 전략”의 약점은?',o:['당장은 이득이지만 전체로 보면 손해일 수 있다','칩을 하나도 모을 수 없다','항상 사람보다 느리게 움직인다'],e:'눈앞의 이익만 고르면 <b>전체 동선이 비효율적</b>일 수 있어. 그래서 먼 칩부터 계획한 사람이 이길 수 있었지.'},
+  {q:'마커 기반 AR에서 카드를 손으로 절반쯤 가리면 어떻게 될까?',o:['마커를 알아보지 못해 3D가 흔들리거나 사라진다','3D가 더 크게 나타난다','아무 변화가 없다'],e:'마커 기반 AR은 <b>마커가 보여야</b> 위치를 계산해. 가리면 기준을 잃어버려!'},
+  {q:'너비 우선 탐색(BFS)이 최단 경로를 찾을 수 있는 이유는?',o:['가까운 칸부터 한 겹씩 넓혀 가며 살펴보기 때문','길을 무작위로 골라 보기 때문','한 길로 끝까지 가 본 뒤 돌아오기 때문'],e:'물결처럼 <b>가까운 곳부터 차례로</b> 넓히니까, 목적지에 처음 닿은 길이 곧 가장 짧은 길이야.'},
+  {q:'실내 AR에서 GPS보다 SLAM 방식이 더 알맞은 까닭은?',o:['실내에서는 GPS 신호가 약하고 위치 오차가 커서','SLAM은 인터넷이 꼭 있어야 해서','GPS는 카메라가 있어야만 작동해서'],e:'GPS는 실내에서 신호가 약하고 오차가 커. 그래서 실내에서는 <b>카메라·센서로 공간을 직접 읽는 SLAM</b>이 유리해.'},
+  {q:'AI가 내놓은 결과를 대하는 가장 바람직한 태도는?',o:['데이터와 상황을 확인하고 사람이 최종 판단한다','AI는 항상 옳으니 그대로 따른다','AI 결과는 쓸모없으니 무시한다'],e:'AI는 유용한 도구지만 실수할 수 있어. <b>확인하고 판단하는 것</b>은 사람의 몫이야.'},
+  {q:'자율주행차 AI가 학습 데이터에 없던 낯선 공사 표지판을 만났다. 가장 알맞은 생각은?',o:['잘못 판단할 수 있으니 사람의 확인과 안전장치가 필요하다','AI니까 처음 보는 것도 무조건 정확히 안다','표지판은 중요하지 않으니 문제없다'],e:'미션 4의 함정처럼, <b>데이터 밖의 상황</b>은 AI도 틀릴 수 있어. 그래서 안전장치가 중요해!'}]};
+let QUIZ=[],QLV='';
+function buildQuiz(){const c=CONFIG.diff[S.diff];QLV=c.name;QUIZ=[];
+  c.quiz.forEach((n,i)=>{QUIZ.push(...shuffle(QBANK[i+1].slice(),Math.random).slice(0,n))})}
+function startQuiz(){buildQuiz();qI=0;qScore=0;show('scrQuiz');renderQ()}
+function renderQ(){const Q=QUIZ[qI];$('#qNum').textContent=`${QLV} 퀴즈 · ${qI+1} / ${QUIZ.length}`;$('#qBar').style.width=(qI/QUIZ.length*100)+'%';$('#qText').textContent=Q.q;$('#qExp').style.display='none';$('#qNext').style.display='none';
   const opts=shuffle(Q.o.map((t,i)=>({t,ok:i===0})),Math.random);
   $('#qOpts').innerHTML=opts.map((o,i)=>`<button class="qopt">${String.fromCharCode(9312+i)}&nbsp; ${o.t}</button>`).join('');
   $$('#qOpts .qopt').forEach((b,i)=>b.addEventListener('click',()=>{const ok=opts[i].ok;if(ok)qScore++;
@@ -1247,12 +1291,12 @@ function emblemSVG(k){const C=[['#FFF1B8','#F2B533','#B57E10'],['#BDF0FF','#20A0
   return `<defs><linearGradient id="eg${k}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${C[0]}"/><stop offset="1" stop-color="${C[1]}"/></linearGradient></defs><polygon points="80,4 146,42 146,118 80,156 14,118 14,42" fill="${C[2]}"/><polygon points="80,13 138,47 138,113 80,147 22,113 22,47" fill="url(#eg${k})"/><polygon points="80,30 123,55 123,105 80,130 37,105 37,55" fill="none" stroke="#fff" stroke-opacity=".6" stroke-width="2"/><g transform="translate(80,80)" fill="#fff" stroke="#fff">${ic}</g>`}
 function showEnding(){const runs=Object.values(S.run||{});let pts=0;
   runs.forEach(r=>{pts+=r.win?({gold:3,silver:2,bronze:1}[r.medal]||1):.5});
-  const max=Math.max(1,runs.length)*3+QUIZ.length*1.5;pts+=qScore*1.5;
+  const max=Math.max(1,runs.length)*3+6;pts+=qScore/Math.max(1,QUIZ.length)*6;
   const ratio=pts/max,k=ratio>=.8?0:ratio>=.6?1:ratio>=.4?2:3;endK=k;const E=ENDINGS[k];
   const cleared=runs.filter(r=>r.win).length,bd=Object.keys(LS.get('badges',{})).length;
   $('#emblem').innerHTML=emblemSVG(k);$('#endT').textContent=`ENDING ${k+1} / 4`;$('#endH').textContent=E.t;$('#endS').innerHTML=E.s;$('#endCareer').textContent=E.c;
   $('#endStats').innerHTML=[[cleared+'/6','클리어 미션'],[qScore+'/'+QUIZ.length,'퀴즈 정답'],[bd+'/10','획득 뱃지']].map(([v,l])=>`<div class="stat"><b>${v}</b><small>${l}</small></div>`).join('');
-  S.endInfo={k,title:E.t,cleared,quiz:qScore,badges:bd};LS.set('ending',S.endInfo);
+  S.endInfo={k,title:E.t,cleared,quiz:qScore,qTotal:QUIZ.length,qLevel:QLV,badges:bd};LS.set('ending',S.endInfo);
   show('scrEnding');if(k<=1){confetti();AU.clear()}else AU.portal();
   const portfolioEntry={no:53,id:'milab_ar_053',file:'milab_ar_053.html',url:'https://milab2019.github.io/main/milab_ar_053.html',title:'AR 큐브 러너',category:'AR·XR',grade:'초5~중3',missions:6,
     ending:E.t,endingNo:k+1,quiz:`${qScore}/${QUIZ.length}`,badges:bd,run:S.run,aiFeature:'BFS 길찾기 AI · AI 눈 탐색 시각화 · 데이터 밖 함정 · 탐욕 전략 AI · AI 리터러시 퀴즈',completedAt:new Date().toISOString()};
@@ -1272,7 +1316,7 @@ function makeCert(){const name=($('#nameIn').value||'').trim().slice(0,10)||'AR 
     let fs=104;g.font=`900 ${fs}px ${FF}`;while(g.measureText(name).width>820&&fs>48){fs-=4;g.font=`900 ${fs}px ${FF}`}
     g.fillStyle='#fff';g.fillText(name,540,770);g.strokeStyle='#F09070';g.lineWidth=4;g.beginPath();g.moveTo(290,804);g.lineTo(790,804);g.stroke();
     g.fillStyle='#C9DCF5';g.font=`600 32px ${FF}`;['위 학생은 미랩(MILAB) 진로체험 「AR 큐브 러너」에서','증강현실의 원리와 AI 리터러시를 체험하고','멋지게 미션을 수행하였기에 이 수료증을 드립니다.'].forEach((l,i)=>g.fillText(l,540,884+i*52));
-    [[info.cleared+'/6','클리어 미션'],[info.quiz+'/4','퀴즈 정답'],[info.badges+'/10','획득 뱃지']].forEach(([v,l],i)=>{const x=105+i*300;rr(x,1060,270,150,24);g.fillStyle='rgba(255,255,255,.06)';g.fill();g.strokeStyle='rgba(127,208,245,.4)';g.lineWidth=2;g.stroke();g.fillStyle='#fff';g.font=`900 56px ${FF}`;g.fillText(v,x+135,1140);g.fillStyle='#9FB3CF';g.font=`700 26px ${FF}`;g.fillText(l,x+135,1182)});
+    [[info.cleared+'/6','클리어 미션'],[info.quiz+'/'+(info.qTotal||4),(info.qLevel?info.qLevel+' ':'')+'퀴즈 정답'],[info.badges+'/10','획득 뱃지']].forEach(([v,l],i)=>{const x=105+i*300;rr(x,1060,270,150,24);g.fillStyle='rgba(255,255,255,.06)';g.fill();g.strokeStyle='rgba(127,208,245,.4)';g.lineWidth=2;g.stroke();g.fillStyle='#fff';g.font=`900 56px ${FF}`;g.fillText(v,x+135,1140);g.fillStyle='#9FB3CF';g.font=`700 26px ${FF}`;g.fillText(l,x+135,1182)});
     const d=new Date();g.fillStyle='#9FB3CF';g.font=`700 30px ${FF}`;g.fillText(`${d.getFullYear()}년 ${d.getMonth()+1}월 ${d.getDate()}일`,540,1272);
     g.fillStyle='#7FD0F5';g.font=`800 28px ${FF}`;g.fillText('미랩(MILAB) · 교육부 인증 진로체험기관',540,1322);
     const url=c.toDataURL('image/png'),im=$('#certImg');im.src=url;im.style.display='block';const a=$('#certSave');a.href=url;a.download=`MILAB_AR_수료증_${name}.png`;a.style.display='inline-flex';$('#certTip').style.display='block';AU.clear();confetti()};
@@ -1291,9 +1335,10 @@ function longPress(el,ms,cb){let t=0,st=0,raf=0;const prog=()=>{const p=Math.min
   el.addEventListener('pointerdown',()=>{st=performance.now();prog();t=setTimeout(()=>{cancel();if(navigator.vibrate)navigator.vibrate(40);cb()},ms)});
   ['pointerup','pointerleave','pointercancel'].forEach(e=>el.addEventListener(e,cancel));el.addEventListener('contextmenu',e=>e.preventDefault())}
 function openTeacher(){AU.init();AU.click();if(S.playing&&!S.paused){S.paused=true;AU.bgmStop();AU.rollUpdate(0)}S.prev=S.playing?'scrPause':S.screen;show('scrTeacher');
-  const r=$('#sens');r.value=S.sensMul;$('#sensVal').textContent=(+S.sensMul).toFixed(1);
+  $('#blur').value=LS.get('camBlur',2);applyBlur(LS.get('camBlur',2));const r=$('#sens');r.value=S.sensMul;$('#sensVal').textContent=(+S.sensMul).toFixed(1);
   $('#togInvX').classList.toggle('on',S.invX);$('#togInvY').classList.toggle('on',S.invY);$('#togHint').classList.toggle('on',S.hintInf);$('#togAll').classList.toggle('on',S.allOpen);syncSoundUI()}
 longPress($('#logoCard'),3000,openTeacher);longPress($('#hudLogo'),3000,openTeacher);
+$('#blur').addEventListener('input',e=>{LS.set('camBlur',applyBlur(+e.target.value))});
 $('#sens').addEventListener('input',e=>{S.sensMul=+e.target.value;LS.set('sens',S.sensMul);$('#sensVal').textContent=S.sensMul.toFixed(1)});
 $('#togInvX').addEventListener('click',e=>{S.invX=!S.invX;LS.set('invX',S.invX);e.currentTarget.classList.toggle('on',S.invX)});
 $('#togInvY').addEventListener('click',e=>{S.invY=!S.invY;LS.set('invY',S.invY);e.currentTarget.classList.toggle('on',S.invY)});
@@ -1316,7 +1361,7 @@ function loop(now){requestAnimationFrame(loop);const dt=Math.min((now-lastT)/100
   if(S.playing&&!S.paused){acc+=dt;while(acc>=1/60){step(1/60);acc-=1/60}tmr+=dt;if(tmr>.1){tmr=0;updHud()}}else acc=0;
   S.shake*=Math.pow(.02,dt);if(S.hintT>0)S.hintT-=dt;if(S.eyeT>0)S.eyeT-=dt;
   render();updParts(dt)}
-setCam();resize();refreshRecords();syncSoundUI();syncCamUI();requestAnimationFrame(loop);
+setCam();resize();applyBlur(LS.get('camBlur',2));refreshRecords();syncSoundUI();syncCamUI();requestAnimationFrame(loop);
 })();
 </script>
 </body>
