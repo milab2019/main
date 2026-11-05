@@ -308,7 +308,11 @@ body.endless #eh{display:block}
 html:lang(vi),html:lang(ru),html:lang(en){--font:"Segoe UI",Roboto,"Noto Sans","Helvetica Neue",Arial,"Pretendard","Apple SD Gothic Neo","Malgun Gothic","Noto Sans KR",system-ui,sans-serif}
 html:lang(zh-CN){--font:"PingFang SC","Hiragino Sans GB","Microsoft YaHei","Noto Sans SC","Noto Sans CJK SC","Source Han Sans SC","Pretendard","Apple SD Gothic Neo","Noto Sans KR",system-ui,sans-serif}
 html:lang(ko) #ehBan,html:lang(ko) #ehLvUp span,html:lang(ko) .ov-stats small,.ko-sub{word-break:keep-all}
-html:lang(zh-CN) body{line-break:strict;word-break:normal}
+html:lang(zh-CN) body,html:lang(ja) body{line-break:strict;word-break:normal}
+html:lang(ja){--font:"Hiragino Sans","Hiragino Kaku Gothic ProN","Yu Gothic UI","Yu Gothic",Meiryo,"Noto Sans JP","Noto Sans CJK JP","Pretendard","Apple SD Gothic Neo","Noto Sans KR",system-ui,sans-serif}
+html:lang(km){--font:"Noto Sans Khmer","Khmer Sangam MN","Khmer MN","Leelawadee UI","Khmer UI","Noto Sans Khmer UI","Pretendard","Apple SD Gothic Neo","Noto Sans KR",system-ui,sans-serif}
+html:lang(km) body{line-height:1.6}html:lang(km) .btn{line-height:1.45}
+html:lang(mn){--font:"Segoe UI",Roboto,"Noto Sans","Helvetica Neue",Arial,"Pretendard","Apple SD Gothic Neo","Noto Sans KR",system-ui,sans-serif}
 body{overflow-wrap:break-word}
 .bi{display:inline-block;max-width:100%}
 .ko-sub{display:block;font-size:max(11px,.72em);font-weight:600;opacity:.75;line-height:1.3;margin-top:2px;letter-spacing:0;font-style:normal;font-family:"Pretendard","Apple SD Gothic Neo","Malgun Gothic","Noto Sans KR","Noto Sans CJK KR",sans-serif}
@@ -322,11 +326,20 @@ html:not(:lang(ko)) .ov-row span{width:auto;min-width:28px;max-width:34%;white-s
 .card b,.card span,.badge,.diag-steps li,.safety span,.hof-row .nm small,.ov-stats small{overflow-wrap:anywhere}
 .seg.lang-seg{flex-wrap:wrap;justify-content:flex-start;flex:1 1 auto;max-width:100%}
 .seg.lang-seg button{min-width:auto}
+#teacherBody .seg{flex-wrap:wrap;justify-content:flex-end;max-width:100%}
+.beta{display:inline-block;font-size:11px;font-weight:800;color:#1A2744;background:#FFD54A;border-radius:6px;padding:1px 6px;margin-left:6px;vertical-align:middle;letter-spacing:0}
+#s-lang .lang-card .beta-t{display:block;font-size:11px;opacity:.75;margin-top:2px}
 #s-lang .lang-globe{font-size:64px;line-height:1}
 #s-lang .lang-h{font-size:calc(19px*var(--fs));line-height:1.55;max-width:640px}
 #s-lang .lang-grid{max-width:760px}
 #s-lang .lang-card .ic{font-size:30px}
-#s-lang .lang-card b{font-size:calc(21px*var(--fs))}
+#s-lang .lang-card b{font-size:calc(19px*var(--fs))}
+#s-lang .lang-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+#s-lang .lang-card{padding:10px;gap:8px;min-height:0}
+#s-lang .lang-card .ic{display:none}#s-lang .lang-card{justify-content:center;text-align:center}#s-lang .lang-card b{white-space:nowrap}
+#s-lang .lang-card span{font-size:12px}
+@media (min-width:700px){#s-lang .lang-grid{grid-template-columns:repeat(4,minmax(0,1fr))}}
+@media (max-height:520px){#s-lang .lang-globe{font-size:34px}#s-lang .lang-h{font-size:14px;margin:4px 0}}
 #btnLang{font-size:22px}
 html:not(:lang(ko)) .screen.dim{padding-top:calc(66px + var(--safe-t))}
 #ehBan .ko-sub{font-size:.8em}
@@ -370,7 +383,7 @@ html:not(:lang(ko)) .screen.dim{padding-top:calc(66px + var(--safe-t))}
   <button class="back hidden" id="langBack" aria-label="뒤로" data-i18n-attr="aria-label:a11y.back">←</button>
   <div class="wrap">
     <div class="lang-globe" aria-hidden="true">🌐</div>
-    <h2 class="lang-h"><span lang="ko">언어를 골라요</span> · <span lang="vi">Chọn ngôn ngữ</span> · <span lang="zh-CN">选择语言</span> · <span lang="ru">Выбери язык</span> · <span lang="en">Choose a language</span></h2>
+    <h2 class="lang-h"><span lang="ko">언어를 골라요</span> · <span lang="vi">Chọn ngôn ngữ</span> · <span lang="zh-CN">选择语言</span> · <span lang="ru">Выбери язык</span> · <span lang="en">Choose a language</span> · <span lang="ja">言語をえらんでね</span> · <span lang="km">ជ្រើសរើសភាសា</span> · <span lang="mn">Хэлээ сонго</span></h2>
     <div class="grid lang-grid" id="langGrid"></div>
   </div>
 </section>
@@ -591,9 +604,10 @@ html:not(:lang(ko)) .screen.dim{padding-top:calc(66px + var(--safe-t))}
 <div id="updBar"><span data-i18n="upd.msg" data-nobi>✨ 새 버전이 있어요</span><button id="btnUpd" data-i18n="upd.get" data-nobi>새 버전 받기</button><button id="btnUpdNo" style="background:#E8EDF5;color:#1A2744" data-i18n="upd.later" data-nobi>나중에</button></div>
 <script id="milab-i18n-engine">
 /* =====================================================================
-   MILAB i18n 표준 블록 v1 (MI18N) — 미랩 웹앱 공통 다국어 엔진
+   MILAB i18n 표준 블록 v1.1 (MI18N) — 미랩 웹앱 공통 다국어 엔진
    · 이 블록은 앱과 무관하게 그대로 복사해 씁니다. 앱 문구는 별도 사전 블록에서 MI18N.add([...])
-   · 지원: 한국어(기본) · Tiếng Việt · 中文(简体) · Русский · English
+   · 지원: 한국어(기본) · Tiếng Việt · 中文(简体) · Русский · English · 日本語 · ភាសាខ្មែរ · Монгол хэл
+   · beta:true 언어는 언어 선택 화면에 β 표시 (원어민 검수 끝나면 지움) — 2026-11-06 8개 언어 모두 검수 완료
    · t(key,{name,n}) 템플릿 · 누락 키는 한국어로 폴백(+누락 기록) · [[용어]] 핵심 용어 자동 병기
    · 한국어 병기 옵션(bi) · URL ?lang=vi · 언어별 TTS 음성 탐색 · 다국어 비속어 필터
    ===================================================================== */
@@ -605,26 +619,36 @@ var LANGS = {
   vi:{ name:'Tiếng Việt',   play:'Chơi bằng tiếng Việt', html:'vi',    loc:'vi-VN', tts:['vi-VN','vi'],                       font:'"Segoe UI",Roboto,"Noto Sans","Helvetica Neue",Arial,' },
   zh:{ name:'中文（简体）',  play:'用中文玩',             html:'zh-CN', loc:'zh-CN', tts:['zh-CN','cmn-Hans-CN','zh-Hans','zh'], font:'"PingFang SC","Hiragino Sans GB","Microsoft YaHei","Noto Sans SC","Noto Sans CJK SC","Source Han Sans SC",' },
   ru:{ name:'Русский',      play:'Играть на русском',    html:'ru',    loc:'ru-RU', tts:['ru-RU','ru'],                       font:'"Segoe UI",Roboto,"Noto Sans","Helvetica Neue",Arial,' },
-  en:{ name:'English',      play:'Play in English',      html:'en',    loc:'en-US', tts:['en-US','en-GB','en','fil-PH'],      font:'"Segoe UI",Roboto,"Noto Sans","Helvetica Neue",Arial,' }
+  en:{ name:'English',      play:'Play in English',      html:'en',    loc:'en-US', tts:['en-US','en-GB','en','fil-PH'],      font:'"Segoe UI",Roboto,"Noto Sans","Helvetica Neue",Arial,' },
+  ja:{ name:'日本語',       play:'日本語であそぶ',        html:'ja',    loc:'ja-JP', tts:['ja-JP','ja'],                       font:'"Hiragino Sans","Hiragino Kaku Gothic ProN","Yu Gothic UI","Yu Gothic","Meiryo","Noto Sans JP","Noto Sans CJK JP",', betaTxt:'ベータ版' },
+  km:{ name:'ភាសាខ្មែរ',     play:'លេងជាភាសាខ្មែរ',       html:'km',    loc:'km-KH', tts:['km-KH','km'],                       font:'"Noto Sans Khmer","Khmer Sangam MN","Khmer MN","Leelawadee UI","Khmer UI","Noto Sans Khmer UI",', betaTxt:'កំណែសាកល្បង' },
+  mn:{ name:'Монгол хэл',   play:'Монгол хэлээр тоглох', html:'mn',    loc:'mn-MN', tts:['mn-MN','mn'],                       font:'"Segoe UI",Roboto,"Noto Sans","Helvetica Neue",Arial,', betaTxt:'Туршилтын хувилбар' }
 };
-var ORDER = ['ko','vi','zh','ru','en'];
+var ORDER = ['ko','vi','zh','ru','en','ja','km','mn'];
+var COLS = ['ko','vi','zh','ru','en','ja','km','mn'];   /* 사전 열 순서 */
 /* 언어별 기본 비속어(아동 이름 필터용 · 부분 일치) — 이름에 흔한 음절과 겹치는 단어는 넣지 않음 */
 var BAD = {
   ko:['시발','씨발','ㅅㅂ','병신','ㅂㅅ','개새','좆','존나','ㅈㄴ','미친','바보','멍청','찐따'],
   vi:['địt','đụ','đéo','lồn','cặc','dcm','đcm','vcl','clgt','đmm','dmm','óc chó','occho','thằngngu'],
   zh:['傻逼','煞笔','操你','肏','他妈的','妈的','草泥马','滚蛋','白痴','王八蛋','狗屎','贱人','婊子','废物'],
   ru:['хуй','хуе','хуё','пизд','бля','ебат','ёба','сука','мудак','мудил','дурак','идиот','говно','гандон','шлюх','тупица'],
-  en:['fuck','fck','shit','bitch','asshole','bastard','cunt','whore','slut','retard','nigg','faggot','stupid','idiot','dumbass','loser']
+  en:['fuck','fck','shit','bitch','asshole','bastard','cunt','whore','slut','retard','nigg','faggot','stupid','idiot','dumbass','loser'],
+  ja:['死ね','しね','シネ','殺す','ころす','バカ','ばか','馬鹿','アホ','あほ','クソ','くそ','糞','ちんこ','チンコ','まんこ','マンコ','キモい','きもい','ブス','ぶす','うざい','ウザい','カス'],
+  km:['ចុយ','ឆ្កួត','ល្ងង់','អាឆ្កែ','មេឆ្កែ','កន្ទុយ','អាចោរ','ឆ្កែអា','ចង្រៃ'],
+  mn:['новш','гичий','тэнэг','золиг','бөгс','шаар','пизда','балай','гөлөг']
 };
 var D = {}, cfg = { key:'milab_lang', biKey:'milab_bi', param:'lang', biDefault:true };
 var cur = 'ko', bi = true, chosen = false, fromURL = false, missing = {}, subs = [];
 
-function add(rows){ rows.forEach(function(r){ D[r[0]] = { ko:r[1], vi:r[2], zh:r[3], ru:r[4], en:r[5] }; }); }
+function add(rows){ rows.forEach(function(r){ var e = D[r[0]] || (D[r[0]] = {}); COLS.forEach(function(l, i){ if(r[i+1]!=null && r[i+1]!=='') e[l] = r[i+1]; }); }); }
 function norm(l){
   l = String(l||'').toLowerCase().replace(/_/g,'-');
   if(!l) return null;
   if(/^(zh|cn|cmn)/.test(l)) return 'zh';
   if(/^(fil|tl|ph)/.test(l)) return 'en';
+  if(/^(jp|jpn)/.test(l)) return 'ja';
+  if(/^(kh|khm)/.test(l)) return 'km';
+  if(/^(mon)/.test(l)) return 'mn';
   l = l.slice(0,2); return LANGS[l] ? l : null;
 }
 function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g, function(c){ return { '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]; }); }
@@ -636,12 +660,13 @@ function raw(key, lang){
 }
 function term(k, lang, cap){
   var n = raw('term.'+k, lang); if(n==null) return k;
-  if(lang!=='ko'){ var ko = raw('term.'+k, 'ko'); if(ko && ko!==n) n = lang==='zh' ? n + '（' + ko + '）' : n + ' (' + ko + ')'; }
+  if(lang!=='ko'){ var ko = raw('term.'+k, 'ko'); if(ko && ko!==n) n = (lang==='zh'||lang==='ja') ? n + '（' + ko + '）' : (lang==='km' ? ' ' + n + ' (' + ko + ') ' : n + ' (' + ko + ')'); }
   if(cap) n = n.charAt(0).toUpperCase() + n.slice(1);
   return n;
 }
 function fill(s, vars, lang, html){
   s = s.replace(/\[\[(\^?)([a-z0-9]+)\]\]/gi, function(_, c, k){ var v = term(k, lang, !!c); return html ? esc(v) : v; });
+  if(lang==='km') s = s.replace(/ {2,}/g, ' ').replace(/^ | $/g, '');
   if(vars) s = s.replace(/\{(\w+)\}/g, function(m, k){ if(!(k in vars)) return m; return html ? esc(vars[k]) : String(vars[k]); });
   return s;
 }
@@ -693,6 +718,20 @@ function set(l, persist){
   subs.forEach(function(f){ try{ f(cur); }catch(e){ console.error(e); } });
 }
 function setBi(v){ bi = !!v; ls(cfg.biKey, bi ? '1' : '0'); mark(); apply(document); subs.forEach(function(f){ try{ f(cur); }catch(e){ console.error(e); } }); }
+/* 줄바꿈 단위: 중·일은 글자, 크메르는 단어 분할(Intl.Segmenter) 또는 글자 묶음, 나머지는 띄어쓰기 */
+function seg(text, lang){
+  lang = lang || cur; text = String(text);
+  if(lang==='zh' || lang==='ja') return { words:Array.from(text), sep:'' };
+  if(lang==='km'){
+    try{ if(typeof Intl!=='undefined' && Intl.Segmenter){
+      var out = [], it = new Intl.Segmenter('km', { granularity:'word' }).segment(text);
+      for(var s of it) out.push(s.segment);
+      return { words:out, sep:'' };
+    } }catch(e){}
+    return { words:text.split(/(\s+)/).filter(function(x){ return x!==''; }), sep:'' };
+  }
+  return { words:text.split(' '), sep:' ' };
+}
 function font(lang){ return (LANGS[lang||cur].font || '') + BASE; }
 function num(n){ try{ return Number(n).toLocaleString(LANGS[cur].loc); }catch(e){ return String(n); } }
 /* TTS 음성 탐색: 정확한 지역 → 같은 언어 → 없음(null) */
@@ -703,7 +742,7 @@ function voice(list, lang){
     var v = list.filter(function(x){ return String(x.lang).toLowerCase().replace('_','-') === w; });
     if(v.length) return v.filter(function(x){ return x.localService; })[0] || v[0];
   }
-  var p = lang==='zh' ? 'zh' : (lang==='en' ? 'en' : lang);
+  var p = lang;
   return list.filter(function(x){ return String(x.lang).toLowerCase().indexOf(p)===0 && (lang!=='zh' || !/hk|tw|yue/i.test(x.lang)); })[0] || null;
 }
 /* 이름 비속어 검사: 모든 언어 목록을 함께 검사(다문화 교실) */
@@ -716,468 +755,469 @@ function bad(name){
 function speakable(s){ return cur==='ko' ? s : String(s).replace(/\s*[(（][^()（）]*[가-힣][^()（）]*[)）]/g, ''); }
 function missingList(){ return Object.keys(missing); }
 function keys(){ return Object.keys(D); }
-function check(){ /* 사전 자체 검사: 비어 있는 번역·자리표시자 불일치 */
+function check(){ /* 사전 자체 검사: 비어 있는 번역·자리표시자 불일치·태그 불일치 */
   var out = [];
   Object.keys(D).forEach(function(k){
-    var e = D[k], ph = (e.ko.match(/\{\w+\}/g)||[]).sort().join();
+    var e = D[k], tg = (e.ko.match(/<\/?b>/g)||[]).length, ph = (e.ko.match(/\{\w+\}/g)||[]).sort().join();
     ORDER.forEach(function(l){
       if(e[l]==null || e[l]==='') out.push(k+' @'+l+' 비어 있음');
       else if((e[l].match(/\{\w+\}/g)||[]).sort().join() !== ph) out.push(k+' @'+l+' 자리표시자 불일치');
+      else if((e[l].match(/<\/?b>/g)||[]).length !== tg) out.push(k+' @'+l+' <b> 태그 불일치');
       (e[l]||'').replace(/\[\[\^?([a-z0-9]+)\]\]/gi, function(_, tk){ if(!D['term.'+tk]) out.push(k+' @'+l+' 없는 용어 '+tk); return _; });
     });
   });
   return out;
 }
-return { LANGS:LANGS, ORDER:ORDER, BAD:BAD, add:add, init:init, set:set, setBi:setBi, t:t, th:th, bi:biHTML, biOn:biOn, L:L, msgText:msgText, msgKo:msgKo,
+return { VERSION:'1.1', LANGS:LANGS, ORDER:ORDER, COLS:COLS, BAD:BAD, add:add, seg:seg, init:init, set:set, setBi:setBi, t:t, th:th, bi:biHTML, biOn:biOn, L:L, msgText:msgText, msgKo:msgKo,
   apply:apply, font:font, num:num, voice:voice, bad:bad, speakable:speakable, esc:esc, norm:norm, missingList:missingList, keys:keys, check:check,
   on:function(f){ subs.push(f); }, dict:function(){ return D; },
   get lang(){ return cur; }, get biPref(){ return bi; }, get chosen(){ return chosen; }, get fromURL(){ return fromURL; } };
 })();
 </script>
 <script id="milab-i18n-dict">
-/* ===== #055 앱 전용 다국어 사전 (키 / 한국어 / Tiếng Việt / 中文 / Русский / English) =====
+/* ===== #055 앱 전용 다국어 사전 (키 / 한국어 / Tiếng Việt / 中文 / Русский / English / 日本語 / ភាសាខ្មែរ / Монгол) =====
    · {name} {n} {a} {b} 등은 자리표시자(값이 들어감) — 번역할 때 그대로 두세요.
    · [[trans]] 같은 표시는 핵심 학습 용어 — 화면에서 「모국어 (한국어)」로 자동 병기됩니다. [[^x]]는 문장 첫 글자 대문자.
    · <b>…</b> 는 굵은 글씨 표시 — 태그는 그대로 두세요. */
 MI18N.add([
 /* --- 핵심 학습 용어 (항상 한국어 병기) --- */
-['term.vto','수직 이륙','cất cánh thẳng đứng','垂直起飞','вертикальный взлёт','vertical takeoff'],
-['term.vland','수직 착륙','hạ cánh thẳng đứng','垂直降落','вертикальная посадка','vertical landing'],
-['term.vtol','수직 이착륙','cất hạ cánh thẳng đứng','垂直起降','вертикальный взлёт и посадка','vertical takeoff and landing'],
-['term.trans','천이 비행','bay chuyển tiếp','过渡飞行','переходный полёт','transition flight'],
-['term.lever','천이 레버','cần chuyển tiếp','过渡操纵杆','рычаг перехода','transition lever'],
-['term.rotor','로터','cánh quạt rotor','旋翼','ротор','rotor'],
-['term.hover','저속 호버','bay treo chậm','低速悬停','медленное зависание','slow hover'],
-['term.cruise','순항','bay hành trình','巡航','крейсерский полёт','cruise'],
-['term.cross','측풍','gió ngang','侧风','боковой ветер','crosswind'],
-['term.gust','돌풍','gió giật','阵风','порыв ветра','gust'],
-['term.copilot','AI 코파일럿','trợ lý lái AI','AI副驾驶','ИИ-второй пилот','AI copilot'],
-['term.hitl','사람 중심 AI','AI lấy con người làm trung tâm','以人为本的AI','ИИ под контролем человека','human-in-the-loop AI'],
-['term.vertiport','버티포트','vertiport','垂直起降场','вертипорт','vertiport'],
+['term.vto','수직 이륙','cất cánh thẳng đứng','垂直起飞','вертикальный взлёт','vertical takeoff','垂直離陸','ការហោះឡើងបញ្ឈរ','босоо хөөрөлт'],
+['term.vland','수직 착륙','hạ cánh thẳng đứng','垂直降落','вертикальная посадка','vertical landing','垂直着陸','ការចុះចតបញ្ឈរ','босоо газардалт'],
+['term.vtol','수직 이착륙','cất hạ cánh thẳng đứng','垂直起降','вертикальный взлёт и посадка','vertical takeoff and landing','垂直離着陸','ការហោះឡើង និងចុះចតបញ្ឈរ','босоо хөөрөлт ба газардалт'],
+['term.trans','천이 비행','bay chuyển tiếp','过渡飞行','переходный полёт','transition flight','遷移飛行','ការហោះផ្លាស់ប្ដូររបៀប','шилжилтийн нислэг'],
+['term.lever','천이 레버','cần chuyển tiếp','过渡操纵杆','рычаг перехода','transition lever','遷移レバー','ដងបញ្ជាផ្លាស់ប្ដូរ','шилжилтийн хөшүүрэг'],
+['term.rotor','로터','cánh quạt rotor','旋翼','ротор','rotor','ローター','រ៉ូទ័រ','ротор'],
+['term.hover','저속 호버','bay treo chậm','低速悬停','медленное зависание','slow hover','低速ホバー','ការហោះសំកាំងយឺតៗ','удаан хөвөх нислэг'],
+['term.cruise','순항','bay hành trình','巡航','крейсерский полёт','cruise','巡航','ការហោះល្បឿនថេរ','аялалын нислэг'],
+['term.cross','측풍','gió ngang','侧风','боковой ветер','crosswind','横風','ខ្យល់បក់ពីចំហៀង','хажуугийн салхи'],
+['term.gust','돌풍','gió giật','阵风','порыв ветра','gust','突風','ខ្យល់កន្ត្រាក់','огцом салхи'],
+['term.copilot','AI 코파일럿','trợ lý lái AI','AI副驾驶','ИИ-второй пилот','AI copilot','AIコパイロット','អ្នកបើកបររង AI','AI туслах нисгэгч'],
+['term.hitl','사람 중심 AI','AI lấy con người làm trung tâm','以人为本的AI','ИИ под контролем человека','human-in-the-loop AI','人間中心のAI','AI ដែលមនុស្សជាអ្នកសម្រេច','хүн төвтэй AI'],
+['term.vertiport','버티포트','vertiport','垂直起降场','вертипорт','vertiport','バーティポート','វើធីផត','вертипорт'],
 
 /* --- 문서·접근성 --- */
-['doc.title','에어로크레스트 VTOL 레이서 · AeroKrest by MILAB','AeroKrest Đua VTOL · by MILAB','AeroKrest VTOL竞速 · by MILAB','AeroKrest: гонка VTOL · by MILAB','AeroKrest VTOL Racer · by MILAB'],
-['a11y.canvas','비행 화면','Màn hình bay','飞行画面','Экран полёта','Flight view'],
-['a11y.mute','소리 켜기/끄기','Bật/tắt âm thanh','打开/关闭声音','Вкл./выкл. звук','Sound on/off'],
-['a11y.settings','설정','Cài đặt','设置','Настройки','Settings'],
-['a11y.lang','언어 바꾸기','Đổi ngôn ngữ','切换语言','Сменить язык','Change language'],
-['a11y.brand','AeroKrest 에어로크레스트 VTOL 레이서 by MILAB','AeroKrest – Đua VTOL by MILAB','AeroKrest VTOL竞速 by MILAB','AeroKrest – гонка VTOL by MILAB','AeroKrest VTOL Racer by MILAB'],
-['a11y.back','뒤로','Quay lại','返回','Назад','Back'],
-['a11y.nameChange','조종사 이름 바꾸기','Đổi tên phi công','更改飞行员名字','Изменить имя пилота','Change pilot name'],
-['a11y.pause','일시정지','Tạm dừng','暂停','Пауза','Pause'],
-['a11y.lever','천이 레버','Cần chuyển tiếp','过渡操纵杆','Рычаг перехода','Transition lever'],
-['a11y.swbtn','상승 버튼','Nút bay lên','上升按钮','Кнопка подъёма','Climb button'],
+['doc.title','에어로크레스트 VTOL 레이서 · AeroKrest by MILAB','AeroKrest Đua VTOL · by MILAB','AeroKrest VTOL竞速 · by MILAB','AeroKrest: гонка VTOL · by MILAB','AeroKrest VTOL Racer · by MILAB','AeroKrest VTOLレーサー · by MILAB','AeroKrest ប្រណាំង VTOL · by MILAB','AeroKrest VTOL уралдаан · by MILAB'],
+['a11y.canvas','비행 화면','Màn hình bay','飞行画面','Экран полёта','Flight view','飛行画面','អេក្រង់ហោះហើរ','Нислэгийн дэлгэц'],
+['a11y.mute','소리 켜기/끄기','Bật/tắt âm thanh','打开/关闭声音','Вкл./выкл. звук','Sound on/off','音のオン/オフ','បើក/បិទសំឡេង','Дуу асаах/унтраах'],
+['a11y.settings','설정','Cài đặt','设置','Настройки','Settings','設定','ការកំណត់','Тохиргоо'],
+['a11y.lang','언어 바꾸기','Đổi ngôn ngữ','切换语言','Сменить язык','Change language','言語を変える','ប្ដូរភាសា','Хэл солих'],
+['a11y.brand','AeroKrest 에어로크레스트 VTOL 레이서 by MILAB','AeroKrest – Đua VTOL by MILAB','AeroKrest VTOL竞速 by MILAB','AeroKrest – гонка VTOL by MILAB','AeroKrest VTOL Racer by MILAB','AeroKrest VTOLレーサー by MILAB','AeroKrest ប្រណាំង VTOL by MILAB','AeroKrest VTOL уралдаан by MILAB'],
+['a11y.back','뒤로','Quay lại','返回','Назад','Back','もどる','ត្រឡប់ក្រោយ','Буцах'],
+['a11y.nameChange','조종사 이름 바꾸기','Đổi tên phi công','更改飞行员名字','Изменить имя пилота','Change pilot name','パイロット名を変える','ប្ដូរឈ្មោះអ្នកបើកបរ','Нисгэгчийн нэр солих'],
+['a11y.pause','일시정지','Tạm dừng','暂停','Пауза','Pause','一時停止','ផ្អាក','Түр зогсоох'],
+['a11y.lever','천이 레버','Cần chuyển tiếp','过渡操纵杆','Рычаг перехода','Transition lever','遷移レバー','ដងបញ្ជាផ្លាស់ប្ដូរ','Шилжилтийн хөшүүрэг'],
+['a11y.swbtn','상승 버튼','Nút bay lên','上升按钮','Кнопка подъёма','Climb button','上昇ボタン','ប៊ូតុងហោះឡើង','Өгсөх товч'],
 
 /* --- 타이틀 --- */
-['title.game','🛩️ VTOL 레이서','🛩️ Đua VTOL','🛩️ VTOL 竞速','🛩️ Гонка VTOL','🛩️ VTOL Racer'],
-['title.start','▶ 비행 시작','▶ Bắt đầu bay','▶ 开始飞行','▶ Полетели!','▶ Start flying'],
-['title.badges','🏅 내 뱃지','🏅 Huy hiệu của mình','🏅 我的徽章','🏅 Мои значки','🏅 My badges'],
-['title.hof','🏆 명예의 전당','🏆 Bảng vàng','🏆 荣誉榜','🏆 Зал славы','🏆 Hall of Fame'],
-['title.notice','🔈 여러 명이 함께하면 소리가 커져요. 오른쪽 위 🔊 버튼으로 소리를 줄이거나 끌 수 있어요.','🔈 Nhiều bạn chơi cùng lúc thì tiếng sẽ to. Bấm nút 🔊 ở góc trên bên phải để giảm hoặc tắt tiếng nhé.','🔈 很多人一起玩时声音会很大。可以点右上角的 🔊 按钮调小或关掉声音。','🔈 Когда играют много ребят, становится шумно. Кнопкой 🔊 справа вверху можно сделать тише или выключить звук.','🔈 It gets loud when many people play together. Use the 🔊 button at the top right to turn the sound down or off.'],
-['title.nameEnter','👤 이름 입력','👤 Nhập tên','👤 输入名字','👤 Ввести имя','👤 Enter name'],
-['title.nameChange','👤 {name} · 바꾸기','👤 {name} · Đổi','👤 {name} · 更改','👤 {name} · Изменить','👤 {name} · Change'],
-['title.install','📲 홈 화면에 추가','📲 Thêm vào màn hình chính','📲 添加到主屏幕','📲 На главный экран','📲 Add to Home Screen'],
-['title.fromQR','(선생님 설정)','(thầy cô cài đặt)','（老师设置）','(настройки учителя)','(teacher setting)'],
+['title.game','🛩️ VTOL 레이서','🛩️ Đua VTOL','🛩️ VTOL 竞速','🛩️ Гонка VTOL','🛩️ VTOL Racer','🛩️ VTOLレーサー','🛩️ ប្រណាំង VTOL','🛩️ VTOL уралдаан'],
+['title.start','▶ 비행 시작','▶ Bắt đầu bay','▶ 开始飞行','▶ Полетели!','▶ Start flying','▶ 飛行スタート','▶ ចាប់ផ្ដើមហោះ','▶ Нисэж эхлэх'],
+['title.badges','🏅 내 뱃지','🏅 Huy hiệu của mình','🏅 我的徽章','🏅 Мои значки','🏅 My badges','🏅 マイバッジ','🏅 មេដាយរបស់ខ្ញុំ','🏅 Миний тэмдэг'],
+['title.hof','🏆 명예의 전당','🏆 Bảng vàng','🏆 荣誉榜','🏆 Зал славы','🏆 Hall of Fame','🏆 殿堂入り','🏆 តារាងកិត្តិយស','🏆 Алдрын танхим'],
+['title.notice','🔈 여러 명이 함께하면 소리가 커져요. 오른쪽 위 🔊 버튼으로 소리를 줄이거나 끌 수 있어요.','🔈 Nhiều bạn chơi cùng lúc thì tiếng sẽ to. Bấm nút 🔊 ở góc trên bên phải để giảm hoặc tắt tiếng nhé.','🔈 很多人一起玩时声音会很大。可以点右上角的 🔊 按钮调小或关掉声音。','🔈 Когда играют много ребят, становится шумно. Кнопкой 🔊 справа вверху можно сделать тише или выключить звук.','🔈 It gets loud when many people play together. Use the 🔊 button at the top right to turn the sound down or off.','🔈 みんなで遊ぶと音が大きくなるよ。右上の 🔊 ボタンで音を小さくしたり消したりできるよ。','🔈 ពេលលេងច្រើននាក់ សំឡេងនឹងខ្លាំង។ ចុចប៊ូតុង 🔊 នៅខាងស្ដាំលើ ដើម្បីបន្ថយ ឬបិទសំឡេង។','🔈 Олуулаа тоглоход чимээ ихэснэ. Баруун дээд буланд байгаа 🔊 товчоор дууг багасгаж эсвэл унтрааж болно.'],
+['title.nameEnter','👤 이름 입력','👤 Nhập tên','👤 输入名字','👤 Ввести имя','👤 Enter name','👤 名前を入力','👤 បញ្ចូលឈ្មោះ','👤 Нэр оруулах'],
+['title.nameChange','👤 {name} · 바꾸기','👤 {name} · Đổi','👤 {name} · 更改','👤 {name} · Изменить','👤 {name} · Change','👤 {name} · 変更','👤 {name} · ប្ដូរ','👤 {name} · Солих'],
+['title.install','📲 홈 화면에 추가','📲 Thêm vào màn hình chính','📲 添加到主屏幕','📲 На главный экран','📲 Add to Home Screen','📲 ホーム画面に追加','📲 បន្ថែមទៅអេក្រង់ដើម','📲 Нүүр дэлгэцэнд нэмэх'],
+['title.fromQR','(선생님 설정)','(thầy cô cài đặt)','（老师设置）','(настройки учителя)','(teacher setting)','（先生の設定）','(ការកំណត់របស់គ្រូ)','(багшийн тохиргоо)'],
 
 /* --- 오프라인 상태 --- */
-['off.checking','⏳ 오프라인 확인 중','⏳ Đang kiểm tra chế độ ngoại tuyến','⏳ 正在检查离线模式','⏳ Проверяем офлайн-режим','⏳ Checking offline mode'],
-['off.unsupported','⚠️ 이 브라우저는 오프라인 미지원','⚠️ Trình duyệt này không hỗ trợ ngoại tuyến','⚠️ 此浏览器不支持离线使用','⚠️ Этот браузер не работает офлайн','⚠️ This browser can’t work offline'],
-['off.ready','✅ 오프라인 준비 완료','✅ Sẵn sàng chơi ngoại tuyến','✅ 离线准备完成','✅ Готово к работе офлайн','✅ Ready to play offline'],
-['off.preparing','⏳ 오프라인 준비 중…','⏳ Đang chuẩn bị ngoại tuyến…','⏳ 正在准备离线…','⏳ Готовим офлайн-режим…','⏳ Getting offline mode ready…'],
-['off.needNet','⚠️ 인터넷 연결 후 한 번 열어 주세요','⚠️ Hãy kết nối Internet và mở lại một lần','⚠️ 请连上网络后再打开一次','⚠️ Подключись к интернету и открой ещё раз','⚠️ Connect to the internet and open it once'],
-['off.fail','⚠️ 오프라인 저장 불가','⚠️ Không lưu được để chơi ngoại tuyến','⚠️ 无法离线保存','⚠️ Не удалось сохранить для офлайна','⚠️ Can’t save for offline'],
-['off.test','🧪 테스트 모드','🧪 Chế độ thử nghiệm','🧪 测试模式','🧪 Тестовый режим','🧪 Test mode'],
-['off.file','⚠️ 파일로 열면 오프라인 저장 불가','⚠️ Mở bằng tệp thì không lưu ngoại tuyến được','⚠️ 以文件方式打开时无法离线保存','⚠️ Из файла офлайн-режим не работает','⚠️ Offline saving doesn’t work when opened as a file'],
+['off.checking','⏳ 오프라인 확인 중','⏳ Đang kiểm tra chế độ ngoại tuyến','⏳ 正在检查离线模式','⏳ Проверяем офлайн-режим','⏳ Checking offline mode','⏳ オフライン確認中','⏳ កំពុងពិនិត្យការលេងគ្មានអ៊ីនធឺណិត','⏳ Офлайн горимыг шалгаж байна'],
+['off.unsupported','⚠️ 이 브라우저는 오프라인 미지원','⚠️ Trình duyệt này không hỗ trợ ngoại tuyến','⚠️ 此浏览器不支持离线使用','⚠️ Этот браузер не работает офлайн','⚠️ This browser can’t work offline','⚠️ このブラウザはオフライン非対応','⚠️ កម្មវិធីរុករកនេះមិនអាចលេងគ្មានអ៊ីនធឺណិតបានទេ','⚠️ Энэ хөтөч офлайн ажиллахгүй'],
+['off.ready','✅ 오프라인 준비 완료','✅ Sẵn sàng chơi ngoại tuyến','✅ 离线准备完成','✅ Готово к работе офлайн','✅ Ready to play offline','✅ オフライン準備完了','✅ រួចរាល់សម្រាប់លេងគ្មានអ៊ីនធឺណិត','✅ Офлайн тоглоход бэлэн'],
+['off.preparing','⏳ 오프라인 준비 중…','⏳ Đang chuẩn bị ngoại tuyến…','⏳ 正在准备离线…','⏳ Готовим офлайн-режим…','⏳ Getting offline mode ready…','⏳ オフライン準備中…','⏳ កំពុងរៀបចំការលេងគ្មានអ៊ីនធឺណិត…','⏳ Офлайн горим бэлдэж байна…'],
+['off.needNet','⚠️ 인터넷 연결 후 한 번 열어 주세요','⚠️ Hãy kết nối Internet và mở lại một lần','⚠️ 请连上网络后再打开一次','⚠️ Подключись к интернету и открой ещё раз','⚠️ Connect to the internet and open it once','⚠️ ネットにつないで一度開いてね','⚠️ សូមភ្ជាប់អ៊ីនធឺណិត ហើយបើកម្ដង','⚠️ Интернэтэд холбогдоод нэг удаа нээгээрэй'],
+['off.fail','⚠️ 오프라인 저장 불가','⚠️ Không lưu được để chơi ngoại tuyến','⚠️ 无法离线保存','⚠️ Не удалось сохранить для офлайна','⚠️ Can’t save for offline','⚠️ オフライン保存できません','⚠️ មិនអាចរក្សាទុកសម្រាប់លេងគ្មានអ៊ីនធឺណិតបានទេ','⚠️ Офлайн хадгалах боломжгүй'],
+['off.test','🧪 테스트 모드','🧪 Chế độ thử nghiệm','🧪 测试模式','🧪 Тестовый режим','🧪 Test mode','🧪 テストモード','🧪 របៀបសាកល្បង','🧪 Туршилтын горим'],
+['off.file','⚠️ 파일로 열면 오프라인 저장 불가','⚠️ Mở bằng tệp thì không lưu ngoại tuyến được','⚠️ 以文件方式打开时无法离线保存','⚠️ Из файла офлайн-режим не работает','⚠️ Offline saving doesn’t work when opened as a file','⚠️ ファイルで開くとオフライン保存できません','⚠️ បើកជាឯកសារ មិនអាចរក្សាទុកសម្រាប់លេងគ្មានអ៊ីនធឺណិតបានទេ','⚠️ Файлаар нээвэл офлайн хадгалах боломжгүй'],
 
 /* --- 조종사 이름 --- */
-['name.title','조종사 이름을 알려 주세요','Cho mình biết tên phi công nhé','告诉我你的飞行员名字吧','Как тебя зовут, пилот?','What’s your pilot name?'],
-['name.sub','이름 또는 닉네임이 <b>명예의 전당</b>과 기록에 올라가요.','Tên hoặc biệt danh của bạn sẽ được ghi vào <b>Bảng vàng</b> và kỷ lục.','你的名字或昵称会登上<b>荣誉榜</b>和记录。','Твоё имя или ник попадёт в <b>Зал славы</b> и в рекорды.','Your name or nickname goes on the <b>Hall of Fame</b> and records.'],
-['name.ph','예) 김미랩 / 하늘매','VD: Minh / Đại Bàng','例：小明 / 飞鹰','Напр.: Саша / Сокол','e.g. Mina / SkyHawk'],
-['name.tip','10글자까지 · 이 기기에만 저장돼요 · 친구를 놀리는 이름은 쓸 수 없어요','Tối đa 10 ký tự · Chỉ lưu trên máy này · Không dùng tên trêu chọc bạn bè','最多10个字 · 只保存在这台设备上 · 不能用取笑同学的名字','До 10 символов · Хранится только на этом устройстве · Нельзя имена, которые обижают друзей','Up to 10 characters · Saved only on this device · No names that make fun of friends'],
-['name.go','✈️ 이 이름으로 비행','✈️ Bay với tên này','✈️ 用这个名字飞行','✈️ Лететь с этим именем','✈️ Fly with this name'],
-['name.skip','이름 없이 할래요','Chơi không cần tên','不填名字','Без имени','Play without a name'],
-['name.empty','이름이나 닉네임을 써 주세요 (또는 「이름 없이」)','Hãy viết tên hoặc biệt danh (hoặc chọn «Chơi không cần tên»)','请写下名字或昵称（或选「不填名字」）','Напиши имя или ник (или выбери «Без имени»)','Please type a name or nickname (or choose “Play without a name”)'],
-['name.bad','다른 이름을 써 주세요 🙂','Hãy chọn tên khác nhé 🙂','请换一个名字吧 🙂','Пожалуйста, выбери другое имя 🙂','Please choose a different name 🙂'],
-['name.hello','{name} 조종사, 반가워요!','Chào phi công {name}!','{name}飞行员，你好！','Привет, пилот {name}!','Welcome, pilot {name}!'],
-['name.changed','👤 {name} 조종사로 바꿨어요','👤 Đã đổi thành phi công {name}','👤 已改为飞行员{name}','👤 Теперь пилот — {name}','👤 Pilot changed to {name}'],
-['name.none','이름 없이 비행해요','Bay không cần tên','不填名字飞行','Летим без имени','Flying without a name'],
-['pilot.anon','익명 조종사','Phi công ẩn danh','匿名飞行员','Пилот без имени','Mystery pilot'],
+['name.title','조종사 이름을 알려 주세요','Cho mình biết tên phi công nhé','告诉我你的飞行员名字吧','Как тебя зовут, пилот?','What’s your pilot name?','パイロットの名前を教えてね','ប្រាប់ឈ្មោះអ្នកបើកបររបស់អ្នក','Нисгэгч ээ, чиний нэр хэн бэ?'],
+['name.sub','이름 또는 닉네임이 <b>명예의 전당</b>과 기록에 올라가요.','Tên hoặc biệt danh của bạn sẽ được ghi vào <b>Bảng vàng</b> và kỷ lục.','你的名字或昵称会登上<b>荣誉榜</b>和记录。','Твоё имя или ник попадёт в <b>Зал славы</b> и в рекорды.','Your name or nickname goes on the <b>Hall of Fame</b> and records.','名前かニックネームが<b>殿堂入り</b>と記録にのるよ。','ឈ្មោះ ឬឈ្មោះហៅក្រៅរបស់អ្នក នឹងបង្ហាញនៅ<b>តារាងកិត្តិយស</b> និងកំណត់ត្រា។','Чиний нэр эсвэл хоч <b>Алдрын танхим</b> болон амжилтад бичигдэнэ.'],
+['name.ph','예) 김미랩 / 하늘매','VD: Minh / Đại Bàng','例：小明 / 飞鹰','Напр.: Саша / Сокол','e.g. Mina / SkyHawk','例：ゆうと / スカイホーク','ឧ. សុខា / ឥន្ទ្រី','Жишээ: Бат / Бүргэд'],
+['name.tip','10글자까지 · 이 기기에만 저장돼요 · 친구를 놀리는 이름은 쓸 수 없어요','Tối đa 10 ký tự · Chỉ lưu trên máy này · Không dùng tên trêu chọc bạn bè','最多10个字 · 只保存在这台设备上 · 不能用取笑同学的名字','До 10 символов · Хранится только на этом устройстве · Нельзя имена, которые обижают друзей','Up to 10 characters · Saved only on this device · No names that make fun of friends','10文字まで · この端末だけに保存 · 友だちをからかう名前は使えません','យ៉ាងច្រើន ១០ តួ · រក្សាទុកតែលើឧបករណ៍នេះ · មិនអាចប្រើឈ្មោះចំអកមិត្តភក្ដិ','10 тэмдэгт хүртэл · Зөвхөн энэ төхөөрөмжид хадгална · Найзаа шоолсон нэр хэрэглэж болохгүй'],
+['name.go','✈️ 이 이름으로 비행','✈️ Bay với tên này','✈️ 用这个名字飞行','✈️ Лететь с этим именем','✈️ Fly with this name','✈️ この名前で飛ぶ','✈️ ហោះដោយឈ្មោះនេះ','✈️ Энэ нэрээр нисэх'],
+['name.skip','이름 없이 할래요','Chơi không cần tên','不填名字','Без имени','Play without a name','名前なしで遊ぶ','លេងដោយគ្មានឈ្មោះ','Нэргүй тоглох'],
+['name.empty','이름이나 닉네임을 써 주세요 (또는 「이름 없이」)','Hãy viết tên hoặc biệt danh (hoặc chọn «Chơi không cần tên»)','请写下名字或昵称（或选「不填名字」）','Напиши имя или ник (или выбери «Без имени»)','Please type a name or nickname (or choose “Play without a name”)','名前かニックネームを書いてね（または「名前なしで遊ぶ」）','សូមសរសេរឈ្មោះ ឬឈ្មោះហៅក្រៅ (ឬជ្រើស «លេងដោយគ្មានឈ្មោះ»)','Нэр эсвэл хочоо бичээрэй («Нэргүй тоглох»-ыг сонгож ч болно)'],
+['name.bad','다른 이름을 써 주세요 🙂','Hãy chọn tên khác nhé 🙂','请换一个名字吧 🙂','Пожалуйста, выбери другое имя 🙂','Please choose a different name 🙂','ほかの名前にしてね 🙂','សូមជ្រើសឈ្មោះផ្សេង 🙂','Өөр нэр сонгоорой 🙂'],
+['name.hello','{name} 조종사, 반가워요!','Chào phi công {name}!','{name}飞行员，你好！','Привет, пилот {name}!','Welcome, pilot {name}!','{name}パイロット、よろしくね！','សួស្ដី អ្នកបើកបរ {name}!','Сайн уу, нисгэгч {name}!'],
+['name.changed','👤 {name} 조종사로 바꿨어요','👤 Đã đổi thành phi công {name}','👤 已改为飞行员{name}','👤 Теперь пилот — {name}','👤 Pilot changed to {name}','👤 {name}パイロットに変えたよ','👤 បានប្ដូរទៅអ្នកបើកបរ {name}','👤 Нисгэгчийг {name} болголоо'],
+['name.none','이름 없이 비행해요','Bay không cần tên','不填名字飞行','Летим без имени','Flying without a name','名前なしで飛ぶよ','ហោះដោយគ្មានឈ្មោះ','Нэргүй нисэж байна'],
+['pilot.anon','익명 조종사','Phi công ẩn danh','匿名飞行员','Пилот без имени','Mystery pilot','なぞのパイロット','អ្នកបើកបរអាថ៌កំបាំង','Нууцлаг нисгэгч'],
 
 /* --- 명예의 전당 --- */
-['hof.sub','이 기기의 TOP 10 · 무한 챌린지는 거리, 코스는 점수 순','TOP 10 trên máy này · Thử thách vô tận xếp theo quãng đường, các đường bay xếp theo điểm','本设备 TOP 10 · 无限挑战按距离排名，航线按分数排名','TOP-10 на этом устройстве · Бесконечный вызов — по дистанции, трассы — по очкам','TOP 10 on this device · Infinite Challenge by distance, courses by score'],
-['hof.empty','아직 기록이 없어요. 첫 번째 주인공이 되어 보세요! ✈️','Chưa có kỷ lục nào. Hãy trở thành người đầu tiên nhé! ✈️','还没有记录。来当第一名吧！✈️','Пока нет рекордов. Установи первый рекорд! ✈️','No records yet. Be the very first! ✈️'],
-['hof.tabInf','♾️ 무한','♾️ Vô tận','♾️ 无限','♾️ Бесконечный','♾️ Infinite'],
-['hof.boosts','부스터 {n}회','Tăng tốc {n} lần','加速 {n} 次','Ускорений: {n}','Boosters ×{n}'],
-['hof.rings','{a}/{b} 링','{a}/{b} vòng','{a}/{b} 个圆环','колец: {a}/{b}','{a}/{b} rings'],
-['unit.pts','{n}점','{n} điểm','{n}分','{n} очк.','{n} pts'],
+['hof.sub','이 기기의 TOP 10 · 무한 챌린지는 거리, 코스는 점수 순','TOP 10 trên máy này · Thử thách vô tận xếp theo quãng đường, các đường bay xếp theo điểm','本设备 TOP 10 · 无限挑战按距离排名，航线按分数排名','TOP-10 на этом устройстве · Бесконечный вызов — по дистанции, трассы — по очкам','TOP 10 on this device · Infinite Challenge by distance, courses by score','この端末のTOP 10 · 無限チャレンジは距離順、コースは点数順','TOP 10 លើឧបករណ៍នេះ · ការប្រកួតគ្មានទីបញ្ចប់តាមចម្ងាយ ផ្លូវហោះតាមពិន្ទុ','Энэ төхөөрөмжийн TOP 10 · Төгсгөлгүй сорил — зайгаар, замууд — оноогоор'],
+['hof.empty','아직 기록이 없어요. 첫 번째 주인공이 되어 보세요! ✈️','Chưa có kỷ lục nào. Hãy trở thành người đầu tiên nhé! ✈️','还没有记录。来当第一名吧！✈️','Пока нет рекордов. Установи первый рекорд! ✈️','No records yet. Be the very first! ✈️','まだ記録がないよ。最初の一人になろう！✈️','មិនទាន់មានកំណត់ត្រាទេ។ ក្លាយជាអ្នកទីមួយ! ✈️','Одоохондоо амжилт алга. Анхных нь болоорой! ✈️'],
+['hof.tabInf','♾️ 무한','♾️ Vô tận','♾️ 无限','♾️ Бесконечный','♾️ Infinite','♾️ 無限','♾️ គ្មានទីបញ្ចប់','♾️ Төгсгөлгүй'],
+['hof.boosts','부스터 {n}회','Tăng tốc {n} lần','加速 {n} 次','Ускорений: {n}','Boosters ×{n}','ブースター{n}回','បូស្ទ័រ {n} ដង','Хурдасгуур {n} удаа'],
+['hof.rings','{a}/{b} 링','{a}/{b} vòng','{a}/{b} 个圆环','колец: {a}/{b}','{a}/{b} rings','{a}/{b} リング','{a}/{b} រង្វង់','{a}/{b} цагираг'],
+['unit.pts','{n}점','{n} điểm','{n}分','{n} очк.','{n} pts','{n}点','{n} ពិន្ទុ','{n} оноо'],
 
 /* --- 학교 유형(프리셋) --- */
-['preset.title','어떤 교실인가요?','Lớp học của bạn là lớp nào?','这是什么样的教室？','Какой у вас класс?','What kind of classroom is this?'],
-['preset.sub','학교 유형에 맞춰 속도·링 크기·조작 방법이 자동으로 맞춰져요.','Tốc độ, kích thước vòng và cách điều khiển sẽ tự điều chỉnh theo loại lớp học.','速度、圆环大小和操作方式会根据学校类型自动调整。','Скорость, размер колец и управление настроятся под тип класса.','Speed, ring size and controls adjust automatically to your type of school.'],
-['preset.gen.name','일반','Lớp thường','普通班','Обычный класс','Regular class'],
-['preset.gen.desc','일반학교 · 3단계 난이도','Trường phổ thông · 3 mức độ khó','普通学校 · 3级难度','Обычная школа · 3 уровня сложности','Regular school · 3 difficulty levels'],
-['preset.dev.name','모두의 학급 · 발달','Lớp hòa nhập · Phát triển','融合班 · 发展','Класс для всех · Развитие','Class for All · Development'],
-['preset.dev.desc','아주 천천히 · 실패 없음 · 그림과 소리','Rất chậm · Không có thất bại · Hình ảnh và âm thanh','非常慢 · 不会失败 · 图片和声音','Очень медленно · Без проигрыша · Картинки и звуки','Very slow · No failing · Pictures and sounds'],
-['preset.phys.name','모두의 학급 · 지체','Lớp hòa nhập · Vận động','融合班 · 肢体','Класс для всех · Движение','Class for All · Mobility'],
-['preset.phys.desc','버튼 하나로 · 조준 도움','Chỉ một nút · Hỗ trợ ngắm','一个按钮 · 瞄准辅助','Одна кнопка · Помощь в прицеливании','One button · Aim help'],
-['preset.low.name','모두의 학급 · 저시력','Lớp hòa nhập · Thị lực kém','融合班 · 低视力','Класс для всех · Слабое зрение','Class for All · Low vision'],
-['preset.low.desc','고대비 · 큰 글자 · 소리 길안내','Tương phản cao · Chữ to · Âm thanh chỉ đường','高对比度 · 大字 · 声音导航','Высокий контраст · Крупный шрифт · Звуковые подсказки','High contrast · Big text · Sound guide'],
-['preset.deaf.name','청각','Thính giác','听觉','Слух','Hearing'],
-['preset.deaf.desc','자막 · 화면 신호 · 진동','Phụ đề · Tín hiệu trên màn hình · Rung','字幕 · 画面提示 · 振动','Субтитры · Сигналы на экране · Вибрация','Captions · Screen signals · Vibration'],
+['preset.title','어떤 교실인가요?','Lớp học của bạn là lớp nào?','这是什么样的教室？','Какой у вас класс?','What kind of classroom is this?','どんな教室かな？','ថ្នាក់រៀនរបស់អ្នកជាប្រភេទណា?','Ямар анги вэ?'],
+['preset.sub','학교 유형에 맞춰 속도·링 크기·조작 방법이 자동으로 맞춰져요.','Tốc độ, kích thước vòng và cách điều khiển sẽ tự điều chỉnh theo loại lớp học.','速度、圆环大小和操作方式会根据学校类型自动调整。','Скорость, размер колец и управление настроятся под тип класса.','Speed, ring size and controls adjust automatically to your type of school.','学校のタイプに合わせて、スピード・リングの大きさ・操作方法が自動で変わるよ。','ល្បឿន ទំហំរង្វង់ និងរបៀបបញ្ជា នឹងកែតម្រូវដោយស្វ័យប្រវត្តិតាមប្រភេទសាលា។','Сургуулийн төрлөөс хамаарч хурд, цагирагийн хэмжээ, удирдлага автоматаар тохирно.'],
+['preset.gen.name','일반','Lớp thường','普通班','Обычный класс','Regular class','ふつうのクラス','ថ្នាក់ធម្មតា','Энгийн анги'],
+['preset.gen.desc','일반학교 · 3단계 난이도','Trường phổ thông · 3 mức độ khó','普通学校 · 3级难度','Обычная школа · 3 уровня сложности','Regular school · 3 difficulty levels','一般の学校 · 難易度3段階','សាលាធម្មតា · កម្រិតលំបាក ៣','Энгийн сургууль · 3 түвшин'],
+['preset.dev.name','모두의 학급 · 발달','Lớp hòa nhập · Phát triển','融合班 · 发展','Класс для всех · Развитие','Class for All · Development','みんなの学級 · 発達','ថ្នាក់សម្រាប់ទាំងអស់គ្នា · ការអភិវឌ្ឍ','Бүгдийн анги · Хөгжил'],
+['preset.dev.desc','아주 천천히 · 실패 없음 · 그림과 소리','Rất chậm · Không có thất bại · Hình ảnh và âm thanh','非常慢 · 不会失败 · 图片和声音','Очень медленно · Без проигрыша · Картинки и звуки','Very slow · No failing · Pictures and sounds','とてもゆっくり · 失敗なし · 絵と音','យឺតណាស់ · គ្មានការបរាជ័យ · រូបភាព និងសំឡេង','Маш удаан · Ялагдахгүй · Зураг ба дуу'],
+['preset.phys.name','모두의 학급 · 지체','Lớp hòa nhập · Vận động','融合班 · 肢体','Класс для всех · Движение','Class for All · Mobility','みんなの学級 · 肢体','ថ្នាក់សម្រាប់ទាំងអស់គ្នា · ចលនា','Бүгдийн анги · Хөдөлгөөн'],
+['preset.phys.desc','버튼 하나로 · 조준 도움','Chỉ một nút · Hỗ trợ ngắm','一个按钮 · 瞄准辅助','Одна кнопка · Помощь в прицеливании','One button · Aim help','ボタン1つ · ねらいアシスト','ប៊ូតុងតែមួយ · ជំនួយតម្រង់','Нэг товч · Онилгын туслалцаа'],
+['preset.low.name','모두의 학급 · 저시력','Lớp hòa nhập · Thị lực kém','融合班 · 低视力','Класс для всех · Слабое зрение','Class for All · Low vision','みんなの学級 · 弱視','ថ្នាក់សម្រាប់ទាំងអស់គ្នា · ខ្សោយភ្នែក','Бүгдийн анги · Сул хараа'],
+['preset.low.desc','고대비 · 큰 글자 · 소리 길안내','Tương phản cao · Chữ to · Âm thanh chỉ đường','高对比度 · 大字 · 声音导航','Высокий контраст · Крупный шрифт · Звуковые подсказки','High contrast · Big text · Sound guide','ハイコントラスト · 大きな文字 · 音のガイド','ពន្លឺផ្ទុយខ្ពស់ · អក្សរធំ · សំឡេងណែនាំផ្លូវ','Өндөр ялгарал · Том үсэг · Дуут заавар'],
+['preset.deaf.name','청각','Thính giác','听觉','Слух','Hearing','聴覚','ការស្ដាប់','Сонсгол'],
+['preset.deaf.desc','자막 · 화면 신호 · 진동','Phụ đề · Tín hiệu trên màn hình · Rung','字幕 · 画面提示 · 振动','Субтитры · Сигналы на экране · Вибрация','Captions · Screen signals · Vibration','字幕 · 画面のサイン · 振動','អក្សររត់ · សញ្ញាលើអេក្រង់ · ញ័រ','Хадмал · Дэлгэцийн дохио · Чичиргээ'],
 
 /* --- 난이도 --- */
-['level.title','난이도를 골라요','Chọn độ khó','选择难度','Выбери сложность','Choose a level'],
-['level.sub','처음이라면 <b>기초</b>부터! 잘하면 한 단계씩 올려 볼 수 있어요.','Lần đầu thì bắt đầu từ <b>Cơ bản</b> nhé! Giỏi rồi thì lên từng bậc một.','第一次玩就从<b>基础</b>开始！熟练了可以一级一级往上挑战。','Первый раз? Начни с уровня <b>«Новичок»</b>! Получится — повышай по одному шагу.','First time? Start with <b>Basic</b>! When you get good, go up one level at a time.'],
-['level.1.name','기초','Cơ bản','基础','Новичок','Basic'],
-['level.2.name','표준','Tiêu chuẩn','标准','Стандарт','Standard'],
-['level.3.name','도전','Thử thách','挑战','Вызов','Challenge'],
-['level.1.desc','초등 1~3학년 · 링 크게, 속도 천천히','Lớp 1–3 · Vòng to, bay chậm','小学1~3年级 · 圆环大，速度慢','1–3 класс · Большие кольца, медленно','Grades 1–3 · Big rings, slow speed'],
-['level.2.desc','초등 4학년~중학생 · 링 보통, 속도 보통','Lớp 4 – THCS · Vòng vừa, tốc độ vừa','小学4年级~初中 · 圆环中等，速度中等','4 класс – средняя школа · Средние кольца и скорость','Grade 4 – middle school · Medium rings, medium speed'],
-['level.3.desc','고등학생·숙련자 · 링 작게, 속도 빠르게','THPT · Người giỏi · Vòng nhỏ, bay nhanh','高中生 · 高手 · 圆环小，速度快','Старшая школа · Опытным · Маленькие кольца, быстро','High school · Experts · Small rings, fast speed'],
+['level.title','난이도를 골라요','Chọn độ khó','选择难度','Выбери сложность','Choose a level','難易度をえらぼう','ជ្រើសកម្រិតលំបាក','Түвшнээ сонго'],
+['level.sub','처음이라면 <b>기초</b>부터! 잘하면 한 단계씩 올려 볼 수 있어요.','Lần đầu thì bắt đầu từ <b>Cơ bản</b> nhé! Giỏi rồi thì lên từng bậc một.','第一次玩就从<b>基础</b>开始！熟练了可以一级一级往上挑战。','Первый раз? Начни с уровня <b>«Новичок»</b>! Получится — повышай по одному шагу.','First time? Start with <b>Basic</b>! When you get good, go up one level at a time.','はじめてなら<b>きほん</b>から！上手になったら1段ずつ上げてみよう。','លើកដំបូង ចាប់ផ្ដើមពី<b>មូលដ្ឋាន</b>! ពូកែហើយ ឡើងម្ដងមួយកម្រិត។','Анх удаа бол <b>Анхан</b> түвшнээс эхэл! Сайжирвал нэг нэгээр нь ахиулаарай.'],
+['level.1.name','기초','Cơ bản','基础','Новичок','Basic','きほん','មូលដ្ឋាន','Анхан'],
+['level.2.name','표준','Tiêu chuẩn','标准','Стандарт','Standard','ふつう','ស្តង់ដារ','Стандарт'],
+['level.3.name','도전','Thử thách','挑战','Вызов','Challenge','チャレンジ','បញ្ហាប្រឈម','Сорил'],
+['level.1.desc','초등 1~3학년 · 링 크게, 속도 천천히','Lớp 1–3 · Vòng to, bay chậm','小学1~3年级 · 圆环大，速度慢','1–3 класс · Большие кольца, медленно','Grades 1–3 · Big rings, slow speed','小学1〜3年 · リング大きめ、ゆっくり','ថ្នាក់ទី ១–៣ · រង្វង់ធំ ល្បឿនយឺត','1–3-р анги · Том цагираг, удаан'],
+['level.2.desc','초등 4학년~중학생 · 링 보통, 속도 보통','Lớp 4 – THCS · Vòng vừa, tốc độ vừa','小学4年级~初中 · 圆环中等，速度中等','4 класс – средняя школа · Средние кольца и скорость','Grade 4 – middle school · Medium rings, medium speed','小学4年〜中学生 · リングふつう、スピードふつう','ថ្នាក់ទី ៤ – អនុវិទ្យាល័យ · រង្វង់មធ្យម ល្បឿនមធ្យម','4-р анги – дунд сургууль · Дунд цагираг, дунд хурд'],
+['level.3.desc','고등학생·숙련자 · 링 작게, 속도 빠르게','THPT · Người giỏi · Vòng nhỏ, bay nhanh','高中生 · 高手 · 圆环小，速度快','Старшая школа · Опытным · Маленькие кольца, быстро','High school · Experts · Small rings, fast speed','高校生・上級者 · リング小さめ、速い','វិទ្យាល័យ · អ្នកពូកែ · រង្វង់តូច ល្បឿនលឿន','Ахлах сургууль · Туршлагатай · Жижиг цагираг, хурдан'],
 
 /* --- 비행 방식 · 안전 --- */
-['mode.title','어떻게 날아 볼까요?','Bạn muốn bay theo cách nào?','你想怎么飞？','Как будем летать?','How do you want to fly?'],
-['mode.vr.name','VR 모드 (카드보드)','Chế độ VR (Cardboard)','VR模式（纸盒眼镜）','Режим VR (Cardboard)','VR mode (Cardboard)'],
-['mode.vr.desc','폰을 카드보드에 끼우고 고개로 조종 · 버튼 없이 바라보기로 선택','Gắn điện thoại vào kính Cardboard, quay đầu để điều khiển · Nhìn vào để chọn, không cần nút','把手机放进纸盒眼镜，用转头来操控 · 不用按钮，看着就能选','Вставь телефон в Cardboard и управляй поворотом головы · Выбирай взглядом, без кнопок','Put the phone in a Cardboard viewer and steer with your head · Choose by looking, no buttons'],
-['mode.magic.name','매직 윈도우','Cửa sổ thần kỳ','魔法窗口','Волшебное окно','Magic Window'],
-['mode.magic.desc','카드보드 없이 폰을 창문처럼 들고 고개·폰을 돌려 조종','Không cần Cardboard: cầm điện thoại như ô cửa sổ, xoay đầu hoặc điện thoại để điều khiển','不用纸盒眼镜：像拿窗户一样举着手机，转动头或手机来操控','Без Cardboard: держи телефон как окно и поворачивай голову или телефон','No Cardboard: hold the phone like a window and turn your head or the phone to steer'],
-['mode.screen.name','화면 모드','Chế độ màn hình','屏幕模式','Режим экрана','Screen mode'],
-['mode.screen.desc','태블릿·PC · 화면 끌기 / 방향키 / 스페이스(원스위치)','Máy tính bảng · PC · Kéo màn hình / Phím mũi tên / Phím cách (một nút)','平板 · 电脑 · 拖动屏幕 / 方向键 / 空格键（单键）','Планшет · ПК · Свайп по экрану / Стрелки / Пробел (одна кнопка)','Tablet · PC · Drag the screen / Arrow keys / Space (one switch)'],
-['tag.rec','추천','Gợi ý','推荐','Совет','Best pick'],
-['safety.1','<b>꼭 앉아서</b> 해요. 고개만 천천히 돌려요.','Nhớ <b>ngồi xuống</b> khi chơi. Chỉ xoay đầu thật chậm thôi.','一定要<b>坐着</b>玩。只要慢慢转头就好。','Играй только <b>сидя</b>. Поворачивай голову медленно.','Always play <b>sitting down</b>. Turn only your head, slowly.'],
-['safety.2','선생님·어른이 <b>옆에서 지켜볼 때</b>만 VR을 써요.','Chỉ dùng VR khi <b>có thầy cô hoặc người lớn ở bên cạnh</b>.','只有在老师或大人<b>在旁边看着</b>时才用VR。','Используй VR, только когда <b>рядом учитель или взрослый</b>.','Use VR only when <b>a teacher or adult is watching nearby</b>.'],
-['safety.3','어지럽거나 눈이 아프면 <b>바로 멈추고</b> 쉬어요. 10분마다 쉬는 시간이 있어요.','Nếu thấy chóng mặt hay mỏi mắt thì <b>dừng ngay</b> và nghỉ ngơi. Cứ 10 phút sẽ có giờ nghỉ.','如果头晕或眼睛疼，<b>马上停下来</b>休息。每10分钟会有休息时间。','Если кружится голова или болят глаза, <b>сразу остановись</b> и отдохни. Каждые 10 минут — перерыв.','If you feel dizzy or your eyes hurt, <b>stop right away</b> and rest. There’s a break every 10 minutes.'],
+['mode.title','어떻게 날아 볼까요?','Bạn muốn bay theo cách nào?','你想怎么飞？','Как будем летать?','How do you want to fly?','どうやって飛ぶ？','តើចង់ហោះតាមរបៀបណា?','Яаж нисэх вэ?'],
+['mode.vr.name','VR 모드 (카드보드)','Chế độ VR (Cardboard)','VR模式（纸盒眼镜）','Режим VR (Cardboard)','VR mode (Cardboard)','VRモード（段ボールゴーグル）','របៀប VR (Cardboard)','VR горим (Cardboard)'],
+['mode.vr.desc','폰을 카드보드에 끼우고 고개로 조종 · 버튼 없이 바라보기로 선택','Gắn điện thoại vào kính Cardboard, quay đầu để điều khiển · Nhìn vào để chọn, không cần nút','把手机放进纸盒眼镜，用转头来操控 · 不用按钮，看着就能选','Вставь телефон в Cardboard и управляй поворотом головы · Выбирай взглядом, без кнопок','Put the phone in a Cardboard viewer and steer with your head · Choose by looking, no buttons','スマホをゴーグルに入れて頭で操作 · ボタンなしで見つめて選ぶ','ដាក់ទូរស័ព្ទក្នុង Cardboard ហើយបង្វិលក្បាលដើម្បីបញ្ជា · មើលដើម្បីជ្រើស គ្មានប៊ូតុង','Утсаа Cardboard-д хийж толгойгоо эргүүлж удирдана · Товчгүй, харж сонгоно'],
+['mode.magic.name','매직 윈도우','Cửa sổ thần kỳ','魔法窗口','Волшебное окно','Magic Window','マジックウィンドウ','បង្អួចវេទមន្ត','Шидэт цонх'],
+['mode.magic.desc','카드보드 없이 폰을 창문처럼 들고 고개·폰을 돌려 조종','Không cần Cardboard: cầm điện thoại như ô cửa sổ, xoay đầu hoặc điện thoại để điều khiển','不用纸盒眼镜：像拿窗户一样举着手机，转动头或手机来操控','Без Cardboard: держи телефон как окно и поворачивай голову или телефон','No Cardboard: hold the phone like a window and turn your head or the phone to steer','ゴーグルなしでスマホを窓のように持ち、頭やスマホを回して操作','គ្មាន Cardboard: កាន់ទូរស័ព្ទដូចបង្អួច ហើយបង្វិលក្បាល ឬទូរស័ព្ទ','Cardboard-гүй: утсаа цонх мэт бариад толгой эсвэл утсаа эргүүл'],
+['mode.screen.name','화면 모드','Chế độ màn hình','屏幕模式','Режим экрана','Screen mode','画面モード','របៀបអេក្រង់','Дэлгэцийн горим'],
+['mode.screen.desc','태블릿·PC · 화면 끌기 / 방향키 / 스페이스(원스위치)','Máy tính bảng · PC · Kéo màn hình / Phím mũi tên / Phím cách (một nút)','平板 · 电脑 · 拖动屏幕 / 方向键 / 空格键（单键）','Планшет · ПК · Свайп по экрану / Стрелки / Пробел (одна кнопка)','Tablet · PC · Drag the screen / Arrow keys / Space (one switch)','タブレット・PC · 画面ドラッグ / 矢印キー / スペース（ワンスイッチ）','ថេប្លេត · កុំព្យូទ័រ · អូសអេក្រង់ / គ្រាប់ចុចព្រួញ / Space (ប៊ូតុងតែមួយ)','Таблет · Компьютер · Дэлгэц чирэх / Сум товч / Space (нэг товч)'],
+['tag.rec','추천','Gợi ý','推荐','Совет','Best pick','おすすめ','ណែនាំ','Санал болгох'],
+['safety.1','<b>꼭 앉아서</b> 해요. 고개만 천천히 돌려요.','Nhớ <b>ngồi xuống</b> khi chơi. Chỉ xoay đầu thật chậm thôi.','一定要<b>坐着</b>玩。只要慢慢转头就好。','Играй только <b>сидя</b>. Поворачивай голову медленно.','Always play <b>sitting down</b>. Turn only your head, slowly.','必ず<b>すわって</b>遊ぼう。頭だけをゆっくり動かしてね。','ត្រូវ<b>អង្គុយ</b>ពេលលេង។ បង្វិលតែក្បាល យឺតៗ។','Заавал <b>суугаад</b> тогло. Зөвхөн толгойгоо аажуухан эргүүл.'],
+['safety.2','선생님·어른이 <b>옆에서 지켜볼 때</b>만 VR을 써요.','Chỉ dùng VR khi <b>có thầy cô hoặc người lớn ở bên cạnh</b>.','只有在老师或大人<b>在旁边看着</b>时才用VR。','Используй VR, только когда <b>рядом учитель или взрослый</b>.','Use VR only when <b>a teacher or adult is watching nearby</b>.','先生や大人が<b>そばで見ているとき</b>だけVRを使おう。','ប្រើ VR តែពេល<b>មានគ្រូ ឬមនុស្សធំនៅក្បែរ</b>។','VR-ыг зөвхөн <b>багш эсвэл том хүн хажууд байхад</b> хэрэглэ.'],
+['safety.3','어지럽거나 눈이 아프면 <b>바로 멈추고</b> 쉬어요. 10분마다 쉬는 시간이 있어요.','Nếu thấy chóng mặt hay mỏi mắt thì <b>dừng ngay</b> và nghỉ ngơi. Cứ 10 phút sẽ có giờ nghỉ.','如果头晕或眼睛疼，<b>马上停下来</b>休息。每10分钟会有休息时间。','Если кружится голова или болят глаза, <b>сразу остановись</b> и отдохни. Каждые 10 минут — перерыв.','If you feel dizzy or your eyes hurt, <b>stop right away</b> and rest. There’s a break every 10 minutes.','目がまわったり目がいたくなったら<b>すぐにやめて</b>休もう。10分ごとに休けいがあるよ。','បើវិលមុខ ឬឈឺភ្នែក <b>ឈប់ភ្លាម</b> ហើយសម្រាក។ រៀងរាល់ ១០ នាទី មានពេលសម្រាក។','Толгой эргэх эсвэл нүд өвдвөл <b>шууд зогсоод</b> амар. 10 минут тутам завсарлага бий.'],
 
 /* --- 코스 --- */
-['stage.title','비행 코스 선택','Chọn đường bay','选择飞行航线','Выбери трассу','Choose a course'],
-['stage.soon','🔥가 많을수록 어렵고 비행 시간도 길어져요. 1번부터 차례로 도전해 보세요!','Càng nhiều 🔥 thì càng khó và bay càng lâu. Hãy thử lần lượt từ số 1 nhé!','🔥越多越难，飞行时间也越长。从1号开始依次挑战吧！','Чем больше 🔥, тем сложнее и дольше полёт. Проходи по порядку, начиная с №1!','More 🔥 means harder and longer flights. Try them in order, starting with 1!'],
-['stage.mins','약 {n}분','khoảng {n} phút','约{n}分钟','около {n} мин','about {n} min'],
-['stage.best','최고 {n}점','kỷ lục {n} điểm','最高{n}分','рекорд {n} очк.','best {n} pts'],
-['stage.inf.extra','🛡️ 보호막 · 💠 미랩 부스터 · 1km마다 LV UP','🛡️ Lá chắn · 💠 Tăng tốc MILAB · Lên cấp mỗi 1 km','🛡️ 护盾 · 💠 MILAB加速器 · 每1km升级','🛡️ Щит · 💠 Ускоритель MILAB · +1 уровень каждый км','🛡️ Shield · 💠 MILAB booster · LV UP every 1 km'],
-['stage.inf.top','🏆 1위 {name} {n}m','🏆 Hạng 1: {name} {n}m','🏆 第1名 {name} {n}m','🏆 1-е место: {name} {n} м','🏆 #1 {name} {n}m'],
-['stage.1.name','미랩 비행장','Sân bay MILAB','MILAB机场','Аэродром MILAB','MILAB Airfield'],
-['stage.1.desc','수직 이착륙 · 천이 비행 연습 · 큰 링','[[^vtol]] · Tập [[trans]] · Vòng to','[[vtol]] · 练习[[trans]] · 大圆环','[[^vtol]] · Учимся: [[trans]] · Большие кольца','[[^vtol]] · Practice [[trans]] · Big rings'],
-['stage.2.name','바람의 협곡','Hẻm núi Gió','风之峡谷','Каньон ветров','Wind Canyon'],
-['stage.2.desc','바위 기둥·아치·능선 피하기 · 실드','Né cột đá, vòm đá, dãy núi · Lá chắn','躲开石柱、石拱和山脊 · 护盾','Облетай каменные столбы, арки и хребты · Щит','Dodge rock pillars, arches and ridges · Shield'],
-['stage.3.name','도심 버티포트','Vertiport thành phố','城市垂直起降场','Городской вертипорт','City Vertiport'],
-['stage.3.desc','빌딩 사이 비행 · 빌딩 바람(측풍) · 스카이브리지','Bay giữa các tòa nhà · Luồng [[cross]] · Cầu trên không','在楼宇间飞行 · 楼间[[cross]] · 空中连廊','Полёт между зданиями · [[^cross]] · Небесные мосты','Fly between buildings · Building [[cross]] · Sky bridges'],
-['stage.4.name','해상 풍력단지','Trang trại điện gió trên biển','海上风电场','Морская ветроэлектростанция','Offshore Wind Farm'],
-['stage.4.desc','돌아가는 풍력 블레이드 · 돌풍 경보','Cánh quạt gió đang quay · Cảnh báo [[gust]]','旋转的风机叶片 · [[gust]]警报','Крутящиеся лопасти ветряков · Тревога: [[gust]]','Spinning turbine blades · [[^gust]] warnings'],
-['stage.5.name','야간 폭풍','Bão đêm','夜间风暴','Ночная буря','Night Storm'],
-['stage.5.desc','AI 코파일럿 대결 · 돌발 장애물 · 폭풍','Đấu với [[copilot]] · Chướng ngại bất ngờ · Bão','对决[[copilot]] · 突发障碍 · 风暴','Кто лучше: [[copilot]] или ты? · Внезапные препятствия · Буря','[[copilot]] showdown · Surprise obstacles · Storm'],
-['stage.6.name','무한 챌린지','Thử thách vô tận','无限挑战','Бесконечный вызов','Infinite Challenge'],
-['stage.6.desc','X-Racer 스타일 · 부딪히면 즉시 종료 · 갈수록 빨라져요','Kiểu X-Racer · Va chạm là kết thúc ngay · Càng bay càng nhanh','X-Racer风格 · 一撞就结束 · 越飞越快','В стиле X-Racer · Столкновение — сразу конец · Всё быстрее и быстрее','X-Racer style · One crash and it’s over · Gets faster and faster'],
+['stage.title','비행 코스 선택','Chọn đường bay','选择飞行航线','Выбери трассу','Choose a course','飛行コースをえらぶ','ជ្រើសផ្លូវហោះ','Нислэгийн зам сонгох'],
+['stage.soon','🔥가 많을수록 어렵고 비행 시간도 길어져요. 1번부터 차례로 도전해 보세요!','Càng nhiều 🔥 thì càng khó và bay càng lâu. Hãy thử lần lượt từ số 1 nhé!','🔥越多越难，飞行时间也越长。从1号开始依次挑战吧！','Чем больше 🔥, тем сложнее и дольше полёт. Проходи по порядку, начиная с №1!','More 🔥 means harder and longer flights. Try them in order, starting with 1!','🔥が多いほどむずかしく、飛ぶ時間も長くなるよ。1番から順にチャレンジしよう！','🔥 កាន់តែច្រើន កាន់តែពិបាក ហើយហោះកាន់តែយូរ។ សាកល្បងតាមលំដាប់ពីលេខ ១!','🔥 олон байх тусам хэцүү, нислэг урт. 1-ээс эхлээд дарааллаар нь сорь!'],
+['stage.mins','약 {n}분','khoảng {n} phút','约{n}分钟','около {n} мин','about {n} min','約{n}分','ប្រហែល {n} នាទី','ойролцоогоор {n} мин'],
+['stage.best','최고 {n}점','kỷ lục {n} điểm','最高{n}分','рекорд {n} очк.','best {n} pts','最高{n}点','កំណត់ត្រា {n} ពិន្ទុ','дээд {n} оноо'],
+['stage.inf.extra','🛡️ 보호막 · 💠 미랩 부스터 · 1km마다 LV UP','🛡️ Lá chắn · 💠 Tăng tốc MILAB · Lên cấp mỗi 1 km','🛡️ 护盾 · 💠 MILAB加速器 · 每1km升级','🛡️ Щит · 💠 Ускоритель MILAB · +1 уровень каждый км','🛡️ Shield · 💠 MILAB booster · LV UP every 1 km','🛡️ シールド · 💠 MILABブースター · 1kmごとにLV UP','🛡️ ខែល · 💠 បូស្ទ័រ MILAB · ឡើងកម្រិតរៀងរាល់ 1 km','🛡️ Бамбай · 💠 MILAB хурдасгуур · 1 км тутам LV UP'],
+['stage.inf.top','🏆 1위 {name} {n}m','🏆 Hạng 1: {name} {n}m','🏆 第1名 {name} {n}m','🏆 1-е место: {name} {n} м','🏆 #1 {name} {n}m','🏆 1位 {name} {n}m','🏆 លេខ ១ {name} {n}m','🏆 1-р байр {name} {n}м'],
+['stage.1.name','미랩 비행장','Sân bay MILAB','MILAB机场','Аэродром MILAB','MILAB Airfield','MILAB飛行場','ព្រលានយន្តហោះ MILAB','MILAB нисэх буудал'],
+['stage.1.desc','수직 이착륙 · 천이 비행 연습 · 큰 링','[[^vtol]] · Tập [[trans]] · Vòng to','[[vtol]] · 练习[[trans]] · 大圆环','[[^vtol]] · Учимся: [[trans]] · Большие кольца','[[^vtol]] · Practice [[trans]] · Big rings','[[vtol]] · [[trans]]の練習 · 大きなリング','[[vtol]] · ហាត់[[trans]] · រង្វង់ធំ','[[^vtol]] · Дасгал: [[trans]] · Том цагираг'],
+['stage.2.name','바람의 협곡','Hẻm núi Gió','风之峡谷','Каньон ветров','Wind Canyon','風の峡谷','ជ្រលងខ្យល់','Салхины хавцал'],
+['stage.2.desc','바위 기둥·아치·능선 피하기 · 실드','Né cột đá, vòm đá, dãy núi · Lá chắn','躲开石柱、石拱和山脊 · 护盾','Облетай каменные столбы, арки и хребты · Щит','Dodge rock pillars, arches and ridges · Shield','岩の柱・アーチ・尾根をよけよう · シールド','គេចសសរថ្ម ធ្នូថ្ម និងជួរភ្នំ · ខែល','Хадан багана, нуман хаалга, нурууг тойр · Бамбай'],
+['stage.3.name','도심 버티포트','Vertiport thành phố','城市垂直起降场','Городской вертипорт','City Vertiport','都市バーティポート','វើធីផតក្នុងទីក្រុង','Хотын вертипорт'],
+['stage.3.desc','빌딩 사이 비행 · 빌딩 바람(측풍) · 스카이브리지','Bay giữa các tòa nhà · Luồng [[cross]] · Cầu trên không','在楼宇间飞行 · 楼间[[cross]] · 空中连廊','Полёт между зданиями · [[^cross]] · Небесные мосты','Fly between buildings · Building [[cross]] · Sky bridges','ビルの間を飛ぶ · ビルの[[cross]] · スカイブリッジ','ហោះរវាងអគារ · [[cross]]រវាងអគារ · ស្ពានលើមេឃ','Байшин хооронд нисэх · [[^cross]] · Тэнгэрийн гүүр'],
+['stage.4.name','해상 풍력단지','Trang trại điện gió trên biển','海上风电场','Морская ветроэлектростанция','Offshore Wind Farm','洋上風力発電所','កសិដ្ឋានថាមពលខ្យល់លើសមុទ្រ','Далай дээрх салхин цахилгаан станц'],
+['stage.4.desc','돌아가는 풍력 블레이드 · 돌풍 경보','Cánh quạt gió đang quay · Cảnh báo [[gust]]','旋转的风机叶片 · [[gust]]警报','Крутящиеся лопасти ветряков · Тревога: [[gust]]','Spinning turbine blades · [[^gust]] warnings','回る風車の羽根 · [[gust]]警報','ស្លាបកង្ហារខ្យល់កំពុងវិល · ការព្រមាន[[gust]]','Эргэж буй сэнсний ир · Сэрэмжлүүлэг: [[gust]]'],
+['stage.5.name','야간 폭풍','Bão đêm','夜间风暴','Ночная буря','Night Storm','夜の嵐','ព្យុះពេលយប់','Шөнийн шуурга'],
+['stage.5.desc','AI 코파일럿 대결 · 돌발 장애물 · 폭풍','Đấu với [[copilot]] · Chướng ngại bất ngờ · Bão','对决[[copilot]] · 突发障碍 · 风暴','Кто лучше: [[copilot]] или ты? · Внезапные препятствия · Буря','[[copilot]] showdown · Surprise obstacles · Storm','[[copilot]]と対決 · 突然の障害物 · 嵐','ប្រកួតជាមួយ[[copilot]] · ឧបសគ្គភ្លាមៗ · ព្យុះ','Тулаан: [[copilot]] · Гэнэтийн саад · Шуурга'],
+['stage.6.name','무한 챌린지','Thử thách vô tận','无限挑战','Бесконечный вызов','Infinite Challenge','無限チャレンジ','ការប្រកួតគ្មានទីបញ្ចប់','Төгсгөлгүй сорил'],
+['stage.6.desc','X-Racer 스타일 · 부딪히면 즉시 종료 · 갈수록 빨라져요','Kiểu X-Racer · Va chạm là kết thúc ngay · Càng bay càng nhanh','X-Racer风格 · 一撞就结束 · 越飞越快','В стиле X-Racer · Столкновение — сразу конец · Всё быстрее и быстрее','X-Racer style · One crash and it’s over · Gets faster and faster','X-Racerスタイル · ぶつかったら即終了 · どんどん速くなる','បែប X-Racer · ប៉ះម្ដងចប់ភ្លាម · កាន់តែលឿនទៅៗ','X-Racer маяг · Мөргөвөл шууд дуусна · Улам хурдан болно'],
 
 /* --- VR 준비 --- */
-['vr.title','🥽 VR 비행 준비','🥽 Chuẩn bị bay VR','🥽 VR飞行准备','🥽 Готовимся к полёту в VR','🥽 Get ready for VR'],
-['vr.s1','화면 밝기를 높이고, <b>앉아서</b> 해요.','Tăng độ sáng màn hình và <b>ngồi xuống</b> nhé.','把屏幕调亮，<b>坐下</b>来玩。','Сделай экран ярче и <b>сядь</b>.','Turn the screen brightness up and <b>sit down</b>.'],
-['vr.s2','아래 <b>VR 시작</b>을 누르면 3초를 세요. 그동안 폰을 <b>카드보드에 끼워요</b>.','Bấm <b>Bắt đầu VR</b> ở dưới, máy sẽ đếm 3 giây. Trong lúc đó hãy <b>gắn điện thoại vào Cardboard</b>.','点下面的<b>开始VR</b>后会倒数3秒。在这期间把手机<b>放进纸盒眼镜</b>。','Нажми внизу <b>«Старт VR»</b> — пойдёт отсчёт 3 секунды. За это время <b>вставь телефон в Cardboard</b>.','Tap <b>Start VR</b> below and it counts 3 seconds. Meanwhile, <b>put the phone in the Cardboard</b>.'],
-['vr.s3','<b>앞을 바라보면</b> 정면이 자동으로 맞춰져요. 메뉴는 <b>1.5초 바라보면</b> 골라져요.','<b>Nhìn thẳng phía trước</b> để tự chỉnh hướng. Muốn chọn menu thì <b>nhìn vào 1,5 giây</b>.','<b>看向前方</b>就会自动校准正面。菜单<b>看1.5秒</b>就能选中。','<b>Посмотри прямо</b> — направление настроится само. Чтобы выбрать пункт меню, <b>смотри на него 1,5 секунды</b>.','<b>Look straight ahead</b> and the front sets itself. To pick a menu item, <b>look at it for 1.5 seconds</b>.'],
-['vr.s4','고개를 크게 <b>숙이고 2초</b> 있으면 멈춰요. 끝나면 폰을 꺼내 화면을 톡!','<b>Cúi đầu xuống 2 giây</b> để tạm dừng. Xong thì lấy điện thoại ra và chạm vào màn hình!','<b>低头保持2秒</b>就会暂停。结束后取出手机，点一下屏幕！','<b>Опусти голову на 2 секунды</b> — будет пауза. В конце достань телефон и коснись экрана!','<b>Bow your head for 2 seconds</b> to pause. When you finish, take the phone out and tap the screen!'],
-['vr.go','VR 시작','Bắt đầu VR','开始VR','Старт VR','Start VR'],
-['vr.hintY','어린 학생·모두의 학급은 한 번에 5분까지만 해요. 매직 윈도우도 좋아요!','Các bạn nhỏ và lớp hòa nhập chỉ chơi tối đa 5 phút mỗi lần. Cửa sổ thần kỳ cũng rất vui!','低年级同学和融合班每次最多玩5分钟。魔法窗口也很好玩！','Малышам и «Классу для всех» — не больше 5 минут за раз. «Волшебное окно» тоже подойдёт!','Younger students and Class for All: up to 5 minutes at a time. Magic Window is great too!'],
-['vr.hint','10분마다 쉬는 시간 알림이 나와요.','Cứ 10 phút sẽ có nhắc nghỉ giải lao.','每10分钟会提醒你休息。','Каждые 10 минут будет напоминание отдохнуть.','You’ll get a break reminder every 10 minutes.'],
+['vr.title','🥽 VR 비행 준비','🥽 Chuẩn bị bay VR','🥽 VR飞行准备','🥽 Готовимся к полёту в VR','🥽 Get ready for VR','🥽 VR飛行の準備','🥽 ត្រៀមហោះ VR','🥽 VR нислэгт бэлдэх'],
+['vr.s1','화면 밝기를 높이고, <b>앉아서</b> 해요.','Tăng độ sáng màn hình và <b>ngồi xuống</b> nhé.','把屏幕调亮，<b>坐下</b>来玩。','Сделай экран ярче и <b>сядь</b>.','Turn the screen brightness up and <b>sit down</b>.','画面を明るくして、<b>すわって</b>遊ぼう。','បង្កើនពន្លឺអេក្រង់ ហើយ<b>អង្គុយ</b>។','Дэлгэцээ гэрэлтүүлээд <b>суу</b>.'],
+['vr.s2','아래 <b>VR 시작</b>을 누르면 3초를 세요. 그동안 폰을 <b>카드보드에 끼워요</b>.','Bấm <b>Bắt đầu VR</b> ở dưới, máy sẽ đếm 3 giây. Trong lúc đó hãy <b>gắn điện thoại vào Cardboard</b>.','点下面的<b>开始VR</b>后会倒数3秒。在这期间把手机<b>放进纸盒眼镜</b>。','Нажми внизу <b>«Старт VR»</b> — пойдёт отсчёт 3 секунды. За это время <b>вставь телефон в Cardboard</b>.','Tap <b>Start VR</b> below and it counts 3 seconds. Meanwhile, <b>put the phone in the Cardboard</b>.','下の<b>VRスタート</b>を押すと3秒数えるよ。その間にスマホを<b>ゴーグルに入れて</b>ね。','ចុច<b>ចាប់ផ្ដើម VR</b> ខាងក្រោម នឹងរាប់ ៣ វិនាទី។ ក្នុងពេលនោះ <b>ដាក់ទូរស័ព្ទក្នុង Cardboard</b>។','Доорх <b>VR эхлүүлэх</b>-ийг дарвал 3 секунд тоолно. Энэ хооронд утсаа <b>Cardboard-д хий</b>.'],
+['vr.s3','<b>앞을 바라보면</b> 정면이 자동으로 맞춰져요. 메뉴는 <b>1.5초 바라보면</b> 골라져요.','<b>Nhìn thẳng phía trước</b> để tự chỉnh hướng. Muốn chọn menu thì <b>nhìn vào 1,5 giây</b>.','<b>看向前方</b>就会自动校准正面。菜单<b>看1.5秒</b>就能选中。','<b>Посмотри прямо</b> — направление настроится само. Чтобы выбрать пункт меню, <b>смотри на него 1,5 секунды</b>.','<b>Look straight ahead</b> and the front sets itself. To pick a menu item, <b>look at it for 1.5 seconds</b>.','<b>前を見る</b>と正面が自動で合うよ。メニューは<b>1.5秒見つめる</b>と選べるよ。','<b>មើលទៅមុខ</b> ទិសខាងមុខនឹងកំណត់ដោយស្វ័យប្រវត្តិ។ ជ្រើសម៉ឺនុយដោយ<b>មើលវា ១,៥ វិនាទី</b>។','<b>Урагшаа хар</b> — чиглэл автоматаар тохирно. Цэсийг <b>1.5 секунд харж</b> сонгоно.'],
+['vr.s4','고개를 크게 <b>숙이고 2초</b> 있으면 멈춰요. 끝나면 폰을 꺼내 화면을 톡!','<b>Cúi đầu xuống 2 giây</b> để tạm dừng. Xong thì lấy điện thoại ra và chạm vào màn hình!','<b>低头保持2秒</b>就会暂停。结束后取出手机，点一下屏幕！','<b>Опусти голову на 2 секунды</b> — будет пауза. В конце достань телефон и коснись экрана!','<b>Bow your head for 2 seconds</b> to pause. When you finish, take the phone out and tap the screen!','頭を大きく<b>下げて2秒</b>で一時停止。終わったらスマホを出して画面をタップ！','<b>ឱនក្បាល ២ វិនាទី</b> ដើម្បីផ្អាក។ ចប់ហើយ យកទូរស័ព្ទចេញ ហើយប៉ះអេក្រង់!','<b>Толгойгоо 2 секунд гудайлга</b> — түр зогсоно. Дуусаад утсаа гаргаж дэлгэцэнд хүр!'],
+['vr.go','VR 시작','Bắt đầu VR','开始VR','Старт VR','Start VR','VRスタート','ចាប់ផ្ដើម VR','VR эхлүүлэх'],
+['vr.hintY','어린 학생·모두의 학급은 한 번에 5분까지만 해요. 매직 윈도우도 좋아요!','Các bạn nhỏ và lớp hòa nhập chỉ chơi tối đa 5 phút mỗi lần. Cửa sổ thần kỳ cũng rất vui!','低年级同学和融合班每次最多玩5分钟。魔法窗口也很好玩！','Малышам и «Классу для всех» — не больше 5 минут за раз. «Волшебное окно» тоже подойдёт!','Younger students and Class for All: up to 5 minutes at a time. Magic Window is great too!','低学年・みんなの学級は1回5分までにしよう。マジックウィンドウもいいよ！','សិស្សតូចៗ និងថ្នាក់សម្រាប់ទាំងអស់គ្នា លេងម្ដងយ៉ាងច្រើន ៥ នាទី។ បង្អួចវេទមន្តក៏ល្អដែរ!','Бага ангийнхан болон Бүгдийн анги нэг удаад 5 минутаас ихгүй. Шидэт цонх ч бас сайн!'],
+['vr.hint','10분마다 쉬는 시간 알림이 나와요.','Cứ 10 phút sẽ có nhắc nghỉ giải lao.','每10分钟会提醒你休息。','Каждые 10 минут будет напоминание отдохнуть.','You’ll get a break reminder every 10 minutes.','10分ごとに休けいのお知らせが出るよ。','រៀងរាល់ ១០ នាទី នឹងមានការរំលឹកឲ្យសម្រាក។','10 минут тутам амрах сануулга гарна.'],
 
 /* --- 센서 진단 --- */
-['diag.cant','기울기 센서를 켤 수 없어요','Không bật được cảm biến nghiêng','无法打开倾斜传感器','Не получается включить датчик наклона','Can’t turn on the tilt sensor'],
-['diag.retry','↻ 다시 시도','↻ Thử lại','↻ 再试一次','↻ Ещё раз','↻ Try again'],
-['diag.screen','🖥️ 화면 모드로 계속','🖥️ Tiếp tục ở chế độ màn hình','🖥️ 用屏幕模式继续','🖥️ Продолжить в режиме экрана','🖥️ Continue in screen mode'],
-['diag.https.t','안전한 주소(HTTPS)가 아니에요','Đây không phải địa chỉ an toàn (HTTPS)','这不是安全网址（HTTPS）','Это небезопасный адрес (не HTTPS)','This isn’t a secure address (HTTPS)'],
-['diag.https.w','휴대폰의 기울기 센서와 카메라는 https:// 로 시작하는 주소에서만 켜져요.','Cảm biến nghiêng và camera của điện thoại chỉ bật ở địa chỉ bắt đầu bằng https://.','手机的倾斜传感器和摄像头只能在以 https:// 开头的网址上使用。','Датчик наклона и камера телефона работают только на адресах, которые начинаются с https://.','The phone’s tilt sensor and camera only work on addresses that start with https://.'],
-['diag.https.s1','선생님이 나눠 준 QR코드로 다시 접속해요.','Quét lại mã QR thầy cô đã đưa.','用老师发的二维码重新打开。','Открой заново по QR-коду от учителя.','Open it again with the QR code from your teacher.'],
-['diag.https.s2','주소창에 {url} 를 입력해요.','Gõ {url} vào thanh địa chỉ.','在地址栏输入 {url}。','Введи в адресной строке {url}.','Type {url} in the address bar.'],
-['diag.inapp.t','앱 안의 미리보기 창이에요','Đây là cửa sổ xem trước bên trong ứng dụng','这是应用内的预览窗口','Это окно предпросмотра внутри приложения','This is a preview window inside an app'],
-['diag.inapp.w','카카오톡·네이버 같은 앱 안의 창에서는 센서가 막혀 있어요.','Trong cửa sổ bên trong ứng dụng như Zalo, KakaoTalk, Naver, cảm biến bị chặn.','在微信、KakaoTalk、Naver等应用内的窗口中，传感器被屏蔽了。','В окнах внутри приложений вроде KakaoTalk или Naver датчики заблокированы.','Sensors are blocked in windows inside apps like KakaoTalk or Naver.'],
-['diag.inapp.s1','오른쪽 위 ⋮ (또는 공유) 메뉴를 눌러요.','Bấm menu ⋮ (hoặc Chia sẻ) ở góc trên bên phải.','点右上角的 ⋮（或分享）菜单。','Нажми меню ⋮ (или «Поделиться») справа вверху.','Tap the ⋮ (or Share) menu at the top right.'],
-['diag.inapp.s2','「다른 브라우저로 열기」 또는 「Chrome / Safari로 열기」를 골라요.','Chọn «Mở bằng trình duyệt khác» hoặc «Mở bằng Chrome / Safari».','选择「用其他浏览器打开」或「用 Chrome / Safari 打开」。','Выбери «Открыть в другом браузере» или «Открыть в Chrome / Safari».','Choose “Open in another browser” or “Open in Chrome / Safari”.'],
-['diag.denied.t','동작·방향 접근이 거부됐어요','Quyền truy cập chuyển động và hướng đã bị từ chối','运动和方向权限被拒绝了','Доступ к движению и ориентации запрещён','Motion & orientation access was denied'],
-['diag.denied.w','아이폰·아이패드는 한 번 「허용 안 함」을 누르면, 그 탭에서는 다시 묻지 않아요.','Trên iPhone/iPad, nếu đã bấm «Không cho phép» một lần thì tab đó sẽ không hỏi lại nữa.','在iPhone/iPad上，只要点过一次「不允许」，这个标签页就不会再问了。','На iPhone/iPad, если один раз нажать «Не разрешать», эта вкладка больше не спросит.','On iPhone/iPad, once you tap “Don’t Allow”, that tab won’t ask again.'],
-['diag.denied.s1','Safari 탭을 완전히 닫아요. (탭 목록에서 ✕)','Đóng hẳn tab Safari. (bấm ✕ trong danh sách tab)','彻底关闭Safari标签页。（在标签列表中点✕）','Полностью закрой вкладку Safari (✕ в списке вкладок).','Close the Safari tab completely (✕ in the tab list).'],
-['diag.denied.s2','새 탭에서 주소로 다시 접속 → VR 시작 → 팝업에서 「허용」을 눌러요.','Mở lại địa chỉ ở tab mới → Bắt đầu VR → bấm «Cho phép» trong cửa sổ hiện lên.','在新标签页重新打开网址 → 开始VR → 在弹窗里点「允许」。','Открой адрес в новой вкладке → Старт VR → во всплывающем окне нажми «Разрешить».','Open the address in a new tab → Start VR → tap “Allow” in the pop-up.'],
-['diag.denied.s3','팝업이 안 나오면: 설정 → (앱 →) Safari → 고급 → 웹사이트 데이터 → github.io 삭제 후 다시 접속해요.','Nếu không thấy cửa sổ: Cài đặt → (Ứng dụng →) Safari → Nâng cao → Dữ liệu trang web → xóa github.io rồi mở lại.','如果没有弹窗：设置 →（App →）Safari → 高级 → 网站数据 → 删除 github.io 后重新打开。','Если окно не появилось: Настройки → (Приложения →) Safari → Дополнения → Данные сайтов → удали github.io и открой снова.','No pop-up? Settings → (Apps →) Safari → Advanced → Website Data → delete github.io, then open it again.'],
-['diag.gesture.t','허용 창을 띄우지 못했어요','Không mở được cửa sổ xin phép','没能弹出允许窗口','Не удалось показать окно разрешения','Couldn’t show the permission pop-up'],
-['diag.gesture.w','아이폰·아이패드는 버튼을 누른 순간에만 센서 허용 창을 띄울 수 있어요.','iPhone/iPad chỉ hiện cửa sổ xin phép cảm biến đúng lúc bạn bấm nút.','iPhone/iPad只有在点按钮的那一刻才能弹出传感器允许窗口。','iPhone/iPad показывает окно разрешения датчика только в момент нажатия кнопки.','iPhone/iPad can only show the sensor pop-up right when you tap a button.'],
-['diag.gesture.s1','아래 「다시 시도」를 눌러요.','Bấm «Thử lại» ở dưới.','点下面的「再试一次」。','Нажми «Ещё раз» внизу.','Tap “Try again” below.'],
-['diag.gesture.s2','팝업이 뜨면 「허용」을 눌러요.','Khi cửa sổ hiện lên, bấm «Cho phép».','弹窗出现后点「允许」。','Когда появится окно, нажми «Разрешить».','When the pop-up appears, tap “Allow”.'],
-['diag.gesture.s3','그래도 안 되면 Safari 탭을 닫고 새로 접속해요. (카카오톡 안의 창이라면 Safari로 열기)','Vẫn không được thì đóng tab Safari và mở lại. (Nếu đang ở trong ứng dụng, hãy mở bằng Safari)','还是不行就关闭Safari标签页重新打开。（如果是在应用内的窗口，请用Safari打开）','Не помогло — закрой вкладку Safari и открой заново. (Если это окно внутри приложения, открой в Safari)','Still not working? Close the Safari tab and open it again. (If you’re inside an app, open it in Safari.)'],
-['diag.none.t','기울기 센서를 찾지 못했어요','Không tìm thấy cảm biến nghiêng','没有找到倾斜传感器','Датчик наклона не найден','No tilt sensor found'],
-['diag.none.w','이 기기에는 자이로 센서가 없거나 꺼져 있어요. 화면 모드로 즐길 수 있어요.','Máy này không có cảm biến con quay hoặc cảm biến đang tắt. Bạn có thể chơi ở chế độ màn hình.','这台设备没有陀螺仪或者陀螺仪关着。可以用屏幕模式来玩。','На этом устройстве нет гироскопа или он выключен. Можно играть в режиме экрана.','This device has no gyro sensor, or it’s turned off. You can play in screen mode.'],
-['diag.none.s1','태블릿·PC는 「화면 모드」로 날아요.','Máy tính bảng và PC thì bay ở «Chế độ màn hình».','平板和电脑用「屏幕模式」飞行。','На планшете и ПК летай в «Режиме экрана».','On tablets and PCs, fly in “Screen mode”.'],
-['diag.none.s2','휴대폰이라면 다른 브라우저(Chrome·Safari)로 열어 봐요.','Nếu là điện thoại, hãy thử mở bằng trình duyệt khác (Chrome, Safari).','如果是手机，试试用其他浏览器（Chrome、Safari）打开。','Если это телефон, попробуй открыть в другом браузере (Chrome, Safari).','On a phone, try opening it in another browser (Chrome or Safari).'],
+['diag.cant','기울기 센서를 켤 수 없어요','Không bật được cảm biến nghiêng','无法打开倾斜传感器','Не получается включить датчик наклона','Can’t turn on the tilt sensor','かたむきセンサーをオンにできません','មិនអាចបើកឧបករណ៍ចាប់ការផ្អៀងបានទេ','Хазайлтын мэдрэгчийг асааж чадсангүй'],
+['diag.retry','↻ 다시 시도','↻ Thử lại','↻ 再试一次','↻ Ещё раз','↻ Try again','↻ もう一度','↻ សាកម្ដងទៀត','↻ Дахин оролдох'],
+['diag.screen','🖥️ 화면 모드로 계속','🖥️ Tiếp tục ở chế độ màn hình','🖥️ 用屏幕模式继续','🖥️ Продолжить в режиме экрана','🖥️ Continue in screen mode','🖥️ 画面モードで続ける','🖥️ បន្តជារបៀបអេក្រង់','🖥️ Дэлгэцийн горимоор үргэлжлүүлэх'],
+['diag.https.t','안전한 주소(HTTPS)가 아니에요','Đây không phải địa chỉ an toàn (HTTPS)','这不是安全网址（HTTPS）','Это небезопасный адрес (не HTTPS)','This isn’t a secure address (HTTPS)','安全なアドレス（HTTPS）ではありません','នេះមិនមែនជាអាសយដ្ឋានសុវត្ថិភាព (HTTPS) ទេ','Энэ аюулгүй хаяг (HTTPS) биш байна'],
+['diag.https.w','휴대폰의 기울기 센서와 카메라는 https:// 로 시작하는 주소에서만 켜져요.','Cảm biến nghiêng và camera của điện thoại chỉ bật ở địa chỉ bắt đầu bằng https://.','手机的倾斜传感器和摄像头只能在以 https:// 开头的网址上使用。','Датчик наклона и камера телефона работают только на адресах, которые начинаются с https://.','The phone’s tilt sensor and camera only work on addresses that start with https://.','スマホのかたむきセンサーとカメラは、https:// ではじまるアドレスでしか使えません。','ឧបករណ៍ចាប់ការផ្អៀង និងកាមេរ៉ាទូរស័ព្ទ ដំណើរការតែលើអាសយដ្ឋានដែលចាប់ផ្ដើមដោយ https:// ប៉ុណ្ណោះ។','Утасны хазайлтын мэдрэгч, камер зөвхөн https:// гэж эхэлсэн хаяг дээр ажиллана.'],
+['diag.https.s1','선생님이 나눠 준 QR코드로 다시 접속해요.','Quét lại mã QR thầy cô đã đưa.','用老师发的二维码重新打开。','Открой заново по QR-коду от учителя.','Open it again with the QR code from your teacher.','先生からもらったQRコードでもう一度開こう。','ស្កេនកូដ QR ពីគ្រូម្ដងទៀត។','Багшийн өгсөн QR кодоор дахин нээ.'],
+['diag.https.s2','주소창에 {url} 를 입력해요.','Gõ {url} vào thanh địa chỉ.','在地址栏输入 {url}。','Введи в адресной строке {url}.','Type {url} in the address bar.','アドレスバーに {url} を入力しよう。','វាយ {url} ក្នុងរបារអាសយដ្ឋាន។','Хаягийн мөрөнд {url} гэж бич.'],
+['diag.inapp.t','앱 안의 미리보기 창이에요','Đây là cửa sổ xem trước bên trong ứng dụng','这是应用内的预览窗口','Это окно предпросмотра внутри приложения','This is a preview window inside an app','アプリの中のプレビュー画面です','នេះជាផ្ទាំងមើលជាមុនក្នុងកម្មវិធី','Энэ бол апп доторх урьдчилан харах цонх'],
+['diag.inapp.w','카카오톡·네이버 같은 앱 안의 창에서는 센서가 막혀 있어요.','Trong cửa sổ bên trong ứng dụng như Zalo, KakaoTalk, Naver, cảm biến bị chặn.','在微信、KakaoTalk、Naver等应用内的窗口中，传感器被屏蔽了。','В окнах внутри приложений вроде KakaoTalk или Naver датчики заблокированы.','Sensors are blocked in windows inside apps like KakaoTalk or Naver.','LINEやカカオトークなど、アプリの中の画面ではセンサーが使えません。','ក្នុងផ្ទាំងនៃកម្មវិធីដូចជា Facebook ឬ KakaoTalk ឧបករណ៍ចាប់សញ្ញាត្រូវបានបិទ។','Facebook, KakaoTalk зэрэг апп доторх цонхонд мэдрэгч хаалттай байдаг.'],
+['diag.inapp.s1','오른쪽 위 ⋮ (또는 공유) 메뉴를 눌러요.','Bấm menu ⋮ (hoặc Chia sẻ) ở góc trên bên phải.','点右上角的 ⋮（或分享）菜单。','Нажми меню ⋮ (или «Поделиться») справа вверху.','Tap the ⋮ (or Share) menu at the top right.','右上の ⋮（または共有）メニューを押そう。','ចុចម៉ឺនុយ ⋮ (ឬ ចែករំលែក) នៅខាងស្ដាំលើ។','Баруун дээд талын ⋮ (эсвэл Хуваалцах) цэсийг дар.'],
+['diag.inapp.s2','「다른 브라우저로 열기」 또는 「Chrome / Safari로 열기」를 골라요.','Chọn «Mở bằng trình duyệt khác» hoặc «Mở bằng Chrome / Safari».','选择「用其他浏览器打开」或「用 Chrome / Safari 打开」。','Выбери «Открыть в другом браузере» или «Открыть в Chrome / Safari».','Choose “Open in another browser” or “Open in Chrome / Safari”.','「ほかのブラウザで開く」または「Chrome / Safariで開く」をえらぼう。','ជ្រើស «បើកក្នុងកម្មវិធីរុករកផ្សេង» ឬ «បើកក្នុង Chrome / Safari»។','«Өөр хөтчөөр нээх» эсвэл «Chrome / Safari-аар нээх»-ийг сонго.'],
+['diag.denied.t','동작·방향 접근이 거부됐어요','Quyền truy cập chuyển động và hướng đã bị từ chối','运动和方向权限被拒绝了','Доступ к движению и ориентации запрещён','Motion & orientation access was denied','動きと向きのアクセスが拒否されました','ការចូលប្រើចលនា និងទិសដៅត្រូវបានបដិសេធ','Хөдөлгөөн, чиглэлийн хандалтыг хориглосон байна'],
+['diag.denied.w','아이폰·아이패드는 한 번 「허용 안 함」을 누르면, 그 탭에서는 다시 묻지 않아요.','Trên iPhone/iPad, nếu đã bấm «Không cho phép» một lần thì tab đó sẽ không hỏi lại nữa.','在iPhone/iPad上，只要点过一次「不允许」，这个标签页就不会再问了。','На iPhone/iPad, если один раз нажать «Не разрешать», эта вкладка больше не спросит.','On iPhone/iPad, once you tap “Don’t Allow”, that tab won’t ask again.','iPhone・iPadは一度「許可しない」を押すと、そのタブではもう聞いてきません。','នៅលើ iPhone/iPad បើចុច «មិនអនុញ្ញាត» ម្ដង ផ្ទាំងនោះនឹងមិនសួរម្ដងទៀតទេ។','iPhone/iPad дээр нэг удаа «Зөвшөөрөхгүй» дарвал тэр таб дахин асуухгүй.'],
+['diag.denied.s1','Safari 탭을 완전히 닫아요. (탭 목록에서 ✕)','Đóng hẳn tab Safari. (bấm ✕ trong danh sách tab)','彻底关闭Safari标签页。（在标签列表中点✕）','Полностью закрой вкладку Safari (✕ в списке вкладок).','Close the Safari tab completely (✕ in the tab list).','Safariのタブを完全に閉じよう（タブ一覧で ✕）。','បិទផ្ទាំង Safari ទាំងស្រុង (ចុច ✕ ក្នុងបញ្ជីផ្ទាំង)។','Safari-ийн табыг бүрэн хаа (табын жагсаалтаас ✕).'],
+['diag.denied.s2','새 탭에서 주소로 다시 접속 → VR 시작 → 팝업에서 「허용」을 눌러요.','Mở lại địa chỉ ở tab mới → Bắt đầu VR → bấm «Cho phép» trong cửa sổ hiện lên.','在新标签页重新打开网址 → 开始VR → 在弹窗里点「允许」。','Открой адрес в новой вкладке → Старт VR → во всплывающем окне нажми «Разрешить».','Open the address in a new tab → Start VR → tap “Allow” in the pop-up.','新しいタブでアドレスを開く → VRスタート → ポップアップで「許可」を押そう。','បើកអាសយដ្ឋានក្នុងផ្ទាំងថ្មី → ចាប់ផ្ដើម VR → ចុច «អនុញ្ញាត» ក្នុងផ្ទាំងលោត។','Шинэ таб дээр хаягаа нээ → VR эхлүүлэх → гарч ирсэн цонхонд «Зөвшөөрөх» дар.'],
+['diag.denied.s3','팝업이 안 나오면: 설정 → (앱 →) Safari → 고급 → 웹사이트 데이터 → github.io 삭제 후 다시 접속해요.','Nếu không thấy cửa sổ: Cài đặt → (Ứng dụng →) Safari → Nâng cao → Dữ liệu trang web → xóa github.io rồi mở lại.','如果没有弹窗：设置 →（App →）Safari → 高级 → 网站数据 → 删除 github.io 后重新打开。','Если окно не появилось: Настройки → (Приложения →) Safari → Дополнения → Данные сайтов → удали github.io и открой снова.','No pop-up? Settings → (Apps →) Safari → Advanced → Website Data → delete github.io, then open it again.','ポップアップが出ないとき：設定 →（アプリ →）Safari → 詳細 → Webサイトデータ → github.io を削除してからもう一度開こう。','បើមិនឃើញផ្ទាំងលោត: ការកំណត់ → (កម្មវិធី →) Safari → កម្រិតខ្ពស់ → ទិន្នន័យគេហទំព័រ → លុប github.io រួចបើកម្ដងទៀត។','Цонх гарахгүй бол: Тохиргоо → (Аппууд →) Safari → Нарийвчилсан → Вэбсайтын өгөгдөл → github.io-г устгаад дахин нээ.'],
+['diag.gesture.t','허용 창을 띄우지 못했어요','Không mở được cửa sổ xin phép','没能弹出允许窗口','Не удалось показать окно разрешения','Couldn’t show the permission pop-up','許可の画面を出せませんでした','មិនអាចបង្ហាញផ្ទាំងសុំការអនុញ្ញាតបានទេ','Зөвшөөрлийн цонхыг гаргаж чадсангүй'],
+['diag.gesture.w','아이폰·아이패드는 버튼을 누른 순간에만 센서 허용 창을 띄울 수 있어요.','iPhone/iPad chỉ hiện cửa sổ xin phép cảm biến đúng lúc bạn bấm nút.','iPhone/iPad只有在点按钮的那一刻才能弹出传感器允许窗口。','iPhone/iPad показывает окно разрешения датчика только в момент нажатия кнопки.','iPhone/iPad can only show the sensor pop-up right when you tap a button.','iPhone・iPadは、ボタンを押したしゅんかんにだけセンサーの許可画面を出せます。','iPhone/iPad បង្ហាញផ្ទាំងសុំការអនុញ្ញាតតែនៅពេលអ្នកចុចប៊ូតុងប៉ុណ្ណោះ។','iPhone/iPad зөвхөн товч дарсан агшинд мэдрэгчийн зөвшөөрлийн цонх гаргадаг.'],
+['diag.gesture.s1','아래 「다시 시도」를 눌러요.','Bấm «Thử lại» ở dưới.','点下面的「再试一次」。','Нажми «Ещё раз» внизу.','Tap “Try again” below.','下の「もう一度」を押そう。','ចុច «សាកម្ដងទៀត» ខាងក្រោម។','Доорх «Дахин оролдох»-ыг дар.'],
+['diag.gesture.s2','팝업이 뜨면 「허용」을 눌러요.','Khi cửa sổ hiện lên, bấm «Cho phép».','弹窗出现后点「允许」。','Когда появится окно, нажми «Разрешить».','When the pop-up appears, tap “Allow”.','ポップアップが出たら「許可」を押そう。','ពេលផ្ទាំងលោតឡើង ចុច «អនុញ្ញាត»។','Цонх гарвал «Зөвшөөрөх» дар.'],
+['diag.gesture.s3','그래도 안 되면 Safari 탭을 닫고 새로 접속해요. (카카오톡 안의 창이라면 Safari로 열기)','Vẫn không được thì đóng tab Safari và mở lại. (Nếu đang ở trong ứng dụng, hãy mở bằng Safari)','还是不行就关闭Safari标签页重新打开。（如果是在应用内的窗口，请用Safari打开）','Не помогло — закрой вкладку Safari и открой заново. (Если это окно внутри приложения, открой в Safari)','Still not working? Close the Safari tab and open it again. (If you’re inside an app, open it in Safari.)','それでもだめならSafariのタブを閉じて開きなおそう（アプリの中の画面ならSafariで開く）。','នៅតែមិនបាន បិទផ្ទាំង Safari ហើយបើកម្ដងទៀត (បើនៅក្នុងកម្មវិធី សូមបើកក្នុង Safari)។','Болохгүй бол Safari табаа хаагаад дахин нээ (апп дотор байвал Safari-аар нээ).'],
+['diag.none.t','기울기 센서를 찾지 못했어요','Không tìm thấy cảm biến nghiêng','没有找到倾斜传感器','Датчик наклона не найден','No tilt sensor found','かたむきセンサーが見つかりません','រកមិនឃើញឧបករណ៍ចាប់ការផ្អៀង','Хазайлтын мэдрэгч олдсонгүй'],
+['diag.none.w','이 기기에는 자이로 센서가 없거나 꺼져 있어요. 화면 모드로 즐길 수 있어요.','Máy này không có cảm biến con quay hoặc cảm biến đang tắt. Bạn có thể chơi ở chế độ màn hình.','这台设备没有陀螺仪或者陀螺仪关着。可以用屏幕模式来玩。','На этом устройстве нет гироскопа или он выключен. Можно играть в режиме экрана.','This device has no gyro sensor, or it’s turned off. You can play in screen mode.','この端末にはジャイロセンサーがないか、オフになっています。画面モードで遊べるよ。','ឧបករណ៍នេះគ្មាន ឬបានបិទឧបករណ៍ចាប់ gyro។ អាចលេងជារបៀបអេក្រង់បាន។','Энэ төхөөрөмжид гироскоп байхгүй эсвэл унтраастай. Дэлгэцийн горимоор тоглож болно.'],
+['diag.none.s1','태블릿·PC는 「화면 모드」로 날아요.','Máy tính bảng và PC thì bay ở «Chế độ màn hình».','平板和电脑用「屏幕模式」飞行。','На планшете и ПК летай в «Режиме экрана».','On tablets and PCs, fly in “Screen mode”.','タブレット・PCは「画面モード」で飛ぼう。','ថេប្លេត និងកុំព្យូទ័រ ហោះជា «របៀបអេក្រង់»។','Таблет, компьютер дээр «Дэлгэцийн горим»-оор нис.'],
+['diag.none.s2','휴대폰이라면 다른 브라우저(Chrome·Safari)로 열어 봐요.','Nếu là điện thoại, hãy thử mở bằng trình duyệt khác (Chrome, Safari).','如果是手机，试试用其他浏览器（Chrome、Safari）打开。','Если это телефон, попробуй открыть в другом браузере (Chrome, Safari).','On a phone, try opening it in another browser (Chrome or Safari).','スマホならほかのブラウザ（Chrome・Safari）で開いてみよう。','បើជាទូរស័ព្ទ សាកបើកក្នុងកម្មវិធីរុករកផ្សេង (Chrome, Safari)។','Утас бол өөр хөтчөөр (Chrome, Safari) нээж үз.'],
 
 /* --- 결과 --- */
-['res.done','착륙 완료!','Hạ cánh thành công!','着陆完成！','Посадка выполнена!','Landed!'],
-['res.t3','완벽한 비행! 🏆','Chuyến bay hoàn hảo! 🏆','完美飞行！🏆','Идеальный полёт! 🏆','Perfect flight! 🏆'],
-['res.t2','멋진 비행이에요! ✨','Bay tuyệt lắm! ✨','飞得真棒！✨','Отличный полёт! ✨','Great flight! ✨'],
-['res.t1','착륙 성공! 👏','Hạ cánh thành công! 👏','着陆成功！👏','Посадка удалась! 👏','Safe landing! 👏'],
-['res.t0','착륙 성공! 다시 해 볼까요? 💪','Hạ cánh thành công! Thử lại nhé? 💪','着陆成功！再来一次吗？💪','Посадка удалась! Попробуем ещё? 💪','Safe landing! Want to try again? 💪'],
-['res.hof','🏆 명예의 전당 {n}위 등재! ({name})','🏆 Vào Bảng vàng hạng {n}! ({name})','🏆 登上荣誉榜第{n}名！（{name}）','🏆 {n}-е место в Зале славы! ({name})','🏆 #{n} on the Hall of Fame! ({name})'],
-['stat.rings','통과한 링','Vòng đã qua','穿过的圆环','Пройдено колец','Rings passed'],
-['stat.milab','미랩 링','Vòng MILAB','MILAB圆环','Кольца MILAB','MILAB rings'],
-['stat.battery','배터리','Pin','电量','Батарея','Battery'],
-['stat.score','점수','Điểm','分数','Очки','Score'],
-['stat.combo','최대 콤보','Combo cao nhất','最高连击','Макс. комбо','Best combo'],
-['stat.hits','충돌','Va chạm','碰撞','Столкновения','Crashes'],
-['stat.batLeft','남은 배터리','Pin còn lại','剩余电量','Осталось заряда','Battery left'],
-['offer.up','🚀 3번 연속 멋지게 성공! <b>한 단계 올려 볼까요?</b> ({level})','🚀 Thành công 3 lần liên tiếp! <b>Lên một bậc nhé?</b> ({level})','🚀 连续3次成功！<b>要升一级吗？</b>（{level}）','🚀 Три раза подряд отлично! <b>Повысим уровень?</b> ({level})','🚀 3 great flights in a row! <b>Ready to level up?</b> ({level})'],
-['offer.upBtn','올려 보기','Lên bậc','升一级','Повысить','Level up'],
-['offer.keep','그대로 할래요','Giữ nguyên','保持不变','Оставить так','Stay here'],
-['offer.help','🤝 <b>도움 모드</b>를 켜 볼까요? 링이 커지고 기체가 링 쪽으로 살짝 도와줘요.','🤝 Bật <b>chế độ hỗ trợ</b> nhé? Vòng sẽ to hơn và máy bay được giúp hướng về phía vòng một chút.','🤝 要打开<b>帮助模式</b>吗？圆环会变大，飞机也会稍微帮你飞向圆环。','🤝 Включим <b>режим помощи</b>? Кольца станут больше, а аппарат немного поможет долететь до кольца.','🤝 Turn on <b>Help mode</b>? Rings get bigger and the aircraft gently steers toward them.'],
-['offer.on','켜기','Bật','打开','Включить','Turn on'],
-['offer.no','괜찮아요','Không cần','不用了','Не надо','No thanks'],
-['toast.level','난이도: {level}','Độ khó: {level}','难度：{level}','Сложность: {level}','Level: {level}'],
-['toast.help','도움 모드를 켰어요','Đã bật chế độ hỗ trợ','已打开帮助模式','Режим помощи включён','Help mode is on'],
-['ai.title','🤖 AI 코파일럿 vs 🧑‍✈️ 나','🤖 [[copilot]] vs 🧑‍✈️ Mình','🤖 [[copilot]] vs 🧑‍✈️ 我','🤖 [[copilot]] vs 🧑‍✈️ Я','🤖 [[copilot]] vs 🧑‍✈️ Me'],
-['ai.goodAI','AI가 잘한 점','Điều AI làm tốt','AI做得好的地方','Что хорошо получилось у ИИ','What the AI did well'],
-['ai.ai1','링 {n}개를 잇는 가장 짧은 추천 경로를 계산해 안내했어요','Tính và chỉ ra đường ngắn nhất nối {n} vòng','计算并指引了连接{n}个圆环的最短推荐路线','Рассчитал и показал самый короткий путь через кольца ({n})','Worked out and showed the shortest route through {n} rings'],
-['ai.ai2','지치지 않고 빠르게 계산해요','Tính toán nhanh và không biết mệt','计算又快又不会累','Считает быстро и не устаёт','Calculates fast and never gets tired'],
-['ai.goodMe','사람이 잘한 점','Điều con người làm tốt','人做得好的地方','Что хорошо получилось у человека','What the human did well'],
-['ai.me1','돌발 장애물 <b>{a} / {b}개</b>를 직접 보고 피했어요','Tự nhìn thấy và né <b>{a} / {b}</b> chướng ngại bất ngờ','亲眼看到并躲开了<b>{a} / {b}个</b>突发障碍','Увидеть и облететь внезапные препятствия: <b>{a} из {b}</b>','Spotted and dodged <b>{a} / {b}</b> surprise obstacles'],
-['ai.me2','돌풍 {n}번에 맞서 기체를 바로잡았어요','Giữ thăng bằng máy bay khi gặp gió giật {n} lần','顶住{n}次阵风，把飞机扶正','Выровнять аппарат при порывах ветра: {n} раз','Held the aircraft steady through {n} wind gusts'],
-['ai.lesson','AI의 추천 경로대로만 날았다면 돌발 장애물 {n}개를 모두 만났을 거예요. AI는 <b>입력된 정보 안에서만</b> 판단해요. 예상 못한 상황은 사람이 확인하고 결정해요 — 이것이 <b>사람 중심 AI(Human-in-the-loop)</b>예요.','Nếu chỉ bay theo đường AI gợi ý, bạn đã gặp cả {n} chướng ngại bất ngờ. AI chỉ quyết định <b>dựa trên thông tin được nhập vào</b>. Tình huống bất ngờ thì con người kiểm tra và quyết định — đó là <b>[[hitl]]</b>.','如果只按AI推荐的路线飞，你会遇到全部{n}个突发障碍。AI只能<b>根据输入的信息</b>做判断。意料之外的情况要由人来确认和决定——这就是<b>[[hitl]]</b>。','Если лететь только по маршруту ИИ, на пути оказались бы все внезапные препятствия ({n}). ИИ решает <b>только по тем данным, которые в него ввели</b>. Неожиданное проверяет и решает человек — это и есть <b>[[hitl]]</b>.','If you had flown only the AI’s route, you would have met all {n} surprise obstacles. AI decides <b>only from the information it’s given</b>. People check and decide when something unexpected happens — that’s <b>[[hitl]]</b>.'],
-['res.retry','↻ 다시 날기','↻ Bay lại','↻ 再飞一次','↻ Лететь снова','↻ Fly again'],
-['res.next','다음 코스 ➜','Đường bay tiếp ➜','下一条航线 ➜','Следующая трасса ➜','Next course ➜'],
-['res.toStage','코스 선택','Chọn đường bay','选择航线','Выбор трассы','Choose course'],
-['res.home','🏠 처음으로','🏠 Về đầu','🏠 回到首页','🏠 В начало','🏠 Home'],
-['say.y3','참 잘했어요! 🌟','Giỏi quá! 🌟','真棒！🌟','Молодец! 🌟','Awesome job! 🌟'],
-['say.y1','끝까지 해냈어요! 👏','Bạn đã bay đến cùng! 👏','你坚持到最后了！👏','До финиша — ура! 👏','You made it to the end! 👏'],
-['say.r3','완벽해요! AeroKrest 최고 조종사네요!','Hoàn hảo! Bạn là phi công giỏi nhất của AeroKrest!','太完美了！你是AeroKrest最棒的飞行员！','Идеально! Это полёт настоящего аса AeroKrest!','Perfect! You’re a top AeroKrest pilot!'],
-['say.r','착륙 성공! 다음엔 링 정중앙을 노려 봐요.','Hạ cánh thành công! Lần sau nhắm vào chính giữa vòng nhé.','着陆成功！下次瞄准圆环正中间吧。','Посадка удалась! В следующий раз целься в самый центр кольца.','Safe landing! Next time, aim for the center of the rings.'],
-['say.vr3','완벽한 비행이에요! 다음 코스도 도전해 봐요!','Chuyến bay hoàn hảo! Thử luôn đường bay tiếp theo nhé!','完美飞行！也来挑战下一条航线吧！','Идеальный полёт! Попробуй следующую трассу!','Perfect flight! Try the next course too!'],
-['say.vr','착륙 성공! 결과를 확인해요.','Hạ cánh thành công! Xem kết quả nhé.','着陆成功！来看看结果吧。','Посадка удалась! Посмотрим результат.','Safe landing! Let’s check the results.'],
-['say.break','☕ VR을 {n}분 했어요. 카드보드를 내려놓고 쉬어요!','☕ Bạn đã chơi VR {n} phút rồi. Đặt kính Cardboard xuống và nghỉ ngơi nhé!','☕ 你已经玩了{n}分钟VR。放下纸盒眼镜休息一下吧！','☕ Ты в VR уже {n} мин. Отложи Cardboard и отдохни!','☕ You’ve been in VR for {n} minutes. Put the Cardboard down and take a break!'],
+['res.done','착륙 완료!','Hạ cánh thành công!','着陆完成！','Посадка выполнена!','Landed!','着陸完了！','ចុះចតរួចរាល់!','Газардлаа!'],
+['res.t3','완벽한 비행! 🏆','Chuyến bay hoàn hảo! 🏆','完美飞行！🏆','Идеальный полёт! 🏆','Perfect flight! 🏆','完ぺきな飛行！🏆','ការហោះល្អឥតខ្ចោះ! 🏆','Төгс нислэг! 🏆'],
+['res.t2','멋진 비행이에요! ✨','Bay tuyệt lắm! ✨','飞得真棒！✨','Отличный полёт! ✨','Great flight! ✨','すてきな飛行だね！✨','ហោះបានល្អណាស់! ✨','Гайхалтай нислэг! ✨'],
+['res.t1','착륙 성공! 👏','Hạ cánh thành công! 👏','着陆成功！👏','Посадка удалась! 👏','Safe landing! 👏','着陸成功！👏','ចុះចតបានជោគជ័យ! 👏','Амжилттай газардлаа! 👏'],
+['res.t0','착륙 성공! 다시 해 볼까요? 💪','Hạ cánh thành công! Thử lại nhé? 💪','着陆成功！再来一次吗？💪','Посадка удалась! Попробуем ещё? 💪','Safe landing! Want to try again? 💪','着陸成功！もう一回やってみる？💪','ចុះចតបានជោគជ័យ! សាកម្ដងទៀតទេ? 💪','Амжилттай газардлаа! Дахиад оролдох уу? 💪'],
+['res.hof','🏆 명예의 전당 {n}위 등재! ({name})','🏆 Vào Bảng vàng hạng {n}! ({name})','🏆 登上荣誉榜第{n}名！（{name}）','🏆 {n}-е место в Зале славы! ({name})','🏆 #{n} on the Hall of Fame! ({name})','🏆 殿堂入り{n}位にランクイン！（{name}）','🏆 ចូលតារាងកិត្តិយសលេខ {n}! ({name})','🏆 Алдрын танхимд {n}-р байр! ({name})'],
+['stat.rings','통과한 링','Vòng đã qua','穿过的圆环','Пройдено колец','Rings passed','通過したリング','រង្វង់ដែលបានឆ្លង','Давсан цагираг'],
+['stat.milab','미랩 링','Vòng MILAB','MILAB圆环','Кольца MILAB','MILAB rings','MILABリング','រង្វង់ MILAB','MILAB цагираг'],
+['stat.battery','배터리','Pin','电量','Батарея','Battery','バッテリー','ថ្ម','Батарей'],
+['stat.score','점수','Điểm','分数','Очки','Score','スコア','ពិន្ទុ','Оноо'],
+['stat.combo','최대 콤보','Combo cao nhất','最高连击','Макс. комбо','Best combo','最大コンボ','កុំបូខ្ពស់បំផុត','Дээд комбо'],
+['stat.hits','충돌','Va chạm','碰撞','Столкновения','Crashes','しょうとつ','ការបុក','Мөргөлт'],
+['stat.batLeft','남은 배터리','Pin còn lại','剩余电量','Осталось заряда','Battery left','のこりバッテリー','ថ្មនៅសល់','Үлдсэн цэнэг'],
+['offer.up','🚀 3번 연속 멋지게 성공! <b>한 단계 올려 볼까요?</b> ({level})','🚀 Thành công 3 lần liên tiếp! <b>Lên một bậc nhé?</b> ({level})','🚀 连续3次成功！<b>要升一级吗？</b>（{level}）','🚀 Три раза подряд отлично! <b>Повысим уровень?</b> ({level})','🚀 3 great flights in a row! <b>Ready to level up?</b> ({level})','🚀 3回れんぞくで大成功！<b>1段上げてみる？</b>（{level}）','🚀 ជោគជ័យ ៣ ដងជាប់គ្នា! <b>ឡើងមួយកម្រិតទេ?</b> ({level})','🚀 3 удаа дараалан амжилттай! <b>Түвшнээ ахиулах уу?</b> ({level})'],
+['offer.upBtn','올려 보기','Lên bậc','升一级','Повысить','Level up','上げてみる','ឡើងកម្រិត','Ахиулах'],
+['offer.keep','그대로 할래요','Giữ nguyên','保持不变','Оставить так','Stay here','このままでいい','រក្សាដដែល','Хэвээр нь'],
+['offer.help','🤝 <b>도움 모드</b>를 켜 볼까요? 링이 커지고 기체가 링 쪽으로 살짝 도와줘요.','🤝 Bật <b>chế độ hỗ trợ</b> nhé? Vòng sẽ to hơn và máy bay được giúp hướng về phía vòng một chút.','🤝 要打开<b>帮助模式</b>吗？圆环会变大，飞机也会稍微帮你飞向圆环。','🤝 Включим <b>режим помощи</b>? Кольца станут больше, а аппарат немного поможет долететь до кольца.','🤝 Turn on <b>Help mode</b>? Rings get bigger and the aircraft gently steers toward them.','🤝 <b>おたすけモード</b>をオンにする？リングが大きくなって、機体がリングの方へ少し助けてくれるよ。','🤝 បើក<b>របៀបជំនួយ</b>ទេ? រង្វង់នឹងធំជាងមុន ហើយយន្តហោះនឹងជួយតម្រង់ទៅរង្វង់បន្តិច។','🤝 <b>Туслах горим</b>-ыг асаах уу? Цагираг томорч, нисэх төхөөрөмж цагираг руу бага зэрэг тусална.'],
+['offer.on','켜기','Bật','打开','Включить','Turn on','オンにする','បើក','Асаах'],
+['offer.no','괜찮아요','Không cần','不用了','Не надо','No thanks','だいじょうぶ','មិនអីទេ','Хэрэггүй'],
+['toast.level','난이도: {level}','Độ khó: {level}','难度：{level}','Сложность: {level}','Level: {level}','難易度：{level}','កម្រិតលំបាក៖ {level}','Түвшин: {level}'],
+['toast.help','도움 모드를 켰어요','Đã bật chế độ hỗ trợ','已打开帮助模式','Режим помощи включён','Help mode is on','おたすけモードをオンにしたよ','បានបើករបៀបជំនួយ','Туслах горим асаалаа'],
+['ai.title','🤖 AI 코파일럿 vs 🧑‍✈️ 나','🤖 [[copilot]] vs 🧑‍✈️ Mình','🤖 [[copilot]] vs 🧑‍✈️ 我','🤖 [[copilot]] vs 🧑‍✈️ Я','🤖 [[copilot]] vs 🧑‍✈️ Me','🤖 [[copilot]] vs 🧑‍✈️ わたし','🤖 [[copilot]] vs 🧑‍✈️ ខ្ញុំ','🤖 [[copilot]] vs 🧑‍✈️ Би'],
+['ai.goodAI','AI가 잘한 점','Điều AI làm tốt','AI做得好的地方','Что хорошо получилось у ИИ','What the AI did well','AIがよくできたこと','អ្វីដែល AI ធ្វើបានល្អ','AI-ийн сайн хийсэн зүйл'],
+['ai.ai1','링 {n}개를 잇는 가장 짧은 추천 경로를 계산해 안내했어요','Tính và chỉ ra đường ngắn nhất nối {n} vòng','计算并指引了连接{n}个圆环的最短推荐路线','Рассчитал и показал самый короткий путь через кольца ({n})','Worked out and showed the shortest route through {n} rings','{n}個のリングを結ぶいちばん短いおすすめルートを計算して案内したよ','បានគណនា និងបង្ហាញផ្លូវខ្លីបំផុតឆ្លងកាត់រង្វង់ {n}','{n} цагирагийг холбох хамгийн богино замыг тооцоолж заасан'],
+['ai.ai2','지치지 않고 빠르게 계산해요','Tính toán nhanh và không biết mệt','计算又快又不会累','Считает быстро и не устаёт','Calculates fast and never gets tired','つかれずにすばやく計算できる','គណនាលឿន ហើយមិនចេះហត់','Ядрахгүйгээр хурдан тооцоолдог'],
+['ai.goodMe','사람이 잘한 점','Điều con người làm tốt','人做得好的地方','Что хорошо получилось у человека','What the human did well','人がよくできたこと','អ្វីដែលមនុស្សធ្វើបានល្អ','Хүний сайн хийсэн зүйл'],
+['ai.me1','돌발 장애물 <b>{a} / {b}개</b>를 직접 보고 피했어요','Tự nhìn thấy và né <b>{a} / {b}</b> chướng ngại bất ngờ','亲眼看到并躲开了<b>{a} / {b}个</b>突发障碍','Увидеть и облететь внезапные препятствия: <b>{a} из {b}</b>','Spotted and dodged <b>{a} / {b}</b> surprise obstacles','突然の障害物 <b>{a} / {b}個</b>を自分の目で見てよけた','បានឃើញ និងគេចឧបសគ្គភ្លាមៗ <b>{a} / {b}</b> ដោយខ្លួនឯង','Гэнэтийн саадыг өөрөө хараад <b>{a} / {b}</b>-ийг тойрсон'],
+['ai.me2','돌풍 {n}번에 맞서 기체를 바로잡았어요','Giữ thăng bằng máy bay khi gặp gió giật {n} lần','顶住{n}次阵风，把飞机扶正','Выровнять аппарат при порывах ветра: {n} раз','Held the aircraft steady through {n} wind gusts','{n}回の突風にたえて機体を立て直した','ទប់យន្តហោះឲ្យនឹងពេលខ្យល់កន្ត្រាក់ {n} ដង','{n} удаагийн огцом салхинд төхөөрөмжөө тэнцвэржүүлсэн'],
+['ai.lesson','AI의 추천 경로대로만 날았다면 돌발 장애물 {n}개를 모두 만났을 거예요. AI는 <b>입력된 정보 안에서만</b> 판단해요. 예상 못한 상황은 사람이 확인하고 결정해요 — 이것이 <b>사람 중심 AI(Human-in-the-loop)</b>예요.','Nếu chỉ bay theo đường AI gợi ý, bạn đã gặp cả {n} chướng ngại bất ngờ. AI chỉ quyết định <b>dựa trên thông tin được nhập vào</b>. Tình huống bất ngờ thì con người kiểm tra và quyết định — đó là <b>[[hitl]]</b>.','如果只按AI推荐的路线飞，你会遇到全部{n}个突发障碍。AI只能<b>根据输入的信息</b>做判断。意料之外的情况要由人来确认和决定——这就是<b>[[hitl]]</b>。','Если лететь только по маршруту ИИ, на пути оказались бы все внезапные препятствия ({n}). ИИ решает <b>только по тем данным, которые в него ввели</b>. Неожиданное проверяет и решает человек — это и есть <b>[[hitl]]</b>.','If you had flown only the AI’s route, you would have met all {n} surprise obstacles. AI decides <b>only from the information it’s given</b>. People check and decide when something unexpected happens — that’s <b>[[hitl]]</b>.','AIのおすすめルートだけで飛んでいたら、突然の障害物{n}個に全部出会っていたよ。AIは<b>入力された情報の中だけで</b>判断するんだ。予想外のことは人が確かめて決める——これが<b>[[hitl]]</b>だよ。','បើហោះតាមផ្លូវ AI ណែនាំតែប៉ុណ្ណោះ អ្នកនឹងជួបឧបសគ្គភ្លាមៗទាំង {n}។ AI សម្រេចចិត្ត<b>តែលើព័ត៌មានដែលបានបញ្ចូល</b>ប៉ុណ្ណោះ។ ស្ថានភាពមិននឹកស្មាន មនុស្សត្រូវពិនិត្យ និងសម្រេច — នេះហើយជា<b>[[hitl]]</b>។','Зөвхөн AI-ийн санал болгосон замаар нисвэл гэнэтийн бүх саадтай ({n}) тулгарах байсан. AI <b>зөвхөн оруулсан мэдээлэл дотроо</b> шийдвэр гаргадаг. Гэнэтийн нөхцөлд хүн шалгаж шийднэ — үүнийг <b>[[hitl]]</b> гэдэг.'],
+['res.retry','↻ 다시 날기','↻ Bay lại','↻ 再飞一次','↻ Лететь снова','↻ Fly again','↻ もう一度飛ぶ','↻ ហោះម្ដងទៀត','↻ Дахин нисэх'],
+['res.next','다음 코스 ➜','Đường bay tiếp ➜','下一条航线 ➜','Следующая трасса ➜','Next course ➜','次のコース ➜','ផ្លូវហោះបន្ទាប់ ➜','Дараагийн зам ➜'],
+['res.toStage','코스 선택','Chọn đường bay','选择航线','Выбор трассы','Choose course','コース選択','ជ្រើសផ្លូវហោះ','Зам сонгох'],
+['res.home','🏠 처음으로','🏠 Về đầu','🏠 回到首页','🏠 В начало','🏠 Home','🏠 さいしょへ','🏠 ទៅដើម','🏠 Эхлэл рүү'],
+['say.y3','참 잘했어요! 🌟','Giỏi quá! 🌟','真棒！🌟','Молодец! 🌟','Awesome job! 🌟','よくできたね！🌟','ពូកែណាស់! 🌟','Сайн байна! 🌟'],
+['say.y1','끝까지 해냈어요! 👏','Bạn đã bay đến cùng! 👏','你坚持到最后了！👏','До финиша — ура! 👏','You made it to the end! 👏','最後までがんばったね！👏','អ្នកហោះដល់ទីបញ្ចប់! 👏','Эцэст нь хүрлээ! 👏'],
+['say.r3','완벽해요! AeroKrest 최고 조종사네요!','Hoàn hảo! Bạn là phi công giỏi nhất của AeroKrest!','太完美了！你是AeroKrest最棒的飞行员！','Идеально! Это полёт настоящего аса AeroKrest!','Perfect! You’re a top AeroKrest pilot!','完ぺき！AeroKrestのトップパイロットだね！','ល្អឥតខ្ចោះ! អ្នកជាអ្នកបើកបរកំពូលរបស់ AeroKrest!','Төгс! Чи AeroKrest-ийн шилдэг нисгэгч!'],
+['say.r','착륙 성공! 다음엔 링 정중앙을 노려 봐요.','Hạ cánh thành công! Lần sau nhắm vào chính giữa vòng nhé.','着陆成功！下次瞄准圆环正中间吧。','Посадка удалась! В следующий раз целься в самый центр кольца.','Safe landing! Next time, aim for the center of the rings.','着陸成功！次はリングのまん中をねらってみよう。','ចុះចតជោគជ័យ! លើកក្រោយ តម្រង់ចំកណ្ដាលរង្វង់។','Амжилттай газардлаа! Дараа нь цагирагийн яг төвийг онил.'],
+['say.vr3','완벽한 비행이에요! 다음 코스도 도전해 봐요!','Chuyến bay hoàn hảo! Thử luôn đường bay tiếp theo nhé!','完美飞行！也来挑战下一条航线吧！','Идеальный полёт! Попробуй следующую трассу!','Perfect flight! Try the next course too!','完ぺきな飛行！次のコースにもチャレンジしよう！','ហោះល្អឥតខ្ចោះ! សាកផ្លូវហោះបន្ទាប់ផង!','Төгс нислэг! Дараагийн замыг ч сорь!'],
+['say.vr','착륙 성공! 결과를 확인해요.','Hạ cánh thành công! Xem kết quả nhé.','着陆成功！来看看结果吧。','Посадка удалась! Посмотрим результат.','Safe landing! Let’s check the results.','着陸成功！結果を見てみよう。','ចុះចតជោគជ័យ! មកមើលលទ្ធផល។','Амжилттай газардлаа! Үр дүнгээ харъя.'],
+['say.break','☕ VR을 {n}분 했어요. 카드보드를 내려놓고 쉬어요!','☕ Bạn đã chơi VR {n} phút rồi. Đặt kính Cardboard xuống và nghỉ ngơi nhé!','☕ 你已经玩了{n}分钟VR。放下纸盒眼镜休息一下吧！','☕ Ты в VR уже {n} мин. Отложи Cardboard и отдохни!','☕ You’ve been in VR for {n} minutes. Put the Cardboard down and take a break!','☕ VRを{n}分やったよ。ゴーグルを置いて休もう！','☕ អ្នកលេង VR {n} នាទីហើយ។ ដាក់ Cardboard ចុះ ហើយសម្រាក!','☕ VR-д {n} минут боллоо. Cardboard-оо тавиад амар!'],
 
 /* --- 뱃지 --- */
-['badge.title','🏅 내 비행 뱃지','🏅 Huy hiệu bay của mình','🏅 我的飞行徽章','🏅 Мои лётные значки','🏅 My flight badges'],
-['badge.sum','{n} / {total}개 모았어요','Đã sưu tầm {n} / {total}','已收集 {n} / {total} 个','Собрано {n} из {total}','{n} / {total} collected'],
-['badge.first','첫 수직 이륙','Lần đầu cất cánh thẳng đứng','首次垂直起飞','Первый вертикальный взлёт','First vertical takeoff'],
-['badge.trans','천이 비행 성공','Bay chuyển tiếp thành công','过渡飞行成功','Переходный полёт','Transition flight done'],
-['badge.st1','비행장 졸업','Tốt nghiệp sân bay','机场毕业','Аэродром пройден','Airfield graduate'],
-['badge.st2','협곡 돌파','Vượt hẻm núi','穿越峡谷','Каньон пройден','Canyon cleared'],
-['badge.combo10','콤보 10','Combo 10','10连击','Комбо 10','Combo 10'],
-['badge.milab','미랩 링 컬렉터','Nhà sưu tầm vòng MILAB','MILAB圆环收藏家','Коллекция колец MILAB','MILAB ring collector'],
-['badge.nohit','무사고 협곡','Hẻm núi không va chạm','峡谷零碰撞','Каньон без аварий','No-crash canyon'],
-['badge.perfect','퍼펙트 링','Vòng hoàn hảo','完美圆环','Все кольца','Perfect rings'],
-['badge.vr','VR 파일럿','Phi công VR','VR飞行员','VR-пилот','VR pilot'],
-['badge.eco','에너지 지킴이','Người giữ năng lượng','节能卫士','Хранитель энергии','Energy saver'],
-['badge.st3','도심 UAM 비행사','Phi công UAM thành phố','城市UAM飞行员','Городской UAM-пилот','City UAM flyer'],
-['badge.st4','풍력단지 통과','Qua trang trại gió','穿越风电场','Ветропарк пройден','Wind farm cleared'],
-['badge.st5','폭풍 돌파','Vượt bão','冲破风暴','Сквозь бурю','Storm breaker'],
-['badge.aiteam','AI와 한 팀','Cùng đội với AI','和AI是一队','В команде с ИИ','Team with AI'],
-['badge.inf1k','무한 1km 돌파','Vô tận: vượt 1 km','无限挑战突破1km','Бесконечный: 1 км','Infinite 1 km'],
-['badge.inf3k','무한 3km 전설','Huyền thoại 3 km','无限3km传奇','Легенда 3 км','Infinite 3 km legend'],
+['badge.title','🏅 내 비행 뱃지','🏅 Huy hiệu bay của mình','🏅 我的飞行徽章','🏅 Мои лётные значки','🏅 My flight badges','🏅 わたしの飛行バッジ','🏅 មេដាយហោះហើររបស់ខ្ញុំ','🏅 Миний нислэгийн тэмдэг'],
+['badge.sum','{n} / {total}개 모았어요','Đã sưu tầm {n} / {total}','已收集 {n} / {total} 个','Собрано {n} из {total}','{n} / {total} collected','{n} / {total}個 あつめたよ','ប្រមូលបាន {n} / {total}','{n} / {total} цуглуулсан'],
+['badge.first','첫 수직 이륙','Lần đầu cất cánh thẳng đứng','首次垂直起飞','Первый вертикальный взлёт','First vertical takeoff','はじめての垂直離陸','ការហោះឡើងបញ្ឈរលើកដំបូង','Анхны босоо хөөрөлт'],
+['badge.trans','천이 비행 성공','Bay chuyển tiếp thành công','过渡飞行成功','Переходный полёт','Transition flight done','遷移飛行成功','ហោះផ្លាស់ប្ដូរបានជោគជ័យ','Шилжилтийн нислэг амжилттай'],
+['badge.st1','비행장 졸업','Tốt nghiệp sân bay','机场毕业','Аэродром пройден','Airfield graduate','飛行場卒業','បញ្ចប់ព្រលាន','Нисэх буудлыг давлаа'],
+['badge.st2','협곡 돌파','Vượt hẻm núi','穿越峡谷','Каньон пройден','Canyon cleared','峡谷突破','ឆ្លងជ្រលងភ្នំ','Хавцлыг давлаа'],
+['badge.combo10','콤보 10','Combo 10','10连击','Комбо 10','Combo 10','コンボ10','កុំបូ 10','Комбо 10'],
+['badge.milab','미랩 링 컬렉터','Nhà sưu tầm vòng MILAB','MILAB圆环收藏家','Коллекция колец MILAB','MILAB ring collector','MILABリングコレクター','អ្នកប្រមូលរង្វង់ MILAB','MILAB цагираг цуглуулагч'],
+['badge.nohit','무사고 협곡','Hẻm núi không va chạm','峡谷零碰撞','Каньон без аварий','No-crash canyon','ノーミス峡谷','ជ្រលងគ្មានការបុក','Мөргөлтгүй хавцал'],
+['badge.perfect','퍼펙트 링','Vòng hoàn hảo','完美圆环','Все кольца','Perfect rings','パーフェクトリング','រង្វង់ល្អឥតខ្ចោះ','Төгс цагираг'],
+['badge.vr','VR 파일럿','Phi công VR','VR飞行员','VR-пилот','VR pilot','VRパイロット','អ្នកបើកបរ VR','VR нисгэгч'],
+['badge.eco','에너지 지킴이','Người giữ năng lượng','节能卫士','Хранитель энергии','Energy saver','エネルギー守り隊','អ្នកការពារថាមពល','Эрчим хүч хэмнэгч'],
+['badge.st3','도심 UAM 비행사','Phi công UAM thành phố','城市UAM飞行员','Городской UAM-пилот','City UAM flyer','都市UAMパイロット','អ្នកបើកបរ UAM ទីក្រុង','Хотын UAM нисгэгч'],
+['badge.st4','풍력단지 통과','Qua trang trại gió','穿越风电场','Ветропарк пройден','Wind farm cleared','風力発電所クリア','ឆ្លងកសិដ្ឋានខ្យល់','Салхин паркийг давлаа'],
+['badge.st5','폭풍 돌파','Vượt bão','冲破风暴','Сквозь бурю','Storm breaker','嵐突破','ឆ្លងព្យុះ','Шуургыг давлаа'],
+['badge.aiteam','AI와 한 팀','Cùng đội với AI','和AI是一队','В команде с ИИ','Team with AI','AIとチーム','ក្រុមជាមួយ AI','AI-тай нэг баг'],
+['badge.inf1k','무한 1km 돌파','Vô tận: vượt 1 km','无限挑战突破1km','Бесконечный: 1 км','Infinite 1 km','無限1km突破','គ្មានទីបញ្ចប់ 1 km','Төгсгөлгүй 1 км'],
+['badge.inf3k','무한 3km 전설','Huyền thoại 3 km','无限3km传奇','Легенда 3 км','Infinite 3 km legend','無限3km伝説','រឿងព្រេង 3 km','Төгсгөлгүй 3 км домог'],
 
 /* --- 비행 화면 HUD · 레버 --- */
-['hud.combo','콤보 {n}','Combo {n}','{n}连击','Комбо {n}','Combo {n}'],
-['hud.saver','🐢 절전','🐢 Tiết kiệm pin','🐢 省电','🐢 Экономия','🐢 Power save'],
-['lever.takeoff','이륙 중','Đang cất cánh','起飞中','Взлёт','Taking off'],
-['lever.cruiseGo','순항 ➜','Hành trình ➜','巡航 ➜','Полёт ➜','Cruise ➜'],
-['lever.label','천이 레버','Cần chuyển tiếp','过渡操纵杆','Рычаг перехода','Transition lever'],
-['lever.press','눌러서 천이!','Bấm để chuyển!','按下过渡！','Жми — переход!','Tap to transition!'],
-['lever.hover','저속 호버','Bay treo chậm','低速悬停','Медленно','Slow hover'],
-['lever.cruise','순항','Hành trình','巡航','Крейсер','Cruise'],
-['lever.toCruise','누르면 순항','Bấm: hành trình','按下：巡航','Жми: крейсер','Tap: cruise'],
-['lever.toSlow','누르면 저속','Bấm: bay chậm','按下：低速','Жми: медленно','Tap: slow'],
-['lever.land','착륙','Hạ cánh','着陆','Посадка','Landing'],
-['sw.txt','누르면 올라가요','Bấm để bay lên','按住就上升','Жми — вверх','Press to climb'],
-['popup.milab','💠 미랩 링!','💠 Vòng MILAB!','💠 MILAB圆环！','💠 Кольцо MILAB!','💠 MILAB ring!'],
-['popup.booster','💠 미랩 부스터! 3초 무적 +300','💠 Tăng tốc MILAB! Bất bại 3 giây +300','💠 MILAB加速器！3秒无敌 +300','💠 Ускоритель MILAB! 3 с неуязвимости +300','💠 MILAB booster! 3s invincible +300'],
-['near.one','아슬아슬!','Suýt nữa!','好险！','На волоске!','Close call!'],
-['near.chain','아슬아슬 x{n}','Suýt nữa x{n}','好险 x{n}','На волоске x{n}','Close call x{n}'],
-['lvup.sub','{n}m 돌파 · {txt}','Vượt {n}m · {txt}','突破{n}m · {txt}','{n} м позади · {txt}','{n}m passed · {txt}'],
-['tier.1','속도 UP · 기둥이 늘어나요','Tăng tốc · Thêm nhiều cột','速度提升 · 柱子变多','Скорость выше · Больше столбов','Speed UP · More pillars'],
-['tier.2','바위 능선·천장 등장 · 위아래 조심','Xuất hiện dãy đá và trần đá · Coi chừng trên dưới','出现岩石山脊和顶棚 · 注意上下','Появились скалы и потолки · Смотри вверх и вниз','Rock ridges & ceilings · Watch above and below'],
-['tier.3','움직이는 기둥 등장 · 타이밍!','Cột di chuyển xuất hiện · Canh thời điểm!','出现移动的柱子 · 抓准时机！','Движущиеся столбы · Лови момент!','Moving pillars · Timing!'],
-['tier.4','통로가 더 좁아져요 · 집중!','Lối đi hẹp hơn · Tập trung!','通道更窄了 · 集中精神！','Проходы уже · Сосредоточься!','Gaps get narrower · Focus!'],
-['tier.5','전설의 구간 · 최고 속도','Chặng huyền thoại · Tốc độ tối đa','传奇区段 · 最高速度','Легендарный участок · Максимальная скорость','Legend zone · Top speed'],
-['tier.max','최고 속도 구간','Chặng tốc độ tối đa','最高速度区段','Участок максимальной скорости','Top speed zone'],
+['hud.combo','콤보 {n}','Combo {n}','{n}连击','Комбо {n}','Combo {n}','コンボ {n}','កុំបូ {n}','Комбо {n}'],
+['hud.saver','🐢 절전','🐢 Tiết kiệm pin','🐢 省电','🐢 Экономия','🐢 Power save','🐢 節電','🐢 សន្សំថ្ម','🐢 Хэмнэлт'],
+['lever.takeoff','이륙 중','Đang cất cánh','起飞中','Взлёт','Taking off','離陸中','កំពុងហោះឡើង','Хөөрч байна'],
+['lever.cruiseGo','순항 ➜','Hành trình ➜','巡航 ➜','Полёт ➜','Cruise ➜','巡航 ➜','ហោះលឿន ➜','Аялал ➜'],
+['lever.label','천이 레버','Cần chuyển tiếp','过渡操纵杆','Рычаг перехода','Transition lever','遷移レバー','ដងបញ្ជាផ្លាស់ប្ដូរ','Шилжилтийн хөшүүрэг'],
+['lever.press','눌러서 천이!','Bấm để chuyển!','按下过渡！','Жми — переход!','Tap to transition!','押して遷移！','ចុចដើម្បីប្ដូរ!','Дарж шилж!'],
+['lever.hover','저속 호버','Bay treo chậm','低速悬停','Медленно','Slow hover','低速ホバー','ហោះយឺត','Удаан'],
+['lever.cruise','순항','Hành trình','巡航','Крейсер','Cruise','巡航','ហោះលឿន','Аялал'],
+['lever.toCruise','누르면 순항','Bấm: hành trình','按下：巡航','Жми: крейсер','Tap: cruise','押すと巡航','ចុច: ហោះលឿន','Дарвал: аялал'],
+['lever.toSlow','누르면 저속','Bấm: bay chậm','按下：低速','Жми: медленно','Tap: slow','押すと低速','ចុច: ហោះយឺត','Дарвал: удаан'],
+['lever.land','착륙','Hạ cánh','着陆','Посадка','Landing','着陸','ចុះចត','Газардах'],
+['sw.txt','누르면 올라가요','Bấm để bay lên','按住就上升','Жми — вверх','Press to climb','押すと上がるよ','ចុចដើម្បីឡើង','Дарвал өгсөнө'],
+['popup.milab','💠 미랩 링!','💠 Vòng MILAB!','💠 MILAB圆环！','💠 Кольцо MILAB!','💠 MILAB ring!','💠 MILABリング！','💠 រង្វង់ MILAB!','💠 MILAB цагираг!'],
+['popup.booster','💠 미랩 부스터! 3초 무적 +300','💠 Tăng tốc MILAB! Bất bại 3 giây +300','💠 MILAB加速器！3秒无敌 +300','💠 Ускоритель MILAB! 3 с неуязвимости +300','💠 MILAB booster! 3s invincible +300','💠 MILABブースター！3秒無敵 +300','💠 បូស្ទ័រ MILAB! មិនចាញ់ ៣ វិនាទី +300','💠 MILAB хурдасгуур! 3 сек ялагдашгүй +300'],
+['near.one','아슬아슬!','Suýt nữa!','好险！','На волоске!','Close call!','ギリギリ！','ជិតបុកហើយ!','Арай гэж!'],
+['near.chain','아슬아슬 x{n}','Suýt nữa x{n}','好险 x{n}','На волоске x{n}','Close call x{n}','ギリギリ x{n}','ជិតបុក x{n}','Арай гэж x{n}'],
+['lvup.sub','{n}m 돌파 · {txt}','Vượt {n}m · {txt}','突破{n}m · {txt}','{n} м позади · {txt}','{n}m passed · {txt}','{n}m突破 · {txt}','ឆ្លង {n}m · {txt}','{n}м давлаа · {txt}'],
+['tier.1','속도 UP · 기둥이 늘어나요','Tăng tốc · Thêm nhiều cột','速度提升 · 柱子变多','Скорость выше · Больше столбов','Speed UP · More pillars','スピードUP · 柱がふえるよ','ល្បឿនកើន · សសរកាន់តែច្រើន','Хурд нэмэгдлээ · Багана олширно'],
+['tier.2','바위 능선·천장 등장 · 위아래 조심','Xuất hiện dãy đá và trần đá · Coi chừng trên dưới','出现岩石山脊和顶棚 · 注意上下','Появились скалы и потолки · Смотри вверх и вниз','Rock ridges & ceilings · Watch above and below','岩の尾根と天井が登場 · 上下に注意','មានជួរថ្ម និងពិដានថ្ម · ប្រយ័ត្នលើក្រោម','Хадан нуруу, тааз гарч ирлээ · Дээш доошоо болгоомжил'],
+['tier.3','움직이는 기둥 등장 · 타이밍!','Cột di chuyển xuất hiện · Canh thời điểm!','出现移动的柱子 · 抓准时机！','Движущиеся столбы · Лови момент!','Moving pillars · Timing!','動く柱が登場 · タイミング！','សសរផ្លាស់ទីលេចឡើង · ចាប់ពេលឲ្យត្រូវ!','Хөдөлдөг багана гарлаа · Цагаа тааруул!'],
+['tier.4','통로가 더 좁아져요 · 집중!','Lối đi hẹp hơn · Tập trung!','通道更窄了 · 集中精神！','Проходы уже · Сосредоточься!','Gaps get narrower · Focus!','通り道がせまくなるよ · 集中！','ផ្លូវកាន់តែតូច · ផ្ដោតអារម្មណ៍!','Зам нарийсна · Анхаар!'],
+['tier.5','전설의 구간 · 최고 속도','Chặng huyền thoại · Tốc độ tối đa','传奇区段 · 最高速度','Легендарный участок · Максимальная скорость','Legend zone · Top speed','伝説ゾーン · 最高スピード','តំបន់រឿងព្រេង · ល្បឿនអតិបរមា','Домогт бүс · Дээд хурд'],
+['tier.max','최고 속도 구간','Chặng tốc độ tối đa','最高速度区段','Участок максимальной скорости','Top speed zone','最高スピードゾーン','តំបន់ល្បឿនអតិបរមា','Дээд хурдны бүс'],
 
 /* --- 일시정지 --- */
-['pause.title','⏸ 잠깐 멈춤','⏸ Tạm dừng','⏸ 暂停一下','⏸ Пауза','⏸ Paused'],
-['pause.resume','▶ 계속 날기','▶ Bay tiếp','▶ 继续飞行','▶ Лететь дальше','▶ Keep flying'],
-['pause.restart','↻ 처음부터','↻ Bắt đầu lại','↻ 从头开始','↻ Сначала','↻ Start over'],
-['pause.set','⚙️ 설정','⚙️ Cài đặt','⚙️ 设置','⚙️ Настройки','⚙️ Settings'],
-['pause.mute','🔊 소리 끄기','🔊 Tắt tiếng','🔊 关闭声音','🔊 Выключить звук','🔊 Sound off'],
-['pause.unmute','🔇 소리 켜기','🔇 Bật tiếng','🔇 打开声音','🔇 Включить звук','🔇 Sound on'],
-['pause.quit','🏠 그만하기','🏠 Dừng chơi','🏠 不玩了','🏠 Закончить','🏠 Quit'],
+['pause.title','⏸ 잠깐 멈춤','⏸ Tạm dừng','⏸ 暂停一下','⏸ Пауза','⏸ Paused','⏸ ちょっと休けい','⏸ ផ្អាកបន្តិច','⏸ Түр зогсоо'],
+['pause.resume','▶ 계속 날기','▶ Bay tiếp','▶ 继续飞行','▶ Лететь дальше','▶ Keep flying','▶ 飛びつづける','▶ ហោះបន្ត','▶ Үргэлжлүүлэн нисэх'],
+['pause.restart','↻ 처음부터','↻ Bắt đầu lại','↻ 从头开始','↻ Сначала','↻ Start over','↻ さいしょから','↻ ចាប់ផ្ដើមឡើងវិញ','↻ Эхнээс нь'],
+['pause.set','⚙️ 설정','⚙️ Cài đặt','⚙️ 设置','⚙️ Настройки','⚙️ Settings','⚙️ 設定','⚙️ ការកំណត់','⚙️ Тохиргоо'],
+['pause.mute','🔊 소리 끄기','🔊 Tắt tiếng','🔊 关闭声音','🔊 Выключить звук','🔊 Sound off','🔊 音を消す','🔊 បិទសំឡេង','🔊 Дуу унтраах'],
+['pause.unmute','🔇 소리 켜기','🔇 Bật tiếng','🔇 打开声音','🔇 Включить звук','🔇 Sound on','🔇 音を出す','🔇 បើកសំឡេង','🔇 Дуу асаах'],
+['pause.quit','🏠 그만하기','🏠 Dừng chơi','🏠 不玩了','🏠 Закончить','🏠 Quit','🏠 やめる','🏠 ឈប់លេង','🏠 Дуусгах'],
 
 /* --- 무한 챌린지 결과 --- */
-['over.now','이번','Lần này','本次','Сейчас','Now'],
-['over.best','최고','Cao nhất','最高','Рекорд','Best'],
-['over.go','다시 출발','Xuất phát lại','重新出发','Снова в путь','Go again'],
-['over.hof','명예의 전당','Bảng vàng','荣誉榜','Зал славы','Hall of Fame'],
-['over.quit','그만하기','Dừng chơi','不玩了','Закончить','Quit'],
-['over.secs','{n}초 비행','Bay {n} giây','飞行{n}秒','Полёт {n} с','{n}s flight'],
-['over.st.kmh','최고 km/h','km/h cao nhất','最高km/h','Макс. км/ч','Top km/h'],
-['over.st.near','아슬아슬','Suýt nữa','好险','На волоске','Close calls'],
-['over.st.boost','부스터','Tăng tốc','加速','Ускорения','Boosters'],
-['over.st.lv','도달 레벨','Cấp đạt được','到达等级','Уровень','Level reached'],
-['over.titleGoal','🏆 전설 완주!','🏆 Về đích huyền thoại!','🏆 传奇完赛！','🏆 Легендарный финиш!','🏆 Legendary finish!'],
-['over.titleCrash','💥 충돌!','💥 Va chạm!','💥 撞上了！','💥 Столкновение!','💥 Crash!'],
-['over.rankBest','🎉 신기록! 명예의 전당 1위!','🎉 Kỷ lục mới! Hạng 1 Bảng vàng!','🎉 新纪录！荣誉榜第1名！','🎉 Новый рекорд! 1-е место в Зале славы!','🎉 New record! #1 on the Hall of Fame!'],
-['over.rank','🏆 명예의 전당 {n}위 등재!','🏆 Vào Bảng vàng hạng {n}!','🏆 登上荣誉榜第{n}名！','🏆 {n}-е место в Зале славы!','🏆 #{n} on the Hall of Fame!'],
-['over.sayGoal','20km 완주! 전설의 조종사예요!','Hoàn thành 20 km! Bạn là phi công huyền thoại!','完成20km！你是传奇飞行员！','20 км пройдено! Легендарный полёт!','20 km complete! You’re a legendary pilot!'],
-['over.sayBest','신기록이에요! 5초 뒤 다시 출발해요','Kỷ lục mới! 5 giây nữa xuất phát lại','新纪录！5秒后重新出发','Новый рекорд! Через 5 секунд — снова старт','New record! Restarting in 5 seconds'],
-['over.sayDist','{n}미터! 5초 뒤 다시 도전!','{n} mét! 5 giây nữa thử lại!','{n}米！5秒后再挑战！','{n} м! Через 5 секунд — ещё попытка!','{n} meters! Try again in 5 seconds!'],
-['over.vrSub','👤 {name} · 💠 부스터 {n}회','👤 {name} · 💠 Tăng tốc {n} lần','👤 {name} · 💠 加速{n}次','👤 {name} · 💠 Ускорений: {n}','👤 {name} · 💠 Boosters ×{n}'],
-['over.vrCount','{n}초 뒤 처음부터 다시 출발','Bắt đầu lại sau {n} giây','{n}秒后从头重新出发','Старт заново через {n} с','Restarting from the start in {n}s'],
-['over.vrNow','지금 바로','Ngay bây giờ','马上出发','Прямо сейчас','Go now'],
+['over.now','이번','Lần này','本次','Сейчас','Now','今回','លើកនេះ','Энэ удаа'],
+['over.best','최고','Cao nhất','最高','Рекорд','Best','最高','ខ្ពស់បំផុត','Дээд'],
+['over.go','다시 출발','Xuất phát lại','重新出发','Снова в путь','Go again','再出発','ចេញម្ដងទៀត','Дахин хөдлөх'],
+['over.hof','명예의 전당','Bảng vàng','荣誉榜','Зал славы','Hall of Fame','殿堂入り','តារាងកិត្តិយស','Алдрын танхим'],
+['over.quit','그만하기','Dừng chơi','不玩了','Закончить','Quit','やめる','ឈប់លេង','Дуусгах'],
+['over.secs','{n}초 비행','Bay {n} giây','飞行{n}秒','Полёт {n} с','{n}s flight','{n}秒飛行','ហោះ {n} វិនាទី','{n} сек нислэг'],
+['over.st.kmh','최고 km/h','km/h cao nhất','最高km/h','Макс. км/ч','Top km/h','最高 km/h','km/h ខ្ពស់បំផុត','Дээд км/ц'],
+['over.st.near','아슬아슬','Suýt nữa','好险','На волоске','Close calls','ギリギリ','ជិតបុក','Арай гэж'],
+['over.st.boost','부스터','Tăng tốc','加速','Ускорения','Boosters','ブースター','បូស្ទ័រ','Хурдасгуур'],
+['over.st.lv','도달 레벨','Cấp đạt được','到达等级','Уровень','Level reached','到達レベル','កម្រិតដែលទៅដល់','Хүрсэн түвшин'],
+['over.titleGoal','🏆 전설 완주!','🏆 Về đích huyền thoại!','🏆 传奇完赛！','🏆 Легендарный финиш!','🏆 Legendary finish!','🏆 伝説の完走！','🏆 បញ្ចប់ជារឿងព្រេង!','🏆 Домогт барианд!'],
+['over.titleCrash','💥 충돌!','💥 Va chạm!','💥 撞上了！','💥 Столкновение!','💥 Crash!','💥 しょうとつ！','💥 បុក!','💥 Мөргөлдлөө!'],
+['over.rankBest','🎉 신기록! 명예의 전당 1위!','🎉 Kỷ lục mới! Hạng 1 Bảng vàng!','🎉 新纪录！荣誉榜第1名！','🎉 Новый рекорд! 1-е место в Зале славы!','🎉 New record! #1 on the Hall of Fame!','🎉 新記録！殿堂入り1位！','🎉 កំណត់ត្រាថ្មី! លេខ ១ តារាងកិត្តិយស!','🎉 Шинэ дээд амжилт! Алдрын танхимд 1-р байр!'],
+['over.rank','🏆 명예의 전당 {n}위 등재!','🏆 Vào Bảng vàng hạng {n}!','🏆 登上荣誉榜第{n}名！','🏆 {n}-е место в Зале славы!','🏆 #{n} on the Hall of Fame!','🏆 殿堂入り{n}位にランクイン！','🏆 ចូលតារាងកិត្តិយសលេខ {n}!','🏆 Алдрын танхимд {n}-р байр!'],
+['over.sayGoal','20km 완주! 전설의 조종사예요!','Hoàn thành 20 km! Bạn là phi công huyền thoại!','完成20km！你是传奇飞行员！','20 км пройдено! Легендарный полёт!','20 km complete! You’re a legendary pilot!','20km完走！伝説のパイロットだ！','បញ្ចប់ 20 km! អ្នកជាអ្នកបើកបររឿងព្រេង!','20 км туулсан! Чи домогт нисгэгч!'],
+['over.sayBest','신기록이에요! 5초 뒤 다시 출발해요','Kỷ lục mới! 5 giây nữa xuất phát lại','新纪录！5秒后重新出发','Новый рекорд! Через 5 секунд — снова старт','New record! Restarting in 5 seconds','新記録！5秒後にまた出発するよ','កំណត់ត្រាថ្មី! ចេញម្ដងទៀតក្នុង ៥ វិនាទី','Шинэ дээд амжилт! 5 секундын дараа дахин хөдөлнө'],
+['over.sayDist','{n}미터! 5초 뒤 다시 도전!','{n} mét! 5 giây nữa thử lại!','{n}米！5秒后再挑战！','{n} м! Через 5 секунд — ещё попытка!','{n} meters! Try again in 5 seconds!','{n}メートル！5秒後にまたチャレンジ！','{n} ម៉ែត្រ! ៥ វិនាទីទៀត សាកម្ដងទៀត!','{n} метр! 5 секундын дараа дахин сорь!'],
+['over.vrSub','👤 {name} · 💠 부스터 {n}회','👤 {name} · 💠 Tăng tốc {n} lần','👤 {name} · 💠 加速{n}次','👤 {name} · 💠 Ускорений: {n}','👤 {name} · 💠 Boosters ×{n}','👤 {name} · 💠 ブースター{n}回','👤 {name} · 💠 បូស្ទ័រ {n} ដង','👤 {name} · 💠 Хурдасгуур {n} удаа'],
+['over.vrCount','{n}초 뒤 처음부터 다시 출발','Bắt đầu lại sau {n} giây','{n}秒后从头重新出发','Старт заново через {n} с','Restarting from the start in {n}s','{n}秒後にさいしょから再出発','ចាប់ផ្ដើមឡើងវិញក្នុង {n} វិនាទី','{n} секундын дараа эхнээс нь'],
+['over.vrNow','지금 바로','Ngay bây giờ','马上出发','Прямо сейчас','Go now','今すぐ','ឥឡូវនេះ','Одоо шууд'],
 
 /* --- 설정 --- */
-['set.title','⚙️ 설정','⚙️ Cài đặt','⚙️ 设置','⚙️ Настройки','⚙️ Settings'],
-['set.done','완료','Xong','完成','Готово','Done'],
-['sec.lang','언어','Ngôn ngữ','语言','Язык','Language'],
-['set.bi','한국어 함께 보기','Hiện cả tiếng Hàn','同时显示韩语','Показывать и по-корейски','Show Korean too'],
-['set.bi.d','내 언어 아래에 작은 한국어를 같이 보여 줘요','Hiện chữ tiếng Hàn nhỏ bên dưới ngôn ngữ của bạn','在你的语言下面用小字显示韩语','Под твоим языком мелко показывается корейский','Shows small Korean text under your language'],
-['sec.flight','비행','Bay','飞行','Полёт','Flight'],
-['sec.view','보기·듣기','Nhìn · Nghe','视觉 · 听觉','Экран и звук','See & hear'],
-['sec.vr','VR','VR','VR','VR','VR'],
-['set.speedMul','속도','Tốc độ','速度','Скорость','Speed'],
-['set.speedMul.d','다음 비행부터 적용','Áp dụng từ lần bay sau','从下次飞行开始生效','Со следующего полёта','From the next flight'],
-['set.ringMul','링 크기','Cỡ vòng','圆环大小','Размер колец','Ring size'],
-['set.collide','충돌','Va chạm','碰撞','Столкновения','Collisions'],
-['set.collide.d','끄면 바위를 그냥 지나가요','Tắt thì bay xuyên qua đá','关闭后可以直接穿过岩石','Если выключить, можно пролетать сквозь скалы','Turn off to fly right through rocks'],
-['set.aim','조준 도움','Hỗ trợ ngắm','瞄准辅助','Помощь в прицеливании','Aim help'],
-['set.aim.d','기체가 링 쪽으로 살짝 도와줘요','Máy bay tự hướng nhẹ về phía vòng','飞机会稍微帮你飞向圆环','Аппарат слегка подруливает к кольцу','The aircraft gently steers toward rings'],
-['set.control','조작','Điều khiển','操作','Управление','Controls'],
-['set.control.d','원스위치: 누르면 상승, 떼면 하강','Một nút: bấm để lên, thả để xuống','单键：按住上升，松开下降','Одна кнопка: нажми — вверх, отпусти — вниз','One switch: press to climb, release to descend'],
-['set.fontScale','글자 크기','Cỡ chữ','字体大小','Размер текста','Text size'],
-['set.hc','고대비','Tương phản cao','高对比度','Высокий контраст','High contrast'],
-['set.cbSafe','색약 안전 색','Màu an toàn cho người mù màu','色弱友好配色','Цвета для дальтоников','Color-blind safe colors'],
-['set.cbSafe.d','다음 링을 주황색으로 표시','Vòng tiếp theo hiện màu cam','下一个圆环显示为橙色','Следующее кольцо — оранжевое','Shows the next ring in orange'],
-['set.reduceMotion','흔들림·번쩍임 줄이기','Giảm rung lắc và nhấp nháy','减少晃动和闪光','Меньше тряски и вспышек','Less shaking & flashing'],
-['set.voice','음성 안내','Hướng dẫn bằng giọng nói','语音提示','Голосовые подсказки','Voice guide'],
-['set.beacon','소리 길안내','Âm thanh chỉ đường','声音导航','Звуковой маяк','Sound beacon'],
-['set.beacon.d','다음 링 방향을 왼쪽·오른쪽 소리로','Âm thanh trái/phải chỉ hướng vòng tiếp theo','用左右声音提示下一个圆环的方向','Звук слева/справа показывает, где следующее кольцо','Left/right sounds point to the next ring'],
-['set.vibrate','진동','Rung','振动','Вибрация','Vibration'],
-['set.music','배경음악','Nhạc nền','背景音乐','Музыка','Music'],
-['set.music.d','2번 코스부터 긴장감 있는 음악','Nhạc hồi hộp từ đường bay số 2','从2号航线开始有紧张的音乐','Напряжённая музыка со 2-й трассы','Exciting music from course 2'],
-['set.comfort','멀미 줄이기','Giảm say','减轻晕动','Против укачивания','Reduce motion sickness'],
-['set.comfort.d','시야 가장자리 어둡게 · 속도 15% 낮춤','Làm tối viền tầm nhìn · Giảm tốc 15%','视野边缘变暗 · 速度降低15%','Затемнение по краям · Скорость −15%','Darker edges · 15% slower'],
-['set.lensShift','VR 화면 간격','Khoảng cách màn hình VR','VR画面间距','Расстояние VR-экранов','VR screen spacing'],
-['set.lensShift.d','카드보드 렌즈에 맞춰 두 화면을 모으거나 벌려요','Kéo hai màn hình lại gần hoặc xa nhau cho vừa ống kính Cardboard','根据纸盒眼镜的镜片，把两个画面靠近或拉开','Сдвигай или раздвигай две картинки под линзы Cardboard','Move the two screens closer or apart to fit the Cardboard lenses'],
-['opt.slow','느리게','Chậm','慢','Медленно','Slow'],
-['opt.normal','보통','Vừa','普通','Обычно','Normal'],
-['opt.fast','빠르게','Nhanh','快','Быстро','Fast'],
-['opt.big','크게','To','大','Крупно','Big'],
-['opt.huge','아주 크게','Rất to','特大','Очень крупно','Huge'],
-['opt.auto','자동','Tự động','自动','Авто','Auto'],
-['opt.on','켜기','Bật','开','Вкл.','On'],
-['opt.off','끄기','Tắt','关','Выкл.','Off'],
-['opt.weak','약하게','Nhẹ','弱','Слабо','Light'],
-['opt.strong','강하게','Mạnh','强','Сильно','Strong'],
-['opt.switch','원스위치','Một nút','单键','Одна кнопка','One switch'],
-['opt.soft','작게','Nhỏ','小声','Тихо','Soft'],
-['opt.default','기본','Mặc định','默认','Обычно','Default'],
-['sec.mount','지체장애 마운트 모드','Chế độ giá đỡ (khuyết tật vận động)','肢体障碍支架模式','Режим держателя (нарушения движения)','Mount mode (physical disabilities)'],
-['set.mount','거치대 전용 모드','Chế độ dành cho giá đỡ','支架专用模式','Режим для держателя','Mount-only mode'],
-['set.mount.d','전용 거치대(공동 설계 예정)와 함께 2단계 업데이트에서 추가돼요. 지금은 「조작: 원스위치」로 블루투스 스위치(스페이스·엔터)를 쓸 수 있어요.','Sẽ có trong bản cập nhật bước 2, cùng với giá đỡ riêng (đang thiết kế). Hiện tại có thể dùng công tắc Bluetooth (Space/Enter) với «Điều khiển: Một nút».','将在第2阶段更新中与专用支架（正在设计）一起加入。现在可以用「操作：单键」配合蓝牙开关（空格/回车）。','Появится в обновлении 2-го этапа вместе со специальным держателем (в разработке). Сейчас можно включить «Управление: одна кнопка» и пользоваться Bluetooth-кнопкой (Пробел/Enter).','Coming in the stage-2 update with a special mount (being designed). For now, use “Controls: One switch” with a Bluetooth switch (Space/Enter).'],
+['set.title','⚙️ 설정','⚙️ Cài đặt','⚙️ 设置','⚙️ Настройки','⚙️ Settings','⚙️ 設定','⚙️ ការកំណត់','⚙️ Тохиргоо'],
+['set.done','완료','Xong','完成','Готово','Done','完了','រួចរាល់','Болсон'],
+['sec.lang','언어','Ngôn ngữ','语言','Язык','Language','言語','ភាសា','Хэл'],
+['set.bi','한국어 함께 보기','Hiện cả tiếng Hàn','同时显示韩语','Показывать и по-корейски','Show Korean too','韓国語もいっしょに表示','បង្ហាញភាសាកូរ៉េផង','Солонгосоор давхар харуулах'],
+['set.bi.d','내 언어 아래에 작은 한국어를 같이 보여 줘요','Hiện chữ tiếng Hàn nhỏ bên dưới ngôn ngữ của bạn','在你的语言下面用小字显示韩语','Под твоим языком мелко показывается корейский','Shows small Korean text under your language','自分の言語の下に小さく韓国語を表示するよ','បង្ហាញអក្សរកូរ៉េតូចៗនៅក្រោមភាសារបស់អ្នក','Өөрийн хэлний доор жижиг солонгос үсэг харуулна'],
+['sec.flight','비행','Bay','飞行','Полёт','Flight','飛行','ការហោះ','Нислэг'],
+['sec.view','보기·듣기','Nhìn · Nghe','视觉 · 听觉','Экран и звук','See & hear','見る・聞く','មើល · ស្ដាប់','Харах · Сонсох'],
+['sec.vr','VR','VR','VR','VR','VR','VR','VR','VR'],
+['set.speedMul','속도','Tốc độ','速度','Скорость','Speed','スピード','ល្បឿន','Хурд'],
+['set.speedMul.d','다음 비행부터 적용','Áp dụng từ lần bay sau','从下次飞行开始生效','Со следующего полёта','From the next flight','次の飛行から反映','អនុវត្តពីការហោះលើកក្រោយ','Дараагийн нислэгээс'],
+['set.ringMul','링 크기','Cỡ vòng','圆环大小','Размер колец','Ring size','リングの大きさ','ទំហំរង្វង់','Цагирагийн хэмжээ'],
+['set.collide','충돌','Va chạm','碰撞','Столкновения','Collisions','しょうとつ','ការបុក','Мөргөлт'],
+['set.collide.d','끄면 바위를 그냥 지나가요','Tắt thì bay xuyên qua đá','关闭后可以直接穿过岩石','Если выключить, можно пролетать сквозь скалы','Turn off to fly right through rocks','オフにすると岩をすりぬけるよ','បិទ ដើម្បីហោះឆ្លងកាត់ថ្ម','Унтраавал хадыг нэвтэлж нисэнэ'],
+['set.aim','조준 도움','Hỗ trợ ngắm','瞄准辅助','Помощь в прицеливании','Aim help','ねらいアシスト','ជំនួយតម្រង់','Онилгын туслалцаа'],
+['set.aim.d','기체가 링 쪽으로 살짝 도와줘요','Máy bay tự hướng nhẹ về phía vòng','飞机会稍微帮你飞向圆环','Аппарат слегка подруливает к кольцу','The aircraft gently steers toward rings','機体がリングの方へ少し助けてくれるよ','យន្តហោះជួយតម្រង់ទៅរង្វង់បន្តិច','Төхөөрөмж цагираг руу бага зэрэг чиглэнэ'],
+['set.control','조작','Điều khiển','操作','Управление','Controls','操作','ការបញ្ជា','Удирдлага'],
+['set.control.d','원스위치: 누르면 상승, 떼면 하강','Một nút: bấm để lên, thả để xuống','单键：按住上升，松开下降','Одна кнопка: нажми — вверх, отпусти — вниз','One switch: press to climb, release to descend','ワンスイッチ：押すと上昇、はなすと下降','ប៊ូតុងតែមួយ៖ ចុចឡើង លែងចុះ','Нэг товч: дарвал өгсөнө, тавибал уруудна'],
+['set.fontScale','글자 크기','Cỡ chữ','字体大小','Размер текста','Text size','文字の大きさ','ទំហំអក្សរ','Үсгийн хэмжээ'],
+['set.hc','고대비','Tương phản cao','高对比度','Высокий контраст','High contrast','ハイコントラスト','ពន្លឺផ្ទុយខ្ពស់','Өндөр ялгарал'],
+['set.cbSafe','색약 안전 색','Màu an toàn cho người mù màu','色弱友好配色','Цвета для дальтоников','Color-blind safe colors','色覚にやさしい色','ពណ៌សុវត្ថិភាពសម្រាប់អ្នកខ្វាក់ពណ៌','Өнгөний сохорт ээлтэй өнгө'],
+['set.cbSafe.d','다음 링을 주황색으로 표시','Vòng tiếp theo hiện màu cam','下一个圆环显示为橙色','Следующее кольцо — оранжевое','Shows the next ring in orange','次のリングをオレンジで表示','បង្ហាញរង្វង់បន្ទាប់ពណ៌ទឹកក្រូច','Дараагийн цагирагийг улбар шараар'],
+['set.reduceMotion','흔들림·번쩍임 줄이기','Giảm rung lắc và nhấp nháy','减少晃动和闪光','Меньше тряски и вспышек','Less shaking & flashing','ゆれ・点めつをへらす','កាត់បន្ថយការញ័រ និងពន្លឺភ្លឹបភ្លែត','Сэгсрэлт, анивчилтыг багасгах'],
+['set.voice','음성 안내','Hướng dẫn bằng giọng nói','语音提示','Голосовые подсказки','Voice guide','音声ガイド','ការណែនាំដោយសំឡេង','Дуут заавар'],
+['set.beacon','소리 길안내','Âm thanh chỉ đường','声音导航','Звуковой маяк','Sound beacon','音の道案内','សំឡេងណែនាំផ្លូវ','Дуут чиглүүлэгч'],
+['set.beacon.d','다음 링 방향을 왼쪽·오른쪽 소리로','Âm thanh trái/phải chỉ hướng vòng tiếp theo','用左右声音提示下一个圆环的方向','Звук слева/справа показывает, где следующее кольцо','Left/right sounds point to the next ring','次のリングの方向を左右の音で教えるよ','សំឡេងឆ្វេង/ស្ដាំ ប្រាប់ទិសរង្វង់បន្ទាប់','Зүүн/баруун дуугаар дараагийн цагирагийн чигийг заана'],
+['set.vibrate','진동','Rung','振动','Вибрация','Vibration','振動','ញ័រ','Чичиргээ'],
+['set.music','배경음악','Nhạc nền','背景音乐','Музыка','Music','BGM','តន្ត្រីផ្ទៃខាងក្រោយ','Хөгжим'],
+['set.music.d','2번 코스부터 긴장감 있는 음악','Nhạc hồi hộp từ đường bay số 2','从2号航线开始有紧张的音乐','Напряжённая музыка со 2-й трассы','Exciting music from course 2','2番コースからドキドキする音楽','តន្ត្រីរំភើបចាប់ពីផ្លូវហោះទី ២','2-р замаас эхлэн сэтгэл хөдөлгөм хөгжим'],
+['set.comfort','멀미 줄이기','Giảm say','减轻晕动','Против укачивания','Reduce motion sickness','酔いをへらす','កាត់បន្ថយការវិលមុខ','Толгой эргэлтийг багасгах'],
+['set.comfort.d','시야 가장자리 어둡게 · 속도 15% 낮춤','Làm tối viền tầm nhìn · Giảm tốc 15%','视野边缘变暗 · 速度降低15%','Затемнение по краям · Скорость −15%','Darker edges · 15% slower','視野のはしを暗く · スピード15%ダウン','ធ្វើឲ្យគែមងងឹត · ល្បឿនថយ 15%','Захыг бараан болгох · Хурд 15% бага'],
+['set.lensShift','VR 화면 간격','Khoảng cách màn hình VR','VR画面间距','Расстояние VR-экранов','VR screen spacing','VR画面の間かく','គម្លាតអេក្រង់ VR','VR дэлгэцийн зай'],
+['set.lensShift.d','카드보드 렌즈에 맞춰 두 화면을 모으거나 벌려요','Kéo hai màn hình lại gần hoặc xa nhau cho vừa ống kính Cardboard','根据纸盒眼镜的镜片，把两个画面靠近或拉开','Сдвигай или раздвигай две картинки под линзы Cardboard','Move the two screens closer or apart to fit the Cardboard lenses','ゴーグルのレンズに合わせて2つの画面を近づけたり離したりするよ','រំកិលអេក្រង់ទាំងពីរឲ្យជិត ឬឆ្ងាយ ឲ្យត្រូវនឹងកែវ Cardboard','Cardboard-ийн линзэнд тааруулж хоёр дэлгэцийг ойртуулах эсвэл холдуулна'],
+['opt.slow','느리게','Chậm','慢','Медленно','Slow','ゆっくり','យឺត','Удаан'],
+['opt.normal','보통','Vừa','普通','Обычно','Normal','ふつう','ធម្មតា','Энгийн'],
+['opt.fast','빠르게','Nhanh','快','Быстро','Fast','はやい','លឿន','Хурдан'],
+['opt.big','크게','To','大','Крупно','Big','大きく','ធំ','Том'],
+['opt.huge','아주 크게','Rất to','特大','Очень крупно','Huge','とても大きく','ធំណាស់','Маш том'],
+['opt.auto','자동','Tự động','自动','Авто','Auto','自動','ស្វ័យប្រវត្តិ','Автомат'],
+['opt.on','켜기','Bật','开','Вкл.','On','オン','បើក','Асаах'],
+['opt.off','끄기','Tắt','关','Выкл.','Off','オフ','បិទ','Унтраах'],
+['opt.weak','약하게','Nhẹ','弱','Слабо','Light','弱め','ខ្សោយ','Сул'],
+['opt.strong','강하게','Mạnh','强','Сильно','Strong','強め','ខ្លាំង','Хүчтэй'],
+['opt.switch','원스위치','Một nút','单键','Одна кнопка','One switch','ワンスイッチ','ប៊ូតុងតែមួយ','Нэг товч'],
+['opt.soft','작게','Nhỏ','小声','Тихо','Soft','小さめ','តិច','Намуухан'],
+['opt.default','기본','Mặc định','默认','Обычно','Default','標準','លំនាំដើម','Үндсэн'],
+['sec.mount','지체장애 마운트 모드','Chế độ giá đỡ (khuyết tật vận động)','肢体障碍支架模式','Режим держателя (нарушения движения)','Mount mode (physical disabilities)','肢体障がいマウントモード','របៀបជើងទម្រ (ពិការចលនា)','Бэхэлгээний горим (хөдөлгөөний бэрхшээл)'],
+['set.mount','거치대 전용 모드','Chế độ dành cho giá đỡ','支架专用模式','Режим для держателя','Mount-only mode','スタンド専用モード','របៀបសម្រាប់ជើងទម្រ','Тавиурын горим'],
+['set.mount.d','전용 거치대(공동 설계 예정)와 함께 2단계 업데이트에서 추가돼요. 지금은 「조작: 원스위치」로 블루투스 스위치(스페이스·엔터)를 쓸 수 있어요.','Sẽ có trong bản cập nhật bước 2, cùng với giá đỡ riêng (đang thiết kế). Hiện tại có thể dùng công tắc Bluetooth (Space/Enter) với «Điều khiển: Một nút».','将在第2阶段更新中与专用支架（正在设计）一起加入。现在可以用「操作：单键」配合蓝牙开关（空格/回车）。','Появится в обновлении 2-го этапа вместе со специальным держателем (в разработке). Сейчас можно включить «Управление: одна кнопка» и пользоваться Bluetooth-кнопкой (Пробел/Enter).','Coming in the stage-2 update with a special mount (being designed). For now, use “Controls: One switch” with a Bluetooth switch (Space/Enter).','専用スタンド（共同設計予定）といっしょに第2段階アップデートで追加されます。今は「操作：ワンスイッチ」でBluetoothスイッチ（スペース・エンター）が使えます。','នឹងមានក្នុងការអាប់ដេតដំណាក់កាលទី ២ ជាមួយជើងទម្រពិសេស (កំពុងរចនា)។ ឥឡូវនេះ អាចប្រើកុងតាក់ Bluetooth (Space/Enter) ជាមួយ «ការបញ្ជា៖ ប៊ូតុងតែមួយ»។','Тусгай тавиуртай (зохион бүтээж байна) хамт 2-р шатны шинэчлэлд нэмэгдэнэ. Одоогоор «Удирдлага: Нэг товч»-оор Bluetooth товч (Space/Enter) ашиглаж болно.'],
 
 /* --- 마스코트 대사·안내 --- */
-['start.1y','🛫 위로 슝! 수직 이륙해요','🛫 Vút lên cao! [[^vto]] nào','🛫 嗖地往上飞！[[vto]]','🛫 Вверх! [[^vto]]','🛫 Whoosh, up we go! [[^vto]]'],
-['start.1','관제탑입니다. 미랩 비행장, 수직 이륙(Vertical Takeoff)을 시작합니다!','Đài kiểm soát đây. Sân bay MILAB, bắt đầu [[vto]]!','这里是塔台。MILAB机场，开始[[vto]]！','Говорит диспетчерская. Аэродром MILAB, начинаем: [[vto]]!','This is the control tower. MILAB Airfield, beginning [[vto]]!'],
-['start.2y','🏜️ 협곡이에요. 바위를 피해요!','🏜️ Hẻm núi đây. Né đá nhé!','🏜️ 这是峡谷。躲开岩石！','🏜️ Это каньон. Облетай скалы!','🏜️ It’s a canyon. Dodge the rocks!'],
-['start.2','바람의 협곡입니다. 바위 기둥과 아치를 피해 링을 통과하세요!','Đây là Hẻm núi Gió. Hãy né cột đá và vòm đá để bay qua các vòng!','这里是风之峡谷。躲开石柱和石拱，穿过圆环！','Это Каньон ветров. Облетай каменные столбы и арки и пролетай сквозь кольца!','Welcome to Wind Canyon. Dodge the rock pillars and arches and fly through the rings!'],
-['start.3y','🏙️ 빌딩 사이로 날아요! 바람이 옆으로 밀어요','🏙️ Bay giữa các tòa nhà! Gió sẽ đẩy bạn sang ngang','🏙️ 在楼宇之间飞！风会把你往旁边推','🏙️ Летим между домами! Ветер толкает вбок','🏙️ Fly between the buildings! The wind pushes you sideways'],
-['start.3','도심 버티포트(UAM) 구역입니다. 빌딩 사이 바람(측풍)이 기체를 옆으로 밀어요!','Đây là khu [[vertiport]] thành phố (UAM). Luồng [[cross]] giữa các tòa nhà sẽ đẩy máy bay sang ngang!','这里是城市[[vertiport]]（UAM）区域。楼间的[[cross]]会把飞机往旁边推！','Это зона городского вертипорта (UAM). Сильный [[cross]] между зданиями сносит аппарат вбок!','This is the city [[vertiport]] (UAM) zone. The [[cross]] between buildings pushes the aircraft sideways!'],
-['start.4y','🌊 바다 위 풍차! 날개를 조심해요','🌊 Cối xay gió trên biển! Coi chừng cánh quạt','🌊 海上的风车！小心叶片','🌊 Ветряки над морем! Осторожно, лопасти','🌊 Windmills at sea! Watch out for the blades'],
-['start.4','해상 풍력단지입니다. 돌아가는 블레이드와 돌풍 경보에 주의하세요!','Đây là trang trại điện gió trên biển. Chú ý cánh quạt đang quay và cảnh báo [[gust]]!','这里是海上风电场。注意旋转的叶片和[[gust]]警报！','Это морская ветроэлектростанция. Берегись крутящихся лопастей и следи за тревогой: [[gust]]!','This is the offshore wind farm. Watch out for spinning blades and [[gust]] warnings!'],
-['start.5y','⛈️ 밤이고 폭풍이에요! 점선은 AI가 알려 주는 길이에요','⛈️ Trời tối và có bão! Đường chấm chấm là đường AI chỉ cho bạn','⛈️ 天黑了，还有风暴！虚线是AI告诉你的路线','⛈️ Ночь и буря! Пунктир — это путь, который подсказывает ИИ','⛈️ It’s night and stormy! The dotted line is the path the AI shows you'],
-['start.5','야간 폭풍 구역. 점선은 AI 코파일럿의 추천 경로예요. 하지만 AI는 갑자기 생기는 장애물과 돌풍을 몰라요!','Khu bão đêm. Đường chấm chấm là đường gợi ý của [[copilot]]. Nhưng AI không biết trước chướng ngại và [[gust]] bất ngờ!','夜间风暴区。虚线是[[copilot]]推荐的路线。但是AI不知道突然出现的障碍和[[gust]]！','Зона ночной бури. Пунктир — маршрут, который советует [[copilot]]. Но ИИ не знает о внезапных препятствиях и порывах ветра!','Night storm zone. The dotted line is the [[copilot]]’s suggested route. But the AI doesn’t know about sudden obstacles or gusts of wind!'],
-['start.6','무한 챌린지 시작! 기둥에 부딪히면 바로 끝나요. 💠 미랩 부스터와 🛡️ 보호막을 챙겨요!','Thử thách vô tận bắt đầu! Đụng cột là kết thúc ngay. Nhớ lấy 💠 tăng tốc MILAB và 🛡️ lá chắn!','无限挑战开始！撞到柱子就马上结束。记得收集💠 MILAB加速器和🛡️护盾！','Бесконечный вызов начинается! Касание столба — сразу конец. Собирай 💠 ускорители MILAB и 🛡️ щиты!','Infinite Challenge, go! Hit a pillar and it’s over. Grab 💠 MILAB boosters and 🛡️ shields!'],
-['start.6n','{name} 조종사, 무한 챌린지 시작! 기둥에 부딪히면 바로 끝나요. 💠 미랩 부스터와 🛡️ 보호막을 챙겨요!','Phi công {name}, Thử thách vô tận bắt đầu! Đụng cột là kết thúc ngay. Nhớ lấy 💠 tăng tốc MILAB và 🛡️ lá chắn!','{name}飞行员，无限挑战开始！撞到柱子就马上结束。记得收集💠 MILAB加速器和🛡️护盾！','Пилот {name}, Бесконечный вызов начинается! Касание столба — сразу конец. Собирай 💠 ускорители MILAB и 🛡️ щиты!','Pilot {name}, Infinite Challenge, go! Hit a pillar and it’s over. Grab 💠 MILAB boosters and 🛡️ shields!'],
-['evt.autoTransY','🌀 ➜ ✈️ 로터가 앞으로 기울어요!','🌀 ➜ ✈️ [[^rotor]] nghiêng về phía trước!','🌀 ➜ ✈️ [[rotor]]向前倾斜了！','🌀 ➜ ✈️ [[^rotor]] наклоняется вперёд!','🌀 ➜ ✈️ The [[rotor]] tilts forward!'],
-['evt.autoTrans','로터가 앞으로 기울어요!','[[^rotor]] nghiêng về phía trước!','[[rotor]]向前倾斜了！','[[^rotor]] наклоняется вперёд!','The [[rotor]] tilts forward!'],
-['evt.vrTrans','앞의 천이 게이지를 2초 바라보세요!','Hãy nhìn vào thanh chuyển tiếp phía trước trong 2 giây!','看着前面的过渡计量表2秒！','Смотри на шкалу перехода впереди 2 секунды!','Look at the transition gauge in front for 2 seconds!'],
-['evt.swTrans','버튼을 누르면 천이 비행을 시작해요!','Bấm nút để bắt đầu [[trans]]!','按下按钮就开始[[trans]]！','Нажми кнопку — начнётся [[trans]]!','Press the button to start the [[trans]]!'],
-['evt.leverTrans','천이 레버(또는 스페이스)를 눌러 로터를 앞으로 기울여요!','Bấm [[lever]] (hoặc phím cách) để nghiêng [[rotor]] về phía trước!','按[[lever]]（或空格键），让[[rotor]]向前倾斜！','Нажми [[lever]] (или пробел), чтобы наклонить [[rotor]] вперёд!','Press the [[lever]] (or Space) to tilt the [[rotor]] forward!'],
-['evt.transY','로터가 앞으로! 슝~','[[^rotor]] chúi về phía trước! Vút~','[[rotor]]向前！嗖~','[[^rotor]] вперёд! Вжух~','[[^rotor]] forward! Whoosh~'],
-['evt.trans','천이 비행(Transition)! 로터가 수직→수평으로 기울며 빨라져요.','[[^trans]]! [[^rotor]] nghiêng từ thẳng đứng → nằm ngang và bay nhanh hơn.','[[trans]]！[[rotor]]从竖直→水平倾斜，速度变快。','[[^trans]]! [[^rotor]] наклоняется из вертикали → в горизонталь, и скорость растёт.','[[^trans]]! The [[rotor]] tilts from vertical → horizontal and you speed up.'],
-['how.headY','👀 링을 바라보면 그쪽으로 날아가요!','👀 Nhìn vào vòng là máy bay bay về phía đó!','👀 看着圆环，就会朝那边飞！','👀 Смотри на кольцо — и полетишь к нему!','👀 Look at a ring and you’ll fly toward it!'],
-['how.head','보는 곳으로 날아가요. 다음 링을 바라보세요!','Bạn nhìn đâu, máy bay bay đó. Hãy nhìn vòng tiếp theo!','你看哪里就飞向哪里。看着下一个圆环！','Летишь туда, куда смотришь. Смотри на следующее кольцо!','You fly where you look. Look at the next ring!'],
-['how.switch','누르면 올라가고, 떼면 내려가요. 좌우는 자동이에요!','Bấm để lên, thả ra để xuống. Trái phải tự động!','按住上升，松开下降。左右是自动的！','Нажми — вверх, отпусти — вниз. Влево-вправо — автоматически!','Press to go up, let go to go down. Left and right are automatic!'],
-['how.dragY','화면을 끌어서 링으로 가요!','Kéo màn hình để bay tới vòng!','拖动屏幕飞向圆环！','Веди пальцем по экрану к кольцу!','Drag the screen to fly to the rings!'],
-['how.drag','화면을 끌거나 방향키(WASD)로 조종해요. 레버를 누르면 저속 호버!','Kéo màn hình hoặc dùng phím mũi tên (WASD) để điều khiển. Bấm cần gạt để [[hover]]!','拖动屏幕或用方向键（WASD）操控。按下操纵杆就能[[hover]]！','Управляй свайпом или стрелками (WASD). Нажми рычаг — будет [[hover]]!','Drag the screen or use the arrow keys (WASD). Tap the lever for a [[hover]]!'],
-['evt.milabY','💠 미랩 링이에요! 반짝반짝!','💠 Vòng MILAB đó! Lấp lánh!','💠 是MILAB圆环！亮晶晶！','💠 Кольцо MILAB! Блестит!','💠 A MILAB ring! Sparkle sparkle!'],
-['evt.milab','미랩 링 보너스! +500점','Thưởng vòng MILAB! +500 điểm','MILAB圆环奖励！+500分','Бонус кольца MILAB! +500 очков','MILAB ring bonus! +500 points'],
-['evt.firstY','잘했어요! 링 통과!','Giỏi lắm! Qua vòng rồi!','真棒！穿过圆环了！','Молодец! Кольцо пройдено!','Nice! Through the ring!'],
-['evt.first','좋아요! 첫 링 통과!','Tốt lắm! Qua vòng đầu tiên!','很好！穿过第一个圆环！','Отлично! Первое кольцо пройдено!','Great! First ring cleared!'],
-['evt.combo','콤보 {n}! 점수가 {x}배예요!','Combo {n}! Điểm nhân {x}!','{n}连击！分数×{x}！','Комбо {n}! Очки ×{x}!','Combo {n}! Points ×{x}!'],
-['evt.missY','괜찮아요! 다음 링이 와요 😊','Không sao! Vòng tiếp theo đang tới 😊','没关系！下一个圆环来了 😊','Ничего страшного! Вот следующее кольцо 😊','That’s okay! Here comes the next ring 😊'],
-['evt.miss','괜찮아요, 다음 링을 노려요!','Không sao, nhắm vòng tiếp theo nhé!','没关系，瞄准下一个圆环！','Ничего, целься в следующее кольцо!','It’s okay, aim for the next ring!'],
-['evt.shieldInf','🛡️ 보호막! 12초 안에 한 번 부딪혀도 괜찮아요','🛡️ Lá chắn! Trong 12 giây, va chạm một lần cũng không sao','🛡️ 护盾！12秒内撞一次也没关系','🛡️ Щит! 12 секунд одно столкновение не страшно','🛡️ Shield! For 12 seconds, one hit won’t stop you'],
-['item.battery','🔋 배터리 충전! +35%','🔋 Sạc pin! +35%','🔋 充电！+35%','🔋 Подзарядка! +35%','🔋 Battery charged! +35%'],
-['item.boost','⚡ 부스트! 3초 동안 빨라져요','⚡ Tăng tốc! Nhanh hơn trong 3 giây','⚡ 加速！3秒内变快','⚡ Ускорение! 3 секунды быстрее','⚡ Boost! Faster for 3 seconds'],
-['item.shield','🛡️ 실드! 8초 동안 바위를 막아 줘요','🛡️ Lá chắn! Chặn đá trong 8 giây','🛡️ 护盾！8秒内挡住岩石','🛡️ Щит! 8 секунд защищает от скал','🛡️ Shield! Blocks rocks for 8 seconds'],
-['evt.hitY','앗! 쿵! 괜찮아요, 계속 가요','Ối! Cộp! Không sao, bay tiếp nào','哎呀！咚！没关系，继续飞','Ой! Бум! Ничего, летим дальше','Oops! Bonk! It’s okay, keep going'],
-['evt.hit','앗! 부딪혀 속도가 줄었어요. 배터리 -{n}%','Ối! Va chạm nên bị chậm lại. Pin -{n}%','哎呀！撞到了，速度变慢。电量 -{n}%','Ой! Столкновение — скорость упала. Батарея −{n}%','Oops! A hit slowed you down. Battery -{n}%'],
-['evt.shieldUsed','🛡️ 보호막이 한 번 막아 줬어요! (보호막 사라짐)','🛡️ Lá chắn đã đỡ một lần! (lá chắn biến mất)','🛡️ 护盾挡住了一次！（护盾消失了）','🛡️ Щит спас один раз! (щит исчез)','🛡️ The shield saved you once! (shield gone)'],
-['evt.shieldHit','실드가 막아 줬어요!','Lá chắn đã đỡ rồi!','护盾挡住了！','Щит защитил!','The shield blocked it!'],
-['evt.gustY','💨 바람이 세게 불어요! 반대쪽으로 버텨요','💨 Gió thổi mạnh! Cố bay ngược lại','💨 风好大！往反方向顶住','💨 Сильный ветер! Держись против него','💨 Strong wind! Push back the other way'],
-['evt.gustL','돌풍 경보! 왼쪽에서 바람이 불어와요. 반대 방향으로 버티세요!','Cảnh báo [[gust]]! Gió thổi từ bên trái. Hãy giữ ngược hướng!','[[gust]]警报！风从左边吹来。往反方向顶住！','Тревога: [[gust]]! Ветер дует слева. Держись в обратную сторону!','[[^gust]] warning! Wind from the left. Hold against it!'],
-['evt.gustR','돌풍 경보! 오른쪽에서 바람이 불어와요. 반대 방향으로 버티세요!','Cảnh báo [[gust]]! Gió thổi từ bên phải. Hãy giữ ngược hướng!','[[gust]]警报！风从右边吹来。往反方向顶住！','Тревога: [[gust]]! Ветер дует справа. Держись в обратную сторону!','[[^gust]] warning! Wind from the right. Hold against it!'],
-['evt.surpY','⚠️ 앗! 길 위에 갑자기 생겼어요. 피해요!','⚠️ Ối! Có vật cản bất ngờ trên đường. Né đi!','⚠️ 哎呀！路上突然出现了障碍。快躲开！','⚠️ Ой! На пути вдруг что-то появилось. Уворачивайся!','⚠️ Whoa! Something just popped up. Dodge it!'],
-['evt.surp','⚠️ 돌발 장애물! AI 코파일럿도 몰랐던 변수예요. 직접 판단해 피하세요!','⚠️ Chướng ngại bất ngờ! Ngay cả [[copilot]] cũng không biết. Hãy tự quyết định và né!','⚠️ 突发障碍！连[[copilot]]也不知道的变数。自己判断躲开！','⚠️ Внезапное препятствие! Этого не знал даже [[copilot]]. Решение за тобой — уворачивайся!','⚠️ Surprise obstacle! Even the [[copilot]] didn’t know. Decide for yourself and dodge!'],
-['evt.surpShort','⚠️ 돌발 장애물!','⚠️ Chướng ngại bất ngờ!','⚠️ 突发障碍！','⚠️ Внезапное препятствие!','⚠️ Surprise obstacle!'],
-['evt.nm3','연속 아슬아슬! 보너스가 커져요','Suýt nữa liên tiếp! Thưởng tăng lên','连续好险！奖励变多了','Опять на волоске! Бонус растёт','Close calls in a row! Bonus grows'],
-['evt.nm6','아슬아슬 마스터!','Bậc thầy suýt nữa!','好险大师！','Мастер «на волоске»!','Close-call master!'],
-['evt.booster','미랩 부스터! 3초 동안 무적 질주!','Tăng tốc MILAB! Lao vút bất bại trong 3 giây!','MILAB加速器！3秒无敌冲刺！','Ускоритель MILAB! 3 секунды неуязвимости!','MILAB booster! 3 seconds of invincible speed!'],
-['evt.saver','배터리가 바닥났어요. 절전 비행으로 천천히 가요. 🔋 아이템을 찾아요!','Hết pin rồi. Bay tiết kiệm pin chậm thôi. Tìm vật phẩm 🔋 nhé!','电量用完了。用省电模式慢慢飞。找找🔋道具吧！','Батарея села. Летим медленно в режиме экономии. Ищи 🔋!','Battery is empty. Flying slowly in power-save mode. Look for 🔋 items!'],
-['evt.finishY','🏁 결승선! 이제 내려와요','🏁 Về đích! Giờ hạ xuống nào','🏁 终点！现在降落吧','🏁 Финиш! Теперь снижаемся','🏁 Finish line! Time to come down'],
-['evt.finish','결승선 통과! 로터를 다시 세워 수직 착륙(Vertical Landing)합니다.','Qua vạch đích! Dựng [[rotor]] lên lại để [[vland]].','通过终点！把[[rotor]]重新竖起来，[[vland]]。','Финиш! Поднимаем [[rotor]] обратно — [[vland]].','Finish line! Tilting the [[rotor]] back up for a [[vland]].'],
-['evt.hover','저속 호버: 로터를 반쯤 세워 천천히 날아요','[[^hover]]: dựng [[rotor]] lên một nửa để bay chậm','[[hover]]：把[[rotor]]立起一半，慢慢飞','[[^hover]]: [[rotor]] наполовину поднят, летим медленно','[[^hover]]: [[rotor]] half up, flying slowly'],
-['evt.cruise','순항 비행: 로터를 앞으로!','[[^cruise]]: [[rotor]] hướng về phía trước!','[[cruise]]飞行：[[rotor]]向前！','[[^cruise]]: [[rotor]] вперёд!','[[^cruise]] flight: [[rotor]] forward!'],
-['evt.recenter','정면을 다시 맞췄어요!','Đã chỉnh lại hướng phía trước!','已重新校准正面！','Направление вперёд снова настроено!','Front direction reset!'],
-['evt.vrStartY','👀 가고 싶은 코스를 바라보세요!','👀 Nhìn vào đường bay bạn muốn chọn!','👀 看着你想去的航线！','👀 Посмотри на трассу, которую хочешь!','👀 Look at the course you want!'],
-['evt.vrStart','VR 모드 시작! 고르고 싶은 코스를 1.5초 바라보세요.','Bắt đầu chế độ VR! Nhìn vào đường bay muốn chọn trong 1,5 giây.','VR模式开始！看着想选的航线1.5秒。','Режим VR! Смотри на нужную трассу 1,5 секунды.','VR mode on! Look at a course for 1.5 seconds to pick it.'],
-['evt.headDown','고개를 계속 숙이고 있으면 잠깐 멈춰요','Nếu cứ cúi đầu, trò chơi sẽ tạm dừng','一直低着头就会暂停','Если держать голову опущенной, будет пауза','Keep your head down to pause'],
+['start.1y','🛫 위로 슝! 수직 이륙해요','🛫 Vút lên cao! [[^vto]] nào','🛫 嗖地往上飞！[[vto]]','🛫 Вверх! [[^vto]]','🛫 Whoosh, up we go! [[^vto]]','🛫 上へビューン！[[vto]]だよ','🛫 ហោះឡើងលើ វ៉ូស! [[vto]]','🛫 Дээшээ вүүш! [[^vto]]'],
+['start.1','관제탑입니다. 미랩 비행장, 수직 이륙(Vertical Takeoff)을 시작합니다!','Đài kiểm soát đây. Sân bay MILAB, bắt đầu [[vto]]!','这里是塔台。MILAB机场，开始[[vto]]！','Говорит диспетчерская. Аэродром MILAB, начинаем: [[vto]]!','This is the control tower. MILAB Airfield, beginning [[vto]]!','管制塔です。MILAB飛行場、[[vto]]を開始します！','នេះជាប៉មត្រួតពិនិត្យ។ ព្រលាន MILAB ចាប់ផ្ដើម[[vto]]!','Нислэгийн удирдлагаас ярьж байна. MILAB нисэх буудал, эхэлж байна: [[vto]]!'],
+['start.2y','🏜️ 협곡이에요. 바위를 피해요!','🏜️ Hẻm núi đây. Né đá nhé!','🏜️ 这是峡谷。躲开岩石！','🏜️ Это каньон. Облетай скалы!','🏜️ It’s a canyon. Dodge the rocks!','🏜️ 峡谷だよ。岩をよけよう！','🏜️ នេះជាជ្រលងភ្នំ។ គេចថ្ម!','🏜️ Хавцал байна. Хаднаас зайл!'],
+['start.2','바람의 협곡입니다. 바위 기둥과 아치를 피해 링을 통과하세요!','Đây là Hẻm núi Gió. Hãy né cột đá và vòm đá để bay qua các vòng!','这里是风之峡谷。躲开石柱和石拱，穿过圆环！','Это Каньон ветров. Облетай каменные столбы и арки и пролетай сквозь кольца!','Welcome to Wind Canyon. Dodge the rock pillars and arches and fly through the rings!','風の峡谷です。岩の柱とアーチをよけてリングを通りぬけよう！','នេះជាជ្រលងខ្យល់។ គេចសសរថ្ម និងធ្នូថ្ម ហើយហោះកាត់រង្វង់!','Салхины хавцал. Хадан багана, нуман хаалганаас зайлж цагирагаар нэвтэр!'],
+['start.3y','🏙️ 빌딩 사이로 날아요! 바람이 옆으로 밀어요','🏙️ Bay giữa các tòa nhà! Gió sẽ đẩy bạn sang ngang','🏙️ 在楼宇之间飞！风会把你往旁边推','🏙️ Летим между домами! Ветер толкает вбок','🏙️ Fly between the buildings! The wind pushes you sideways','🏙️ ビルの間を飛ぶよ！風が横からおしてくるよ','🏙️ ហោះរវាងអគារ! ខ្យល់រុញពីចំហៀង','🏙️ Байшин хооронд нисье! Салхи хажуу тийш түлхэнэ'],
+['start.3','도심 버티포트(UAM) 구역입니다. 빌딩 사이 바람(측풍)이 기체를 옆으로 밀어요!','Đây là khu [[vertiport]] thành phố (UAM). Luồng [[cross]] giữa các tòa nhà sẽ đẩy máy bay sang ngang!','这里是城市[[vertiport]]（UAM）区域。楼间的[[cross]]会把飞机往旁边推！','Это зона городского вертипорта (UAM). Сильный [[cross]] между зданиями сносит аппарат вбок!','This is the city [[vertiport]] (UAM) zone. The [[cross]] between buildings pushes the aircraft sideways!','都市[[vertiport]]（UAM）エリアです。ビルの間の[[cross]]が機体を横におすよ！','នេះជាតំបន់[[vertiport]]ក្នុងទីក្រុង (UAM)។ [[cross]]រវាងអគារ នឹងរុញយន្តហោះទៅចំហៀង!','Хотын бүс — [[vertiport]] (UAM). Байшин хоорондох [[cross]] төхөөрөмжийг хажуу тийш түлхэнэ!'],
+['start.4y','🌊 바다 위 풍차! 날개를 조심해요','🌊 Cối xay gió trên biển! Coi chừng cánh quạt','🌊 海上的风车！小心叶片','🌊 Ветряки над морем! Осторожно, лопасти','🌊 Windmills at sea! Watch out for the blades','🌊 海の上の風車！羽根に気をつけて','🌊 កង្ហារខ្យល់លើសមុទ្រ! ប្រយ័ត្នស្លាប','🌊 Далай дээрх салхин тээрэм! Иринээс болгоомжил'],
+['start.4','해상 풍력단지입니다. 돌아가는 블레이드와 돌풍 경보에 주의하세요!','Đây là trang trại điện gió trên biển. Chú ý cánh quạt đang quay và cảnh báo [[gust]]!','这里是海上风电场。注意旋转的叶片和[[gust]]警报！','Это морская ветроэлектростанция. Берегись крутящихся лопастей и следи за тревогой: [[gust]]!','This is the offshore wind farm. Watch out for spinning blades and [[gust]] warnings!','洋上風力発電所です。回る羽根と[[gust]]警報に注意して！','នេះជាកសិដ្ឋានថាមពលខ្យល់លើសមុទ្រ។ ប្រយ័ត្នស្លាបកំពុងវិល និងការព្រមាន[[gust]]!','Далай дээрх салхин цахилгаан станц. Эргэж буй ирээс болгоомжил, сэрэмжлүүлэг: [[gust]]!'],
+['start.5y','⛈️ 밤이고 폭풍이에요! 점선은 AI가 알려 주는 길이에요','⛈️ Trời tối và có bão! Đường chấm chấm là đường AI chỉ cho bạn','⛈️ 天黑了，还有风暴！虚线是AI告诉你的路线','⛈️ Ночь и буря! Пунктир — это путь, который подсказывает ИИ','⛈️ It’s night and stormy! The dotted line is the path the AI shows you','⛈️ 夜で嵐だよ！点線はAIが教えてくれる道だよ','⛈️ យប់ ហើយមានព្យុះ! បន្ទាត់ចុចៗ គឺផ្លូវដែល AI បង្ហាញ','⛈️ Шөнө, шуурга байна! Тасархай зураас бол AI-ийн заасан зам'],
+['start.5','야간 폭풍 구역. 점선은 AI 코파일럿의 추천 경로예요. 하지만 AI는 갑자기 생기는 장애물과 돌풍을 몰라요!','Khu bão đêm. Đường chấm chấm là đường gợi ý của [[copilot]]. Nhưng AI không biết trước chướng ngại và [[gust]] bất ngờ!','夜间风暴区。虚线是[[copilot]]推荐的路线。但是AI不知道突然出现的障碍和[[gust]]！','Зона ночной бури. Пунктир — маршрут, который советует [[copilot]]. Но ИИ не знает о внезапных препятствиях и порывах ветра!','Night storm zone. The dotted line is the [[copilot]]’s suggested route. But the AI doesn’t know about sudden obstacles or gusts of wind!','夜の嵐エリア。点線は[[copilot]]のおすすめルートだよ。でもAIは突然あらわれる障害物や突風を知らないんだ！','តំបន់ព្យុះពេលយប់។ បន្ទាត់ចុចៗ គឺផ្លូវណែនាំរបស់[[copilot]]។ ប៉ុន្តែ AI មិនដឹងពីឧបសគ្គ និងខ្យល់កន្ត្រាក់ដែលកើតឡើងភ្លាមៗទេ!','Шөнийн шуурганы бүс. Тасархай зураасаар [[copilot]] замаа санал болгож байна. Гэхдээ AI гэнэт гарах саад, огцом салхийг мэдэхгүй!'],
+['start.6','무한 챌린지 시작! 기둥에 부딪히면 바로 끝나요. 💠 미랩 부스터와 🛡️ 보호막을 챙겨요!','Thử thách vô tận bắt đầu! Đụng cột là kết thúc ngay. Nhớ lấy 💠 tăng tốc MILAB và 🛡️ lá chắn!','无限挑战开始！撞到柱子就马上结束。记得收集💠 MILAB加速器和🛡️护盾！','Бесконечный вызов начинается! Касание столба — сразу конец. Собирай 💠 ускорители MILAB и 🛡️ щиты!','Infinite Challenge, go! Hit a pillar and it’s over. Grab 💠 MILAB boosters and 🛡️ shields!','無限チャレンジスタート！柱にぶつかったらすぐ終わり。💠 MILABブースターと🛡️ シールドを取ろう！','ការប្រកួតគ្មានទីបញ្ចប់ ចាប់ផ្ដើម! ប៉ះសសរគឺចប់ភ្លាម។ ប្រមូល 💠 បូស្ទ័រ MILAB និង 🛡️ ខែល!','Төгсгөлгүй сорил эхэллээ! Баганыг мөргөвөл шууд дуусна. 💠 MILAB хурдасгуур, 🛡️ бамбай цуглуул!'],
+['start.6n','{name} 조종사, 무한 챌린지 시작! 기둥에 부딪히면 바로 끝나요. 💠 미랩 부스터와 🛡️ 보호막을 챙겨요!','Phi công {name}, Thử thách vô tận bắt đầu! Đụng cột là kết thúc ngay. Nhớ lấy 💠 tăng tốc MILAB và 🛡️ lá chắn!','{name}飞行员，无限挑战开始！撞到柱子就马上结束。记得收集💠 MILAB加速器和🛡️护盾！','Пилот {name}, Бесконечный вызов начинается! Касание столба — сразу конец. Собирай 💠 ускорители MILAB и 🛡️ щиты!','Pilot {name}, Infinite Challenge, go! Hit a pillar and it’s over. Grab 💠 MILAB boosters and 🛡️ shields!','{name}パイロット、無限チャレンジスタート！柱にぶつかったらすぐ終わり。💠 MILABブースターと🛡️ シールドを取ろう！','អ្នកបើកបរ {name}, ការប្រកួតគ្មានទីបញ្ចប់ ចាប់ផ្ដើម! ប៉ះសសរគឺចប់ភ្លាម។ ប្រមូល 💠 បូស្ទ័រ MILAB និង 🛡️ ខែល!','Нисгэгч {name}, Төгсгөлгүй сорил эхэллээ! Баганыг мөргөвөл шууд дуусна. 💠 MILAB хурдасгуур, 🛡️ бамбай цуглуул!'],
+['evt.autoTransY','🌀 ➜ ✈️ 로터가 앞으로 기울어요!','🌀 ➜ ✈️ [[^rotor]] nghiêng về phía trước!','🌀 ➜ ✈️ [[rotor]]向前倾斜了！','🌀 ➜ ✈️ [[^rotor]] наклоняется вперёд!','🌀 ➜ ✈️ The [[rotor]] tilts forward!','🌀 ➜ ✈️ [[rotor]]が前にかたむくよ！','🌀 ➜ ✈️ [[rotor]]ផ្អៀងទៅមុខ!','🌀 ➜ ✈️ [[^rotor]] урагшаа хазайж байна!'],
+['evt.autoTrans','로터가 앞으로 기울어요!','[[^rotor]] nghiêng về phía trước!','[[rotor]]向前倾斜了！','[[^rotor]] наклоняется вперёд!','The [[rotor]] tilts forward!','[[rotor]]が前にかたむくよ！','[[rotor]]ផ្អៀងទៅមុខ!','[[^rotor]] урагшаа хазайж байна!'],
+['evt.vrTrans','앞의 천이 게이지를 2초 바라보세요!','Hãy nhìn vào thanh chuyển tiếp phía trước trong 2 giây!','看着前面的过渡计量表2秒！','Смотри на шкалу перехода впереди 2 секунды!','Look at the transition gauge in front for 2 seconds!','前の遷移ゲージを2秒見つめよう！','មើលរង្វាស់ផ្លាស់ប្ដូរនៅខាងមុខ ២ វិនាទី!','Урд байгаа шилжилтийн хэмжүүрийг 2 секунд хар!'],
+['evt.swTrans','버튼을 누르면 천이 비행을 시작해요!','Bấm nút để bắt đầu [[trans]]!','按下按钮就开始[[trans]]！','Нажми кнопку — начнётся [[trans]]!','Press the button to start the [[trans]]!','ボタンを押すと[[trans]]がはじまるよ！','ចុចប៊ូតុង ដើម្បីចាប់ផ្ដើម[[trans]]!','Товч дарвал эхэлнэ: [[trans]]!'],
+['evt.leverTrans','천이 레버(또는 스페이스)를 눌러 로터를 앞으로 기울여요!','Bấm [[lever]] (hoặc phím cách) để nghiêng [[rotor]] về phía trước!','按[[lever]]（或空格键），让[[rotor]]向前倾斜！','Нажми [[lever]] (или пробел), чтобы наклонить [[rotor]] вперёд!','Press the [[lever]] (or Space) to tilt the [[rotor]] forward!','[[lever]]（またはスペース）を押して[[rotor]]を前にかたむけよう！','ចុច[[lever]] (ឬ Space) ដើម្បីផ្អៀង[[rotor]]ទៅមុខ!','Товч дар: [[lever]] (эсвэл Space) — [[rotor]] урагш хазайна!'],
+['evt.transY','로터가 앞으로! 슝~','[[^rotor]] chúi về phía trước! Vút~','[[rotor]]向前！嗖~','[[^rotor]] вперёд! Вжух~','[[^rotor]] forward! Whoosh~','[[rotor]]が前へ！ビューン〜','[[rotor]]ទៅមុខ! វ៉ូស~','[[^rotor]] урагшаа! Вүүш~'],
+['evt.trans','천이 비행(Transition)! 로터가 수직→수평으로 기울며 빨라져요.','[[^trans]]! [[^rotor]] nghiêng từ thẳng đứng → nằm ngang và bay nhanh hơn.','[[trans]]！[[rotor]]从竖直→水平倾斜，速度变快。','[[^trans]]! [[^rotor]] наклоняется из вертикали → в горизонталь, и скорость растёт.','[[^trans]]! The [[rotor]] tilts from vertical → horizontal and you speed up.','[[trans]]！[[rotor]]が垂直→水平にかたむいて速くなるよ。','[[trans]]! [[rotor]]ផ្អៀងពីបញ្ឈរ → ផ្ដេក ហើយលឿនជាងមុន។','[[^trans]]! [[^rotor]] босооноос → хэвтээ болж хурд нэмэгдэнэ.'],
+['how.headY','👀 링을 바라보면 그쪽으로 날아가요!','👀 Nhìn vào vòng là máy bay bay về phía đó!','👀 看着圆环，就会朝那边飞！','👀 Смотри на кольцо — и полетишь к нему!','👀 Look at a ring and you’ll fly toward it!','👀 リングを見ると、そっちへ飛んでいくよ！','👀 មើលរង្វង់ នោះយន្តហោះនឹងហោះទៅទីនោះ!','👀 Цагираг руу харвал тийшээ нисэнэ!'],
+['how.head','보는 곳으로 날아가요. 다음 링을 바라보세요!','Bạn nhìn đâu, máy bay bay đó. Hãy nhìn vòng tiếp theo!','你看哪里就飞向哪里。看着下一个圆环！','Летишь туда, куда смотришь. Смотри на следующее кольцо!','You fly where you look. Look at the next ring!','見ている方へ飛ぶよ。次のリングを見つめよう！','អ្នកមើលទីណា ហោះទៅទីនោះ។ មើលរង្វង់បន្ទាប់!','Харсан зүг рүүгээ нисэнэ. Дараагийн цагираг руу хар!'],
+['how.switch','누르면 올라가고, 떼면 내려가요. 좌우는 자동이에요!','Bấm để lên, thả ra để xuống. Trái phải tự động!','按住上升，松开下降。左右是自动的！','Нажми — вверх, отпусти — вниз. Влево-вправо — автоматически!','Press to go up, let go to go down. Left and right are automatic!','押すと上がって、はなすと下がるよ。左右は自動だよ！','ចុចដើម្បីឡើង លែងដើម្បីចុះ។ ឆ្វេងស្ដាំស្វ័យប្រវត្តិ!','Дарвал дээшилнэ, тавибал доошилно. Зүүн баруун автомат!'],
+['how.dragY','화면을 끌어서 링으로 가요!','Kéo màn hình để bay tới vòng!','拖动屏幕飞向圆环！','Веди пальцем по экрану к кольцу!','Drag the screen to fly to the rings!','画面をドラッグしてリングへ行こう！','អូសអេក្រង់ ដើម្បីហោះទៅរង្វង់!','Дэлгэцийг чирж цагираг руу нис!'],
+['how.drag','화면을 끌거나 방향키(WASD)로 조종해요. 레버를 누르면 저속 호버!','Kéo màn hình hoặc dùng phím mũi tên (WASD) để điều khiển. Bấm cần gạt để [[hover]]!','拖动屏幕或用方向键（WASD）操控。按下操纵杆就能[[hover]]！','Управляй свайпом или стрелками (WASD). Нажми рычаг — будет [[hover]]!','Drag the screen or use the arrow keys (WASD). Tap the lever for a [[hover]]!','画面をドラッグするか矢印キー（WASD）で操作。レバーを押すと[[hover]]！','អូសអេក្រង់ ឬប្រើគ្រាប់ចុចព្រួញ (WASD)។ ចុចដងបញ្ជា ដើម្បី[[hover]]!','Дэлгэц чирэх эсвэл сум товчоор (WASD) удирд. Хөшүүрэг дарвал: [[hover]]!'],
+['evt.milabY','💠 미랩 링이에요! 반짝반짝!','💠 Vòng MILAB đó! Lấp lánh!','💠 是MILAB圆环！亮晶晶！','💠 Кольцо MILAB! Блестит!','💠 A MILAB ring! Sparkle sparkle!','💠 MILABリングだ！キラキラ！','💠 រង្វង់ MILAB! ភ្លឺផ្លេកៗ!','💠 MILAB цагираг! Гялс гялс!'],
+['evt.milab','미랩 링 보너스! +500점','Thưởng vòng MILAB! +500 điểm','MILAB圆环奖励！+500分','Бонус кольца MILAB! +500 очков','MILAB ring bonus! +500 points','MILABリングボーナス！+500点','រង្វាន់រង្វង់ MILAB! +500 ពិន្ទុ','MILAB цагирагийн шагнал! +500 оноо'],
+['evt.firstY','잘했어요! 링 통과!','Giỏi lắm! Qua vòng rồi!','真棒！穿过圆环了！','Молодец! Кольцо пройдено!','Nice! Through the ring!','よくできたね！リング通過！','ពូកែ! ឆ្លងរង្វង់ហើយ!','Сайн байна! Цагираг давлаа!'],
+['evt.first','좋아요! 첫 링 통과!','Tốt lắm! Qua vòng đầu tiên!','很好！穿过第一个圆环！','Отлично! Первое кольцо пройдено!','Great! First ring cleared!','いいね！最初のリング通過！','ល្អណាស់! ឆ្លងរង្វង់ទីមួយ!','Гоё! Эхний цагираг давлаа!'],
+['evt.combo','콤보 {n}! 점수가 {x}배예요!','Combo {n}! Điểm nhân {x}!','{n}连击！分数×{x}！','Комбо {n}! Очки ×{x}!','Combo {n}! Points ×{x}!','コンボ{n}！スコア{x}倍！','កុំបូ {n}! ពិន្ទុ ×{x}!','Комбо {n}! Оноо ×{x}!'],
+['evt.missY','괜찮아요! 다음 링이 와요 😊','Không sao! Vòng tiếp theo đang tới 😊','没关系！下一个圆环来了 😊','Ничего страшного! Вот следующее кольцо 😊','That’s okay! Here comes the next ring 😊','だいじょうぶ！次のリングが来るよ 😊','មិនអីទេ! រង្វង់បន្ទាប់មកហើយ 😊','Зүгээр! Дараагийн цагираг ирж байна 😊'],
+['evt.miss','괜찮아요, 다음 링을 노려요!','Không sao, nhắm vòng tiếp theo nhé!','没关系，瞄准下一个圆环！','Ничего, целься в следующее кольцо!','It’s okay, aim for the next ring!','だいじょうぶ、次のリングをねらおう！','មិនអីទេ តម្រង់រង្វង់បន្ទាប់!','Зүгээр, дараагийн цагирагийг онил!'],
+['evt.shieldInf','🛡️ 보호막! 12초 안에 한 번 부딪혀도 괜찮아요','🛡️ Lá chắn! Trong 12 giây, va chạm một lần cũng không sao','🛡️ 护盾！12秒内撞一次也没关系','🛡️ Щит! 12 секунд одно столкновение не страшно','🛡️ Shield! For 12 seconds, one hit won’t stop you','🛡️ シールド！12秒以内なら1回ぶつかってもだいじょうぶ','🛡️ ខែល! ក្នុង ១២ វិនាទី បុកម្ដងក៏មិនអីដែរ','🛡️ Бамбай! 12 секундын дотор нэг мөргөлт зүгээр'],
+['item.battery','🔋 배터리 충전! +35%','🔋 Sạc pin! +35%','🔋 充电！+35%','🔋 Подзарядка! +35%','🔋 Battery charged! +35%','🔋 バッテリー充電！+35%','🔋 សាកថ្ម! +35%','🔋 Цэнэглэлээ! +35%'],
+['item.boost','⚡ 부스트! 3초 동안 빨라져요','⚡ Tăng tốc! Nhanh hơn trong 3 giây','⚡ 加速！3秒内变快','⚡ Ускорение! 3 секунды быстрее','⚡ Boost! Faster for 3 seconds','⚡ ブースト！3秒間速くなるよ','⚡ បង្កើនល្បឿន! លឿនជាងមុន ៣ វិនាទី','⚡ Хурдасгал! 3 секунд хурдан'],
+['item.shield','🛡️ 실드! 8초 동안 바위를 막아 줘요','🛡️ Lá chắn! Chặn đá trong 8 giây','🛡️ 护盾！8秒内挡住岩石','🛡️ Щит! 8 секунд защищает от скал','🛡️ Shield! Blocks rocks for 8 seconds','🛡️ シールド！8秒間岩をふせぐよ','🛡️ ខែល! ការពារថ្ម ៨ វិនាទី','🛡️ Бамбай! 8 секунд хаднаас хамгаална'],
+['evt.hitY','앗! 쿵! 괜찮아요, 계속 가요','Ối! Cộp! Không sao, bay tiếp nào','哎呀！咚！没关系，继续飞','Ой! Бум! Ничего, летим дальше','Oops! Bonk! It’s okay, keep going','あっ！ゴツン！だいじょうぶ、つづけよう','អូ! បុក! មិនអីទេ ហោះបន្ត','Өө! Түг! Зүгээр, үргэлжлүүлье'],
+['evt.hit','앗! 부딪혀 속도가 줄었어요. 배터리 -{n}%','Ối! Va chạm nên bị chậm lại. Pin -{n}%','哎呀！撞到了，速度变慢。电量 -{n}%','Ой! Столкновение — скорость упала. Батарея −{n}%','Oops! A hit slowed you down. Battery -{n}%','あっ！ぶつかってスピードが落ちたよ。バッテリー -{n}%','អូ! បុកហើយ ល្បឿនថយ។ ថ្ម -{n}%','Өө! Мөргөөд хурд буурлаа. Батарей -{n}%'],
+['evt.shieldUsed','🛡️ 보호막이 한 번 막아 줬어요! (보호막 사라짐)','🛡️ Lá chắn đã đỡ một lần! (lá chắn biến mất)','🛡️ 护盾挡住了一次！（护盾消失了）','🛡️ Щит спас один раз! (щит исчез)','🛡️ The shield saved you once! (shield gone)','🛡️ シールドが1回守ってくれたよ！（シールド消えた）','🛡️ ខែលបានការពារម្ដង! (ខែលបាត់ហើយ)','🛡️ Бамбай нэг удаа хамгааллаа! (бамбай алга болсон)'],
+['evt.shieldHit','실드가 막아 줬어요!','Lá chắn đã đỡ rồi!','护盾挡住了！','Щит защитил!','The shield blocked it!','シールドが守ってくれたよ！','ខែលបានការពារ!','Бамбай хамгааллаа!'],
+['evt.gustY','💨 바람이 세게 불어요! 반대쪽으로 버텨요','💨 Gió thổi mạnh! Cố bay ngược lại','💨 风好大！往反方向顶住','💨 Сильный ветер! Держись против него','💨 Strong wind! Push back the other way','💨 風が強いよ！反対側にふんばって','💨 ខ្យល់ខ្លាំង! ទប់ទៅទិសផ្ទុយ','💨 Салхи хүчтэй! Эсрэг тийш нь бариарай'],
+['evt.gustL','돌풍 경보! 왼쪽에서 바람이 불어와요. 반대 방향으로 버티세요!','Cảnh báo [[gust]]! Gió thổi từ bên trái. Hãy giữ ngược hướng!','[[gust]]警报！风从左边吹来。往反方向顶住！','Тревога: [[gust]]! Ветер дует слева. Держись в обратную сторону!','[[^gust]] warning! Wind from the left. Hold against it!','[[gust]]警報！左から風が来るよ。反対側にふんばろう！','ការព្រមាន[[gust]]! ខ្យល់បក់ពីឆ្វេង។ ទប់ទៅទិសផ្ទុយ!','Сэрэмжлүүлэг: [[gust]]! Зүүнээс салхи үлээж байна. Эсрэг тийш бариарай!'],
+['evt.gustR','돌풍 경보! 오른쪽에서 바람이 불어와요. 반대 방향으로 버티세요!','Cảnh báo [[gust]]! Gió thổi từ bên phải. Hãy giữ ngược hướng!','[[gust]]警报！风从右边吹来。往反方向顶住！','Тревога: [[gust]]! Ветер дует справа. Держись в обратную сторону!','[[^gust]] warning! Wind from the right. Hold against it!','[[gust]]警報！右から風が来るよ。反対側にふんばろう！','ការព្រមាន[[gust]]! ខ្យល់បក់ពីស្ដាំ។ ទប់ទៅទិសផ្ទុយ!','Сэрэмжлүүлэг: [[gust]]! Баруунаас салхи үлээж байна. Эсрэг тийш бариарай!'],
+['evt.surpY','⚠️ 앗! 길 위에 갑자기 생겼어요. 피해요!','⚠️ Ối! Có vật cản bất ngờ trên đường. Né đi!','⚠️ 哎呀！路上突然出现了障碍。快躲开！','⚠️ Ой! На пути вдруг что-то появилось. Уворачивайся!','⚠️ Whoa! Something just popped up. Dodge it!','⚠️ あっ！道に急にあらわれた。よけて！','⚠️ អូ! មានឧបសគ្គលេចឡើងភ្លាមៗលើផ្លូវ។ គេច!','⚠️ Өө! Замд гэнэт гарч ирлээ. Зайл!'],
+['evt.surp','⚠️ 돌발 장애물! AI 코파일럿도 몰랐던 변수예요. 직접 판단해 피하세요!','⚠️ Chướng ngại bất ngờ! Ngay cả [[copilot]] cũng không biết. Hãy tự quyết định và né!','⚠️ 突发障碍！连[[copilot]]也不知道的变数。自己判断躲开！','⚠️ Внезапное препятствие! Этого не знал даже [[copilot]]. Решение за тобой — уворачивайся!','⚠️ Surprise obstacle! Even the [[copilot]] didn’t know. Decide for yourself and dodge!','⚠️ 突然の障害物！[[copilot]]も知らなかった変化だよ。自分で判断してよけよう！','⚠️ ឧបសគ្គភ្លាមៗ! សូម្បីតែ[[copilot]]ក៏មិនដឹង។ សម្រេចចិត្តដោយខ្លួនឯង ហើយគេច!','⚠️ Гэнэтийн саад! Үүнийг мэдээгүй: [[copilot]]. Өөрөө шийдээд зайл!'],
+['evt.surpShort','⚠️ 돌발 장애물!','⚠️ Chướng ngại bất ngờ!','⚠️ 突发障碍！','⚠️ Внезапное препятствие!','⚠️ Surprise obstacle!','⚠️ 突然の障害物！','⚠️ ឧបសគ្គភ្លាមៗ!','⚠️ Гэнэтийн саад!'],
+['evt.nm3','연속 아슬아슬! 보너스가 커져요','Suýt nữa liên tiếp! Thưởng tăng lên','连续好险！奖励变多了','Опять на волоске! Бонус растёт','Close calls in a row! Bonus grows','れんぞくギリギリ！ボーナスアップ','ជិតបុកជាប់ៗគ្នា! រង្វាន់កើន','Дараалан арай гэж! Шагнал нэмэгдлээ'],
+['evt.nm6','아슬아슬 마스터!','Bậc thầy suýt nữa!','好险大师！','Мастер «на волоске»!','Close-call master!','ギリギリマスター！','មេជិតបុក!','Арай гэжийн мастер!'],
+['evt.booster','미랩 부스터! 3초 동안 무적 질주!','Tăng tốc MILAB! Lao vút bất bại trong 3 giây!','MILAB加速器！3秒无敌冲刺！','Ускоритель MILAB! 3 секунды неуязвимости!','MILAB booster! 3 seconds of invincible speed!','MILABブースター！3秒間無敵ダッシュ！','បូស្ទ័រ MILAB! ហោះលឿនមិនចាញ់ ៣ វិនាទី!','MILAB хурдасгуур! 3 секунд ялагдашгүй давхилт!'],
+['evt.saver','배터리가 바닥났어요. 절전 비행으로 천천히 가요. 🔋 아이템을 찾아요!','Hết pin rồi. Bay tiết kiệm pin chậm thôi. Tìm vật phẩm 🔋 nhé!','电量用完了。用省电模式慢慢飞。找找🔋道具吧！','Батарея села. Летим медленно в режиме экономии. Ищи 🔋!','Battery is empty. Flying slowly in power-save mode. Look for 🔋 items!','バッテリーが切れたよ。節電飛行でゆっくり行こう。🔋アイテムをさがそう！','ថ្មអស់ហើយ។ ហោះសន្សំថ្មយឺតៗ។ រក 🔋!','Батарей дууслаа. Хэмнэлттэй аажуухан нисье. 🔋-ийг хай!'],
+['evt.finishY','🏁 결승선! 이제 내려와요','🏁 Về đích! Giờ hạ xuống nào','🏁 终点！现在降落吧','🏁 Финиш! Теперь снижаемся','🏁 Finish line! Time to come down','🏁 ゴール！おりてこよう','🏁 ទីបញ្ចប់! ចុះមកវិញ','🏁 Барианд! Одоо буу'],
+['evt.finish','결승선 통과! 로터를 다시 세워 수직 착륙(Vertical Landing)합니다.','Qua vạch đích! Dựng [[rotor]] lên lại để [[vland]].','通过终点！把[[rotor]]重新竖起来，[[vland]]。','Финиш! Поднимаем [[rotor]] обратно — [[vland]].','Finish line! Tilting the [[rotor]] back up for a [[vland]].','ゴール通過！[[rotor]]をまた立てて[[vland]]します。','ឆ្លងទីបញ្ចប់! លើក[[rotor]]ឡើងវិញ ដើម្បី[[vland]]។','Барианд! Роторыг дахин босгож байна: [[vland]].'],
+['evt.hover','저속 호버: 로터를 반쯤 세워 천천히 날아요','[[^hover]]: dựng [[rotor]] lên một nửa để bay chậm','[[hover]]：把[[rotor]]立起一半，慢慢飞','[[^hover]]: [[rotor]] наполовину поднят, летим медленно','[[^hover]]: [[rotor]] half up, flying slowly','[[hover]]：[[rotor]]を半分立ててゆっくり飛ぶよ','[[hover]]៖ លើក[[rotor]]ពាក់កណ្ដាល ហោះយឺតៗ','[[^hover]]: [[rotor]] хагас босоо, аажуухан нисэж байна'],
+['evt.cruise','순항 비행: 로터를 앞으로!','[[^cruise]]: [[rotor]] hướng về phía trước!','[[cruise]]飞行：[[rotor]]向前！','[[^cruise]]: [[rotor]] вперёд!','[[^cruise]] flight: [[rotor]] forward!','[[cruise]]飛行：[[rotor]]を前へ！','[[cruise]]៖ [[rotor]]ទៅមុខ!','[[^cruise]]: [[rotor]] урагшаа!'],
+['evt.recenter','정면을 다시 맞췄어요!','Đã chỉnh lại hướng phía trước!','已重新校准正面！','Направление вперёд снова настроено!','Front direction reset!','正面をもう一度合わせたよ！','បានកំណត់ទិសខាងមុខឡើងវិញ!','Урд чиглэлийг дахин тохирууллаа!'],
+['evt.vrStartY','👀 가고 싶은 코스를 바라보세요!','👀 Nhìn vào đường bay bạn muốn chọn!','👀 看着你想去的航线！','👀 Посмотри на трассу, которую хочешь!','👀 Look at the course you want!','👀 行きたいコースを見つめよう！','👀 មើលផ្លូវហោះដែលអ្នកចង់ទៅ!','👀 Очмоор байгаа зам руугаа хар!'],
+['evt.vrStart','VR 모드 시작! 고르고 싶은 코스를 1.5초 바라보세요.','Bắt đầu chế độ VR! Nhìn vào đường bay muốn chọn trong 1,5 giây.','VR模式开始！看着想选的航线1.5秒。','Режим VR! Смотри на нужную трассу 1,5 секунды.','VR mode on! Look at a course for 1.5 seconds to pick it.','VRモードスタート！えらびたいコースを1.5秒見つめよう。','របៀប VR ចាប់ផ្ដើម! មើលផ្លូវហោះដែលចង់ជ្រើស ១,៥ វិនាទី។','VR горим эхэллээ! Сонгох замаа 1.5 секунд хар.'],
+['evt.headDown','고개를 계속 숙이고 있으면 잠깐 멈춰요','Nếu cứ cúi đầu, trò chơi sẽ tạm dừng','一直低着头就会暂停','Если держать голову опущенной, будет пауза','Keep your head down to pause','頭を下げたままにすると一時停止するよ','បើឱនក្បាលយូរ នឹងផ្អាក','Толгойгоо гудайлгаад байвал түр зогсоно'],
 
 /* --- 카운트다운 · 회전 · 공통 --- */
-['cd.insert','카드보드에 끼워 주세요','Gắn điện thoại vào Cardboard nhé','请放进纸盒眼镜','Вставь телефон в Cardboard','Put the phone in the Cardboard'],
-['cd.look','앞을 바라보세요!','Nhìn về phía trước!','看向前方！','Смотри вперёд!','Look straight ahead!'],
-['rot.title','휴대폰을 가로로 돌려 주세요','Hãy xoay ngang điện thoại','请把手机横过来','Поверни телефон горизонтально','Please turn your phone sideways'],
-['rot.sub','VR 화면은 가로로만 보여요. (화면 회전 잠금이 켜져 있으면 꺼 주세요)','Màn hình VR chỉ hiện khi xoay ngang. (Nếu đang khóa xoay màn hình, hãy tắt đi)','VR画面只能横着看。（如果开了屏幕旋转锁定，请关掉）','VR-картинка показывается только горизонтально. (Если включена блокировка поворота, выключи её)','The VR view only works sideways. (If screen rotation lock is on, turn it off.)'],
-['common.cancel','취소','Hủy','取消','Отмена','Cancel'],
-['common.close','닫기','Đóng','关闭','Закрыть','Close'],
-['upd.msg','✨ 새 버전이 있어요','✨ Có phiên bản mới','✨ 有新版本了','✨ Есть новая версия','✨ A new version is available'],
-['upd.get','새 버전 받기','Cập nhật','更新','Обновить','Update'],
-['upd.later','나중에','Để sau','以后再说','Позже','Later'],
+['cd.insert','카드보드에 끼워 주세요','Gắn điện thoại vào Cardboard nhé','请放进纸盒眼镜','Вставь телефон в Cardboard','Put the phone in the Cardboard','ゴーグルに入れてね','ដាក់ទូរស័ព្ទក្នុង Cardboard','Утсаа Cardboard-д хий'],
+['cd.look','앞을 바라보세요!','Nhìn về phía trước!','看向前方！','Смотри вперёд!','Look straight ahead!','前を見て！','មើលទៅមុខ!','Урагшаа хар!'],
+['rot.title','휴대폰을 가로로 돌려 주세요','Hãy xoay ngang điện thoại','请把手机横过来','Поверни телефон горизонтально','Please turn your phone sideways','スマホを横にしてね','សូមបង្វិលទូរស័ព្ទជាផ្ដេក','Утсаа хэвтээ болго'],
+['rot.sub','VR 화면은 가로로만 보여요. (화면 회전 잠금이 켜져 있으면 꺼 주세요)','Màn hình VR chỉ hiện khi xoay ngang. (Nếu đang khóa xoay màn hình, hãy tắt đi)','VR画面只能横着看。（如果开了屏幕旋转锁定，请关掉）','VR-картинка показывается только горизонтально. (Если включена блокировка поворота, выключи её)','The VR view only works sideways. (If screen rotation lock is on, turn it off.)','VR画面は横向きでしか見られないよ。（画面の回転ロックがオンならオフにしてね）','អេក្រង់ VR បង្ហាញតែពេលផ្ដេកប៉ុណ្ណោះ។ (បើបានចាក់សោការបង្វិលអេក្រង់ សូមបិទ)','VR дэлгэц зөвхөн хэвтээ үед харагдана. (Дэлгэц эргүүлэх түгжээ асаалттай бол унтраа)'],
+['common.cancel','취소','Hủy','取消','Отмена','Cancel','キャンセル','បោះបង់','Цуцлах'],
+['common.close','닫기','Đóng','关闭','Закрыть','Close','とじる','បិទ','Хаах'],
+['upd.msg','✨ 새 버전이 있어요','✨ Có phiên bản mới','✨ 有新版本了','✨ Есть новая версия','✨ A new version is available','✨ 新しいバージョンがあるよ','✨ មានកំណែថ្មី','✨ Шинэ хувилбар гарсан'],
+['upd.get','새 버전 받기','Cập nhật','更新','Обновить','Update','更新する','ធ្វើបច្ចុប្បន្នភាព','Шинэчлэх'],
+['upd.later','나중에','Để sau','以后再说','Позже','Later','あとで','ពេលក្រោយ','Дараа'],
 
 /* --- VR 패널 (캔버스) --- */
-['vrp.recenter','정면 맞추기','Chỉnh hướng','校准正面','Настроить центр','Recenter'],
-['vrp.quit','그만하기','Dừng chơi','不玩了','Закончить','Quit'],
-['vrp.menuTitle','코스를 1.5초 바라보세요','Nhìn đường bay 1,5 giây','看着航线1.5秒','Смотри на трассу 1,5 с','Look at a course for 1.5s'],
-['vrp.menuSub','숫자가 클수록 어렵고 길어요','Số càng lớn càng khó và dài','数字越大越难越长','Чем больше номер, тем сложнее и дольше','Bigger number = harder and longer'],
-['vrp.out','카드보드에서 폰을 꺼내 주세요','Lấy điện thoại ra khỏi Cardboard','请从纸盒眼镜里取出手机','Достань телефон из Cardboard','Take the phone out of the Cardboard'],
-['vrp.outSub','화면을 톡 누르면 결과와 메뉴가 나와요','Chạm vào màn hình để xem kết quả và menu','点一下屏幕就会出现结果和菜单','Коснись экрана — появятся результаты и меню','Tap the screen to see results and the menu'],
-['vrp.transTitle','천이 게이지','Thanh chuyển tiếp','过渡计量表','Шкала перехода','Transition gauge'],
-['vrp.transSub','로터를 앞으로 기울여 순항 비행으로!','Nghiêng cánh quạt để bay hành trình!','把旋翼向前倾斜，进入巡航飞行！','Наклони ротор вперёд — в крейсерский полёт!','Tilt the rotor forward into cruise flight!'],
-['vrp.look2','2초 바라보기','Nhìn 2 giây','看2秒','Смотри 2 с','Look for 2s'],
-['vrp.pauseSub','고개를 들고 버튼을 바라보세요','Ngẩng đầu và nhìn vào nút','抬起头，看着按钮','Подними голову и смотри на кнопку','Lift your head and look at a button'],
-['vrp.break','☕ 쉬는 시간이에요!','☕ Giờ nghỉ rồi!','☕ 休息时间到了！','☕ Время отдохнуть!','☕ Break time!'],
-['vrp.landed','🛬 착륙 완료!','🛬 Hạ cánh xong!','🛬 着陆完成！','🛬 Посадка выполнена!','🛬 Landed!'],
-['vrp.breakSub','카드보드를 내려놓고 먼 곳을 보며 눈을 쉬어요','Đặt Cardboard xuống, nhìn ra xa cho mắt nghỉ','放下纸盒眼镜，看看远处让眼睛休息','Отложи Cardboard и посмотри вдаль — пусть глаза отдохнут','Put the Cardboard down and look far away to rest your eyes'],
-['vrp.copilot','🤖 AI 추천 경로만 따랐다면 돌발 장애물 {a}개를 만났어요 · 내가 피한 수: {b}','🤖 Chỉ theo đường AI thì sẽ gặp {a} chướng ngại · Bạn đã né: {b}','🤖 只跟AI路线会遇到{a}个突发障碍 · 我躲开了：{b}','🤖 По маршруту ИИ препятствий было бы: {a} · Удалось обойти: {b}','🤖 AI route only: {a} surprise obstacles · You dodged: {b}'],
-['vrp.summary','링 {a}/{b}  ·  {s}점  ·  최대 콤보 {c}','Vòng {a}/{b}  ·  {s} điểm  ·  Combo cao nhất {c}','圆环 {a}/{b}  ·  {s}分  ·  最高连击 {c}','Кольца {a}/{b}  ·  {s} очк.  ·  Макс. комбо {c}','Rings {a}/{b}  ·  {s} pts  ·  Best combo {c}'],
-['vrp.phoneOut','폰 꺼내기','Lấy điện thoại ra','取出手机','Достать телефон','Take phone out'],
-['vrp.retry','다시 날기','Bay lại','再飞一次','Ещё раз','Fly again'],
-['vrp.next','다음 코스','Đường bay tiếp','下一条航线','Следующая','Next course'],
-['tex.finish','에어로크레스트  ·  FINISH  ·  결승','AeroKrest  ·  FINISH  ·  VỀ ĐÍCH','AeroKrest  ·  FINISH  ·  终点','AeroKrest  ·  FINISH  ·  ФИНИШ','AeroKrest  ·  FINISH LINE'],
-['tex.start','미랩 비행장 · 버티포트','Sân bay MILAB · Vertiport','MILAB机场 · 垂直起降场','Аэродром MILAB · Вертипорт','MILAB Airfield · Vertiport'],
+['vrp.recenter','정면 맞추기','Chỉnh hướng','校准正面','Настроить центр','Recenter','正面合わせ','កំណត់ទិសមុខ','Төв тохируулах'],
+['vrp.quit','그만하기','Dừng chơi','不玩了','Закончить','Quit','やめる','ឈប់','Дуусгах'],
+['vrp.menuTitle','코스를 1.5초 바라보세요','Nhìn đường bay 1,5 giây','看着航线1.5秒','Смотри на трассу 1,5 с','Look at a course for 1.5s','コースを1.5秒見つめよう','មើលផ្លូវហោះ ១,៥ វិនាទី','Замаа 1.5 сек хар'],
+['vrp.menuSub','숫자가 클수록 어렵고 길어요','Số càng lớn càng khó và dài','数字越大越难越长','Чем больше номер, тем сложнее и дольше','Bigger number = harder and longer','数字が大きいほどむずかしくて長いよ','លេខកាន់តែធំ កាន់តែពិបាក និងវែង','Тоо их байх тусам хэцүү, урт'],
+['vrp.out','카드보드에서 폰을 꺼내 주세요','Lấy điện thoại ra khỏi Cardboard','请从纸盒眼镜里取出手机','Достань телефон из Cardboard','Take the phone out of the Cardboard','ゴーグルからスマホを出してね','យកទូរស័ព្ទចេញពី Cardboard','Утсаа Cardboard-аас гарга'],
+['vrp.outSub','화면을 톡 누르면 결과와 메뉴가 나와요','Chạm vào màn hình để xem kết quả và menu','点一下屏幕就会出现结果和菜单','Коснись экрана — появятся результаты и меню','Tap the screen to see results and the menu','画面をタップすると結果とメニューが出るよ','ប៉ះអេក្រង់ ដើម្បីមើលលទ្ធផល និងម៉ឺនុយ','Дэлгэцэнд хүрвэл үр дүн, цэс гарна'],
+['vrp.transTitle','천이 게이지','Thanh chuyển tiếp','过渡计量表','Шкала перехода','Transition gauge','遷移ゲージ','រង្វាស់ផ្លាស់ប្ដូរ','Шилжилтийн хэмжүүр'],
+['vrp.transSub','로터를 앞으로 기울여 순항 비행으로!','Nghiêng cánh quạt để bay hành trình!','把旋翼向前倾斜，进入巡航飞行！','Наклони ротор вперёд — в крейсерский полёт!','Tilt the rotor forward into cruise flight!','ローターを前にかたむけて巡航飛行へ！','ផ្អៀងរ៉ូទ័រទៅមុខ ដើម្បីហោះល្បឿនថេរ!','Роторыг урагш хазайлгаж аялалын нислэгт!'],
+['vrp.look2','2초 바라보기','Nhìn 2 giây','看2秒','Смотри 2 с','Look for 2s','2秒見つめる','មើល ២ វិនាទី','2 сек харах'],
+['vrp.pauseSub','고개를 들고 버튼을 바라보세요','Ngẩng đầu và nhìn vào nút','抬起头，看着按钮','Подними голову и смотри на кнопку','Lift your head and look at a button','顔を上げてボタンを見つめよう','ងើបក្បាល ហើយមើលប៊ូតុង','Толгойгоо өргөөд товч руу хар'],
+['vrp.break','☕ 쉬는 시간이에요!','☕ Giờ nghỉ rồi!','☕ 休息时间到了！','☕ Время отдохнуть!','☕ Break time!','☕ 休けいタイムだよ！','☕ ដល់ពេលសម្រាក!','☕ Амрах цаг боллоо!'],
+['vrp.landed','🛬 착륙 완료!','🛬 Hạ cánh xong!','🛬 着陆完成！','🛬 Посадка выполнена!','🛬 Landed!','🛬 着陸完了！','🛬 ចុះចតរួចរាល់!','🛬 Газардлаа!'],
+['vrp.breakSub','카드보드를 내려놓고 먼 곳을 보며 눈을 쉬어요','Đặt Cardboard xuống, nhìn ra xa cho mắt nghỉ','放下纸盒眼镜，看看远处让眼睛休息','Отложи Cardboard и посмотри вдаль — пусть глаза отдохнут','Put the Cardboard down and look far away to rest your eyes','ゴーグルを置いて遠くを見て目を休めよう','ដាក់ Cardboard ចុះ ហើយមើលទៅឆ្ងាយ ឲ្យភ្នែកសម្រាក','Cardboard-оо тавиад алс хараад нүдээ амраа'],
+['vrp.copilot','🤖 AI 추천 경로만 따랐다면 돌발 장애물 {a}개를 만났어요 · 내가 피한 수: {b}','🤖 Chỉ theo đường AI thì sẽ gặp {a} chướng ngại · Bạn đã né: {b}','🤖 只跟AI路线会遇到{a}个突发障碍 · 我躲开了：{b}','🤖 По маршруту ИИ препятствий было бы: {a} · Удалось обойти: {b}','🤖 AI route only: {a} surprise obstacles · You dodged: {b}','🤖 AIルートだけなら突然の障害物{a}個 · よけた数：{b}','🤖 តាមផ្លូវ AI តែប៉ុណ្ណោះ ជួបឧបសគ្គ {a} · អ្នកគេចបាន៖ {b}','🤖 Зөвхөн AI-ийн замаар: {a} гэнэтийн саад · Тойрсон: {b}'],
+['vrp.summary','링 {a}/{b}  ·  {s}점  ·  최대 콤보 {c}','Vòng {a}/{b}  ·  {s} điểm  ·  Combo cao nhất {c}','圆环 {a}/{b}  ·  {s}分  ·  最高连击 {c}','Кольца {a}/{b}  ·  {s} очк.  ·  Макс. комбо {c}','Rings {a}/{b}  ·  {s} pts  ·  Best combo {c}','リング {a}/{b}  ·  {s}点  ·  最大コンボ {c}','រង្វង់ {a}/{b}  ·  {s} ពិន្ទុ  ·  កុំបូខ្ពស់បំផុត {c}','Цагираг {a}/{b}  ·  {s} оноо  ·  Дээд комбо {c}'],
+['vrp.phoneOut','폰 꺼내기','Lấy điện thoại ra','取出手机','Достать телефон','Take phone out','スマホを出す','យកទូរស័ព្ទចេញ','Утсаа гаргах'],
+['vrp.retry','다시 날기','Bay lại','再飞一次','Ещё раз','Fly again','もう一度','ហោះម្ដងទៀត','Дахин'],
+['vrp.next','다음 코스','Đường bay tiếp','下一条航线','Следующая','Next course','次のコース','ផ្លូវបន្ទាប់','Дараагийн зам'],
+['tex.finish','에어로크레스트  ·  FINISH  ·  결승','AeroKrest  ·  FINISH  ·  VỀ ĐÍCH','AeroKrest  ·  FINISH  ·  终点','AeroKrest  ·  FINISH  ·  ФИНИШ','AeroKrest  ·  FINISH LINE','AeroKrest  ·  FINISH  ·  ゴール','AeroKrest  ·  FINISH  ·  ទីបញ្ចប់','AeroKrest  ·  FINISH  ·  БАРИА'],
+['tex.start','미랩 비행장 · 버티포트','Sân bay MILAB · Vertiport','MILAB机场 · 垂直起降场','Аэродром MILAB · Вертипорт','MILAB Airfield · Vertiport','MILAB飛行場 · バーティポート','ព្រលាន MILAB · វើធីផត','MILAB нисэх буудал · Вертипорт'],
 
 /* --- 홈 화면 추가 안내 · 기타 --- */
-['inst.title','📲 홈 화면에 추가하기','📲 Thêm vào màn hình chính','📲 添加到主屏幕','📲 Добавить на главный экран','📲 Add to Home Screen'],
-['inst.ios','아이폰·아이패드 (Safari)','iPhone · iPad (Safari)','iPhone · iPad（Safari）','iPhone · iPad (Safari)','iPhone · iPad (Safari)'],
-['inst.ios1','아래쪽(아이패드는 위쪽) <b>공유 버튼 ⬆️</b>을 눌러요.','Bấm <b>nút Chia sẻ ⬆️</b> ở dưới (iPad thì ở trên).','点下方（iPad在上方）的<b>分享按钮 ⬆️</b>。','Нажми <b>кнопку «Поделиться» ⬆️</b> внизу (на iPad — вверху).','Tap the <b>Share button ⬆️</b> at the bottom (top on iPad).'],
-['inst.ios2','<b>「홈 화면에 추가」</b>를 눌러요.','Bấm <b>«Thêm vào MH chính»</b>.','点<b>「添加到主屏幕」</b>。','Нажми <b>«На экран „Домой“»</b>.','Tap <b>“Add to Home Screen”</b>.'],
-['inst.ios3','홈 화면의 <b>AeroKrest 아이콘</b>을 <b>인터넷이 될 때 한 번</b> 열어, 「✅ 오프라인 준비 완료」를 확인해요.','Mở <b>biểu tượng AeroKrest</b> trên màn hình chính <b>một lần khi có Internet</b> và kiểm tra «✅ Sẵn sàng chơi ngoại tuyến».','<b>在有网络时</b>打开一次主屏幕上的<b>AeroKrest图标</b>，确认「✅ 离线准备完成」。','<b>Когда есть интернет</b>, один раз открой <b>значок AeroKrest</b> на главном экране и проверь «✅ Готово к работе офлайн».','Open the <b>AeroKrest icon</b> on your home screen <b>once while online</b> and check for “✅ Ready to play offline”.'],
-['inst.and','안드로이드 (Chrome)','Android (Chrome)','安卓（Chrome）','Android (Chrome)','Android (Chrome)'],
-['inst.and1','오른쪽 위 <b>⋮</b> 메뉴 → <b>「홈 화면에 추가」</b> 또는 <b>「앱 설치」</b>를 눌러요.','Menu <b>⋮</b> ở góc trên bên phải → bấm <b>«Thêm vào màn hình chính»</b> hoặc <b>«Cài đặt ứng dụng»</b>.','右上角<b>⋮</b>菜单 → 点<b>「添加到主屏幕」</b>或<b>「安装应用」</b>。','Меню <b>⋮</b> справа вверху → <b>«Добавить на главный экран»</b> или <b>«Установить приложение»</b>.','Menu <b>⋮</b> at the top right → tap <b>“Add to Home screen”</b> or <b>“Install app”</b>.'],
-['inst.done','홈 화면에 추가했어요! 이제 아이콘으로 실행해요','Đã thêm vào màn hình chính! Giờ mở bằng biểu tượng nhé','已添加到主屏幕！现在用图标打开吧','Добавлено на главный экран! Теперь открывай значком','Added to Home Screen! Open it from the icon now'],
-['webgl.t','이 기기는 3D 그래픽(WebGL)을 지원하지 않아요','Máy này không hỗ trợ đồ họa 3D (WebGL)','这台设备不支持3D图形（WebGL）','Это устройство не поддерживает 3D-графику (WebGL)','This device doesn’t support 3D graphics (WebGL)'],
-['webgl.s','Chrome·Safari 최신 버전에서 다시 열어 주세요.','Hãy mở lại bằng Chrome hoặc Safari bản mới nhất.','请用最新版Chrome或Safari重新打开。','Открой снова в последней версии Chrome или Safari.','Please open it again in the latest Chrome or Safari.'],
-['tts.none','이 기기에는 {lang} 음성이 없어서 자막으로만 안내해요','Máy này không có giọng đọc {lang}, nên chỉ hiện phụ đề','这台设备没有{lang}语音，只用字幕提示','На этом устройстве нет голоса «{lang}», поэтому будут только субтитры','This device has no {lang} voice, so guidance will be captions only'],
-['lang.change','🌐 언어','🌐 Ngôn ngữ','🌐 语言','🌐 Язык','🌐 Language']
+['inst.title','📲 홈 화면에 추가하기','📲 Thêm vào màn hình chính','📲 添加到主屏幕','📲 Добавить на главный экран','📲 Add to Home Screen','📲 ホーム画面に追加する','📲 បន្ថែមទៅអេក្រង់ដើម','📲 Нүүр дэлгэцэнд нэмэх'],
+['inst.ios','아이폰·아이패드 (Safari)','iPhone · iPad (Safari)','iPhone · iPad（Safari）','iPhone · iPad (Safari)','iPhone · iPad (Safari)','iPhone · iPad（Safari）','iPhone · iPad (Safari)','iPhone · iPad (Safari)'],
+['inst.ios1','아래쪽(아이패드는 위쪽) <b>공유 버튼 ⬆️</b>을 눌러요.','Bấm <b>nút Chia sẻ ⬆️</b> ở dưới (iPad thì ở trên).','点下方（iPad在上方）的<b>分享按钮 ⬆️</b>。','Нажми <b>кнопку «Поделиться» ⬆️</b> внизу (на iPad — вверху).','Tap the <b>Share button ⬆️</b> at the bottom (top on iPad).','下（iPadは上）の<b>共有ボタン ⬆️</b>を押そう。','ចុច<b>ប៊ូតុងចែករំលែក ⬆️</b> ខាងក្រោម (iPad នៅខាងលើ)។','Доод талын (iPad дээр дээд талын) <b>Хуваалцах товч ⬆️</b>-ийг дар.'],
+['inst.ios2','<b>「홈 화면에 추가」</b>를 눌러요.','Bấm <b>«Thêm vào MH chính»</b>.','点<b>「添加到主屏幕」</b>。','Нажми <b>«На экран „Домой“»</b>.','Tap <b>“Add to Home Screen”</b>.','<b>「ホーム画面に追加」</b>を押そう。','ចុច <b>«បន្ថែមទៅអេក្រង់ដើម»</b>។','<b>«Нүүр дэлгэцэнд нэмэх»</b>-ийг дар.'],
+['inst.ios3','홈 화면의 <b>AeroKrest 아이콘</b>을 <b>인터넷이 될 때 한 번</b> 열어, 「✅ 오프라인 준비 완료」를 확인해요.','Mở <b>biểu tượng AeroKrest</b> trên màn hình chính <b>một lần khi có Internet</b> và kiểm tra «✅ Sẵn sàng chơi ngoại tuyến».','<b>在有网络时</b>打开一次主屏幕上的<b>AeroKrest图标</b>，确认「✅ 离线准备完成」。','<b>Когда есть интернет</b>, один раз открой <b>значок AeroKrest</b> на главном экране и проверь «✅ Готово к работе офлайн».','Open the <b>AeroKrest icon</b> on your home screen <b>once while online</b> and check for “✅ Ready to play offline”.','ホーム画面の<b>AeroKrestアイコン</b>を<b>ネットにつながっているときに一度</b>開いて、「✅ オフライン準備完了」を確認しよう。','បើក<b>រូបតំណាង AeroKrest</b> លើអេក្រង់ដើម <b>ម្ដងពេលមានអ៊ីនធឺណិត</b> ហើយពិនិត្យ «✅ រួចរាល់សម្រាប់លេងគ្មានអ៊ីនធឺណិត»។','Нүүр дэлгэц дээрх <b>AeroKrest дүрсийг</b> <b>интернэттэй үед нэг удаа</b> нээж «✅ Офлайн тоглоход бэлэн»-ийг шалга.'],
+['inst.and','안드로이드 (Chrome)','Android (Chrome)','安卓（Chrome）','Android (Chrome)','Android (Chrome)','Android（Chrome）','Android (Chrome)','Android (Chrome)'],
+['inst.and1','오른쪽 위 <b>⋮</b> 메뉴 → <b>「홈 화면에 추가」</b> 또는 <b>「앱 설치」</b>를 눌러요.','Menu <b>⋮</b> ở góc trên bên phải → bấm <b>«Thêm vào màn hình chính»</b> hoặc <b>«Cài đặt ứng dụng»</b>.','右上角<b>⋮</b>菜单 → 点<b>「添加到主屏幕」</b>或<b>「安装应用」</b>。','Меню <b>⋮</b> справа вверху → <b>«Добавить на главный экран»</b> или <b>«Установить приложение»</b>.','Menu <b>⋮</b> at the top right → tap <b>“Add to Home screen”</b> or <b>“Install app”</b>.','右上の<b>⋮</b>メニュー → <b>「ホーム画面に追加」</b>または<b>「アプリをインストール」</b>を押そう。','ម៉ឺនុយ <b>⋮</b> ខាងស្ដាំលើ → ចុច <b>«បន្ថែមទៅអេក្រង់ដើម»</b> ឬ <b>«ដំឡើងកម្មវិធី»</b>។','Баруун дээд <b>⋮</b> цэс → <b>«Нүүр дэлгэцэнд нэмэх»</b> эсвэл <b>«Апп суулгах»</b>-ыг дар.'],
+['inst.done','홈 화면에 추가했어요! 이제 아이콘으로 실행해요','Đã thêm vào màn hình chính! Giờ mở bằng biểu tượng nhé','已添加到主屏幕！现在用图标打开吧','Добавлено на главный экран! Теперь открывай значком','Added to Home Screen! Open it from the icon now','ホーム画面に追加したよ！これからはアイコンで開こう','បានបន្ថែមទៅអេក្រង់ដើម! ឥឡូវបើកដោយរូបតំណាង','Нүүр дэлгэцэнд нэмлээ! Одоо дүрсээр нь нээгээрэй'],
+['webgl.t','이 기기는 3D 그래픽(WebGL)을 지원하지 않아요','Máy này không hỗ trợ đồ họa 3D (WebGL)','这台设备不支持3D图形（WebGL）','Это устройство не поддерживает 3D-графику (WebGL)','This device doesn’t support 3D graphics (WebGL)','この端末は3Dグラフィックス（WebGL）に対応していません','ឧបករណ៍នេះមិនគាំទ្រក្រាហ្វិក 3D (WebGL) ទេ','Энэ төхөөрөмж 3D график (WebGL) дэмждэггүй'],
+['webgl.s','Chrome·Safari 최신 버전에서 다시 열어 주세요.','Hãy mở lại bằng Chrome hoặc Safari bản mới nhất.','请用最新版Chrome或Safari重新打开。','Открой снова в последней версии Chrome или Safari.','Please open it again in the latest Chrome or Safari.','最新版のChrome・Safariで開きなおしてね。','សូមបើកម្ដងទៀតក្នុង Chrome ឬ Safari ជំនាន់ចុងក្រោយ។','Chrome эсвэл Safari-ийн шинэ хувилбараар дахин нээгээрэй.'],
+['tts.none','이 기기에는 {lang} 음성이 없어서 자막으로만 안내해요','Máy này không có giọng đọc {lang}, nên chỉ hiện phụ đề','这台设备没有{lang}语音，只用字幕提示','На этом устройстве нет голоса «{lang}», поэтому будут только субтитры','This device has no {lang} voice, so guidance will be captions only','この端末には{lang}の音声がないので、字幕だけで案内するよ','ឧបករណ៍នេះគ្មានសំឡេង {lang} ទេ ដូច្នេះបង្ហាញតែអក្សររត់','Энэ төхөөрөмжид {lang} дуу хоолой байхгүй тул зөвхөн хадмалаар зааварлана'],
+['lang.change','🌐 언어','🌐 Ngôn ngữ','🌐 语言','🌐 Язык','🌐 Language','🌐 言語','🌐 ភាសា','🌐 Хэл']
 ]);
 </script>
 <script>
@@ -2436,7 +2476,7 @@ return { initShared:initShared, buildStage:buildStage, freeStage:freeStage, prep
 (function(){
 'use strict';
 var BASE_URL = 'https://milab2019.github.io/main/milab_vr_055.html';
-var VERSION = '1.5.0';
+var VERSION = '1.6.1';
 var LS = 'milab55_';
 /* ---------- 다국어 (MILAB i18n 표준 블록 v1) ---------- */
 var I18 = MI18N.init({ key:LS+'lang', biKey:LS+'bi', param:'lang', biDefault:true });
@@ -2445,7 +2485,7 @@ function presetName(k){ return tr('preset.'+k+'.name'); }
 function levelName(l){ return tr('level.'+l+'.name'); }
 function stageName(n){ return tr('stage.'+n+'.name'); }
 function noIcon(s){ return String(s).replace(/^[^\p{L}\p{N}]+/u, ''); }
-function readMs(s){ return String(s).length * ({ ko:110, zh:120 }[MI18N.lang] || 70); }
+function readMs(s){ return String(s).length * ({ ko:110, zh:120, ja:115, km:55 }[MI18N.lang] || 70); }
 function fitFont(c, text, w, px, maxW){ var f = MI18N.font(); c.font = w+' '+px+'px '+f; while(px > 14 && c.measureText(text).width > maxW){ px -= 1; c.font = w+' '+px+'px '+f; } return px; }
 var $ = function(id){ return document.getElementById(id); };
 var clamp = AK.clamp, lerp = AK.lerp;
@@ -2637,7 +2677,7 @@ function speak(text){
   try{
     speechSynthesis.cancel();
     var clean = MI18N.speakable(text).replace(/[\u{1F300}-\u{1FAFF}☀-➿]/gu,'').trim(); var parts = [], buf = '';
-    var zh = MI18N.lang==='zh', sep = zh ? '' : ' '; (zh ? Array.from(clean) : clean.split(' ')).forEach(function(w){ if((buf+sep+w).length > 80){ parts.push(buf); buf = w; } else buf = buf ? buf+sep+w : w; }); if(buf) parts.push(buf);
+    var SG = MI18N.seg(clean), sep = SG.sep; SG.words.forEach(function(w){ if((buf+sep+w).length > 80){ parts.push(buf); buf = w; } else buf = buf ? buf+sep+w : w; }); if(buf) parts.push(buf);
     parts.forEach(function(p){ var u = new SpeechSynthesisUtterance(p); u.lang = TTS.voice.lang || MI18N.LANGS[MI18N.lang].loc; u.voice = TTS.voice; u.rate = ST.preset==='dev' ? 0.9 : 1.02; u.pitch = 1.15; speechSynthesis.speak(u); });
   }catch(e){}
 }
@@ -2940,7 +2980,7 @@ function vrSubPanel(){
   }, []);
 }
 function wrap(c, text, x, y, maxW, lh, maxL){
-  var zh = MI18N.lang==='zh', sep = zh ? '' : ' ', words = zh ? Array.from(text) : text.split(' '), lines = [], cur2 = '';
+  var SG = MI18N.seg(text), sep = SG.sep, words = SG.words, lines = [], cur2 = '';
   words.forEach(function(w){ var t = cur2 ? cur2+sep+w : w; if(c.measureText(t).width > maxW && cur2){ lines.push(cur2); cur2 = w; } else cur2 = t; }); lines.push(cur2);
   lines = lines.slice(0, maxL||3); var y0 = y - (lines.length-1)*lh/2; lines.forEach(function(l,i){ c.fillText(l, x, y0+i*lh); });
 }
@@ -3617,7 +3657,7 @@ var SETROWS = [
   ['lensShift','set.lensShift','set.lensShift.d',[[-0.12,'◀◀'],[-0.06,'◀'],[0,'opt.default'],[0.06,'▶'],[0.12,'▶▶']]]
 ];
 function openSettings(){
-  var h = '<div class="sec">🌐 '+trh('sec.lang')+(MI18N.lang==='en' ? '' : ' · Language')+'</div><div class="set"><div class="seg lang-seg">' + MI18N.ORDER.map(function(l){ return '<button data-lang="'+l+'" lang="'+MI18N.LANGS[l].html+'" class="'+(MI18N.lang===l?'on':'')+'">'+MI18N.LANGS[l].name+'</button>'; }).join('') + '</div></div>';
+  var h = '<div class="sec">🌐 '+trh('sec.lang')+(MI18N.lang==='en' ? '' : ' · Language')+'</div><div class="set"><div class="seg lang-seg">' + MI18N.ORDER.map(function(l){ return '<button data-lang="'+l+'" lang="'+MI18N.LANGS[l].html+'" class="'+(MI18N.lang===l?'on':'')+'">'+MI18N.LANGS[l].name+(MI18N.LANGS[l].beta ? ' β' : '')+'</button>'; }).join('') + '</div></div>';
   if(MI18N.lang!=='ko') h += '<div class="set"><div>'+trh('set.bi')+'<small>'+trh('set.bi.d')+'</small></div><button class="tog'+(MI18N.biPref?' on':'')+'" id="setBi" aria-pressed="'+MI18N.biPref+'"></button></div>';
   SETROWS.forEach(function(r){
     if(r[0]==='sec'){ h += '<div class="sec">'+trh(r[1])+'</div>'; return; }
@@ -3663,7 +3703,7 @@ function openTeacher(){
     '<div class="set"><div>학교 유형</div></div>' + seg('preset', Object.keys(AK.PRESETS).map(function(k){ return [k, AK.PRESETS[k].icon+' '+AK.PRESETS[k].name]; }), TCH.preset) +
     '<div class="set"><div>난이도 <small>일반·청각 프리셋에 적용</small></div>' + seg('level', [[1,'기초'],[2,'표준'],[3,'도전']], TCH.level) + '</div>' +
     '<div class="set"><div>비행 방식 <small>비워 두면 학생이 고름</small></div>' + seg('mode', [['','학생 선택'],['vr','VR'],['magic','매직'],['screen','화면']], TCH.mode) + '</div>' +
-    '<div class="set"><div>학생 언어 🌐 <small>QR로 들어온 학생 화면의 언어 · 비워 두면 학생이 고름 (교사모드는 한국어 고정)</small></div>' + seg('lang', [['','학생 선택']].concat(MI18N.ORDER.map(function(l){ return [l, MI18N.LANGS[l].name]; })), TCH.lang) + '</div>' +
+    '<div class="set"><div>학생 언어 🌐 <small>QR로 들어온 학생 화면의 언어 · 비워 두면 학생이 고름 (교사모드는 한국어 고정)</small></div>' + seg('lang', [['','학생 선택']].concat(MI18N.ORDER.map(function(l){ return [l, MI18N.LANGS[l].name + (MI18N.LANGS[l].beta ? ' β' : '')]; })), TCH.lang) + '</div>' +
     '<div style="text-align:center"><div id="qrbox"></div><div style="font-size:12px;opacity:.8;word-break:break-all;margin-top:4px" id="qrurl">'+url+'</div>' +
     '<div class="row" style="margin-top:8px"><button class="btn ghost" id="tApply">이 기기에도 적용</button><button class="btn ghost" id="tCopy">주소 복사</button></div></div>' +
     '<div class="sec">오프라인 수업 준비</div>' +
@@ -3786,7 +3826,7 @@ function initGA(){
 function ev(n, p){ try{ if(window.gtag) window.gtag('event', n, p||{}); }catch(e){} }
 function logPortfolio(res){
   var entry = {
-    no:55, id:'milab_vr_055', languages:['ko','vi','zh-CN','ru','en'], i18n:{ standard:'MILAB i18n 표준 블록 v1', default:'ko', bilingualKoDefault:true, urlParam:'lang', keys:MI18N.keys().length }, title:'에어로크레스트 VTOL 레이서', brand:'AeroKrest', file:'milab_vr_055.html', url:BASE_URL, version:VERSION,
+    no:55, id:'milab_vr_055', languages:['ko','vi','zh-CN','ru','en','ja','km','mn'], languagesReviewed:'2026-11-06 원어민 검수 완료(8개 언어)', i18n:{ standard:'MILAB i18n 표준 블록 v'+MI18N.VERSION, default:'ko', bilingualKoDefault:true, urlParam:'lang', keys:MI18N.keys().length }, title:'에어로크레스트 VTOL 레이서', brand:'AeroKrest', file:'milab_vr_055.html', url:BASE_URL, version:VERSION,
     grade:'초등 1학년(모두의 학급) ~ 고등학교 3학년 · 일반학교·특수학교(발달·지체·시각·청각)',
     category:'VR·AR / 드론·UAM 진로체험',
     missions:['1 미랩 비행장: 수직 이착륙·천이 비행','2 바람의 협곡: 링·장애물·아이템','3 도심 버티포트: 빌딩 사이 측풍','4 해상 풍력단지: 회전 블레이드·돌풍','5 야간 폭풍: AI 코파일럿 대결(AI 리터러시)','♾️ 무한 챌린지: X-Racer형 장애물 회피·거리 기록(일반학교)'],
@@ -3794,7 +3834,7 @@ function logPortfolio(res){
     aiFeature:'AI 관제사 마스코트 「에코」 안내·감정 6종, 조준 보조(Aim Assist), 5단계 AI 코파일럿 추천 경로 vs 돌발 변수 대결·결과 비교(Human-in-the-loop)',
     accessibility:['학교 유형 프리셋 5종','원스위치 조작','실패·타이머 없는 모두의 학급 모드','고대비·큰 글자·소리 길안내','자막·화면 신호·진동','멀미 줄이기·번쩍임 제한(초당 3회 이하)','교사모드 프리셋 QR'],
     koreaWorldData:{ status:'3단계에서 공신력 있는 출처·기준연도와 함께 추가 예정' },
-    delivery:'1.5: 다국어(한국어·베트남어·중국어 간체·러시아어·영어)·한국어 병기·언어별 음성 안내·URL ?lang 언어별 QR·교사모드 학생 언어 설정 / 1.3: 일반학교 난이도 상향·무한 챌린지(충돌 즉시 종료·5초 재출발·보호막·미랩 부스터)·조종사 이름·명예의 전당(기기별 TOP 10)',
+    delivery:'1.6.1: 일본어·크메르어·몽골어 원어민 검수 완료 → β 표시 해제 / 1.6: 일본어·캄보디아어(크메르)·몽골어 추가(원어민 검수 전 β 표시)·크메르어/일본어 줄바꿈 / 1.5: 다국어(한국어·베트남어·중국어 간체·러시아어·영어)·한국어 병기·언어별 음성 안내·URL ?lang 언어별 QR·교사모드 학생 언어 설정 / 1.3: 일반학교 난이도 상향·무한 챌린지(충돌 즉시 종료·5초 재출발·보호막·미랩 부스터)·조종사 이름·명예의 전당(기기별 TOP 10)',
     lastResult:{ lang:MI18N.lang, stage:res.stage, stars:res.stars, score:res.score, dist:res.dist, preset:ST.preset, mode:ST.mode, pilot:pilotName() }, date:new Date().toISOString().slice(0,10)
   };
   try{ console.log('portfolioEntry ' + JSON.stringify(entry, null, 2)); }catch(e){}
@@ -3806,7 +3846,7 @@ function buildLang(from){
   MI18N.ORDER.forEach(function(l){
     var L2 = MI18N.LANGS[l], b = document.createElement('button');
     b.className = 'card lang-card' + (MI18N.chosen && MI18N.lang===l ? ' sel' : ''); b.setAttribute('lang', L2.html);
-    b.innerHTML = '<div class="ic">🌐</div><div><b>'+L2.name+'</b><span>'+L2.play+'</span></div>';
+    b.innerHTML = '<div class="ic">🌐</div><div><b>'+L2.name+(L2.beta ? '<i class="beta">β</i>' : '')+'</b><span>'+L2.play+(L2.beta ? '<small class="beta-t">β · '+L2.betaTxt+'</small>' : '')+'</span></div>';
     b.onclick = function(){ A.unlock(); unlockSpeech(); A.click(); setLang(l); go('title'); };
     g.appendChild(b);
   });
