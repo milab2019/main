@@ -1951,25 +1951,112 @@ var W = (function(){
 var H = G.hex, M = {}, T = {}, stage = null, ENV = null;
 var C_SKY = H('#20A0E0'), C_CORAL = H('#F09070'), C_NAVY = H('#1A2744'), C_WHITE = [0.95,0.97,1], C_DARK=[0.16,0.18,0.22];
 
+/* --- 크레스트링 AK-R1 형상 (설계 좌표: 기수 +z → 게임 좌표 -Z, 배율 S) --- */
+var SHIP = { S:1.4,
+  prof:[[0.001,-1.7],[0.10,-1.55],[0.2,-1.25],[0.33,-0.6],[0.36,0.0],[0.33,0.6],[0.28,0.95]],
+  nose:[[0.28,0.95],[0.25,1.18],[0.17,1.38],[0.001,1.38]], D:[], legs:[] };
+function P3(p){ return [p[0]*SHIP.S, p[1]*SHIP.S, -p[2]*SHIP.S]; }
+function rAt(zp){ var P = SHIP.prof; for(var i=0;i<P.length-1;i++){ var a=P[i], b=P[i+1]; if(zp>=a[1] && zp<=b[1]) return a[0]+(b[0]-a[0])*(zp-a[1])/(b[1]-a[1]); } return 0.28; }
+function stripX(zp){ return (rAt(zp)*1.25 + 0.008)*SHIP.S; }
+function lathe(mb, prof, seg, colFn){ var SS = SHIP.S;
+  var pt = function(r,z,a){ return [Math.cos(a)*r*1.25*SS, Math.sin(a)*r*0.72*SS, -z*SS]; };
+  for(var i=0;i<prof.length-1;i++){ var A = prof[i], B = prof[i+1];
+    for(var j=0;j<seg;j++){ var a0=j/seg*Math.PI*2, a1=(j+1)/seg*Math.PI*2, col=colFn((a0+a1)/2);
+      var p00=pt(A[0],A[1],a0), p01=pt(A[0],A[1],a1), p10=pt(B[0],B[1],a0), p11=pt(B[0],B[1],a1);
+      if(A[0]<0.01) mb.tri(p00,p11,p10,col); else if(B[0]<0.01) mb.tri(p00,p01,p10,col); else mb.quad(p00,p01,p11,p10,col); } } }
+function slab(mb, pts, y, th, col){ var SS = SHIP.S, T = [], B = [];
+  pts.forEach(function(p){ T.push([p[0]*SS,(y+th/2)*SS,-p[1]*SS]); B.push([p[0]*SS,(y-th/2)*SS,-p[1]*SS]); });
+  for(var i=1;i<pts.length-1;i++){ mb.tri(T[0],T[i],T[i+1],col); mb.tri(B[0],B[i+1],B[i],col); }
+  for(var k=0;k<pts.length;k++){ var n=(k+1)%pts.length; mb.quad(T[k],T[n],B[n],B[k],col); } }
+function fin(mb, pts, x0, y0, th, cant, col){ var SS = SHIP.S;
+  mb.at(x0*SS, y0*SS, 0, G.qAxis(0,0,1,cant), 1,1,1, function(){ var L = [], R = [], n = pts.length;
+    pts.forEach(function(p){ L.push([-th/2*SS, p[1]*SS, -p[0]*SS]); R.push([th/2*SS, p[1]*SS, -p[0]*SS]); });
+    for(var i=2;i<n;i++){ var c = (i+1)%n; this.tri(L[1],L[i],L[c],col); this.tri(R[1],R[c],R[i],col); }
+    for(var k=0;k<n;k++){ var m=(k+1)%n; this.quad(L[k],L[m],R[m],R[k],col); } }); }
+function bar(mb, a, b, t, col){ var A = P3(a), B = P3(b), t2 = t*SHIP.S;
+  var d = [B[0]-A[0],B[1]-A[1],B[2]-A[2]], dl = Math.hypot(d[0],d[1],d[2]); d = [d[0]/dl,d[1]/dl,d[2]/dl];
+  var u = [-d[2],0,d[0]], ul = Math.hypot(u[0],u[2]); u = [u[0]/ul,0,u[2]/ul];
+  var v = [u[1]*d[2]-u[2]*d[1], u[2]*d[0]-u[0]*d[2], u[0]*d[1]-u[1]*d[0]];
+  var off = [[1,1],[-1,1],[-1,-1],[1,-1]].map(function(s){ return [u[0]*s[0]*t2+v[0]*s[1]*t2, u[1]*s[0]*t2+v[1]*s[1]*t2, u[2]*s[0]*t2+v[2]*s[1]*t2]; });
+  var add = function(P,o){ return [P[0]+o[0],P[1]+o[1],P[2]+o[2]]; };
+  for(var k=0;k<4;k++){ var o0 = off[k], o1 = off[(k+1)%4]; mb.quad(add(A,o0),add(B,o0),add(B,o1),add(A,o1),col); } }
+/* 덕트 외피: 바깥벽(밝은 색)·안쪽벽(남색)·위아래 테두리, 높이 0.62 */
+function ductShell(mb, seg, cOut, cIn){
+  for(var i=0;i<seg;i++){ var a0=i/seg*Math.PI*2, a1=(i+1)/seg*Math.PI*2;
+    var P = function(r,y,a){ return [Math.cos(a)*r, y, Math.sin(a)*r]; };
+    mb.quad(P(0.92,-0.31,a0),P(1,0.31,a0),P(1,0.31,a1),P(0.92,-0.31,a1),cOut);
+    mb.quad(P(0.84,-0.31,a0),P(0.9,0.31,a0),P(0.9,0.31,a1),P(0.84,-0.31,a1),cIn);
+    mb.quad(P(0.9,0.31,a0),P(1,0.31,a0),P(1,0.31,a1),P(0.9,0.31,a1),cOut);
+    mb.quad(P(0.84,-0.31,a0),P(0.92,-0.31,a0),P(0.92,-0.31,a1),P(0.84,-0.31,a1),cOut); } }
+/* 센서 바이저 눈 — AI 관제사 「에코」의 표정과 연동 */
+var EYE = null;
+function eyeInit(){ var c = document.createElement('canvas'); c.width = 256; c.height = 128; EYE = { cv:c, em:null, b:0, bt:-1, next:3 }; eyeDraw('happy', 0); T.eye = G.tex(c, false); }
+function eyeDraw(em, b){
+  var c = EYE.cv.getContext('2d'), k = 4.4; c.setTransform(1,0,0,1,0,0); c.clearRect(0,0,256,128);
+  c.setTransform(k,0,0,k,128-60*k,64-58*k);
+  c.fillStyle = c.strokeStyle = '#7FE3FF'; c.lineWidth = 4.2; c.lineCap = 'round'; c.lineJoin = 'round'; c.shadowColor = '#20A0E0'; c.shadowBlur = 12;
+  var arcE = function(x){ c.beginPath(); c.moveTo(x-7,60); c.quadraticCurveTo(x,51,x+7,60); c.stroke(); };
+  var star = function(cx,cy){ var p = [[0,-8],[2.4,-2.4],[8,-2],[3.6,1.8],[5,7.6],[0,4.4],[-5,7.6],[-3.6,1.8],[-8,-2],[-2.4,-2.4]]; c.beginPath(); p.forEach(function(q,i){ if(i) c.lineTo(cx+q[0],cy+q[1]); else c.moveTo(cx+q[0],cy+q[1]); }); c.closePath(); c.fill(); };
+  var barE = function(x){ var h = Math.max(0.9, 5*(1-b)), y = 58.5-h/2, r = Math.min(2.5,h/2); c.beginPath(); c.moveTo(x-7+r,y); c.arcTo(x+7,y,x+7,y+h,r); c.arcTo(x+7,y+h,x-7,y+h,r); c.arcTo(x-7,y+h,x-7,y,r); c.arcTo(x-7,y,x+7,y,r); c.closePath(); c.fill(); };
+  var oval = function(x){ c.beginPath(); if(c.ellipse) c.ellipse(x,60,5,6,0,0,Math.PI*2); else c.arc(x,60,5.5,0,Math.PI*2); c.fill(); };
+  var line = function(x0,y0,x1,y1){ c.beginPath(); c.moveTo(x0,y0); c.lineTo(x1,y1); c.stroke(); };
+  var ring = function(x){ c.beginPath(); c.arc(x,59,6,0,Math.PI*2); c.stroke(); };
+  if(em==='excited'){ star(48,58); star(72,58); }
+  else if(em==='calm'){ barE(48); barE(72); }
+  else if(em==='worried'){ oval(48); oval(72); line(41,50,53,54); line(79,50,67,54); }
+  else if(em==='surprised'){ ring(48); ring(72); }
+  else if(em==='proud'){ arcE(48); star(72,58); }
+  else { arcE(48); arcE(72); }
+  c.setTransform(1,0,0,1,0,0);
+}
+function eyeUpdate(em, dt, motion){
+  if(!EYE || !T.eye) return;
+  var b = 0;
+  if(em==='calm' && motion!==false){
+    if(EYE.bt >= 0){ EYE.bt += dt; b = Math.sin(Math.min(1, EYE.bt/0.18)*Math.PI); if(EYE.bt >= 0.18){ EYE.bt = -1; EYE.next = 2.5 + Math.random()*2.5; b = 0; } }
+    else { EYE.next -= dt; if(EYE.next < 0) EYE.bt = 0; }
+  }
+  b = Math.round(b*4)/4;
+  if(em===EYE.em && b===EYE.b) return;
+  EYE.em = em; EYE.b = b; eyeDraw(em, b); G.texUpdate(T.eye, EYE.cv);
+}
+
 function initShared(tex){
   T = tex;
   var mb;
-  /* 기체 본체: 미랩 오리지널 틸트로터 */
-  mb = new G.MB().seed(7);
-  mb.sphere(0,0,0,0.55,12,8,null,1,0.82,3.0,function(v,u){ return v>0.62 ? C_NAVY : (u>0.4&&u<0.6&&v<0.5 ? C_CORAL : C_WHITE); });
-  mb.sphere(0,0.28,-0.75,0.36,10,6,H('#2A4E7A'),1,0.7,1.6);                     /* 캐노피 */
-  mb.box(0,0.06,0.15,5.4,0.13,1.0,C_SKY,C_SKY);                                   /* 주날개 */
-  mb.box(0,0.07,-0.2,5.4,0.11,0.25,C_WHITE);                                      /* 날개 앞전 */
-  mb.at(0.42,0.25,1.45,G.qAxis(0,0,1,-0.65),1,1,1,function(){ this.box(0,0,0,0.1,1.1,0.75,C_SKY); });  /* V꼬리 */
-  mb.at(-0.42,0.25,1.45,G.qAxis(0,0,1,0.65),1,1,1,function(){ this.box(0,0,0,0.1,1.1,0.75,C_SKY); });
-  mb.box(0,-0.62,-0.4,0.12,0.2,0.12,C_DARK); mb.box(0,-0.62,0.9,0.12,0.2,0.12,C_DARK);  /* 랜딩기어 */
-  mb.box(0.55,-0.72,0.25,0.1,0.08,2.0,C_DARK); mb.box(-0.55,-0.72,0.25,0.1,0.08,2.0,C_DARK);
-  mb.box(0,-0.5,0.25,1.2,0.06,0.08,C_DARK);
+  /* 기체: 크레스트링 AK-R1 (링 덕트 4발 틸트 · v1.7) — 진행 방향 -Z */
+  var SS = SHIP.S, C_PEARL = [0.9,0.93,0.96], C_GLASS = H('#0A1226'), C_BELLY = H('#22324F'), C_EDGE = [0.55,0.9,1], C_LED = [1,1,1];
+  mb = new G.MB();
+  lathe(mb, SHIP.prof, 10, function(a){ return Math.sin(a) < -0.45 ? C_BELLY : C_PEARL; });   /* 리프팅 바디 */
+  lathe(mb, SHIP.nose, 10, function(){ return C_GLASS; });                                       /* 센서 바이저(조종석 없음) */
+  mb.box(0, -0.385, 0.14, 0.42, 0.112, 2.1, C_NAVY);                                              /* 배터리 킬 */
+  [1,-1].forEach(function(s){
+    slab(mb, [[0.18*s,0.72],[1.02*s,0.86],[1.02*s,0.66],[0.18*s,0.44]], 0.02, 0.045, C_SKY);      /* 전진익 카나드 */
+    slab(mb, [[0.22*s,-0.45],[1.18*s,-0.95],[1.18*s,-1.18],[0.22*s,-1.0]], 0.06, 0.05, C_SKY);    /* 후퇴익 */
+    fin(mb, [[-0.62,0],[-1.05,0],[-1.25,0.38],[-1.05,0.38]], 0.7*s, 0.08, 0.035, -0.35*s, C_SKY); /* 트윈 핀 */
+  });
   M.body = G.build(mb);
-  /* 나셀(엔진 포드): 피벗 기준 +Y 방향 */
-  mb = new G.MB(); mb.cyl(0,-0.4,0,0.17,0.21,1.32,10,C_WHITE,C_NAVY); mb.cyl(0,-0.4,0,0.215,0.215,0.28,10,C_NAVY); mb.cyl(0,0.92,0,0.03,0.16,0.36,10,C_CORAL);
-  M.nacelle = G.build(mb);
-  mb = new G.MB(); for(var b=0;b<3;b++){ mb.at(0,0,0,G.qAxis(0,1,0,b*Math.PI*2/3),1,1,1,function(){ this.box(0.66,-0.03,0,1.3,0.05,0.17,C_NAVY,H('#3A4A66')); }); } M.blades = G.build(mb);
+  mb = new G.MB(); fin(mb, [[0.15,0],[-0.95,0],[-1.32,0.62],[-1.08,0.62],[-0.3,0.12]], 0, 0.2, 0.08, 0, C_CORAL); M.crest = G.build(mb);  /* 크레스트 볏(뒷모습 기준점, 자체 발광) */
+  /* 발광 리딩엣지 · 동체 옆줄 */
+  mb = new G.MB(); [1,-1].forEach(function(s){ bar(mb,[0.18*s,0.05,0.72],[1.02*s,0.05,0.86],0.016,C_EDGE); bar(mb,[0.22*s,0.09,-0.45],[1.18*s,0.09,-0.95],0.016,C_EDGE); }); M.edges = G.build(mb);
+  mb = new G.MB(); [1,-1].forEach(function(s){ for(var i=0;i<7;i++){ var zp = 0.75-i*0.3; mb.box(s*stripX(zp), -0.055, -zp*SS, 0.03, 0.05, 0.22, C_LED); } }); M.strips = G.build(mb);
+  mb = new G.MB(); mb.box(0,-0.06,0,0.045,0.07,0.34,C_LED); M.stripHi = G.build(mb);
+  /* 링 덕트(단위 반지름 1, 축 +Y) */
+  mb = new G.MB(); ductShell(mb, 24, C_PEARL, C_NAVY);
+  mb.at(0,0.31,0,G.qAxis(1,0,0,Math.PI/2),1,1,1,function(){ this.torus(1,0.075,24,3,function(){ return C_CORAL; }); });
+  mb.cyl(0,-0.26,0,0,0.16,0.5,8,C_NAVY);
+  for(var si=0;si<3;si++){ mb.at(0,-0.2,0,G.qAxis(0,1,0,si*Math.PI*2/3+0.5),1,1,1,function(){ this.box(0.48,0,0,0.88,0.04,0.07,C_NAVY); }); }
+  M.duct = G.build(mb);
+  mb = new G.MB(); for(var bI=0;bI<5;bI++){ mb.at(0,0,0,G.qAxis(0,1,0,bI*Math.PI*2/5),1,1,1,function(){ this.at(0.5,0,0,G.qAxis(1,0,0,0.32),1,1,1,function(){ this.box(0,-0.02,0,0.8,0.04,0.2,H('#33476F')); }); }); } M.rotor = G.build(mb);
+  /* 빛의 언어: 덕트 테두리 점 12개 + 회전하는 밝은 호 */
+  mb = new G.MB(); for(var dI=0;dI<12;dI++){ (function(a){ mb.at(Math.cos(a),0.37,Math.sin(a),G.qAxis(0,1,0,-a),1,1,1,function(){ this.box(0,0,0,0.11,0.06,0.11,C_LED); }); })(dI/12*Math.PI*2); } M.dots = G.build(mb);
+  mb = new G.MB(); [-1,0,1].forEach(function(k){ var a = k*Math.PI/6; mb.at(Math.cos(a),0.36,Math.sin(a),G.qAxis(0,1,0,-a),1,1,1,function(){ this.box(0,0,0,0.15,0.08,0.15,[1,0.86,0.72]); }); }); M.arc = G.build(mb);
+  /* 접이식 3점 기어(힌지 기준 아래로) */
+  mb = new G.MB(); mb.cyl(0,-0.42,0,0.03,0.025,0.42,6,C_NAVY); mb.box(0,-0.455,0,0.17,0.035,0.27,C_CORAL); M.leg = G.build(mb);
+  SHIP.D = [[1.37,0.02,0.76,0.33,1],[-1.37,0.02,0.76,0.33,-1],[1.59,0.06,-1.06,0.39,-1],[-1.59,0.06,-1.06,0.39,1]].map(function(d){ return { p:P3([d[0],d[1],d[2]]), k:d[3]*SS, sd:d[4] }; });
+  SHIP.legs = [{ p:[0,-0.3,-1.19], dir:-1 }, { p:[0.45,-0.3,0.84], dir:1 }, { p:[-0.45,-0.3,0.84], dir:1 }];
+  eyeInit();
+  /* 공용 원판(로터 잔상·배출구 글로우) */
   mb = new G.MB(); mb.disc(0,0,0,1,24,[1,1,1]); mb.at(0,0,0,G.qAxis(1,0,0,Math.PI),1,1,1,function(){ this.disc(0,0,0,1,24,[1,1,1]); }); M.disc = G.build(mb);
   M.glow = M.disc;
   mb = new G.MB(); mb.disc(0,0,0,1,20,[0,0,0]); M.shadow = G.build(mb);
@@ -2293,6 +2380,8 @@ function trail(x,y,z,col){ if(parts.length<480) parts.push({x:x,y:y,z:z,vx:(Math
 var shipM = G.m4(), tmp = G.m4(), tmp2 = G.m4();
 function prep(ctx){
   var st = ctx.st, C = ctx.C, dt = ctx.dt;
+  /* 접이식 기어: 호버·저속이면 펼치고 순항이면 접음 */
+  if(st){ var gT = (st.tilt < 0.45 || st.speed < 6) ? 1 : 0; GEAR += (gT-GEAR)*Math.min(1, (dt||0)*3); }
   /* 입자 */
   for(var i=parts.length-1;i>=0;i--){ var p = parts[i]; p.life += dt; if(p.life>p.max){ parts.splice(i,1); continue; } p.x+=p.vx*dt; p.y+=p.vy*dt; p.z+=p.vz*dt; p.vy -= 2*dt; }
   /* 속도선 */
@@ -2315,6 +2404,7 @@ function render(eyes, ctx){
   var shipQ = G.qMul(G.qAxis(0,0,1, st.bank*(ctx.motion===false?0.5:1)), G.qAxis(1,0,0, Math.max(-0.3,Math.min(0.3, st.vy*0.03)) - (st.phase==='race'?0.04:0)));
   if(st.phase==='crash') shipQ = G.qMul(shipQ, G.qAxis(1,0,0, -Math.min(1.1, st.pt*2.2)));
   G.compose(shipM, st.x, st.y, -st.s, shipQ, 1);
+  eyeUpdate(ctx.em || 'happy', ctx.dt || 0, ctx.motion);
   /* 선 데이터 */
   var nl = 0, len = Math.min(C.endless ? 16 : 9, st.speed*(st.boost>0 ? 0.3 : 0.16)), wx = (st.wind||0)*0.35, rainy = stage.night, ry = rainy ? -2.6 : 0, bst = st.boost>0 && C.endless;
   if(rainy) len = Math.max(1.5, len*0.5);
@@ -2399,6 +2489,7 @@ function render(eyes, ctx){
       G.drawTex(T.milabPlate, G.compose(tmp, RR.x, RR.y + RR.r + 2.4, -RR.s, [0,0,0,1], 7.2, 3.0, 1), RR.state===1?0.35:1); }
     var bw = gw*1.5, bh = bw/4; G.drawTex(T.finish, G.compose(tmp, 0, gh-2.9-bh/2, -gs+0.9, [0,0,0,1], bw, bh, 1), 1);
     if(s < 120) G.drawTex(T.startSign, G.compose(tmp, -24, 9, -60, G.qAxis(0,1,0,0.35), 16, 5, 1), 1);
+    if(T.eye) G.drawTex(T.eye, G.mul(SHM.e, shipM, G.compose(tmp, 0, 0, -(1.38*SHIP.S+0.012), G.qAxis(0,1,0,Math.PI), 0.52, 0.26, 1)), 1);
     /* 입자 */
     gl.blendFunc(gl.SRC_ALPHA, gl.ONE);
     if(np) G.drawPoints(PT, np, vp, R[3]*0.7);
@@ -2441,30 +2532,43 @@ function drawRings(C, st, t, pal, transparent){
     }
   }
 }
-var nacM = G.m4(), nq = [0,0,0,1];
-function nacelleMatrix(o, side, tilt){ var local = G.compose(tmp2, side*2.75, 0.12, 0.12, G.qAxis(1,0,0,-tilt*Math.PI/2), 1); return G.mul(o, shipM, local); }
+var SHM = { d:G.m4(), r:G.m4(), g:G.m4(), e:G.m4() }, LED_OFF = [0.16,0.2,0.3], LED_DOT = [1,0.6,0.44], LED_STRIP = [0.55,0.9,1], LED_HI = [0.85,0.98,1], LED_BOOST = [1,0.62,0.46], LT = new Float32Array(4), GLW = new Float32Array(4), DSK = new Float32Array(4), GEAR = 1;
+function ductMatrix(o, d, tilt){ var local = G.compose(tmp2, d.p[0], d.p[1], d.p[2], G.qAxis(1,0,0,-tilt*Math.PI/2), d.k); return G.mul(o, shipM, local); }
+/* 빛의 언어: 0 호버(숨쉬기) · 1 천이(회전) · 2 순항(흐름) */
+function led(on, v){ for(var i=0;i<3;i++) LT[i] = LED_OFF[i] + (on[i]-LED_OFF[i])*v; LT[3] = 1; return LT; }
+function lightMode(tilt){ return tilt < 0.05 ? 0 : (tilt > 0.95 ? 2 : 1); }
 function drawShip(st, t, ctx){
-  var flash = st.hitT>0 && Math.floor(st.hitT*6)%2===0 && ctx.motion!==false;
-  G.draw(M.body, shipM, G.WHITE, ctx.hc?0.35:(stage.night?0.3:0.05), flash?[0.35,0.1,0.05]:null);
-  for(var sd=-1; sd<=1; sd+=2){
-    nacelleMatrix(nacM, sd, st.tilt);
-    G.draw(M.nacelle, nacM, G.WHITE, 0.05);
-    var bm = G.mul(G.m4(), nacM, G.compose(tmp, 0, 1.2, 0, G.qAxis(0,1,0, st.rotor*sd), 1));
-    if(st.speed < 6 || st.phase==='takeoff' || st.phase==='landing') G.draw(M.blades, bm, G.WHITE, 0.05);
-    /* 엔진 글로우와 꼬리 입자 */
-    var gl2 = G.mul(G.m4(), nacM, G.compose(tmp, 0, -0.42, 0, G.qAxis(1,0,0,Math.PI), 0.2));
-    var hot = Math.min(1, st.speed/30) + (st.boost>0?0.6:0);
-    G.draw(M.glow, gl2, new Float32Array([1, 0.55+0.2*hot, 0.35+0.3*hot*0.5, 1]), 1);
-    if(st.phase==='crash' && st.pt < 2.5 && Math.random()<0.7){ trail(nacM[12], nacM[13]+0.3, nacM[14], Math.random()<0.5 ? [1,0.45,0.2] : [0.25,0.22,0.25]); }
-    else if(ctx.q>0 && st.speed>10 && Math.random()<0.6){ trail(nacM[12] + (Math.random()-0.5)*0.2, nacM[13]+(Math.random()-0.5)*0.2, nacM[14]+0.6, st.boost>0?[1,0.6,0.3]:[0.6,0.85,1]); }
+  var flash = st.hitT>0 && Math.floor(st.hitT*6)%2===0 && ctx.motion!==false, add = flash?[0.35,0.1,0.05]:null;
+  var em = ctx.hc?0.35:(stage.night?0.3:0.05), lm = lightMode(st.tilt), boost = st.boost>0, SS = SHIP.S;
+  G.draw(M.body, shipM, G.WHITE, em, add);
+  G.draw(M.crest, shipM, G.WHITE, Math.max(em, 0.45), add);
+  LT[3] = 1; LT[0]=LT[1]=LT[2] = (stage.night||ctx.hc) ? 1 : 0.85; G.draw(M.edges, shipM, LT, 1);
+  G.draw(M.strips, shipM, led(LED_STRIP, lm===2 ? 0.35 : 0.12), 1);
+  if(lm===2){ var zp = 0.75 - ((t*1.25)%1)*2.0;
+    if(zp > -1.1){ led(boost ? LED_BOOST : LED_HI, 1);
+      for(var sd=-1; sd<=1; sd+=2) G.draw(M.stripHi, G.mul(SHM.r, shipM, G.compose(tmp, sd*stripX(zp), 0, -zp*SS, [0,0,0,1], 1)), LT, 1); } }
+  if(GEAR > 0.03) for(var li=0; li<SHIP.legs.length; li++){ var L = SHIP.legs[li];
+    G.draw(M.leg, G.mul(SHM.r, shipM, G.compose(tmp, L.p[0], L.p[1], L.p[2], G.qAxis(1,0,0,(1-GEAR)*1.45*L.dir), 0.75+0.25*GEAR)), G.WHITE, em, add); }
+  var hot = Math.min(1, st.speed/30) + (boost?0.6:0);
+  if(boost){ GLW[0]=1; GLW[1]=0.62; GLW[2]=0.46; } else { GLW[0]=0.45+0.3*hot; GLW[1]=0.82+0.12*hot; GLW[2]=1; } GLW[3]=1;
+  var v = lm===0 ? 0.2+0.8*(0.5+0.5*Math.sin(t*3)) : (lm===1 ? 0.15 : 1);
+  for(var i=0; i<SHIP.D.length; i++){ var d = SHIP.D[i];
+    ductMatrix(SHM.d, d, st.tilt);
+    G.draw(M.duct, SHM.d, G.WHITE, em, add);
+    G.draw(M.rotor, G.mul(SHM.r, SHM.d, G.compose(tmp, 0, 0.02, 0, G.qAxis(0,1,0, st.rotor*d.sd), 1)), G.WHITE, 0.05);
+    G.draw(M.dots, SHM.d, led(LED_DOT, v), 1);
+    if(lm===1) G.draw(M.arc, G.mul(SHM.r, SHM.d, G.compose(tmp, 0, 0, 0, G.qAxis(0,1,0, -t*5*d.sd), 1)), G.WHITE, 1);
+    G.draw(M.glow, G.mul(SHM.g, SHM.d, G.compose(tmp, 0, -0.33, 0, [0,0,0,1], 0.5, 1, 0.5)), GLW, 1);
+    if(i < 2) continue; /* 꼬리 입자는 뒤쪽 덕트 2개에서만 (이전과 같은 개수) */
+    var m = SHM.d;
+    if(st.phase==='crash' && st.pt < 2.5 && Math.random()<0.7){ trail(m[12], m[13]+0.3, m[14], Math.random()<0.5 ? [1,0.45,0.2] : [0.25,0.22,0.25]); }
+    else if(ctx.q>0 && st.speed>10 && Math.random()<0.6){ trail(m[12] + (Math.random()-0.5)*0.2, m[13]+(Math.random()-0.5)*0.2, m[14]+0.6, boost?[1,0.6,0.3]:[0.6,0.85,1]); }
   }
 }
 function drawRotorDiscs(st, ctx){
-  for(var sd=-1; sd<=1; sd+=2){
-    nacelleMatrix(nacM, sd, st.tilt);
-    var dm = G.mul(G.m4(), nacM, G.compose(tmp, 0, 1.2, 0, [0,0,0,1], 1.34, 1, 1.34));
-    G.draw(M.disc, dm, new Float32Array([0.9,0.95,1, Math.min(0.26, 0.1 + st.speed*0.005)*(1-0.6*st.tilt)]), 0.6);
-  }
+  DSK[0]=0.75; DSK[1]=0.92; DSK[2]=1; DSK[3]=Math.min(0.2, 0.07 + st.speed*0.004);
+  for(var i=0; i<SHIP.D.length; i++){ ductMatrix(SHM.d, SHIP.D[i], st.tilt);
+    G.draw(M.disc, G.mul(SHM.r, SHM.d, G.compose(tmp, 0, 0.03, 0, [0,0,0,1], 0.86, 1, 0.86)), DSK, 0.6); }
 }
 
 /* 결승선 · 시작 표지판 · 로고판 텍스처 만들기 */
@@ -2476,7 +2580,7 @@ return { initShared:initShared, buildStage:buildStage, freeStage:freeStage, prep
 (function(){
 'use strict';
 var BASE_URL = 'https://milab2019.github.io/main/milab_vr_055.html';
-var VERSION = '1.6.1';
+var VERSION = '1.7.0';
 var LS = 'milab55_';
 /* ---------- 다국어 (MILAB i18n 표준 블록 v1) ---------- */
 var I18 = MI18N.init({ key:LS+'lang', biKey:LS+'bi', param:'lang', biDefault:true });
@@ -3628,7 +3732,7 @@ function frame(now){
   if(isVR()){ vrGaze(dt); panels = vrPanelsDraw(cam.p); }
   var dtS = GS && GS.ts != null ? dt*GS.ts : dt;
   W.prep({ st:st, C:C, dt:dtS, q:PERF.q, motion: motionOK() && !(S.comfort && headMode()) });
-  W.render(eyesFor(cam), { C:C, st:st, t:T, dt:dt, pal:palette(), q:PERF.q, motion:motionOK(), panels:panels, hc:isHC(), lightning: GS ? (GS.light||0) : 0 });
+  W.render(eyesFor(cam), { C:C, st:st, t:T, dt:dt, pal:palette(), q:PERF.q, motion:motionOK(), panels:panels, hc:isHC(), lightning: GS ? (GS.light||0) : 0, em: MAS.em });
 }
 function palette(){
   var hc = isHC(), cb = S.cbSafe;
@@ -3834,7 +3938,7 @@ function logPortfolio(res){
     aiFeature:'AI 관제사 마스코트 「에코」 안내·감정 6종, 조준 보조(Aim Assist), 5단계 AI 코파일럿 추천 경로 vs 돌발 변수 대결·결과 비교(Human-in-the-loop)',
     accessibility:['학교 유형 프리셋 5종','원스위치 조작','실패·타이머 없는 모두의 학급 모드','고대비·큰 글자·소리 길안내','자막·화면 신호·진동','멀미 줄이기·번쩍임 제한(초당 3회 이하)','교사모드 프리셋 QR'],
     koreaWorldData:{ status:'3단계에서 공신력 있는 출처·기준연도와 함께 추가 예정' },
-    delivery:'1.6.1: 일본어·크메르어·몽골어 원어민 검수 완료 → β 표시 해제 / 1.6: 일본어·캄보디아어(크메르)·몽골어 추가(원어민 검수 전 β 표시)·크메르어/일본어 줄바꿈 / 1.5: 다국어(한국어·베트남어·중국어 간체·러시아어·영어)·한국어 병기·언어별 음성 안내·URL ?lang 언어별 QR·교사모드 학생 언어 설정 / 1.3: 일반학교 난이도 상향·무한 챌린지(충돌 즉시 종료·5초 재출발·보호막·미랩 부스터)·조종사 이름·명예의 전당(기기별 TOP 10)',
+    delivery:'1.7.0: 기체 리디자인 「크레스트링 AK-R1」(링 덕트 4발 틸트·센서 바이저=에코 표정 연동·빛의 언어·접이식 기어·크레스트 볏) / 1.6.1: 일본어·크메르어·몽골어 원어민 검수 완료 → β 표시 해제 / 1.6: 일본어·캄보디아어(크메르)·몽골어 추가(원어민 검수 전 β 표시)·크메르어/일본어 줄바꿈 / 1.5: 다국어(한국어·베트남어·중국어 간체·러시아어·영어)·한국어 병기·언어별 음성 안내·URL ?lang 언어별 QR·교사모드 학생 언어 설정 / 1.3: 일반학교 난이도 상향·무한 챌린지(충돌 즉시 종료·5초 재출발·보호막·미랩 부스터)·조종사 이름·명예의 전당(기기별 TOP 10)',
     lastResult:{ lang:MI18N.lang, stage:res.stage, stars:res.stars, score:res.score, dist:res.dist, preset:ST.preset, mode:ST.mode, pilot:pilotName() }, date:new Date().toISOString().slice(0,10)
   };
   try{ console.log('portfolioEntry ' + JSON.stringify(entry, null, 2)); }catch(e){}
