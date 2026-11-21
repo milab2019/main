@@ -40,10 +40,10 @@
     <!-- Open Graph (카카오톡·페이스북 링크 미리보기) -->
     <meta property="og:type" content="website">
     <meta property="og:site_name" content="미랩(MILAB) 교육 포트폴리오">
-    <meta property="og:title" content="미랩(MILAB) | 4차산업 진로체험 교육 앱 포트폴리오">
-    <meta property="og:description" content="교육부 인증 진로체험기관 미랩(MILAB). 드론·로봇·AI·AR/VR·스마트팜 교과 연계 웹앱 50종 이상, 설치 없이 무료 체험. 초·중·고·모두의 학급 수업에 바로 활용.">
+    <meta property="og:title" content="미랩(MILAB) 진로체험 웹앱 50종+ | 교실에서 바로 체험">
+    <meta property="og:description" content="설치 없이 바로 여는 드론·로봇·AI·AR/VR 교과 연계 웹앱. 초·중·고·모두의 학급 수업용, 무료 체험 · 교육부 인증 진로체험기관">
     <meta property="og:url" content="https://milab2019.github.io/main/milab_portfolio.html">
-    <meta property="og:image" content="https://milab2019.github.io/main/og_thumbnail.png">
+    <meta property="og:image" content="https://milab2019.github.io/main/og_thumbnail.png?v=20261121">
     <meta property="og:image:width" content="1200">
     <meta property="og:image:height" content="630">
     <meta property="og:image:alt" content="미랩(MILAB) — 교실에서 바로 여는 4차산업 진로체험 웹앱">
@@ -51,9 +51,9 @@
 
     <!-- Twitter Card -->
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="미랩(MILAB) | 4차산업 진로체험 교육 앱 포트폴리오">
-    <meta name="twitter:description" content="교육부 인증 진로체험기관 미랩(MILAB). 드론·로봇·AI·AR/VR·스마트팜 교과 연계 웹앱 50종 이상, 설치 없이 무료 체험. 초·중·고·모두의 학급 수업에 바로 활용.">
-    <meta name="twitter:image" content="https://milab2019.github.io/main/og_thumbnail.png">
+    <meta name="twitter:title" content="미랩(MILAB) 진로체험 웹앱 50종+ | 교실에서 바로 체험">
+    <meta name="twitter:description" content="설치 없이 바로 여는 드론·로봇·AI·AR/VR 교과 연계 웹앱. 초·중·고·모두의 학급 수업용, 무료 체험 · 교육부 인증 진로체험기관">
+    <meta name="twitter:image" content="https://milab2019.github.io/main/og_thumbnail.png?v=20261121">
 
     <!-- 카카오톡 미리보기 강제 갱신용 canonical -->
     <link rel="canonical" href="https://milab2019.github.io/main/milab_portfolio.html">
@@ -68,7 +68,7 @@
           "name": "미랩(MILAB)",
           "alternateName": ["미랩", "MILAB"],
           "url": "https://milab2019.github.io/main/milab_portfolio.html",
-          "image": "https://milab2019.github.io/main/og_thumbnail.png",
+          "image": "https://milab2019.github.io/main/og_thumbnail.png?v=20261121",
           "description": "교육부 인증 진로체험기관. 초·중·고·모두의 학급 대상 드론·로봇·IoT·3D프린팅·VR·AI코딩 4차산업 진로체험 교육과 교과 연계 웹앱을 운영합니다.",
           "telephone": "+82-43-847-8627",
           "foundingDate": "2019",
@@ -748,12 +748,38 @@ footer.site-footer { background:var(--navy-900); color:rgba(255,255,255,.55); pa
 .qrm-btn:hover { border-color:#C7D2E0; }
 .qrm-btn.dark { grid-column:1 / -1; background:var(--navy); border-color:var(--navy); color:#fff; }
 .qrm-btn.dark:hover { background:#24365E; }
+/* 기본 배치: 라벨·제목·메타 → QR → 안내·버튼 (정보 묶음은 펼쳐서 순서만 조정) */
+.qr-modal { display:flex; flex-direction:column; align-items:center; }
+.qrm-info { display:contents; }
+.qrm-label{order:1} .qrm-title{order:2} .qrm-meta{order:3} .qrm-box{order:4} .qrm-tip{order:5} .qrm-url{order:6} .qrm-actions{order:7; width:100%}
+.qrm-title { align-self:stretch; }
+
 /* 수업 화면용 크게 보기 */
-.qr-modal-overlay.big { background:rgba(14,23,44,.92); }
-.qr-modal-overlay.big .qr-modal { max-width:min(92vw, 760px); padding:36px 32px 28px; }
-.qr-modal-overlay.big .qrm-title { font-size:clamp(1.3rem, 3vw, 2rem); }
-.qr-modal-overlay.big .qrm-tip { font-size:1rem; font-weight:700; color:var(--ink); }
-.qr-modal-overlay.big .qrm-actions { max-width:420px; margin:0 auto; }
+.qr-modal-overlay.big { background:rgba(14,23,44,.94); }
+.qr-modal-overlay.big .qr-modal { max-width:min(94vw, 760px); padding:28px 28px 22px; }
+.qr-modal-overlay.big .qrm-title { font-size:clamp(1.25rem, 2.6vw, 1.9rem); margin-bottom:6px; }
+.qr-modal-overlay.big .qrm-meta { margin-bottom:14px; }
+.qr-modal-overlay.big .qrm-tip { font-size:1rem; font-weight:700; color:var(--ink); margin-top:12px; }
+.qr-modal-overlay.big .qrm-url { margin-bottom:14px; }
+.qr-modal-overlay.big .qrm-actions { grid-template-columns:1fr 1fr 1fr; max-width:520px; }
+.qr-modal-overlay.big .qrm-btn.dark { grid-column:auto; }
+/* 가로로 넓은 화면(프로젝터·TV): QR 왼쪽, 정보 오른쪽 */
+.qr-modal-overlay.big.wide .qr-modal {
+  max-width:min(94vw, 1180px); width:auto; flex-direction:row; align-items:center; gap:40px;
+  padding:36px 44px 36px 36px; text-align:left;
+}
+.qr-modal-overlay.big.wide .qrm-info { display:flex; flex-direction:column; align-items:flex-start; width:380px; flex-shrink:0; }
+.qr-modal-overlay.big.wide .qrm-info > * { order:0; }
+.qr-modal-overlay.big.wide .qrm-box { order:0; flex-shrink:0; }
+.qr-modal-overlay.big.wide .qrm-info { order:1; }
+.qr-modal-overlay.big.wide .qrm-title { margin:0 0 10px; font-size:clamp(1.6rem, 2.4vw, 2.3rem); line-height:1.3; }
+.qr-modal-overlay.big.wide .qrm-meta { justify-content:flex-start; margin-bottom:22px; }
+.qr-modal-overlay.big.wide .qrm-meta span { font-size:.85rem; padding:5px 12px; }
+.qr-modal-overlay.big.wide .qrm-tip { font-size:1.2rem; line-height:1.55; margin:0 0 10px; }
+.qr-modal-overlay.big.wide .qrm-url { font-size:.8rem; margin-bottom:26px; }
+.qr-modal-overlay.big.wide .qrm-actions { grid-template-columns:1fr 1fr; max-width:none; }
+.qr-modal-overlay.big.wide .qrm-btn.dark { grid-column:1 / -1; }
+.qr-modal-overlay.big.wide .qrm-box { padding:18px; border-radius:24px; }
 </style>
 </head>
 <body>
@@ -1632,26 +1658,34 @@ document.querySelectorAll('.stat-item').forEach(function(it){var l=it.querySelec
   ov.innerHTML =
     '<div class="qr-modal">' +
       '<button type="button" class="qrm-close" aria-label="닫기">✕</button>' +
-      '<div class="qrm-label">📱 학생 공유용 QR</div>' +
-      '<h3 class="qrm-title" id="qrmTitle"></h3>' +
-      '<div class="qrm-meta"></div>' +
       '<div class="qrm-box"><div id="qrShareBox"></div></div>' +
-      '<p class="qrm-tip">학생들이 휴대폰 카메라로 QR을 비추면 앱이 바로 열려요</p>' +
-      '<div class="qrm-url"></div>' +
-      '<div class="qrm-actions">' +
-        '<button type="button" class="qrm-btn" data-act="copy">🔗 링크 복사</button>' +
-        '<button type="button" class="qrm-btn" data-act="big">⛶ 수업 화면용 크게</button>' +
-        '<a class="qrm-btn dark" data-act="open" target="_blank" rel="noopener">앱 열기 ↗</a>' +
+      '<div class="qrm-info">' +
+        '<div class="qrm-label">📱 학생 공유용 QR</div>' +
+        '<h3 class="qrm-title" id="qrmTitle"></h3>' +
+        '<div class="qrm-meta"></div>' +
+        '<p class="qrm-tip">학생들이 휴대폰 카메라로 QR을 비추면 앱이 바로 열려요</p>' +
+        '<div class="qrm-url"></div>' +
+        '<div class="qrm-actions">' +
+          '<button type="button" class="qrm-btn" data-act="copy">🔗 링크 복사</button>' +
+          '<button type="button" class="qrm-btn" data-act="big">⛶ 수업 화면용 크게</button>' +
+          '<a class="qrm-btn dark" data-act="open" target="_blank" rel="noopener">앱 열기 ↗</a>' +
+        '</div>' +
       '</div>' +
     '</div>';
   document.body.appendChild(ov);
 
   var box = ov.querySelector('#qrShareBox'), cur = null, lastFocus = null;
 
+  function isWide() { return window.innerWidth >= 860 && window.innerWidth > window.innerHeight * 1.15; }
   function qrSize() {
-    if (!ov.classList.contains('big')) return 232;
-    return Math.max(240, Math.min(560, Math.floor(window.innerHeight * 0.58), Math.floor(window.innerWidth * 0.78)));
+    var W = window.innerWidth, H = window.innerHeight;
+    if (!ov.classList.contains('big')) return Math.max(180, Math.min(232, W - 120, H - 470));
+    var s = isWide()
+      ? Math.min(H - 150, Math.min(W * 0.94, 1180) - 570, 680)      // 가로 화면: QR 왼쪽 + 정보 오른쪽
+      : Math.min(W - 110, H - 380, 560);                              // 세로 화면: 위아래 배치
+    return Math.max(200, Math.floor(s));
   }
+  function layout() { ov.classList.toggle('wide', ov.classList.contains('big') && isWide()); }
   function renderQR() {
     if (!cur) return;
     box.innerHTML = '';
@@ -1659,12 +1693,14 @@ document.querySelectorAll('.stat-item').forEach(function(it){var l=it.querySelec
       box.innerHTML = '<div class="qrm-err">QR을 불러오지 못했어요.<br>인터넷 연결을 확인해 주세요.</div>';
       return;
     }
+    layout();
     var s = qrSize();
     new QRCode(box, { text: withUtm(cur.url, 'qr', cur.num), width: s, height: s, colorDark: '#1A2744', colorLight: '#ffffff', correctLevel: QRCode.CorrectLevel.M });
   }
   function open(card, opener) {
     cur = info(card); lastFocus = opener || null;
-    ov.classList.remove('big');
+    ov.classList.remove('big', 'wide');
+    ov.querySelector('[data-act="big"]').textContent = '⛶ 수업 화면용 크게';
     ov.querySelector('.qrm-title').textContent = (cur.emoji ? cur.emoji + ' ' : '') + cur.title;
     ov.querySelector('.qrm-meta').innerHTML = '<span>' + cur.num + '</span><span>' + cur.grade + '</span>';
     ov.querySelector('.qrm-url').textContent = cur.url.replace(/^https?:\/\//, '');
@@ -1677,7 +1713,7 @@ document.querySelectorAll('.stat-item').forEach(function(it){var l=it.querySelec
     track('app_share', { method: 'QR 열기', app_number: cur.num, app_title: cur.title });
   }
   function close() {
-    ov.classList.remove('open', 'big');
+    ov.classList.remove('open', 'big', 'wide');
     document.body.style.overflow = '';
     if (lastFocus) lastFocus.focus();
   }
@@ -1710,7 +1746,7 @@ document.querySelectorAll('.stat-item').forEach(function(it){var l=it.querySelec
     }
   });
   document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && ov.classList.contains('open')) close(); });
-  var rt; window.addEventListener('resize', function () { if (ov.classList.contains('big')) { clearTimeout(rt); rt = setTimeout(renderQR, 200); } });
+  var rt; window.addEventListener('resize', function () { if (ov.classList.contains('open')) { clearTimeout(rt); rt = setTimeout(renderQR, 200); } });
 
   /* ── 3) 앱 목록 구조화 데이터(ItemList) — 카드에서 자동 생성 ── */
   try {
