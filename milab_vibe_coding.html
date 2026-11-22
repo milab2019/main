@@ -997,7 +997,7 @@ html.chkopen .tour,html.chkopen #bot{display:none!important}
    ═══════════════════════════════════════════════════════════════ */
 (function (W) {
   var M = W.MILAB = W.MILAB || {};
-  M.VERSION = 'v2.4.0';
+  M.VERSION = 'v2.4.1';
   M.BUILD_DATE = '2026-11-22';
   M.versionText = function () { return '미랩 블록코딩 ' + M.VERSION + ' (' + M.BUILD_DATE + ')'; };
 
@@ -6385,7 +6385,7 @@ function milabMain() {
     if (sim) { cancelAnimationFrame(sim.raf); }
     st = newState(); world.reset();
     sim = { vm: new M.VM(compiled.code, makeHal()), c: compiled, speed: Number($('simSpeed').value), t0: performance.now(), raf: 0, hl: -1, hlAt: 0 };
-    renderParts(); setRunUI(true);
+    renderParts(true); setRunUI(true);
     sim.raf = requestAnimationFrame(frame);
     if (!keepInputs) bot.run();
     log('▶ 시뮬레이터 실행 (' + compiled.size + '바이트)');
@@ -6426,7 +6426,7 @@ function milabMain() {
     sim = null; audioSet(true);
     try { ws.highlightBlock(null); } catch (e) {}
     setRunUI(false);
-    if (!keepVisual) { st = newState(); world.reset(); updateParts(); updateBoardSvg(); drawLive(); }
+    if (!keepVisual) { st = newState(); world.reset(); updateParts(); updateBoardSvg(); drawLive(); $('simTime').textContent = ''; }
   }
   function setRunUI(on) {
     $('btnStop').disabled = !on;
@@ -6460,9 +6460,13 @@ function milabMain() {
   };
   var LABEL = { led: 'LED', buzzer: '버저', servo: '서보모터', motor: 'DC모터', button: '버튼', switch: '스위치', pot: '아날로그 입력', ultra: '초음파 센서',
     dht: '온습도 DHT11', soil: '흙 수분 센서', light: '조도 센서', pump: '물 펌프', fan: '환기팬', line: '라인센서', carworld: '가상 트랙' };
-  function renderParts() {
+  var partsSig = '';
+  function renderParts(keepDom) {
     parts = partsFor(sim ? sim.c : compiled);
-    var box = $('parts');
+    var box = $('parts'), sig = JSON.stringify(parts);
+    // 실행을 시작할 때 부품이 그대로면 카드를 다시 그리지 않음 (누르고 있던 버튼·끌던 슬라이더가 끊기지 않게)
+    if (keepDom && sig === partsSig && box.querySelector('.part')) { updateParts(); return; }
+    partsSig = sig;
     if (!parts.length) { box.innerHTML = '<div class="simempty" style="grid-column:1/-1">블록을 조립하면 사용한 부품이 여기에 나타나요.<br><span class="note">예: <b>LED 켜기</b> → LED, <b>버튼 눌림?</b> → 버튼, <b>초음파 거리</b> → 센서</span></div>'; $('boardSvg').innerHTML = boardSvg(); return; }
     box.innerHTML = parts.map(function (pt, i) {
       if (pt.kind === 'carworld') {
@@ -6484,8 +6488,17 @@ function milabMain() {
     updateParts(); updateBoardSvg();
   }
   function inputChanged(key, v) { if (sim) rec(key, sim.vm.t, v); }
+  // 정지 상태에서 버튼·스위치·센서를 만지면: 프로그램이 돌고 있지 않아 반응이 없음 → 시뮬레이터를 자동으로 켬
+  function ensureRun(silent) {
+    if (sim) return true;
+    if (!compiled || !compiled.ok) { if (!silent) simStart(); return false; }
+    if (!simStart(true)) return false;
+    toast('▶ 시뮬레이터를 켰어요 — 이제 입력에 반응해요');
+    return true;
+  }
   $('parts').addEventListener('input', function (e) {
     var t = e.target;
+    if (t.dataset.pot !== undefined || t.dataset.dist || t.dataset.dht) ensureRun(true);
     if (t.dataset.pot !== undefined) { inputs.pot[+t.dataset.pot] = +t.value; inputChanged('p' + t.dataset.pot, +t.value); }
     if (t.dataset.dist) { inputs.dist = +t.value; inputChanged('u', +t.value); }
     if (t.dataset.dht) { inputs.dht[t.dataset.dht] = +t.value; }
@@ -6513,14 +6526,15 @@ function milabMain() {
   var pressed = null;
   $('parts').addEventListener('pointerdown', function (e) {
     var el = e.target.closest('.part.press'); if (!el || e.target.tagName === 'INPUT') return;
-    var pt = parts[+el.dataset.i];
+    var pt = parts[+el.dataset.i], idx = el.dataset.i;
+    if (!sim && ensureRun()) el = $('parts').querySelector('.part[data-i="' + idx + '"]') || el;   // 켜면서 카드가 새로 그려짐
     if (pt.kind === 'switch' || pt.kind === 'line') { inputs.din[pt.pin] = inputs.din[pt.pin] ? 0 : 1; inputChanged('w' + pt.pin, inputs.din[pt.pin]); updateParts(); return; }
-    pressed = el; el.setPointerCapture && el.setPointerCapture(e.pointerId); setPress(el, true); e.preventDefault();
+    pressed = el; try { el.setPointerCapture(e.pointerId); } catch (er) {} setPress(el, true); e.preventDefault();
   });
   ['pointerup', 'pointercancel'].forEach(function (ev) { document.addEventListener(ev, function () { if (pressed) { setPress(pressed, false); pressed = null; } }); });
   $('parts').addEventListener('keydown', function (e) {
     var el = e.target.closest('.part.press'); if (!el || (e.key !== ' ' && e.key !== 'Enter') || e.repeat) return;
-    var pt = parts[+el.dataset.i]; e.preventDefault();
+    var pt = parts[+el.dataset.i]; e.preventDefault(); ensureRun();
     if (pt.kind === 'switch') { inputs.din[pt.pin] = inputs.din[pt.pin] ? 0 : 1; inputChanged('w' + pt.pin, inputs.din[pt.pin]); updateParts(); }
     else setPress(el, true);
   });
