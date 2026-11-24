@@ -1886,7 +1886,9 @@ function tex(canvas, mip){
   var t = gl.createTexture(); gl.bindTexture(gl.TEXTURE_2D, t);
   gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,gl.RGBA,gl.UNSIGNED_BYTE,canvas);
   var pot = (canvas.width&(canvas.width-1))===0 && (canvas.height&(canvas.height-1))===0;
-  if(mip && pot){ gl.generateMipmap(gl.TEXTURE_2D); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR); }
+  if(mip && pot){ gl.generateMipmap(gl.TEXTURE_2D); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
+    var an = gl.getExtension('EXT_texture_filter_anisotropic') || gl.getExtension('WEBKIT_EXT_texture_filter_anisotropic');
+    if(an) gl.texParameterf(gl.TEXTURE_2D, an.TEXTURE_MAX_ANISOTROPY_EXT, Math.min(4, gl.getParameter(an.MAX_TEXTURE_MAX_ANISOTROPY_EXT))); }
   else gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
   gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
   return { t:t, w:canvas.width, h:canvas.height, mip:mip&&pot };
@@ -2580,7 +2582,7 @@ return { initShared:initShared, buildStage:buildStage, freeStage:freeStage, prep
 (function(){
 'use strict';
 var BASE_URL = 'https://milab2019.github.io/main/milab_vr_055.html';
-var VERSION = '1.7.0';
+var VERSION = '1.7.1';
 var LS = 'milab55_';
 /* ---------- 다국어 (MILAB i18n 표준 블록 v1) ---------- */
 var I18 = MI18N.init({ key:LS+'lang', biKey:LS+'bi', param:'lang', biDefault:true });
@@ -2992,11 +2994,13 @@ function drawReticle(p, active){
 var VRP = { p:{}, on:[], hover:null, dwell:0, cool:0 };
 function panel(id, w, h, cw, ch, pos, draw, buttons, tilt){
   var p = VRP.p[id];
-  if(!p){ var c = cv(cw, ch); p = VRP.p[id] = { id:id, cv:c, c:c.getContext('2d'), T:G.tex(c,false), w:w, h:h, cw:cw, ch:ch }; }
+  if(!p){ /* v1.7.1 VR 글씨 선명화: 2의 거듭제곱 텍스처 + 밉맵 → 휴대폰 VR에서 축소돼도 한글 획이 끊기지 않음 */
+    var np2 = function(n){ return Math.pow(2, Math.round(Math.log(n*0.9)/Math.LN2)); };
+    var c = cv(np2(cw), np2(ch)); p = VRP.p[id] = { id:id, cv:c, c:c.getContext('2d'), w:w, h:h, cw:cw, ch:ch, sx:c.width/cw, sy:c.height/ch }; p.T = G.tex(c, true); }
   p.pos = pos; p.draw = draw; p.buttons = buttons || []; p.tilt = tilt || 0; p.dirty = true; return p;
 }
 function paint(p){
-  var c = p.c; c.clearRect(0,0,p.cw,p.ch); p.draw(c, p);
+  var c = p.c; c.setTransform(1,0,0,1,0,0); c.clearRect(0,0,p.cv.width,p.cv.height); c.setTransform(p.sx,0,0,p.sy,0,0); p.draw(c, p);
   p.buttons.forEach(function(b){
     var hov = VRP.hover && VRP.hover.p===p && VRP.hover.b===b;
     rr(c,b.x,b.y,b.w,b.h,28); c.fillStyle = hov ? '#20A0E0' : (b.accent ? 'rgba(240,144,112,.95)' : 'rgba(255,255,255,.14)'); c.fill();
@@ -3011,10 +3015,10 @@ function bg(c, p, title, sub){
   rr(c,6,6,p.cw-12,p.ch-12,44); c.fillStyle = 'rgba(14,23,48,.9)'; c.fill(); c.lineWidth = 6; c.strokeStyle = '#20A0E0'; c.stroke();
   c.fillStyle = '#fff'; c.textAlign = 'center'; c.textBaseline = 'middle';
   if(title){ fitFont(c, title, 900, 50, p.cw-60); c.fillText(title, p.cw/2, 74); }
-  if(sub){ fitFont(c, sub, 600, 30, p.cw-60); c.fillStyle = '#BDE8FF'; c.fillText(sub, p.cw/2, 124); }
+  if(sub){ fitFont(c, sub, 700, 32, p.cw-60); c.fillStyle = '#BDE8FF'; c.fillText(sub, p.cw/2, 124); }
 }
 function btnRow(cw, y, h, list){ var n = list.length, gap = 24, w = Math.min(330, (cw - 60 - gap*(n-1))/n), x0 = (cw - (w*n + gap*(n-1)))/2; return list.map(function(b,i){ return Object.assign({ x:x0+i*(w+gap), y:y, w:w, h:h }, b); }); }
-function vrShow(ids){ VRP.on = ids; VRP.hover = null; VRP.dwell = 0; VRP.cool = 1.0; ids.forEach(function(id){ if(VRP.p[id]) VRP.p[id].dirty = true; }); }
+function vrShow(ids){ if(ids.indexOf('menu') >= 0 && PERF.scale < 1){ PERF.scale = 1; PERF.q = 2; PERF.t = 0; resize(); } VRP.on = ids; VRP.hover = null; VRP.dwell = 0; VRP.cool = 1.0; ids.forEach(function(id){ if(VRP.p[id]) VRP.p[id].dirty = true; }); }
 function gazeDir(){ return G.qRot(HEAD.q, [0,0,-1]); }
 function vrGaze(dt){
   if(VRP.cool > 0){ VRP.cool -= dt; drawReticle(0, false); return; }
@@ -3048,7 +3052,7 @@ function vrMenuPanels(){
   var btns = btnRow(1200, 158, 230, [st5(1), st5(2), st5(3)]).concat(btnRow(1200, 408, 230, [st5(4), st5(5), gen ? st5(6) : recBtn]));
   if(gen){ btns.push({ x:150, y:668, w:400, h:84, icon:'', label:'🧭 '+tr('vrp.recenter'), fs:30, act:recBtn.act }); btns.push({ x:650, y:668, w:400, h:84, icon:'', label:'📱 '+tr('vrp.quit'), fs:32, act:vrQuit }); }
   else btns.push({ x:420, y:668, w:360, h:84, icon:'', label:'📱 '+tr('vrp.quit'), fs:32, act:vrQuit });
-  panel('menu', 2.6, 1.65, 1200, 762, [0,0.0,-2.6], function(c,p){ bg(c,p,tr('vrp.menuTitle'),tr('vrp.menuSub')); }, btns);
+  panel('menu', 2.95, 1.87, 1200, 762, [0,-0.1,-2.6], function(c,p){ bg(c,p,tr('vrp.menuTitle'),tr('vrp.menuSub')); }, btns);
 }
 function vrQuitPanel(text, sub){
   panel('out', 2.4, 1.0, 1100, 460, [0,0.05,-2.5], function(c,p){ bg(c,p,null,null); c.fillStyle='#fff'; c.textAlign='center'; c.font='90px '+FONT; c.fillText(text.split('|')[0], p.cw/2, 130); fitFont(c, text.split('|')[1], 900, 46, p.cw-60); c.fillText(text.split('|')[1], p.cw/2, 260); fitFont(c, sub||'', 600, 32, p.cw-60); c.fillStyle='#BDE8FF'; c.fillText(sub||'', p.cw/2, 340); }, []);
@@ -3079,8 +3083,8 @@ function vrSubPanel(){
   panel('sub', 2.0, 0.42, 1000, 210, [0,1.2,-2.9], function(c,p){
     if(!MAS.vrText) return; rr(c,4,4,p.cw-8,p.ch-8,40); c.fillStyle='rgba(255,255,255,.95)'; c.fill();
     c.fillStyle='#1A2744'; c.textAlign='left'; c.textBaseline='middle'; c.font='80px '+FONT; c.fillText(MAS.vrPic || '🤖', 30, p.ch/2);
-    if(MAS.vrKo){ c.font='800 34px '+FONT; wrap(c, MAS.vrText, 140, p.ch/2-22, p.cw-170, 40, 2); c.fillStyle='#4A5A7A'; fitFont(c, MAS.vrKo, 700, 26, p.cw-170); c.fillText(MAS.vrKo, 140, p.ch-36); }
-    else { c.font='800 38px '+FONT; wrap(c, MAS.vrText, 140, p.ch/2, p.cw-170, 46); }
+    if(MAS.vrKo){ c.font='800 40px '+FONT; wrap(c, MAS.vrText, 140, p.ch/2-24, p.cw-170, 44, 2); c.fillStyle='#4A5A7A'; fitFont(c, MAS.vrKo, 700, 26, p.cw-170); c.fillText(MAS.vrKo, 140, p.ch-36); }
+    else { c.font='800 46px '+FONT; wrap(c, MAS.vrText, 140, p.ch/2, p.cw-170, 54); }
   }, []);
 }
 function wrap(c, text, x, y, maxW, lh, maxL){
