@@ -466,6 +466,8 @@ body.classmode .blocklyPath{stroke-width:1.5px}
 .wirebox svg,.wirebig svg{width:100%;height:auto;display:block}
 .wirebox.focus .wire,.wirebig.focus .wire{opacity:.12;transition:opacity .12s}
 .wirebox.focus .wire.on,.wirebig.focus .wire.on{opacity:1}
+.wirebox.focus .wlab,.wirebig.focus .wlab{opacity:.12;transition:opacity .12s}
+.wirebox.focus .wlab.on,.wirebig.focus .wlab.on{opacity:1}
 .wireinfo{padding:0 12px 16px}
 .wnotes{margin:4px 0 8px 18px;font-size:var(--fs-1);color:var(--ink-2)}
 .wnotes li{margin:2px 0}
@@ -997,8 +999,8 @@ html.chkopen .tour,html.chkopen #bot{display:none!important}
    ═══════════════════════════════════════════════════════════════ */
 (function (W) {
   var M = W.MILAB = W.MILAB || {};
-  M.VERSION = 'v2.4.1';
-  M.BUILD_DATE = '2026-11-22';
+  M.VERSION = 'v2.4.2';
+  M.BUILD_DATE = '2026-11-27';
   M.versionText = function () { return '미랩 블록코딩 ' + M.VERSION + ' (' + M.BUILD_DATE + ')'; };
 
   var D = W.document, rows = [], ov = null, boardRes = null;
@@ -5329,6 +5331,7 @@ return Blockly.Msg;
    · 모듈(서보·초음파·DHT11·토양수분·릴레이·L298N·라인센서)은 보드 오른쪽 아래에 놓고
      전원은 브레드보드 아래 전원줄(+ 빨강 / − 파랑)에서, 신호는 아두이노 핀에서 받음
    · 선 색: 5V 빨강 · GND 검정 · 신호는 핀마다 다른 색   ·  선마다 번호 → 배선 목록과 짝
+   · v2.4.2: 선 끝은 실제 구멍에만, 다른 줄은 구멍 사이 통로로 비켜 감 · 흰 테두리로 겹침 표시 · 번호 자동 배치
    ═══════════════════════════════════════════════════════════════ */
 (function (G) {
   var M = G.MILAB = G.MILAB || {};
@@ -5390,23 +5393,104 @@ return Blockly.Msg;
 
   function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
 
-  /* ═══ 배치 ═══ */
+  /* ═══ 배치 ═══
+     · 선 끝은 반드시 실제 구멍에 꽂힘 (전원줄 5칸 묶음 사이 빈칸·보드 가장자리 X)
+     · 다른 줄을 지나갈 때는 구멍 사이 통로(구멍 중심 ±7px)로 비켜 지나감 → '어느 줄에 꽂혔는지' 헷갈리지 않음
+     · 아래 전원줄 순서는 실물 반쪽 브레드보드와 같음: j열 쪽 = + (빨강), 바깥쪽 = − (파랑)
+     · 아래 전원줄은 한 열에 선 1개만 */
+  var BOARD_BOT = BB.y + BB.h;                 // 브레드보드 아래 가장자리
+  var PORT_Y = BOARD_BOT + 10;                 // 아래에서 올라오는 선이 브레드보드로 들어가는 높이
+  var LEAD_TOP = hy('j') + 7;                  // j열 바로 아래 (통로 끝 → 구멍으로 꺾여 꽂힘)
+  var VCC_TURN = BOARD_BOT + 16, AN_TURN = BOARD_BOT + 24;   // 아두이노 아래 헤더 선이 오른쪽으로 꺾이는 높이
+  var VCC_COL = 2, VCC_X = hx(VCC_COL) - 7;    // 아두이노 5V → 아래 + 줄 3열 (2·3열 사이 통로로 − 줄을 비켜 올라감)
+  var COL0 = 2;                                // 부품은 3열부터 (아두이노 GND = − 줄 1열 · 5V = + 줄 3열)
+  function laneK(p) { return p === '5V' ? 0 : p === 'GND' ? 1 : 2 + (Number(p) - 14); }   // 아래 헤더 선 순서 (왼쪽 핀일수록 안쪽)
+  function laneOut(k) { return { yb: A.y + A.h + 14 + k * 7, xl: A.x - 8 - k * 7 }; }
+  function railOk(c) { return c >= 0 && c < BB.cols && c % 6 !== 5; }
+  function onTop(p) { return !(p === '5V' || p === 'GND' || p === '3V3' || Number(p) >= 14); }
+
   function plan(parts) {
     var wires = [], comps = [], mods = [], notes = [], used = {}, sigI = 0, sigOf = {};
-    var col = 1;                                  // 다음에 쓸 브레드보드 열
+    var col = COL0, railUse = {}, vsegs = [], hsegs = [], routeBottom = 0;
     function sigColor(key) { if (!sigOf[key]) sigOf[key] = SIG[sigI++ % SIG.length]; return sigOf[key]; }
-    function hole(c, r) { var k = c + r; if (used[k]) notes.push('겹침:' + k); used[k] = 1; return { x: hx(c), y: hy(r), name: (c + 1) + r, dir: 1 }; }
-    function rail(x, which) { var y = RAIL[which]; return { x: railX(x), y: y, name: '아래 ' + (which === 'bp' ? '+ 줄' : '− 줄'), dir: which === 'bp' || which === 'bn' ? -1 : 1, rail: which }; }
-    function wire(from, to, color, fromName, toName, kind) { wires.push({ from: from, to: to, color: color[0], cname: color[1], fromName: fromName, toName: toName, kind: kind || 'jump' }); }
-    function ard(p, to, toName, color) { var a = pinPos(p); wire(a, to, color || sigColor(String(p)), '아두이노 ' + pinLabel(p), toName, a.bottom ? 'orth' : 'bez'); }
-    function gnd(c) { var h = hole(c, 'j'); wire(h, rail(h.x, 'bn'), [BLACK, '검정'], '브레드보드 ' + h.name, '아래 − 줄', 'short'); }
-    function vcc(c) { var h = hole(c, 'j'); wire(h, rail(h.x, 'bp'), [RED, '빨강'], '브레드보드 ' + h.name, '아래 + 줄', 'short'); }
+    function hole(c, r) { var k = c + r; if (used[k]) notes.push('겹침:' + k); used[k] = 1; return { x: hx(c), y: hy(r), name: (c + 1) + r, dir: 1, c: c, r: r }; }
+    function railPt(c, which) {
+      if (railUse[c] && railUse[c] !== 'resv') notes.push('전원줄 겹침:' + (c + 1));
+      railUse[c] = which;
+      return { x: hx(c), y: RAIL[which], name: '아래 ' + (which === 'bp' ? '+ 줄' : '− 줄'), dir: -1, rail: which, c: c };
+    }
+    function railFree(c) { return railOk(c) && !railUse[c]; }
+    function vClear(x, y1, y2, gap) { var lo = Math.min(y1, y2), hi = Math.max(y1, y2); return vsegs.every(function (s) { return Math.abs(s.x - x) >= gap || s.hi < lo - 3 || s.lo > hi + 3; }); }
+    function vTake(x, y1, y2) { vsegs.push({ x: x, lo: Math.min(y1, y2), hi: Math.max(y1, y2) }); }
+    function hFree(y, x1, x2) { var lo = Math.min(x1, x2), hi = Math.max(x1, x2); return hsegs.every(function (s) { return Math.abs(s.y - y) >= 5 || s.hi < lo - 5 || s.lo > hi + 5; }); }
+    function hTake(y, x1, x2) { hsegs.push({ y: y, lo: Math.min(x1, x2), hi: Math.max(x1, x2) }); }
+    function add(from, to, color, fromName, toName, kind, route) {
+      wires.push({ from: from, to: to, color: color[0], cname: color[1], fromName: fromName, toName: toName, kind: kind, pts: route.pts || [], bz: route.bz || null });
+    }
+    // 아두이노 전원선 자리 미리 잡기: GND → 아래 − 줄 1열(왼쪽 끝에서 곧게), 5V → 아래 + 줄 3열(통로로 − 줄을 비켜 감) — 두 선이 서로 엇갈리지 않음
+    railUse[0] = 'resv'; railUse[VCC_COL] = 'resv';
+    vTake(hx(0), RAIL.bn - 4, RAIL.bn + 4); vTake(VCC_X, RAIL.bp + 7, VCC_TURN);
+    hTake(RAIL.bn, laneOut(1).xl, hx(0)); hTake(VCC_TURN, laneOut(0).xl, VCC_X);
+
+    // j열 구멍으로 아래에서 올라오는 통로: 오른쪽(+7) 먼저, 막히면 왼쪽(−7)
+    function leadSide(c, yBot) {
+      var gaps = [10, 7];
+      for (var g = 0; g < gaps.length; g++) for (var s = 1; s >= -1; s -= 2) if (vClear(hx(c) + 7 * s, LEAD_TOP, yBot, gaps[g])) return s;
+      return 1;
+    }
+    // 아두이노 핀 → 브레드보드 j열 구멍
+    function ard(p, h, toName, color) {
+      var a = pinPos(p), cl = color || sigColor(String(p)), s, lx, route;
+      if (a.bottom) {
+        var k = laneK(p), lo = laneOut(k), ty = AN_TURN + (k - 2) * 6;
+        s = leadSide(h.c, ty); lx = h.x + 7 * s;
+        route = { pts: [[a.x, a.y], [a.x, lo.yb], [lo.xl, lo.yb], [lo.xl, ty], [lx, ty], [lx, LEAD_TOP], [h.x, h.y]] };
+        vTake(lx, LEAD_TOP, ty); hTake(ty, lo.xl, lx);
+      } else {
+        s = leadSide(h.c, PORT_Y); lx = h.x + 7 * s;
+        var hh = Math.max(36, Math.min(130, Math.abs(PORT_Y - a.y) * 0.55));
+        route = { bz: [[a.x, a.y], [a.x, a.y - hh], [lx, PORT_Y + hh], [lx, PORT_Y]], pts: [[lx, PORT_Y], [lx, LEAD_TOP], [h.x, h.y]] };
+        vTake(lx, LEAD_TOP, PORT_Y);
+      }
+      add(a, h, cl, '아두이노 ' + pinLabel(p), toName, a.bottom ? 'orth' : 'bez', route);
+    }
+    // 가까운 순서로 전원줄 열 후보
+    function near(c) { var out = []; for (var d = 1; d < BB.cols; d++) { out.push(c + d, c - d); } return out; }
+    // j열 → 아래 − 줄: + 줄은 구멍 사이 통로로 비켜 지나 옆 열의 − 줄에 꽂음
+    function gnd(c) {
+      var h = hole(c, 'j'), cand = near(c);
+      for (var i = 0; i < cand.length; i++) {
+        var rc = cand[i], sg = rc > c ? 1 : -1, cx = hx(rc) - 7 * sg;
+        if (!railFree(rc) || !vClear(cx, RAIL.bp - 4, RAIL.bp + 7, 8)) continue;
+        vTake(cx, RAIL.bp - 4, RAIL.bp + 7); vTake(h.x, h.y, h.y + 19);
+        return add(h, railPt(rc, 'bn'), [BLACK, '검정'], '브레드보드 ' + h.name, '아래 − 줄', 'short',
+          { pts: [[h.x, h.y], [h.x, h.y + 19], [cx, h.y + 26], [cx, RAIL.bp + 7], [hx(rc), RAIL.bn]] });
+      }
+      notes.push('전원줄 칸 부족');
+    }
+    // j열 → 아래 + 줄: 바로 아래 + 줄 (가로막는 줄 없음). 그 열이 빈칸·사용 중이면 옆 열로 비스듬히
+    function vcc(c) {
+      var h = hole(c, 'j');
+      if (railFree(c)) { vTake(h.x, h.y, RAIL.bp); return add(h, railPt(c, 'bp'), [RED, '빨강'], '브레드보드 ' + h.name, '아래 + 줄', 'short', { pts: [[h.x, h.y], [h.x, RAIL.bp]] }); }
+      var cand = near(c);
+      for (var i = 0; i < cand.length; i++) {
+        var rc = cand[i]; if (!railFree(rc)) continue;
+        vTake(h.x, h.y, h.y + 14);
+        return add(h, railPt(rc, 'bp'), [RED, '빨강'], '브레드보드 ' + h.name, '아래 + 줄', 'short', { pts: [[h.x, h.y], [h.x, h.y + 14], [hx(rc), RAIL.bp - 5], [hx(rc), RAIL.bp]] });
+      }
+      notes.push('전원줄 칸 부족');
+    }
     var needRails = false;
     var farm = parts.some(function (p) { return /^(soil|dht|pump|fan|light)$/.test(p.kind); });
     parts = parts.map(function (p) { return farm && p.kind === 'pot' && p.pin === 2 ? Object.assign({}, p, { kind: 'water' }) : p; });   // 스마트팜 표준: A2 = 물탱크 수위센서
 
-    // 1) 브레드보드 부품
-    parts.forEach(function (pt) {
+    // 1) 브레드보드 부품 — 아날로그(아래 헤더) 부품 먼저, 그다음 위 헤더 핀 순서(왼→오)대로 꽂아 신호선끼리 엇갈리지 않게
+    var BBK = { led: 1, button: 1, switch: 1, buzzer: 1, pot: 1, light: 1 };
+    var bbParts = parts.filter(function (pt) { return BBK[pt.kind]; }).map(function (pt, i) {
+      var pin = pt.kind === 'pot' || pt.kind === 'light' ? pt.pin + 14 : pt.pin;
+      return { pt: pt, i: i, key: onTop(pin) ? 1000 + pinPos(pin).x : laneK(pin) };
+    }).sort(function (a, b) { return a.key - b.key || a.i - b.i; }).map(function (x) { return x.pt; });
+    bbParts.forEach(function (pt) {
       var c = col, pin = pt.pin;
       if (pt.kind === 'led') {
         var lc = LED_COL[pin] || '#ff922b';
@@ -5459,45 +5543,141 @@ return Blockly.Msg;
       }
     });
     // 모듈 자리 잡기 (보드 오른쪽 아래, 줄 바꿈)
-    var mx = 372, my = 366, rowH = 0, MAXX = 975;
+    var MX0 = 412, mx = MX0, my = 366, rowH = 0, MAXX = 1015, firstTop = my;
     mods.forEach(function (m) {
       var padL = m.t === 'l298n' ? 30 : 0, padR = m.t === 'l298n' ? 30 : 0;
-      if (mx + padL + m.w + padR > MAXX) { mx = 372; my += rowH + 56; rowH = 0; }
+      if (mx + padL + m.w + padR > MAXX) { mx = MX0; my += rowH + 56; rowH = 0; }
       mx += padL; m.x = mx; m.y = my; mx += m.w + padR + 24; rowH = Math.max(rowH, m.h + (m.t === 'l298n' ? 60 : 0) + (m.t === 'relay' ? 52 : 0));
       var n = m.pins.length, span = Math.min(m.w - 16, (n - 1) * 22);
       m.pins.forEach(function (pp, i) {
-        var x = m.x + m.w / 2 - span / 2 + (n > 1 ? i * span / (n - 1) : 0), at = { x: x, y: m.y - 2, dir: -1, name: m.name + ' ' + pp[0] };
-        pp.at = at;
-        var to = pp[1]; if (to === null) return;
-        if (to === '5V') { wire(at, rail(x, 'bp'), [RED, '빨강'], m.name + ' ' + pp[0], '브레드보드 아래 + 줄', 'mod'); needRails = true; }
-        else if (to === 'GND') { wire(at, rail(x, 'bn'), [BLACK, '검정'], m.name + ' ' + pp[0], '브레드보드 아래 − 줄', 'mod'); needRails = true; }
-        else { var a = pinPos(to); wire(a, at, sigColor(String(to)), '아두이노 ' + pinLabel(to), m.name + ' ' + pp[0], a.bottom ? 'orth' : 'bez'); }
+        pp.at = { x: m.x + m.w / 2 - span / 2 + (n > 1 ? i * span / (n - 1) : 0), y: m.y - 2, dir: -1, name: m.name + ' ' + pp[0] };
       });
     });
-    // 3) 아두이노 전원 → 브레드보드 전원줄
+    // 모듈 전원 → 아래 전원줄: 아래에서 곧게 올라와 꽂힘 (+ 줄로 갈 때는 − 줄을 구멍 사이 통로로 비켜 감)
+    function segHits(P, Q) {    // 두 꺾은선이 엇갈리는 횟수
+      var n = 0;
+      for (var i = 1; i < P.length; i++) for (var j = 1; j < Q.length; j++) {
+        var p1 = P[i - 1], p2 = P[i], p3 = Q[j - 1], p4 = Q[j], d = (p2[0] - p1[0]) * (p4[1] - p3[1]) - (p2[1] - p1[1]) * (p4[0] - p3[0]);
+        if (Math.abs(d) < 1e-9) continue;
+        var t = ((p3[0] - p1[0]) * (p4[1] - p3[1]) - (p3[1] - p1[1]) * (p4[0] - p3[0])) / d, u = ((p3[0] - p1[0]) * (p2[1] - p1[1]) - (p3[1] - p1[1]) * (p2[0] - p1[0])) / d;
+        if (t > 0.001 && t < 0.999 && u > 0.001 && u < 0.999) n++;
+      }
+      return n;
+    }
+    function tooClose(P, Q) {   // 다른 선과 6px 안으로 나란히 붙는 점 수
+      var n = 0;
+      for (var i = 0; i < P.length; i += 2) for (var j = 0; j < Q.length; j++) if (Math.abs(P[i][0] - Q[j][0]) < 6 && Math.abs(P[i][1] - Q[j][1]) < 6) { n++; break; }
+      return n;
+    }
+    function railWire(m, pp, which) {
+      var at = pp.at, best = null, done = wires.filter(function (w) { return w.pts.length || w.bz; }).map(samples);
+      var y0 = Math.min(at.y, firstTop - 2) - 12;
+      for (var c = 0; c < BB.cols; c++) {
+        if (!railFree(c)) continue;
+        (which === 'bp' ? [-1, 1] : [0]).forEach(function (s) {
+          var lx = hx(c) + 7 * s, top = which === 'bp' ? RAIL.bp + 7 : RAIL.bn;
+          if (!vClear(lx, top, PORT_Y + 14, 10)) return;
+          var P = Math.abs(lx - at.x) < 0.5 ? [[at.x, at.y], [lx, top]] : [[at.x, at.y], [at.x, y0], [lx, y0], [lx, top]];
+          var dense = samples({ pts: P, bz: null }), hit = 0, near = 0;
+          done.forEach(function (Q) { hit += segHits(P, Q); near += tooClose(dense, Q); });
+          var cost = Math.abs(lx - at.x) + 60 * hit + 8 * near;
+          if (!best || cost < best.cost - 0.01) best = { c: c, lx: lx, top: top, cost: cost };
+        });
+      }
+      if (!best) { notes.push('전원줄 칸 부족'); return null; }
+      var pts = [[at.x, at.y]];
+      if (Math.abs(best.lx - at.x) < 0.5) pts.push([best.lx, best.top]);
+      else {
+        var ly = null;
+        for (var y = y0; y > PORT_Y + 8; y -= 6) if (hFree(y, at.x, best.lx)) { ly = y; break; }
+        if (ly === null) ly = y0;
+        hTake(ly, at.x, best.lx); pts.push([at.x, ly], [best.lx, ly], [best.lx, best.top]);
+      }
+      if (which === 'bp') pts.push([hx(best.c), RAIL.bp]);
+      vTake(best.lx, best.top, pts[pts.length - (which === 'bp' ? 3 : 2)][1]);
+      needRails = true;
+      return { to: railPt(best.c, which), pts: pts };
+    }
+    // 아래 헤더(아날로그) → 모듈: 보드 아래로 돌아 모듈 옆 빈틈으로 올라가 핀 위에서 꽂음 (위쪽 선들을 가로지르지 않음)
+    var rowBot = A.y + A.h + 8;
+    mods.forEach(function (m) { if (m.y === firstTop) rowBot = Math.max(rowBot, m.y + m.h + ({ l298n: 64, relay: 66, soil: 34 }[m.t] || 0)); });
+    var anRight = [];
+    mods.forEach(function (m) { m.pins.forEach(function (pp) { var to = pp[1]; if (to !== null && to !== '5V' && to !== 'GND' && pinPos(to).bottom && m.y === firstTop) anRight.push(pp); }); });
+    anRight.forEach(function (pp) { pp.gx = 0; });
+    var pend = [];
+    mods.forEach(function (m) {
+      m.pins.forEach(function (pp, pi) {
+        var to = pp[1], at = pp.at; if (to === null) return;
+        if (to === '5V' || to === 'GND') {
+          var isServo = m.t === 'servo', w0 = { from: at, to: null, color: to === '5V' ? RED : BLACK, cname: to === '5V' ? '빨강' : (isServo ? '검정 (서보 갈색선)' : '검정'),
+            fromName: m.name + ' ' + pp[0], toName: '브레드보드 아래 ' + (to === '5V' ? '+ 줄' : '− 줄'), kind: 'mod', pts: [], bz: null };
+          wires.push(w0); pend.push({ w: w0, m: m, pp: pp, which: to === '5V' ? 'bp' : 'bn' });
+          return;
+        }
+        var a = pinPos(to), cl = sigColor(String(to)), route;
+        if (m.t === 'servo' && cl[1] !== '주황') cl = [cl[0], cl[1] + ' (서보 주황선)'];
+        if (a.bottom && anRight.indexOf(pp) >= 0) {
+          var right = pi === m.pins.length - 1 || (pi > 0 && at.x > m.x + m.w / 2);
+          pp.gx = right ? m.x + m.w + (m.t === 'l298n' ? 42 : 12) : m.x - (m.t === 'l298n' ? 42 : 12);
+          route = { pts: null }; pp.route = route; pp.a = a;
+        } else if (a.bottom) {
+          var k = laneK(to), lo = laneOut(k), ty = AN_TURN + (k - 2) * 6;
+          route = { pts: [[a.x, a.y], [a.x, lo.yb], [lo.xl, lo.yb], [lo.xl, ty], [at.x, ty], [at.x, at.y]] }; hTake(ty, lo.xl, at.x);
+        } else {
+          var hh = Math.max(36, Math.min(130, Math.abs(at.y - a.y) * 0.55));
+          route = { bz: [[a.x, a.y], [a.x, a.y - hh], [at.x, at.y - hh], [at.x, at.y]] };
+        }
+        add(a, at, cl, '아두이노 ' + pinLabel(to), m.name + ' ' + pp[0], a.bottom ? 'orth' : 'bez', route);
+        if (route.pts === null) pp.wire = wires[wires.length - 1];
+      });
+    });
+    // 아래로 도는 선: 먼 모듈로 가는 선일수록 더 아래 길 (엇갈림 최소)
+    anRight.slice().sort(function (p, q) { return p.gx - q.gx; }).forEach(function (pp, i) {
+      var a = pp.a, at = pp.at, ry = rowBot + 14 + i * 7, ay = at.y - 7;
+      pp.wire.pts = [[a.x, a.y], [a.x, ry], [pp.gx, ry], [pp.gx, ay], [at.x, ay], [at.x, at.y]];
+      hTake(ry, a.x, pp.gx); routeBottom = Math.max(routeBottom, ry + 16);
+    });
+    pend.forEach(function (q) { var r = railWire(q.m, q.pp, q.which); if (r) { q.w.to = r.to; q.w.pts = r.pts; } });
+    wires = wires.filter(function (w) { return w.to; });
+    // 3) 아두이노 전원 → 브레드보드 아래 전원줄 (1번 5V, 2번 GND)
     if (needRails) {
-      var l = { x: hx(0) - 14, y: RAIL.bp, dir: 0, name: '아래 + 줄 왼쪽 끝' }, l2 = { x: hx(0) - 14, y: RAIL.bn, dir: 0, name: '아래 − 줄 왼쪽 끝' };
-      wires.unshift({ from: pinPos('GND'), to: l2, color: BLACK, cname: '검정', fromName: '아두이노 GND', toName: '브레드보드 아래 − 줄', kind: 'orth' });
-      wires.unshift({ from: pinPos('5V'), to: l, color: RED, cname: '빨강', fromName: '아두이노 5V', toName: '브레드보드 아래 + 줄', kind: 'orth' });
+      var g = pinPos('GND'), v = pinPos('5V'), lg = laneOut(1), lv = laneOut(0);
+      var tg = { x: hx(0), y: RAIL.bn, dir: 0, rail: 'bn', c: 0, name: '아래 − 줄 1열' }, tv = { x: hx(VCC_COL), y: RAIL.bp, dir: -1, rail: 'bp', c: VCC_COL, name: '아래 + 줄 ' + (VCC_COL + 1) + '열' };
+      railUse[0] = 'bn'; railUse[VCC_COL] = 'bp';
+      wires.unshift({ from: g, to: tg, color: BLACK, cname: '검정', fromName: '아두이노 GND', toName: '브레드보드 아래 − 줄', kind: 'orth', bz: null,
+        pts: [[g.x, g.y], [g.x, lg.yb], [lg.xl, lg.yb], [lg.xl, tg.y], [tg.x, tg.y]] });
+      wires.unshift({ from: v, to: tv, color: RED, cname: '빨강', fromName: '아두이노 5V', toName: '브레드보드 아래 + 줄', kind: 'orth', bz: null,
+        pts: [[v.x, v.y], [v.x, lv.yb], [lv.xl, lv.yb], [lv.xl, VCC_TURN], [VCC_X, VCC_TURN], [VCC_X, RAIL.bp + 7], [tv.x, tv.y]] });
     }
     var bottom = Math.max(A.y + A.h + 70, mods.length ? my + rowH + 30 : 0);
     var right = BB.x + BB.w; mods.forEach(function (m) { right = Math.max(right, m.x + m.w + (m.t === 'l298n' ? 46 : 0)); });
-    return { wires: wires, comps: comps, mods: mods, notes: notes, height: bottom, right: right + 16, cols: col - 1 };
+    bottom = Math.max(bottom, routeBottom);
+    var holes = Object.keys(used).map(function (k) { var r = k.slice(-1); return [hx(Number(k.slice(0, -1))), hy(r)]; });
+    return { wires: wires, comps: comps, mods: mods, notes: notes, height: bottom, right: right + 16, cols: col - 1, holes: holes };
   }
 
   /* ═══ 그리기 ═══ */
-  function path(w, i, laneOf) {
-    var a = w.from, b = w.to;
-    if (w.kind === 'short') return 'M' + a.x + ' ' + a.y + 'L' + b.x + ' ' + b.y;
-    if (w.kind === 'orth') {      // 아두이노 아래쪽 헤더 → 왼쪽으로 돌아 올라감
-      var k = laneOf(i), yb = A.y + A.h + 14 + k * 7, xl = A.x - 8 - k * 7;
-      var yl = b.dir === 0 ? b.y : BB.y + BB.h + 8 + k * 6;
-      var d = 'M' + a.x + ' ' + a.y + 'V' + yb + 'H' + xl + 'V' + yl + 'H' + b.x;
-      return d + (b.dir === 0 ? '' : 'V' + b.y);
+  function r1(v) { return Math.round(v * 10) / 10; }
+  function fp(p) { return r1(p[0]) + ' ' + r1(p[1]); }
+  function pathD(w) {
+    var d = '';
+    if (w.bz) { var b = w.bz; d = 'M' + fp(b[0]) + 'C' + fp(b[1]) + ' ' + fp(b[2]) + ' ' + fp(b[3]); }
+    w.pts.forEach(function (p, i) { if (w.bz && i === 0) return; d += (i === 0 ? 'M' : 'L') + fp(p); });
+    return d;
+  }
+  function samples(w) {    // 선 위의 점들 (번호 자리 찾기·검사용)
+    var out = [];
+    if (w.bz) {
+      var b = w.bz;
+      for (var i = 0; i <= 48; i++) { var t = i / 48, u = 1 - t, A3 = u * u * u, B3 = 3 * u * u * t, C3 = 3 * u * t * t, D3 = t * t * t; out.push([A3 * b[0][0] + B3 * b[1][0] + C3 * b[2][0] + D3 * b[3][0], A3 * b[0][1] + B3 * b[1][1] + C3 * b[2][1] + D3 * b[3][1]]); }
     }
-    var dy = Math.abs(b.y - a.y), h = Math.max(36, Math.min(130, dy * 0.55));
-    var c1 = a.y + (a.dir || -1) * h, c2 = b.y + (b.dir || 1) * h;
-    return 'M' + a.x + ' ' + a.y + 'C' + a.x + ' ' + c1 + ' ' + b.x + ' ' + c2 + ' ' + b.x + ' ' + b.y;
+    var P = w.pts;
+    if (!w.bz && P.length) out.push(P[0]);
+    for (var j = 1; j < P.length; j++) {
+      var a = P[j - 1], c = P[j], n = Math.max(1, Math.ceil(Math.hypot(c[0] - a[0], c[1] - a[1]) / 3));
+      for (var k = 1; k <= n; k++) out.push([a[0] + (c[0] - a[0]) * k / n, a[1] + (c[1] - a[1]) * k / n]);
+    }
+    return out;
   }
   function shade(hex, f) { var n = parseInt(hex.slice(1), 16), r = n >> 16, g = (n >> 8) & 255, b = n & 255; function c(v) { return Math.max(0, Math.min(255, Math.round(v * f))); } return 'rgb(' + c(r) + ',' + c(g) + ',' + c(b) + ')'; }
 
@@ -5507,14 +5687,15 @@ return Blockly.Msg;
     [['tp', RED], ['tn', '#2563EB'], ['bp', RED], ['bn', '#2563EB']].forEach(function (r) {
       var y = RAIL[r[0]], plus = r[0][1] === 'p';
       s += '<line x1="' + (BB.x + 14) + '" x2="' + (BB.x + BB.w - 14) + '" y1="' + (y + (r[0][0] === 't' ? (plus ? -7 : 7) : (plus ? -7 : 7))) + '" y2="' + (y + (plus ? -7 : 7)) + '" stroke="' + r[1] + '" stroke-width="1.2" opacity=".55"/>';
-      s += '<text x="' + (BB.x + 6) + '" y="' + (y + 3.5) + '" font-size="10" font-weight="700" fill="' + r[1] + '">' + (plus ? '+' : '−') + '</text>';
+      s += '<text x="' + (BB.x + 6) + '" y="' + (y + 3.5) + '" font-size="11" font-weight="800" fill="' + r[1] + '">' + (plus ? '+' : '−') + '</text>';
+      s += '<text x="' + (BB.x + BB.w - 6) + '" y="' + (y + 3.5) + '" font-size="11" font-weight="800" text-anchor="end" fill="' + r[1] + '">' + (plus ? '+' : '−') + '</text>';
       for (var c = 0; c < BB.cols; c++) if (c % 6 !== 5) s += '<rect x="' + (hx(c) - 2.2) + '" y="' + (y - 2.2) + '" width="4.4" height="4.4" rx="1" fill="#8C8577"/>';
     });
     for (var c = 0; c < BB.cols; c++) {
-      if ((c + 1) % 5 === 0 || c === 0) { s += '<text x="' + hx(c) + '" y="' + (hy('a') - 9) + '" font-size="8" text-anchor="middle" fill="#9A9284">' + (c + 1) + '</text><text x="' + hx(c) + '" y="' + (hy('j') + 15) + '" font-size="8" text-anchor="middle" fill="#9A9284">' + (c + 1) + '</text>'; }
+      if ((c + 1) % 5 === 0 || c === 0) { s += '<text x="' + hx(c) + '" y="' + (hy('a') - 9) + '" font-size="9" font-weight="600" text-anchor="middle" fill="#8A8273">' + (c + 1) + '</text><text x="' + hx(c) + '" y="' + (hy('j') + 15) + '" font-size="9" font-weight="600" text-anchor="middle" fill="#8A8273">' + (c + 1) + '</text>'; }
       for (var i = 0; i < 10; i++) s += '<rect x="' + (hx(c) - 2.2) + '" y="' + (hy(ROWS[i]) - 2.2) + '" width="4.4" height="4.4" rx="1" fill="#8C8577"/>';
     }
-    for (var j = 0; j < 10; j++) s += '<text x="' + (BB.x + 9) + '" y="' + (hy(ROWS[j]) + 3) + '" font-size="8" text-anchor="middle" fill="#9A9284">' + ROWS[j] + '</text>';
+    for (var j = 0; j < 10; j++) s += '<text x="' + (BB.x + 9) + '" y="' + (hy(ROWS[j]) + 3) + '" font-size="9" font-weight="600" text-anchor="middle" fill="#8A8273">' + ROWS[j] + '</text>';
     return s + '</g>';
   }
   function drawArduino(boardName) {
@@ -5534,14 +5715,14 @@ return Blockly.Msg;
         if (nm === null) return;
         var px = x0 + i * PIT;
         out += '<rect x="' + (px - 2.6) + '" y="' + (yy - 2.6) + '" width="5.2" height="5.2" fill="#4B5563"/>';
-        out += '<text x="' + px + '" y="' + (yy + labelDy) + '" font-size="7" fill="#fff" text-anchor="middle" font-weight="600"' + (nm.length > 2 ? ' transform="rotate(-90 ' + px + ' ' + (yy + labelDy) + ')" dx="' + (labelDy > 0 ? -6 : 6) + '" dy="2.5" text-anchor="' + (labelDy > 0 ? 'end' : 'start') + '"' : '') + '>' + nm + '</text>';
+        out += '<text x="' + px + '" y="' + (yy + labelDy) + '" font-size="8" fill="#fff" text-anchor="middle" font-weight="700"' + (nm.length > 2 ? ' transform="rotate(-90 ' + px + ' ' + (yy + labelDy) + ')" dx="' + (labelDy > 0 ? -6 : 6) + '" dy="2.5"' : '') + '>' + nm + '</text>';
       });
       return out;
     }
     s += header(TOP, TOP_X0, TOP_Y, 18) + header(BOT, BOT_X0, BOT_Y, -12);
     s += '<text x="' + (TOP_X0 + 120) + '" y="' + (TOP_Y + 32) + '" font-size="8" fill="#BDE7EF" text-anchor="middle" font-weight="700" letter-spacing="1">DIGITAL (PWM ~)</text>';
-    s += '<text x="' + (BOT_X0 + 145) + '" y="' + (BOT_Y - 26) + '" font-size="8" fill="#BDE7EF" text-anchor="middle" font-weight="700" letter-spacing="1">ANALOG IN</text>';
-    s += '<text x="' + (BOT_X0 + 34) + '" y="' + (BOT_Y - 26) + '" font-size="8" fill="#BDE7EF" text-anchor="middle" font-weight="700" letter-spacing="1">POWER</text>';
+    s += '<text x="' + (BOT_X0 + 145) + '" y="' + (BOT_Y - 31) + '" font-size="8" fill="#BDE7EF" text-anchor="middle" font-weight="700" letter-spacing="1">ANALOG IN</text>';
+    s += '<text x="' + (BOT_X0 + 34) + '" y="' + (BOT_Y - 31) + '" font-size="8" fill="#BDE7EF" text-anchor="middle" font-weight="700" letter-spacing="1">POWER</text>';
     return s + '</g>';
   }
   function drawComp(c) {
@@ -5557,26 +5738,26 @@ return Blockly.Msg;
       s += '<path d="M' + (cx - 8) + ' ' + (by + 12) + 'V' + (by - 1) + 'a8 8 0 0 1 16 0V' + (by + 12) + 'z" fill="' + c.color + '" stroke="' + shade(c.color, 0.7) + '" stroke-width="1"/>';
       s += '<rect x="' + (cx - 10) + '" y="' + (by + 11) + '" width="20" height="3" rx="1" fill="' + shade(c.color, 0.8) + '"/>';
       s += '<text x="' + (xa - 5) + '" y="' + (by + 22) + '" font-size="9" font-weight="800" fill="#B91C1C" text-anchor="middle">+</text>';
-      s += '<text x="' + cx + '" y="' + (by - 13) + '" font-size="9" font-weight="700" fill="#334155" text-anchor="middle">' + c.label + '</text>';
+      s += '<text x="' + cx + '" y="' + (by - 13) + '" font-size="10" font-weight="700" fill="#334155" text-anchor="middle">' + c.label + '</text>';
     } else if (c.t === 'btn') {
       var bx = (hx(c.c) + hx(c.c + 2)) / 2, byy = (hy('e') + hy('f')) / 2;
       s += '<rect x="' + (bx - 17) + '" y="' + (byy - 17) + '" width="34" height="34" rx="3" fill="#374151" stroke="#1F2937"/><circle cx="' + bx + '" cy="' + byy + '" r="9" fill="#EF4444" stroke="#991B1B"/>';
-      s += '<text x="' + bx + '" y="' + (byy - 22) + '" font-size="9" font-weight="700" fill="#334155" text-anchor="middle">버튼 ' + c.label + '</text>';
+      s += '<text x="' + bx + '" y="' + (byy - 22) + '" font-size="10" font-weight="700" fill="#334155" text-anchor="middle">버튼 ' + c.label + '</text>';
     } else if (c.t === 'buz') {
       var zx = (hx(c.c) + hx(c.c + 2)) / 2, zy = hy('h') - 14;
       s += '<path d="M' + hx(c.c) + ' ' + hy('h') + 'V' + zy + 'M' + hx(c.c + 2) + ' ' + hy('h') + 'V' + zy + '" stroke="#9CA3AF" stroke-width="1.6"/>';
       s += '<circle cx="' + zx + '" cy="' + zy + '" r="15" fill="#1F2937"/><circle cx="' + zx + '" cy="' + zy + '" r="3" fill="#000"/><text x="' + (hx(c.c) - 4) + '" y="' + (zy - 10) + '" font-size="9" font-weight="800" fill="#B91C1C">+</text>';
-      s += '<text x="' + zx + '" y="' + (zy - 19) + '" font-size="9" font-weight="700" fill="#334155" text-anchor="middle">버저 ' + c.label + '</text>';
+      s += '<text x="' + zx + '" y="' + (zy - 19) + '" font-size="10" font-weight="700" fill="#334155" text-anchor="middle">버저 ' + c.label + '</text>';
     } else if (c.t === 'pot') {
       var px = hx(c.c + 1), py = hy('h') - 20;
       s += '<path d="M' + hx(c.c) + ' ' + hy('h') + 'V' + py + 'M' + px + ' ' + hy('h') + 'V' + py + 'M' + hx(c.c + 2) + ' ' + hy('h') + 'V' + py + '" stroke="#9CA3AF" stroke-width="1.6"/>';
       s += '<rect x="' + (px - 18) + '" y="' + (py - 18) + '" width="36" height="22" rx="3" fill="#1E40AF"/><circle cx="' + px + '" cy="' + (py - 7) + '" r="9" fill="#E2E8F0" stroke="#64748B"/><rect x="' + (px - 1.5) + '" y="' + (py - 15) + '" width="3" height="8" fill="#334155"/>';
-      s += '<text x="' + px + '" y="' + (py - 22) + '" font-size="9" font-weight="700" fill="#334155" text-anchor="middle">가변저항 ' + c.label + '</text>';
+      s += '<text x="' + px + '" y="' + (py - 22) + '" font-size="10" font-weight="700" fill="#334155" text-anchor="middle">가변저항 ' + c.label + '</text>';
     } else if (c.t === 'ldr') {
       var lx1 = hx(c.c1), lx2 = hx(c.c2), ly = hy(c.r), lm = (lx1 + lx2) / 2, lyy = ly - 18;
       s += '<path d="M' + lx1 + ' ' + ly + 'V' + lyy + 'M' + lx2 + ' ' + ly + 'V' + lyy + '" stroke="#9CA3AF" stroke-width="1.6"/>';
       s += '<circle cx="' + lm + '" cy="' + lyy + '" r="10" fill="#F59E0B" stroke="#B45309"/><path d="M' + (lm - 6) + ' ' + (lyy - 2) + 'q3 -4 6 0t6 0M' + (lm - 6) + ' ' + (lyy + 3) + 'q3 -4 6 0t6 0" stroke="#7C2D12" stroke-width="1.3" fill="none"/>';
-      s += '<text x="' + lm + '" y="' + (lyy - 14) + '" font-size="9" font-weight="700" fill="#334155" text-anchor="middle">조도센서</text>';
+      s += '<text x="' + lm + '" y="' + (lyy - 14) + '" font-size="10" font-weight="700" fill="#334155" text-anchor="middle">조도센서</text>';
     }
     return s;
   }
@@ -5613,49 +5794,84 @@ return Blockly.Msg;
     }
     if (m.t === 'water') for (var q = 0; q < 6; q++) s += '<rect x="' + (x + 12 + q * 6) + '" y="' + (y + 44) + '" width="2.5" height="' + (h - 52) + '" fill="#E5E7EB"/>';
     if (m.t === 'mdrv') s += '<circle cx="' + (x + w - 22) + '" cy="' + (y + 44) + '" r="16" fill="#FACC15" stroke="#A16207"/>';
-    s += '<text x="' + (x + w / 2) + '" y="' + (m.t === 'soil' || m.t === 'water' || m.t === 'line' ? y + 34 : y + h - (m.t === 'l298n' ? 8 : 7)) + '" font-size="9" fill="#fff" text-anchor="middle" font-weight="700">' + esc(m.name) + '</text>';
+    s += '<text x="' + (x + w / 2) + '" y="' + (m.t === 'soil' || m.t === 'water' || m.t === 'line' ? y + 34 : y + h - (m.t === 'l298n' ? 8 : 7)) + '" font-size="10" fill="#fff" text-anchor="middle" font-weight="700">' + esc(m.name) + '</text>';
     // 핀 머리
     m.pins.forEach(function (pp) {
       var at = pp.at; if (!at) return;
       s += '<rect x="' + (at.x - 3.2) + '" y="' + (at.y - 1) + '" width="6.4" height="8" rx="1" fill="#111827"/>';
-      s += '<text x="' + at.x + '" y="' + (at.y + 17) + '" font-size="8" fill="#fff" text-anchor="middle" font-weight="700">' + esc(pp[0]) + '</text>';
+      s += '<text x="' + at.x + '" y="' + (at.y + 18) + '" font-size="9" fill="#fff" text-anchor="middle" font-weight="800">' + esc(pp[0]) + '</text>';
     });
     return s + '</g>';
+  }
+
+  /* 번호 동그라미 자리: 선 위에서 출발점(아두이노·모듈 쪽)부터 찾되, 다른 번호·선 끝·다른 선·부품과 겹치지 않는 곳 */
+  function placeLabels(pl, W, H) {
+    var placed = [], ends = [], S = pl.wires.map(samples);
+    pl.wires.forEach(function (w) { ends.push([w.from.x, w.from.y], [w.to.x, w.to.y]); });
+    var boxes = pl.mods.map(function (m) { return [m.x - 4, m.y - 14, m.x + m.w + 4, m.y + m.h + 4]; });
+    boxes.push([TOP_X0 - 10, TOP_Y - 12, TOP_X0 + TOP.length * PIT, TOP_Y + 26], [BOT_X0 - 10, BOT_Y - 30, BOT_X0 + BOT.length * PIT, BOT_Y + 10], [BB.x - 4, BB.y - 4, BB.x + BB.w + 4, BB.y + BB.h + 4]);
+    function ok(x, y, r, wi, level) {
+      if (x - r < -46 || x + r > W - 2 || y - r < 2 || y + r > H - 2) return false;
+      for (var i = 0; i < placed.length; i++) if (Math.hypot(placed[i].x - x, placed[i].y - y) < placed[i].r + r + 3) return false;
+      for (var e = 0; e < ends.length; e++) if (Math.hypot(ends[e][0] - x, ends[e][1] - y) < r + 5) return false;
+      if (level >= 1) for (var j = 0; j < S.length; j++) { if (j === wi) continue; for (var k = 0; k < S[j].length; k++) if (Math.hypot(S[j][k][0] - x, S[j][k][1] - y) < r + 3) return false; }
+      if (level >= 2) for (var b = 0; b < boxes.length; b++) { var q = boxes[b]; if (x + r > q[0] && x - r < q[2] && y + r > q[1] && y - r < q[3]) return false; }
+      return true;
+    }
+    pl.wires.forEach(function (w, wi) {
+      var r = w.kind === 'short' ? 7.5 : 9, pos = null, s = S[wi], lv, k;
+      if (w.kind === 'short') {
+        var p0 = w.pts[0], sg = w.to.x >= p0[0] ? -1 : 1;
+        var cands = [[p0[0] + 13 * sg, p0[1] + 14], [p0[0] - 13 * sg, p0[1] + 14], [p0[0] + 13 * sg, p0[1] + 6], [p0[0] - 13 * sg, p0[1] + 6]];
+        for (lv = 1; lv >= 0 && !pos; lv--) for (k = 0; k < cands.length; k++) if (ok(cands[k][0], cands[k][1], r, wi, lv)) { pos = cands[k]; break; }
+      } else {
+        var len = [0];
+        for (k = 1; k < s.length; k++) len.push(len[k - 1] + Math.hypot(s[k][0] - s[k - 1][0], s[k][1] - s[k - 1][1]));
+        var L = len[len.length - 1];
+        for (lv = 2; lv >= 0 && !pos; lv--) for (k = 0; k < s.length; k++) {
+          if (len[k] < 18 || L - len[k] < 18) continue;
+          if (ok(s[k][0], s[k][1], r, wi, lv)) { pos = s[k]; break; }
+        }
+      }
+      if (!pos) pos = s[Math.floor(s.length / 2)];
+      placed.push({ x: pos[0], y: pos[1], r: r, n: wi + 1 });
+    });
+    return placed;
   }
 
   function render(parts, opts) {
     opts = opts || {};
     var pl = plan(parts), W = Math.max(860, pl.right), H = pl.height;
-    var lanes = {}, laneN = 0; function laneOf(i) { if (lanes[i] === undefined) lanes[i] = laneN++; return lanes[i]; }
     var s = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="-50 0 ' + (W + 50) + ' ' + H + '" font-family="\'MILAB Sans\',\'Pretendard Variable\',\'Malgun Gothic\',sans-serif" role="img" aria-label="배선도">';
     s += '<rect x="-50" y="0" width="' + (W + 50) + '" height="' + H + '" fill="#FFFFFF"/>';
     s += drawBreadboard() + drawArduino(opts.board);
     pl.comps.forEach(function (c) { s += drawComp(c); });
     pl.mods.forEach(function (m) { s += drawModule(m); });
-    // 선: 짧은 점퍼 → 긴 선 순서
+    // 선: 짧은 점퍼 → 긴 선 순서. 흰 테두리 덕분에 겹쳐 지나가는 곳은 '이어진 게 아님'이 보임
     var order = pl.wires.map(function (w, i) { return i; }).sort(function (a, b) { return (pl.wires[a].kind === 'short' ? 0 : 1) - (pl.wires[b].kind === 'short' ? 0 : 1); });
     order.forEach(function (i) {
-      var w = pl.wires[i], d = path(w, i, laneOf);
-      s += '<g class="wire" data-n="' + (i + 1) + '"><path d="' + d + '" stroke="' + shade(w.color, 0.62) + '" stroke-width="5.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/><path d="' + d + '" stroke="' + w.color + '" stroke-width="3.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>';
-      [w.from, w.to].forEach(function (e) { s += '<rect x="' + (e.x - 2.6) + '" y="' + (e.y - 2.6) + '" width="5.2" height="5.2" rx="1" fill="' + shade(w.color, 0.5) + '"/>'; });
-      if (w.kind === 'short') {
-        var sx = w.from.x + 8, sy = (w.from.y + w.to.y) / 2 + 2;
-        s += '<circle cx="' + sx + '" cy="' + sy + '" r="6" fill="#fff" stroke="' + shade(w.color, 1) + '" stroke-width="1.5"/><text x="' + sx + '" y="' + (sy + 2.8) + '" font-size="7" font-weight="800" text-anchor="middle" fill="#1A2744">' + (i + 1) + '</text>';
-      } else {    // 번호 표: 선의 아두이노/모듈 쪽 끝 근처
-        var lx = w.to.x, ly = w.to.y + (w.to.dir === -1 ? -14 : 14);
-        if (w.to.rail || w.to.dir === 0) { lx = w.from.x; ly = w.from.y + (w.from.dir === 1 ? 16 : -16); }
-        s += '<circle cx="' + lx + '" cy="' + ly + '" r="7" fill="#fff" stroke="' + w.color + '" stroke-width="2"/><text x="' + lx + '" y="' + (ly + 3) + '" font-size="8" font-weight="800" text-anchor="middle" fill="#1A2744">' + (i + 1) + '</text>';
-      }
-      s += '</g>';
+      var w = pl.wires[i], d = pathD(w), cap = ' fill="none" stroke-linecap="round" stroke-linejoin="round"';
+      s += '<g class="wire" data-n="' + (i + 1) + '"><path d="' + d + '" stroke="#FFFFFF" stroke-width="8.5"' + cap + '/><path d="' + d + '" stroke="' + shade(w.color, 0.62) + '" stroke-width="6"' + cap + '/><path d="' + d + '" stroke="' + w.color + '" stroke-width="4"' + cap + '/></g>';
+    });
+    // 맨 위 층: 꽂히는 끝(핀) + 번호 — 다른 선에 가려지지 않음
+    var labels = placeLabels(pl, W, H);
+    pl.wires.forEach(function (w, i) {
+      var lb = labels[i];
+      s += '<g class="wlab" data-n="' + (i + 1) + '">';
+      [w.from, w.to].forEach(function (e) { s += '<rect x="' + (e.x - 3.5) + '" y="' + (e.y - 3.5) + '" width="7" height="7" rx="1.5" fill="' + shade(w.color, 0.45) + '" stroke="#FFFFFF" stroke-width="1.4"/>'; });
+      s += '<circle cx="' + r1(lb.x) + '" cy="' + r1(lb.y) + '" r="' + lb.r + '" fill="#FFFFFF" stroke="' + w.color + '" stroke-width="2.4"/>';
+      s += '<text x="' + r1(lb.x) + '" y="' + r1(lb.y + (lb.r > 8 ? 3.9 : 3.3)) + '" font-size="' + (lb.r > 8 ? 11 : 9.5) + '" font-weight="800" text-anchor="middle" fill="#1A2744">' + (i + 1) + '</text></g>';
     });
     if (!parts.length) s += '<text x="' + (BB.x + BB.w / 2) + '" y="' + (BB.y + BB.h + 60) + '" font-size="14" text-anchor="middle" fill="#77849A">블록을 조립하면 쓰는 부품과 선이 여기에 그려져요</text>';
     s += '</svg>';
     var rows = pl.wires.map(function (w, i) { return { n: i + 1, color: w.color, cname: w.cname, from: w.fromName, to: w.toName, short: w.kind === 'short' }; });
+    pl.wires.forEach(function (w, i) { w.samples = samples(w); w.label = labels[i]; });
     var notes = [];
     pl.mods.forEach(function (m) { if (m.note) notes.push(m.name + ': ' + m.note); });
     if (pl.comps.some(function (c) { return c.t === 'led'; })) notes.push('LED는 긴 다리(+)가 저항 쪽, 짧은 다리(−)가 GND 쪽이에요');
     if (parts.some(function (p) { return p.kind === 'button' || p.kind === 'switch'; })) notes.push('버튼은 가운데 홈을 가로질러 꽂아요 (내부 풀업 사용 → 저항 필요 없음)');
-    return { svg: s, rows: rows, notes: notes, problems: pl.notes, wires: pl.wires, mods: pl.mods, comps: pl.comps, cols: pl.cols, width: W, height: H };
+    if (pl.mods.some(function (m) { return m.t === 'servo'; })) notes.push('SG90 서보 선 색: 갈색 = GND(−) · 빨강 = 5V(+) · 주황 = 신호(S)');
+    return { svg: s, rows: rows, notes: notes, problems: pl.notes, wires: pl.wires, mods: pl.mods, comps: pl.comps, holes: pl.holes, labels: labels, cols: pl.cols, width: W, height: H };
   }
 
   M.partsFor = partsFor;
@@ -6797,7 +7013,7 @@ function milabMain() {
   function openWireBig() { if (!wireRes) renderWire(); fillWireBig(); openModal('wireModal'); }
   // 목록에 마우스를 올리면 그 선만 진하게
   function wireHover(tbl, box) {
-    tbl.addEventListener('mouseover', function (e) { var tr = e.target.closest('[data-wn]'); if (!tr) return; box.classList.add('focus'); box.querySelectorAll('.wire').forEach(function (g) { g.classList.toggle('on', g.dataset.n === tr.dataset.wn); }); });
+    tbl.addEventListener('mouseover', function (e) { var tr = e.target.closest('[data-wn]'); if (!tr) return; box.classList.add('focus'); box.querySelectorAll('.wire,.wlab').forEach(function (g) { g.classList.toggle('on', g.dataset.n === tr.dataset.wn); }); });
     tbl.addEventListener('mouseleave', function () { box.classList.remove('focus'); });
   }
   wireHover($('wireTable'), $('wireSvg')); wireHover($('wireTableBig'), $('wireSvgBig'));
